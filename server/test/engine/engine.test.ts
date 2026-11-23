@@ -500,4 +500,39 @@ describe("scheduler", () => {
     );
     expect(tracking?.nextRunAt).toBeNull();
   });
+
+  it("keeps an order's date when another source names the order without one (OP-021)", async () => {
+    const order = (placedAt: string | null) => ({
+      shop: "example-shop.de",
+      orderNumber: "100002",
+      placedAt,
+    });
+    const id = await addAccount();
+    post.listing = [
+      snapshot({
+        carrier: "fakepost",
+        barcode: "FP0901",
+        status: "in_transit",
+        rawStatus: "Moving",
+        order: order("2026-11-10T10:00:00.000Z"),
+      }),
+    ];
+    await context.services.runner.run(id);
+    post.listing = [
+      snapshot({
+        carrier: "fakepost",
+        barcode: "FP0901",
+        status: "in_transit",
+        rawStatus: "Moving",
+        order: order(null),
+      }),
+    ];
+    await context.services.runner.run(id);
+    const stored = await context.services.db
+      .selectFrom("orders")
+      .select("placed_at")
+      .where("order_number", "=", "100002")
+      .executeTakeFirstOrThrow();
+    expect(stored.placed_at).toBe("2026-11-10T10:00:00.000Z");
+  });
 });

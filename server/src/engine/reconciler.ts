@@ -704,11 +704,17 @@ export class Reconciler {
       return null;
     }
     if (existing !== undefined) {
-      await trx
-        .updateTable("orders")
-        .set({ placed_at: snapshot.order.placedAt, updated_at: now })
-        .where("id", "=", existing.id)
-        .execute();
+      // A source that names the order without its date (a mail) never erases the shop's date,
+      // and an unchanged date is no change.
+      const placedAt = snapshot.order.placedAt;
+      if (placedAt !== null) {
+        await trx
+          .updateTable("orders")
+          .set({ placed_at: placedAt, updated_at: now })
+          .where("id", "=", existing.id)
+          .where((eb) => eb.or([eb("placed_at", "is", null), eb("placed_at", "!=", placedAt)]))
+          .execute();
+      }
       return existing.id;
     }
     const id = crypto.randomUUID();
