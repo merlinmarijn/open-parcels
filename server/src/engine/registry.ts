@@ -74,7 +74,8 @@ export interface RegisteredPlugin {
   readonly canFetchAccount: boolean;
   readonly canTrack: boolean;
   readonly canReadLive: boolean;
-  validateConfig(raw: unknown): void;
+  /** Checks a configuration and returns it parsed, with the plug-in's defaults applied. */
+  validateConfig(raw: unknown): unknown;
   /** The sign-in flows that apply to a source of this kind and configuration, default first. */
   signInFlows(kind: PluginSourceKind, rawConfig: unknown): SignInFlowInfo[];
   /** Runs one call of an interactive flow. A finished sign-in's secret is already validated. */
@@ -227,7 +228,7 @@ export function register<Config, Secret>(plugin: CarrierPlugin<Config, Secret>):
       return plugin.readLive(context(base, rawConfig, rawSecret), target);
     },
     validateConfig(raw) {
-      parseWith(plugin.configSchema, raw, "configuration", plugin.id);
+      return parseWith(plugin.configSchema, raw, "configuration", plugin.id);
     },
     async fetchAccount(base, rawConfig, rawSecret) {
       if (plugin.fetchAccount === undefined) {

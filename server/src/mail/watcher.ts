@@ -1,8 +1,9 @@
 import type { Kysely } from "kysely";
 import { simpleParser, type AddressObject } from "mailparser";
 import type { Logger } from "pino";
+import { ZodError } from "zod";
 import { isoNow, type Clock } from "../clock.js";
-import type { SecretBox } from "../crypto/secrets.js";
+import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, SourceRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type SourceService } from "../engine/sources.js";
@@ -19,6 +20,7 @@ import {
   type MailInput,
   type MailInterpreter,
   type MailProgress,
+  type MailSecret,
   isGenericMailboxLabel,
   mailboxLabel,
 } from "./types.js";
@@ -118,7 +120,16 @@ export class MailWatcher {
       .where("kind", "=", "mail")
       .where("state", "in", ["ok", "error"])
       .execute();
-    await Promise.all(rows.map((row) => this.connect(row.id)));
+    const results = await Promise.allSettled(rows.map((row) => this.connect(row.id)));
+    results.forEach((result, index) => {
+      if (result.status === "rejected") {
+        // One mailbox must never keep the server from starting.
+        this.deps.logger.error(
+          { err: result.reason, source: rows[index]?.id },
+          "Starting a mailbox failed.",
+        );
+      }
+    });
   }
 
   async stop(): Promise<void> {
@@ -146,10 +157,11 @@ export class MailWatcher {
     ) {
       return;
     }
-    const config = mailConfigSchema.parse(JSON.parse(row.config));
-    const secret = mailSecretSchema.parse(
-      this.deps.secrets.decryptJson(row.secret_blob, secretAad(row.id)),
-    );
+    const opened = await this.#open(row, row.secret_blob);
+    if (opened === undefined) {
+      return;
+    }
+    const { config, secret, progress } = opened;
     if (isGenericMailboxLabel(row.label, config.host)) {
       await this.deps.db
         .updateTable("sources")
@@ -161,7 +173,7 @@ export class MailWatcher {
     const connection: Connection = {
       client,
       config,
-      progress: this.#progress(row),
+      progress,
       syncing: Promise.resolve(),
       resync: undefined,
     };
@@ -216,13 +228,56 @@ export class MailWatcher {
     });
   }
 
+  /**
+   * Reads a mailbox's stored settings and sign-in. A source that cannot be read (a changed
+   * encryption key, settings in a bad shape) is marked and skipped, never allowed to stop the
+   * other mailboxes or the server's start.
+   */
+  async #open(
+    row: SourceRow,
+    secretBlob: Buffer,
+  ): Promise<{ config: MailConfig; secret: MailSecret; progress: MailProgress } | undefined> {
+    try {
+      const config = mailConfigSchema.parse(JSON.parse(row.config));
+      const secret = mailSecretSchema.parse(
+        this.deps.secrets.decryptJson(secretBlob, secretAad(row.id)),
+      );
+      return { config, secret, progress: this.#progress(row) };
+    } catch (error) {
+      if (error instanceof DecryptionError) {
+        await this.deps.sources.setState(
+          row.id,
+          "needs_sign_in",
+          "The stored sign-in could not be read. Enter the password again.",
+        );
+      } else if (error instanceof ZodError || error instanceof SyntaxError) {
+        await this.deps.sources.setState(row.id, "error", "The mailbox settings are invalid.");
+      } else {
+        throw error;
+      }
+      this.deps.logger.warn(
+        { source: row.id, error: error.name },
+        "A mailbox source could not be read.",
+      );
+      return undefined;
+    }
+  }
+
   #progress(row: SourceRow): MailProgress {
     if (row.session_blob === null) {
       return {};
     }
-    const parsed = mailProgressSchema.safeParse(
-      this.deps.secrets.decryptJson(row.session_blob, sessionAad(row.id)),
-    );
+    let stored: unknown;
+    try {
+      stored = this.deps.secrets.decryptJson(row.session_blob, sessionAad(row.id));
+    } catch (error) {
+      if (!(error instanceof DecryptionError)) {
+        throw error;
+      }
+      // Only the read position is lost: the mailbox is read again from its first-sync window.
+      return {};
+    }
+    const parsed = mailProgressSchema.safeParse(stored);
     return parsed.success ? parsed.data : {};
   }
 

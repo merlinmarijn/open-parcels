@@ -1,5 +1,8 @@
+import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { App } from "../../src/api/app.js";
+import { SecretBox } from "../../src/crypto/secrets.js";
+import { secretAad } from "../../src/engine/sources.js";
 import type { FetchedMessage, MailboxClient, MailInput } from "../../src/mail/types.js";
 import { snapshot } from "../../src/plugin/api.js";
 import { FakeWorld, fakePost } from "../fakes/carriers.js";
@@ -230,6 +233,76 @@ describe("mail watcher", () => {
     mailbox.closed?.(new Error("connection reset"));
     await new Promise((resolve) => setImmediate(resolve));
     expect((await context.services.sources.get(id))?.state).toBe("error");
+  });
+
+  it("starts with an unreadable mailbox and marks it instead of failing (OP-016)", async () => {
+    const lostKey = await addMailbox();
+    const badConfig = await addMailbox();
+    await context.services.mail.stop();
+    await context.services.db
+      .updateTable("sources")
+      .set({
+        secret_blob: new SecretBox(randomBytes(32)).encryptJson(mailSecret, secretAad(lostKey)),
+      })
+      .where("id", "=", lostKey)
+      .execute();
+    await context.services.db
+      .updateTable("sources")
+      .set({ config: "{}" })
+      .where("id", "=", badConfig)
+      .execute();
+
+    await expect(context.services.mail.start()).resolves.toBeUndefined();
+    expect(await context.services.sources.get(lostKey)).toMatchObject({ state: "needs_sign_in" });
+    expect(await context.services.sources.get(badConfig)).toMatchObject({
+      state: "error",
+      stateDetail: "The mailbox settings are invalid.",
+    });
+  });
+
+  it("refuses invalid mailbox settings on change and stores valid ones with defaults (OP-017)", async () => {
+    const id = await addMailbox();
+    const before = await context.services.sources.get(id);
+    const refused = await app.inject({
+      method: "PATCH",
+      url: `/api/v1/sources/${id}`,
+      headers,
+      payload: { config: {} },
+    });
+    expect(refused.statusCode).toBe(400);
+    expect((await context.services.sources.get(id))?.config).toEqual(before?.config);
+
+    const changed = await app.inject({
+      method: "PATCH",
+      url: `/api/v1/sources/${id}`,
+      headers,
+      payload: { config: { host: "mail.example.invalid" } },
+    });
+    expect(changed.statusCode).toBe(200);
+    expect((await context.services.sources.get(id))?.config).toEqual({
+      host: "mail.example.invalid",
+      port: 993,
+      secure: true,
+      folders: ["INBOX"],
+      initialDays: 30,
+    });
+  });
+
+  it("refuses sign-in data that does not fit the plug-in when a source is added (OP-032)", async () => {
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/sources",
+      headers,
+      payload: {
+        plugin: "fakepost",
+        kind: "account",
+        label: "Post",
+        config: {},
+        secret: { username: 42 },
+      },
+    });
+    expect(response.statusCode).toBe(400);
+    expect(await context.services.sources.list()).toEqual([]);
   });
 
   it("rejects mailboxes without a host or sign-in", async () => {

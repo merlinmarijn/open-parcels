@@ -212,8 +212,24 @@ export class SourceService {
     if (!plugin.info.sourceKinds.includes(input.kind)) {
       throw new InvalidSourceConfigError(`${plugin.info.name} has no ${input.kind} source.`);
     }
-    plugin.validateConfig(input.config);
-    return input.config;
+    const config = plugin.validateConfig(input.config);
+    if (input.secret !== null && !plugin.info.secretSchema.safeParse(input.secret).success) {
+      throw new InvalidSourceConfigError(`The sign-in data does not fit ${plugin.info.name}.`);
+    }
+    return config;
+  }
+
+  /** Validates changed settings of an existing source and returns them with defaults applied. */
+  #validateChange(row: Pick<SourceRow, "plugin" | "kind">, config: unknown): unknown {
+    if (row.kind === "mail") {
+      const parsed = mailConfigSchema.safeParse(config);
+      if (!parsed.success) {
+        throw new InvalidSourceConfigError("The mailbox needs a host.");
+      }
+      return parsed.data;
+    }
+    const plugin = this.registry.get(row.plugin);
+    return plugin === undefined ? config : plugin.validateConfig(config);
   }
 
   /**
@@ -289,23 +305,21 @@ export class SourceService {
     if (row === undefined) {
       return undefined;
     }
-    if (changes.config !== undefined) {
-      this.registry.get(row.plugin)?.validateConfig(changes.config);
-    }
+    const config =
+      changes.config === undefined
+        ? undefined
+        : JSON.stringify(this.#validateChange(row, changes.config));
     await this.db
       .updateTable("sources")
       .set({
         ...(changes.label === undefined ? {} : { label: changes.label }),
-        ...(changes.config === undefined ? {} : { config: JSON.stringify(changes.config) }),
+        ...(config === undefined ? {} : { config }),
         updated_at: isoNow(this.clock),
       })
       .where("id", "=", id)
       .execute();
     const labelChanged = changes.label !== undefined && changes.label !== row.label;
-    if (
-      labelChanged ||
-      (changes.config !== undefined && JSON.stringify(changes.config) !== row.config)
-    ) {
+    if (labelChanged || (config !== undefined && config !== row.config)) {
       await this.#announceSource(id, "source.updated");
     }
     if (changes.enabled === false) {
