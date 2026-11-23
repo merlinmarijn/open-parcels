@@ -18,6 +18,7 @@ import { createLogger } from "./log/logger.js";
 import { createServices, type Services } from "./services.js";
 
 const MAINTENANCE_INTERVAL_MS = 60 * 60 * 1000;
+const FIRST_MAINTENANCE_DELAY_MS = 60 * 1000;
 
 async function runMaintenance(services: Services): Promise<void> {
   const sessions = await services.auth.pruneExpiredSessions();
@@ -103,15 +104,20 @@ async function main(): Promise<void> {
     });
   }
 
-  const maintenance = setInterval(() => {
+  const maintain = (): void => {
     runMaintenance(services).catch((error: unknown) => {
       logger.error({ err: error }, "Maintenance failed.");
     });
-  }, MAINTENANCE_INTERVAL_MS);
+  };
+  const maintenance = setInterval(maintain, MAINTENANCE_INTERVAL_MS);
+  // Also once shortly after start: a server restarted more often than hourly would otherwise
+  // never prune sessions, events and caches or apply retention.
+  const firstMaintenance = setTimeout(maintain, FIRST_MAINTENANCE_DELAY_MS);
 
   const shutdown = (signal: string): void => {
     logger.info({ signal }, "Shutting down.");
     clearInterval(maintenance);
+    clearTimeout(firstMaintenance);
     services.scheduler.stop();
     services.live.stop();
     services.places.stop();
