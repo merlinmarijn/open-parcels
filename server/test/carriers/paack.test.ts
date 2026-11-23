@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { paack } from "../../src/carriers/paack/index.js";
-import { register } from "../../src/engine/registry.js";
+import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
 import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
@@ -69,11 +69,24 @@ describe("Paack public tracking", () => {
     expect(result.snapshots).toEqual([]);
   });
 
-  it("skips codes without a postcode", async () => {
+  it("reports a source without any usable postcode as a settings problem (OP-087)", async () => {
     const { fetchImpl, calls } = scripted([]);
     const { base } = fakeContext(paack.http, fetchImpl);
-    expect((await plugin.track(base, {}, null, [CODE])).snapshots).toEqual([]);
+    await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
+      InvalidSourceConfigError,
+    );
     expect(calls).toHaveLength(0);
+  });
+
+  it("asks only the codes it has a postcode for, so the others never read not found", async () => {
+    const { fetchImpl, calls } = scripted([html(page("delivered"))]);
+    const { base } = fakeContext(paack.http, fetchImpl);
+    const result = await plugin.track(base, { postalCodes: { [CODE]: config.postalCode } }, null, [
+      CODE,
+      "OTHERCODE0001",
+    ]);
+    expect(result.asked).toEqual([CODE]);
+    expect(calls).toHaveLength(1);
   });
 
   it("reports an unknown label and leaves the status null", async () => {

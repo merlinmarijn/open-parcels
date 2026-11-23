@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tipsa } from "../../src/carriers/tipsa/index.js";
-import { register } from "../../src/engine/registry.js";
-import { CaptchaError, TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
+import { CaptchaError, UnexpectedResponseError } from "../../src/plugin/errors.js";
 import { fakeContext, fakeNetwork, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -141,7 +141,10 @@ describe("TIPSA tracking", () => {
       ],
     });
     const { base } = fakeContext(tipsa.http, fetchImpl);
-    await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(TransientError);
+    // A refused postcode is a settings problem the user fixes, not a retry (OP-087).
+    await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(
+      InvalidSourceConfigError,
+    );
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );

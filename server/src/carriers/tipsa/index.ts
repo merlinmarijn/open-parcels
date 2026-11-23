@@ -1,11 +1,11 @@
 import { z } from "zod";
 import type { PluginHttp } from "../../plugin/api.js";
 import {
+  InvalidConfigError,
   ruleStatus,
   CaptchaError,
   defineCarrier,
   snapshot,
-  TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
   type PluginContext,
@@ -93,7 +93,8 @@ async function lookUp(
   const door = await http.request(lookup, { headers, redirect: "manual" });
   expectStatus(door, "TIPSA", 200);
   if (door.body.includes("No ha proporcionado el CP") || door.body.includes("Error en el CP")) {
-    throw new TransientError("TIPSA did not accept the configured postcode.");
+    // A wrong setting, not a passing failure: retrying cannot help until the user changes it.
+    throw new InvalidConfigError("TIPSA did not accept the configured postcode.");
   }
   const url = detailUrl(refreshTarget(door.body));
   if (url === null) {

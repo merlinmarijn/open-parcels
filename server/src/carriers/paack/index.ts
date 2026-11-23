@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { defineCarrier, type ParcelSnapshot, type PluginContext } from "../../plugin/api.js";
+import {
+  defineCarrier,
+  InvalidConfigError,
+  type FetchResult,
+  type ParcelSnapshot,
+  type PluginContext,
+} from "../../plugin/api.js";
 import { CARRIER_ID, TRACKING_HOST } from "./shared.js";
 import { isPlausible, lookUp, trackingSnapshot } from "./tracking.js";
 
@@ -15,22 +21,34 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(
+  context: PluginContext<Config, Secret>,
+  barcodes: readonly string[],
+): Promise<FetchResult> {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
   };
+  const asked: string[] = [];
   for (const barcode of barcodes) {
     const postalCode = context.config.postalCodes?.[barcode] ?? context.config.postalCode;
     if (postalCode === undefined || !isPlausible(barcode, postalCode)) {
       continue;
     }
+    asked.push(barcode);
     const raw = await lookUp(context.http, barcode, postalCode);
     if (raw !== null) {
       snapshots.push(trackingSnapshot(raw, barcode, postalCode, report));
     }
   }
-  return { snapshots, complete: true };
+  if (barcodes.length > 0 && asked.length === 0) {
+    // Nothing could be asked: a settings problem the source shows, not "not found" for all.
+    throw new InvalidConfigError(
+      "Paack needs the delivery postcode: set one for the source, or per tracking code.",
+    );
+  }
+  // Codes without a usable postcode were not asked, so they never read "not found".
+  return { snapshots, complete: true, asked };
 }
 
 export const paack = defineCarrier<Config, Secret>({

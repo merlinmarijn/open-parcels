@@ -2,8 +2,9 @@ import { createDecipheriv } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { appHeaders, portalPhoneKey } from "../../src/carriers/cargus/shared.js";
 import { cargus } from "../../src/carriers/cargus/index.js";
+import { InvalidSourceConfigError } from "../../src/engine/registry.js";
 import { carrierKey } from "../../src/plugin/rules.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/plugin/errors.js";
 import { json, madeUp, on, raw, World } from "./harness.js";
 
 // Made-up AWBs, phone numbers, tokens and accounts only.
@@ -141,8 +142,8 @@ describe("Cargus account", () => {
     expect(world.requests().filter((key) => key === TOKEN)).toHaveLength(1);
   });
 
-  it("needs the phone number", async () => {
+  it("reports a missing phone number as a settings problem, not a refused sign-in (OP-087)", async () => {
     const world = new World(cargus, []);
-    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(InvalidSourceConfigError);
   });
 });

@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  InvalidConfigError,
   carrierPattern,
   defineCarrier,
   isoTime,
@@ -80,7 +81,8 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
   }
   const phone = context.config.phone;
   if (phone === undefined) {
-    throw new SignInRejectedError("The MyCargus account needs the account's phone number.");
+    // A missing setting, not a refused sign-in: the user fixes the source's settings.
+    throw new InvalidConfigError("The MyCargus account needs the account's phone number.");
   }
   const report = unknownReporter(context, "status_text");
   const account = new CargusAccount(
