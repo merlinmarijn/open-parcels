@@ -46,7 +46,11 @@ describe("migration 0015-order-sources", () => {
         values ('p-1', 's-track', 'primary', 't')
       `.execute(raw);
 
-      expect(await migrateToLatest(db)).toEqual(["0015-order-sources", "0016-manual-at"]);
+      expect(await migrateToLatest(db)).toEqual([
+        "0015-order-sources",
+        "0016-manual-at",
+        "0017-join-indexes",
+      ]);
 
       const links = await db
         .selectFrom("order_sources")
