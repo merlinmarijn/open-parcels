@@ -1,3 +1,4 @@
+import { createServer } from "node:http";
 import { describe, expect, it } from "vitest";
 import { RateLimitedError, TransientError } from "../../src/plugin/errors.js";
 import {
@@ -8,6 +9,7 @@ import {
   type FetchLike,
 } from "../../src/plugin/http.js";
 import { CookieJar, restoreJar, serializeJar } from "../../src/plugin/cookies.js";
+import { guardedFetch, publicOnlyLookup } from "../../src/net/guarded-fetch.js";
 import { FakeClock } from "../helpers.js";
 
 function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string }) {
@@ -127,6 +129,88 @@ describe("plug-in HTTP client", () => {
       await restoreJar(serializeJar(jar)).getCookieString("https://www.example.invalid/"),
     ).toBe("session=abc");
     expect(await restoreJar("garbage").getCookieString("https://www.example.invalid/")).toBe("");
+  });
+
+  it("follows redirects itself, refusing non-public hops and endless chains (OP-002)", async () => {
+    const seen: string[] = [];
+    const site: FetchLike = (url, init) => {
+      seen.push(`${url.toString()} ${String(init.redirect)}`);
+      const to: Record<string, string> = {
+        "/inward": "https://192.168.0.10/admin",
+        "/loop": "https://a.example.invalid/loop",
+      };
+      const location = to[url.pathname];
+      return Promise.resolve(
+        location === undefined
+          ? new Response("done")
+          : new Response("", { status: 302, headers: { location } }),
+      );
+    };
+    const { http } = setup(site);
+    await expect(http.request(new URL("https://a.example.invalid/inward"))).rejects.toThrow(
+      "non-public",
+    );
+    expect(seen).toEqual(["https://a.example.invalid/inward manual"]);
+    await expect(http.request(new URL("https://a.example.invalid/loop"))).rejects.toThrow(
+      "Too many redirects",
+    );
+  });
+
+  it("does not send credentials on to another host (OP-105)", async () => {
+    const sent: Record<string, string | null>[] = [];
+    const site: FetchLike = (url, init) => {
+      const headers = new Headers(init.headers);
+      sent.push({
+        host: url.host,
+        authorization: headers.get("authorization"),
+        csrf: headers.get("x-csrf-token"),
+        accept: headers.get("accept"),
+      });
+      return Promise.resolve(
+        url.host === "a.example.invalid"
+          ? new Response("", { status: 302, headers: { location: "https://b.example.invalid/" } })
+          : new Response("ok"),
+      );
+    };
+    await setup(site).http.request(new URL("https://a.example.invalid/"), {
+      headers: { authorization: "Bearer made-up", "x-csrf-token": "made-up", accept: "text/html" },
+    });
+    expect(sent).toEqual([
+      {
+        host: "a.example.invalid",
+        authorization: "Bearer made-up",
+        csrf: "made-up",
+        accept: "text/html",
+      },
+      { host: "b.example.invalid", authorization: null, csrf: null, accept: "text/html" },
+    ]);
+  });
+
+  it("refuses at connect time a name that resolves to a non-public address (OP-002)", async () => {
+    const error = await new Promise<Error | null>((resolve) => {
+      publicOnlyLookup("localhost", {}, (failure) => {
+        resolve(failure);
+      });
+    });
+    expect(error?.message).toMatch(/non-public/);
+
+    // The default transport of plug-in HTTP uses it: a server on this machine is never reached.
+    let reached = false;
+    const server = createServer((_request, response) => {
+      reached = true;
+      response.end("inside");
+    });
+    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    try {
+      const address = server.address();
+      const port = typeof address === "object" && address !== null ? address.port : 0;
+      await expect(
+        guardedFetch(new URL(`http://localhost:${port}/`), { method: "GET" }),
+      ).rejects.toThrow();
+      expect(reached).toBe(false);
+    } finally {
+      await new Promise((resolve) => server.close(resolve));
+    }
   });
 
   it("parses Retry-After as seconds or as an HTTP date", () => {

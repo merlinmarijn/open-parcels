@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { isNonPublicHostLiteral } from "../net/address.js";
 
 /**
  * The map styles the server proxies. Providers whose terms allow keyless use by a personal,
@@ -159,6 +160,7 @@ export function templateProblem(template: string): string | null {
   }
   if (url.protocol !== "https:") return "Tile servers must be reached over https.";
   if (url.username !== "" || url.password !== "") return "Put credentials into {key}, not the URL.";
+  if (isNonPublicHostLiteral(url.hostname)) return "Tile servers must have a public address.";
   return null;
 }
 

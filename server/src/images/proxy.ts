@@ -1,13 +1,13 @@
 import { createHash, createHmac, hkdfSync, timingSafeEqual } from "node:crypto";
-import { lookup as dnsLookup, type LookupAddress } from "node:dns";
 import { lookup } from "node:dns/promises";
 import { mkdirSync } from "node:fs";
 import { readdir, readFile, rename, stat, unlink, writeFile } from "node:fs/promises";
-import { isIP, type LookupFunction } from "node:net";
+import { isIP } from "node:net";
 import path from "node:path";
 import type { Logger } from "pino";
-import { Agent, fetch as undiciFetch } from "undici";
+import { fetch as undiciFetch } from "undici";
 import { hostAllowed, isPrivateAddress } from "../net/address.js";
+import { guardedAgent } from "../net/guarded-fetch.js";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
 const MAX_REDIRECTS = 3;
@@ -32,31 +32,6 @@ export type Resolver = (host: string) => Promise<string[]>;
 const dnsResolver: Resolver = async (host) =>
   (await lookup(host, { all: true })).map((entry) => entry.address);
 
-/**
- * DNS lookup for outgoing image requests that refuses private addresses at connect time. The
- * check before the request is not enough on its own: a host could resolve to a public address
- * for the check and to a private one for the connection (DNS rebinding).
- */
-const publicOnlyLookup: LookupFunction = (hostname, options, callback) => {
-  dnsLookup(hostname, { ...options, all: true }, (error, addresses: LookupAddress[]) => {
-    if (error !== null) {
-      callback(error, "", 0);
-      return;
-    }
-    const allowed = addresses.filter((entry) => !isPrivateAddress(entry.address));
-    const first = allowed[0];
-    if (first === undefined || allowed.length !== addresses.length) {
-      callback(new Error(`Refusing to connect to a non-public address for ${hostname}.`), "", 0);
-      return;
-    }
-    if (options.all === true) {
-      callback(null, allowed);
-      return;
-    }
-    callback(null, first.address, first.family);
-  });
-};
-
 /** The parts of a fetch response the proxy uses; lets tests supply a fake. */
 export interface MinimalResponse {
   readonly status: number;
@@ -71,7 +46,6 @@ export type ImageFetch = (
   init: { headers: Record<string, string> },
 ) => Promise<MinimalResponse>;
 
-const guardedAgent = new Agent({ connect: { lookup: publicOnlyLookup } });
 const guardedFetch: ImageFetch = (url, init) =>
   undiciFetch(url, {
     headers: init.headers,
@@ -97,9 +71,13 @@ export interface ImageProxyOptions {
 /**
  * Reads at most `cap` bytes: a declared Content-Length over the cap is refused before reading,
  * and a stream is cancelled as soon as it passes the cap, so nothing large is ever buffered.
+ * `tooLarge` makes the error thrown past the cap (the tile proxy has its own).
  */
-export async function readCapped(response: MinimalResponse, cap: number): Promise<Buffer> {
-  const tooLarge = (): ImageProxyError => new ImageProxyError(502, "The image is too large.");
+export async function readCapped(
+  response: MinimalResponse,
+  cap: number,
+  tooLarge: () => Error = () => new ImageProxyError(502, "The image is too large."),
+): Promise<Buffer> {
   const declared = Number(response.headers.get("content-length") ?? Number.NaN);
   if (Number.isFinite(declared) && declared > cap) {
     await response.body?.cancel();

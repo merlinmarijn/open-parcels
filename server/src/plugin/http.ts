@@ -2,6 +2,7 @@ import { isIP } from "node:net";
 import { getPublicSuffix, type CookieJar } from "tough-cookie";
 import type { Clock } from "../clock.js";
 import { isNonPublicHostLiteral } from "../net/address.js";
+import { guardedFetch } from "../net/guarded-fetch.js";
 import { RateLimitedError, TransientError } from "./errors.js";
 
 export const DEFAULT_USER_AGENT = "open-parcels/2 (+https://github.com/open-parcels/open-parcels)";
@@ -95,15 +96,35 @@ export interface RequestOptions {
   readonly encoding?: "utf8" | "latin1";
   /** Follow redirects automatically. Off when a plug-in has to inspect them (allow-listing). */
   readonly redirect?: "follow" | "manual";
-  /**
-   * Send and store cookies through this jar. Redirects are then followed here, hop by hop, so
-   * cookies set along the way are kept; `allowRedirect` decides which hosts may be visited.
-   */
+  /** Send and store cookies through this jar, also those set by redirects along the way. */
   readonly jar?: CookieJar;
+  /**
+   * Which hosts a redirect may lead to. Default: the same site with a jar, any https host
+   * without one.
+   */
   readonly allowRedirect?: (target: URL) => boolean;
 }
 
 const MAX_REDIRECTS = 10;
+
+/** One request of a redirect chain: the method and body change after a 303. */
+interface Hop {
+  readonly method: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body: string | URLSearchParams | undefined;
+}
+
+/** Headers that carry a credential or a session, which must not follow a redirect elsewhere. */
+const CREDENTIAL_HEADER =
+  /^(?:authorization|proxy-authorization|cookie|x-[\w-]*(?:token|csrf|xsrf|key|auth|session)[\w-]*)$/i;
+
+function withoutCredentials(
+  headers: Readonly<Record<string, string>> | undefined,
+): Record<string, string> {
+  return Object.fromEntries(
+    Object.entries(headers ?? {}).filter(([name]) => !CREDENTIAL_HEADER.test(name)),
+  );
+}
 
 /** The registrable domain (`example.co.uk`); the host itself for IP literals. */
 function registrableDomain(hostname: string): string {
@@ -161,30 +182,37 @@ export class PluginHttp {
     private readonly policy: HttpPolicy,
     private readonly limiter: HostLimiter,
     private readonly clock: Clock,
-    private readonly fetchImpl: FetchLike = (input, init) => fetch(input, init),
+    private readonly fetchImpl: FetchLike = guardedFetch,
   ) {}
 
+  /**
+   * Sends a request. Redirects are followed here, hop by hop (never by the runtime), so every hop
+   * is paced, checked for non-public addresses and capped at MAX_REDIRECTS; with a cookie jar,
+   * cookies set along the way are kept. Headers that carry credentials are not sent on to
+   * another host.
+   */
   async request(url: URL, options: RequestOptions = {}): Promise<HttpResponse> {
     const jar = options.jar;
-    if (jar === undefined) {
-      const response = await this.#send(url, options, options.redirect ?? "follow");
-      return this.#result(response, response.url || url.toString(), options, url);
-    }
-    // With a cookie jar every hop is sent here, so cookies set by intermediate redirects are kept.
-    const allow = options.allowRedirect ?? sameSite(url);
+    // A jar's session stays on the site by default. Without one nothing of a session travels
+    // along, so any https host may be visited (non-public addresses are refused on every hop).
+    const allow =
+      options.allowRedirect ??
+      (jar === undefined
+        ? (target: URL) => target.protocol === "https:" || target.origin === url.origin
+        : sameSite(url));
     let current = url;
     let method = options.method ?? "GET";
     let body = options.body;
     for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
-      const cookie = await jar.getCookieString(current);
-      const headers = { ...options.headers, ...(cookie === "" ? {} : { cookie }) };
-      const response = await this.#send(
-        current,
-        { ...options, method, headers, ...(body === undefined ? {} : { body }) },
-        "manual",
-      );
-      for (const setCookie of response.headers.getSetCookie()) {
-        await jar.setCookie(setCookie, current, { ignoreError: true });
+      const cookie = jar === undefined ? "" : await jar.getCookieString(current);
+      const own =
+        current.host === url.host ? options.headers : withoutCredentials(options.headers);
+      const headers = { ...own, ...(cookie === "" ? {} : { cookie }) };
+      const response = await this.#send(current, options, { method, headers, body });
+      if (jar !== undefined) {
+        for (const setCookie of response.headers.getSetCookie()) {
+          await jar.setCookie(setCookie, current, { ignoreError: true });
+        }
       }
       const location = response.headers.get("location");
       if (
@@ -214,24 +242,24 @@ export class PluginHttp {
     throw new TransientError(`Too many redirects from ${url.hostname}.`);
   }
 
-  async #send(url: URL, options: RequestOptions, redirect: "follow" | "manual"): Promise<Response> {
+  async #send(url: URL, options: RequestOptions, hop: Hop): Promise<Response> {
     // Plug-ins build some URLs from carrier data (links, redirects); none may point inward.
     if (isNonPublicHostLiteral(url.hostname)) {
       throw new TransientError("Refusing a request to a non-public address.");
     }
     const limit = this.policy.limits[url.hostname] ?? this.policy.limits["*"] ?? DEFAULT_LIMIT;
     await this.limiter.acquire(url.hostname, limit);
-    const headers = new Headers(options.headers);
+    const headers = new Headers(hop.headers);
     if (!headers.has("user-agent")) {
       headers.set("user-agent", this.policy.userAgent?.value ?? DEFAULT_USER_AGENT);
     }
     let response: Response;
     try {
       response = await this.fetchImpl(url, {
-        method: options.method ?? "GET",
+        method: hop.method,
         headers,
-        ...(options.body === undefined ? {} : { body: options.body }),
-        redirect,
+        ...(hop.body === undefined ? {} : { body: hop.body }),
+        redirect: "manual",
         signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
       });
     } catch (error) {

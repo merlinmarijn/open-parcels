@@ -114,6 +114,54 @@ describe("tile proxy", () => {
     await expect(proxy.get("osm", 1, 1, 1)).resolves.toMatchObject({ body: PNG, cached: true });
     await expect(proxy.get("osm", 1, 0, 0)).rejects.toMatchObject({ statusCode: 502 });
   });
+
+  it("stops reading an endless tile at the cap instead of buffering it (OP-004)", async () => {
+    let pulled = 0;
+    const endless = new ReadableStream<Uint8Array>({
+      pull(controller) {
+        pulled += 1;
+        controller.enqueue(new Uint8Array(64 * 1024));
+      },
+    });
+    const proxy = new TileProxy({
+      cacheDir: dir,
+      userAgent: "t",
+      fetchImpl: () =>
+        Promise.resolve(
+          new Response(endless, { status: 200, headers: { "content-type": "image/png" } }),
+        ),
+    });
+    await expect(proxy.get("osm", 1, 1, 1)).rejects.toMatchObject({ statusCode: 502 });
+    // 1 MB cap in 64 kB chunks: cancelled right after the cap, never read on.
+    expect(pulled).toBeLessThan(40);
+  });
+
+  it("never fetches a custom layer from an address inside the network (OP-003)", async () => {
+    let called = false;
+    const proxy = new TileProxy({
+      cacheDir: dir,
+      userAgent: "t",
+      layers: () => [
+        {
+          id: "custom",
+          label: "Internal",
+          kind: "base",
+          url: "https://192.168.0.10/{z}/{x}/{y}.png",
+          format: "png",
+          maxZoom: 19,
+          attribution: "",
+          satellite: false,
+          cacheKey: "custom-internal",
+        },
+      ],
+      fetchImpl: () => {
+        called = true;
+        return Promise.resolve(png());
+      },
+    });
+    await expect(proxy.get("custom", 1, 1, 1)).rejects.toMatchObject({ statusCode: 502 });
+    expect(called).toBe(false);
+  });
 });
 
 describe("tile layers", () => {
@@ -125,6 +173,8 @@ describe("tile layers", () => {
     expect(templateProblem("https://tiles.example.org/{z}/{x}/{y}/{bbox}")).toMatch(/bbox/);
     expect(templateProblem("https://u:p@tiles.example.org/{z}/{x}/{y}")).toMatch(/credentials/);
     expect(templateProblem("{z}{x}{y}")).toBe("Not a URL.");
+    expect(templateProblem("https://192.168.0.10/{z}/{x}/{y}.png")).toMatch(/public/);
+    expect(templateProblem("https://tiles.localhost/{z}/{x}/{y}.png")).toMatch(/public/);
   });
 
   it("fills the key in on the server and escapes the attribution", () => {

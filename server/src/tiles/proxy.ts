@@ -1,5 +1,8 @@
 import { mkdir, readdir, readFile, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
+import { readCapped } from "../images/proxy.js";
+import { isNonPublicHostLiteral } from "../net/address.js";
+import { guardedFetch } from "../net/guarded-fetch.js";
 import { BUILTIN_LAYERS, tileUrl, type TileLayerDef } from "./layers.js";
 
 /**
@@ -125,20 +128,29 @@ export class TileProxy {
   async #fetchUpstream(layer: TileLayerDef, z: number, x: number, y: number): Promise<Buffer> {
     await this.#acquire();
     try {
-      const response = await (this.#options.fetchImpl ?? fetch)(tileUrl(layer, z, x, y), {
+      const url = new URL(tileUrl(layer, z, x, y));
+      // A custom provider may name any host: never one inside the network (see also the guarded
+      // connection pool, which checks what a name resolves to).
+      if (isNonPublicHostLiteral(url.hostname)) {
+        throw new TileError(502, "The tile server is not a public address.");
+      }
+      const response = await (this.#options.fetchImpl ?? guardedFetch)(url, {
         headers: { "user-agent": this.#options.userAgent, accept: "image/*" },
         signal: AbortSignal.timeout(TIMEOUT_MS),
-        redirect: "error",
+        redirect: "manual",
       });
       if (!response.ok) {
+        await response.body?.cancel();
         throw new TileError(502, `The tile server answered HTTP ${String(response.status)}.`);
       }
       if (!(response.headers.get("content-type") ?? "").startsWith("image/")) {
+        await response.body?.cancel();
         throw new TileError(502, "The tile server did not send an image.");
       }
-      const body = Buffer.from(await response.arrayBuffer());
-      if (body.length === 0 || body.length > MAX_TILE_BYTES) {
-        throw new TileError(502, "The tile server sent an implausible tile.");
+      const implausible = () => new TileError(502, "The tile server sent an implausible tile.");
+      const body = await readCapped(response, MAX_TILE_BYTES, implausible);
+      if (body.length === 0) {
+        throw implausible();
       }
       return body;
     } catch (error) {
