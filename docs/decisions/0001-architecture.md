@@ -599,7 +599,7 @@ Every phase lands as reviewable commits, with the gate green at each one.
 | **4. Carriers, wave 1** | Amazon (account, items, arrival parsing, hand-off, live), DHL, DPD, Hermes, each with recorded made-up fixtures |
 | **5. Mail** | IMAP IDLE watcher, rule engine integration, `.eml` fixture tests |
 | **6. Web UI** | Parcel list, detail view, map with live couriers, Calendar tab, carrier/account setup, mail setup, tokens, Status page |
-| **7. Map, calendar and images** | Place resolver (Nominatim, opt-in, 1 request/s, cached), ICS feed, image proxy, retention jobs |
+| **7. Map, calendar and images** | Place resolver (Nominatim, 1 request/s, cached; on by default, `OPENPARCELS_GEOCODING=false` turns it off, owner's decision of 2026-11-23), ICS feed, image proxy, retention jobs |
 | **8. Migrate and deploy** | Legacy importer; NAS backup; replace the container; update the template; end-to-end check through the logs and visually in LibreWolf |
 | **9. HA app** | App repository, ingress, discovery, multi-arch publish to Docker Hub and GHCR |
 | *Later* | Thin HA integration, and only then changes on the running Home Assistant; MQTT; more carriers |

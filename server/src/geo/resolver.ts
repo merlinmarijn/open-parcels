@@ -27,6 +27,11 @@ export interface PlaceResolverDeps {
   readonly clock: Clock;
   readonly logger: Logger;
   readonly presentation: Presentation;
+  /**
+   * Whether names may be sent to the geocoder (OPENPARCELS_GEOCODING), read on every run so the
+   * setting applies at once. Off: only answers already cached are used. Unset: on.
+   */
+  readonly enabled?: () => boolean;
 }
 
 /** A name nothing usable was found for is asked again after this long. */
@@ -160,7 +165,8 @@ export class PlaceResolver {
     }
 
     let looked = 0;
-    for (const [key, text] of texts) {
+    const allowed = this.deps.enabled?.() ?? true;
+    for (const [key, text] of allowed ? texts : new Map<string, string>()) {
       if (known.has(key)) continue;
       if (looked === LOOKUPS_PER_RUN) break;
       let found: readonly Place[];

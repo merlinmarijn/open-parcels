@@ -59,6 +59,17 @@ becomes the admin password (still hashed, shown as "saved in UI"), open sessions
 admin, and reading is open until `OPENPARCELS_PASSWORD` is set. To keep reading private as before,
 set `OPENPARCELS_PASSWORD` (or set it on the Security card right after upgrading).
 
+## Privacy
+
+Open Parcels talks to the carriers and shops you add (and the hosts of their item pictures), and
+otherwise only to these:
+
+- **Place lookups** (`OPENPARCELS_GEOCODING`, on by default): carrier scans that name only a place
+  ("Leipzig hub") are looked up on [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org),
+  so they can show on the map. Only those place names are sent, at most five a minute, and each
+  answer is cached. Turn the setting off (**Settings → Map**, admin only) to keep them on this server.
+- **Map tiles** are fetched by the server from the map provider you choose and cached.
+
 ## Tailscale (built in)
 
 The image can join your tailnet itself, so no sidecar container is needed. Set `TS_STATE_DIR`

@@ -162,6 +162,29 @@ describe("PlaceResolver", () => {
     expect(await located()).toHaveLength(1);
   });
 
+  it("sends no name anywhere while OPENPARCELS_GEOCODING is off, and applies it live (OP-013)", async () => {
+    search.answers.set("testtown", [TOWN]);
+    await track([scan("2026-11-18T07:00:00Z", "Sorted", "in_transit", "testtown")]);
+    const settings = context.services.configSettings;
+    const { db, bus, clock, logger } = context.services;
+    const switched = new PlaceResolver({
+      db,
+      geocoder: search,
+      bus,
+      clock,
+      logger,
+      presentation: { position: () => undefined, imagePath: (r) => r, labelMode: () => "items" },
+      enabled: () => context.services.config.geocoding,
+    });
+    await settings.patch({ OPENPARCELS_GEOCODING: false });
+    expect(await switched.runOnce()).toEqual({ looked: 0, events: 0, parcels: 0 });
+    expect(search.asked).toEqual([]);
+
+    await settings.patch({ OPENPARCELS_GEOCODING: true });
+    expect(await switched.runOnce()).toMatchObject({ looked: 1, events: 1 });
+    expect(search.asked).toEqual(["testtown"]);
+  });
+
   it("does not use countries or regions as stops, and remembers the miss for 30 days", async () => {
     search.answers.set("Testland", [COUNTRY, TOWN]);
     const id = await track([scan("2026-11-18T07:00:00Z", "Abroad", "in_transit", "Testland")]);

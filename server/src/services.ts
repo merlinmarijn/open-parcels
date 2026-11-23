@@ -268,7 +268,15 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     },
     presentation,
   );
-  const places = new PlaceResolver({ db, geocoder, bus, clock, logger, presentation });
+  const places = new PlaceResolver({
+    db,
+    geocoder,
+    bus,
+    clock,
+    logger,
+    presentation,
+    enabled: () => deps.config.geocoding,
+  });
   const mail = new MailWatcher({
     db,
     secrets: deps.secrets,

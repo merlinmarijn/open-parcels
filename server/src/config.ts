@@ -244,6 +244,15 @@ export const SETTINGS = {
     kind: "string",
     choices: OVERLAY_CHOICES,
   }),
+  OPENPARCELS_GEOCODING: setting({
+    group: "Map",
+    description:
+      "Look up the places named in carrier scans on OpenStreetMap Nominatim, so scans without coordinates still show on the map. This sends those place names (never codes or addresses of yours) to nominatim.openstreetmap.org. Turn off to keep them on this server.",
+    schema: booleanFlag,
+    default: true,
+    apply: "live",
+    kind: "boolean",
+  }),
   OPENPARCELS_MAP_CARTO_KEY: setting({
     group: "Map",
     description:
@@ -390,6 +399,8 @@ export interface AppConfig {
   readonly readerPassword: string;
   readonly timeZone: string;
   readonly quietWindow: boolean;
+  /** Look up scan place names on Nominatim (OPENPARCELS_GEOCODING). */
+  readonly geocoding: boolean;
   readonly webDir: string | undefined;
   readonly trustProxy: TrustProxy;
   readonly retention: {
@@ -433,6 +444,7 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
     readerPassword: values.OPENPARCELS_PASSWORD,
     timeZone: values.OPENPARCELS_TIMEZONE ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
     quietWindow: values.OPENPARCELS_QUIET_WINDOW,
+    geocoding: values.OPENPARCELS_GEOCODING,
     webDir:
       values.OPENPARCELS_WEB_DIR === undefined
         ? undefined
