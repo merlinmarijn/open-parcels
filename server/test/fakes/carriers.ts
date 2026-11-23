@@ -22,6 +22,8 @@ export class FakeWorld {
   complete = true;
   /** When set, runs report that they deliberately did nothing, for this reason. */
   idle: string | undefined;
+  /** When set, tracking runs report that only these codes were really asked. */
+  asked: string[] | undefined;
   failWith: Error | undefined;
   readonly accountCalls: number[] = [];
   readonly trackCalls: string[][] = [];
@@ -38,7 +40,11 @@ export class FakeWorld {
     if (this.idle !== undefined) {
       return { snapshots: [], complete: false, idle: this.idle };
     }
-    return { snapshots: this.listing, complete: this.complete };
+    return {
+      snapshots: this.listing,
+      complete: this.complete,
+      ...(this.asked === undefined ? {} : { asked: this.asked }),
+    };
   }
 }
 

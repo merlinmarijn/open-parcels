@@ -114,7 +114,7 @@ describe("UPS public tracking", () => {
   it("treats error code 504 as not found", async () => {
     const notFound = { trackDetails: [{ errorCode: "504", errorText: "not found" }] };
     const w = world([on(BOOT, seeded()), on(LOOKUP, json(notFound))]);
-    expect(await w.track([CODE])).toEqual({ snapshots: [], complete: true });
+    expect(await w.track([CODE])).toEqual({ snapshots: [], complete: true, asked: [CODE] });
   });
 
   it("reports a milestone and a scan code it does not know, but not a deliberately quiet one", async () => {
@@ -139,9 +139,11 @@ describe("UPS public tracking", () => {
 
     const first = await w.track(codes);
     expect(first.complete).toBe(false);
+    // Only the one code really asked may be judged; the others must not read "not found" (OP-080).
+    expect(first.asked).toEqual([CODE]);
     // Too soon after the first lookup: nothing is sent, and nothing fails.
     w.clock.advance(60_000);
-    expect(await w.track(codes)).toEqual({ snapshots: [], complete: false });
+    expect(await w.track(codes)).toEqual({ snapshots: [], complete: false, asked: [] });
     expect(w.requests()).toEqual([BOOT, LOOKUP]);
 
     for (let run = 0; run < 2; run += 1) {
@@ -157,7 +159,7 @@ describe("UPS public tracking", () => {
     // Three requests spent: the fourth run sends nothing and resolves without an error.
     w.clock.advance(SIX_MINUTES);
     const sent = w.calls.length;
-    expect(await w.track(codes)).toEqual({ snapshots: [], complete: false });
+    expect(await w.track(codes)).toEqual({ snapshots: [], complete: false, asked: [] });
     expect(w.calls).toHaveLength(sent);
 
     // One token comes back after 75 minutes.
@@ -177,7 +179,7 @@ describe("UPS public tracking", () => {
     // Standing down: later runs inside the stand-down send nothing and do not fail.
     w.clock.advance(HOURS(1.5));
     const sent = w.calls.length;
-    expect(await w.track([CODE])).toEqual({ snapshots: [], complete: false });
+    expect(await w.track([CODE])).toEqual({ snapshots: [], complete: false, asked: [] });
     expect(w.calls).toHaveLength(sent);
 
     // After two hours the address is asked again, and a success clears the stand-down.

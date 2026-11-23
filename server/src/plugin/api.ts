@@ -67,6 +67,12 @@ export interface FetchResult {
    * its last successful run stays as it was, and nothing is reconciled.
    */
   readonly idle?: string;
+  /**
+   * Tracking sources only: the codes really looked up this run, when the plug-in could not ask
+   * for all of them (a request budget, a pause). Codes outside it keep their lookup state instead
+   * of reading "not found". Unset: every code passed to `track` was asked.
+   */
+  readonly asked?: readonly string[];
 }
 
 export { pastedRedirect } from "./sign-in.js";
@@ -111,7 +117,10 @@ export interface CarrierPlugin<Config = unknown, Secret = unknown> {
   readonly http: HttpPolicy;
   /** Account and shop sources: return everything the account lists. */
   fetchAccount?(context: PluginContext<Config, Secret>): Promise<FetchResult>;
-  /** Tracking sources: look up these codes. A missing code in the result means "not found". */
+  /**
+   * Tracking sources: look up these codes. A missing code in the result means "not found", unless
+   * the result's `asked` leaves it out.
+   */
   track?(context: PluginContext<Config, Secret>, barcodes: readonly string[]): Promise<FetchResult>;
   /**
    * Reads the courier map for one parcel. Returns null when there is no session. Must not sign

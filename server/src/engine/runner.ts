@@ -221,7 +221,13 @@ export class SourceRunner {
       secret,
       tracked.map((parcel) => parcel.barcode),
     );
-    return { result, asked: tracked.map((parcel) => parcel.id) };
+    const really = result.asked === undefined ? undefined : new Set(result.asked);
+    return {
+      result,
+      asked: tracked
+        .filter((parcel) => really === undefined || really.has(parcel.barcode))
+        .map((parcel) => parcel.id),
+    };
   }
 
   #prepare(

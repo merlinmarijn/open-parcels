@@ -185,5 +185,14 @@ export async function trackCodes(
   }
   await context.session.save(state);
   const complete = official !== null || (codes.length === 1 && askedPublic === codes[0]);
-  return { snapshots, complete };
+  if (official !== null) {
+    return { snapshots, complete };
+  }
+  // Without a key only the public lookup's one code was asked; the others keep their lookup state
+  // instead of reading "not found". A code that cannot be a UPS number counts as asked.
+  const asked = barcodes.filter((barcode) => {
+    const code = normalizeCode(barcode);
+    return code === askedPublic || !PLAUSIBLE.test(code);
+  });
+  return { snapshots, complete, asked };
 }

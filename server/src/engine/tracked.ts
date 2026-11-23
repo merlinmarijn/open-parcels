@@ -26,9 +26,11 @@ export function fileUnderTracked(
   result: FetchResult,
   logger: PluginLogger,
 ): FetchResult {
-  const asked = new Set(barcodes);
-  const byCanonical = new Map(barcodes.map((code) => [canonical(code), code]));
-  const only = asked.size === 1 ? barcodes[0] : undefined;
+  // A plug-in that asked for only some codes this run names them; its answers belong to those.
+  const really = result.asked?.filter((code) => barcodes.includes(code)) ?? barcodes;
+  const asked = new Set(really);
+  const byCanonical = new Map(really.map((code) => [canonical(code), code]));
+  const only = asked.size === 1 ? really[0] : undefined;
   const snapshots: ParcelSnapshot[] = [];
   for (const found of result.snapshots) {
     if (found.handoff !== null || asked.has(found.barcode)) {

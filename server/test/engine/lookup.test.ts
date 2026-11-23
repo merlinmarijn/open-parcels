@@ -73,6 +73,29 @@ describe("carrier lookups", () => {
     expect(types.map((row) => row.type)).not.toContain("parcel.removed");
   });
 
+  it("judges only the codes a run really asked about, the others keep their state (OP-080)", async () => {
+    post.complete = false;
+    post.asked = ["FP3001"];
+    post.listing = [
+      snapshot({ carrier: "fakepost", barcode: "FP3001", status: "in_transit", rawStatus: "x" }),
+    ];
+    const asked = await track("FP3001");
+    const waiting = await track("FP3002");
+    await context.services.scheduler.runDue();
+    expect(await lookupOf(asked)).toMatchObject({ state: "found" });
+    expect(await lookupOf(waiting)).toEqual({ state: "pending", since: null, checked_at: null });
+
+    // A later run that asks nothing leaves the found parcel found.
+    post.asked = [];
+    post.listing = [];
+    context.clock.advance(DAY);
+    const [source] = await context.services.sources.list();
+    await context.services.sources.requestRun(source?.id ?? "");
+    await context.services.scheduler.runDue();
+    expect(await lookupOf(asked)).toMatchObject({ state: "found" });
+    expect(await lookupOf(waiting)).toMatchObject({ state: "pending" });
+  });
+
   it("archives a parcel the carrier has not known for the configured days, unless set by hand", async () => {
     const lost = await track("FP2001");
     const kept = await track("FP2002");
