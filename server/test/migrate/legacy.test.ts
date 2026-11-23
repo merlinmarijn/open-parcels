@@ -3,7 +3,12 @@ import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { secretAad } from "../../src/engine/sources.js";
-import { carrierId, importLegacy, resolveLegacyCarrier } from "../../src/migrate/legacy.js";
+import {
+  carrierId,
+  importLegacy,
+  parseDecrypted,
+  resolveLegacyCarrier,
+} from "../../src/migrate/legacy.js";
 import { parseLegacyImap } from "../../src/migrate/legacy-imap.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -415,5 +420,102 @@ describe("legacy import", () => {
       { shop: "amazon", order_number: "000-0000000-0000001" },
       { shop: "example-shop.de", order_number: "1234567" },
     ]);
+  });
+
+  it("keeps history whose source merely contains 'live' and counts only rows written (OP-124)", async () => {
+    const legacy = new SQLite(legacyPath);
+    legacy
+      .prepare("insert into parcel_events values (?, ?, ?, ?, ?, ?, ?, ?, ?)")
+      .run("e3", "p1", null, "Delivery attempt", T + 120, null, null, null, "delivery");
+    legacy.close();
+    expect(await run(false)).toMatchObject({ events: 2, droppedPositionEvents: 1 });
+    const parcels = await context.services.parcels.repository.list({ includeArchived: true }, true);
+    const socks = parcels.find((parcel) => parcel.barcode === "00340434000000000001");
+    expect(socks?.history.map((entry) => entry.raw_status).sort()).toEqual([
+      "Arrived at hub",
+      "Delivery attempt",
+    ]);
+    // A re-run inserts nothing, and says so (OP-125).
+    expect(await run(false)).toMatchObject({ events: 0 });
+  });
+
+  it("files no parcel under an order the user deleted (OP-125)", async () => {
+    const now = context.clock.now().toISOString();
+    await context.services.db
+      .insertInto("orders")
+      .values({
+        id: "00000000-0000-4000-8000-0000000000a1",
+        shop: "amazon",
+        order_number: "000-0000000-0000001",
+        placed_at: null,
+        status: null,
+        created_at: now,
+        updated_at: now,
+        deleted_at: now,
+      })
+      .execute();
+    expect(await run(false)).toMatchObject({ orders: 0, parcels: 3 });
+    const socks = await context.services.db
+      .selectFrom("parcels")
+      .select("order_id")
+      .where("barcode", "=", "00340434000000000001")
+      .executeTakeFirstOrThrow();
+    expect(socks.order_id).toBeNull();
+  });
+
+  it("is not stopped by a mailbox whose sign-in this key cannot read (OP-128)", async () => {
+    const now = context.clock.now().toISOString();
+    await context.services.db
+      .insertInto("sources")
+      .values({
+        id: "00000000-0000-4000-8000-0000000000b1",
+        plugin: "imap",
+        kind: "mail",
+        label: "Old mailbox",
+        config: JSON.stringify({ host: "imap.example.invalid" }),
+        secret_blob: Buffer.from("not a secret box blob"),
+        session_blob: null,
+        state: "ok",
+        state_detail: null,
+        backoff_until: null,
+        next_run_at: null,
+        last_run_at: null,
+        last_ok_at: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .execute();
+    expect(await run(false)).toMatchObject({ mailboxes: 1 });
+    // The new mailbox is announced to clients (OP-129).
+    const added = await context.services.db
+      .selectFrom("outbox")
+      .select("payload")
+      .where("type", "=", "source.added")
+      .execute();
+    expect(added.map((row) => JSON.parse(row.payload) as unknown)).toContainEqual(
+      expect.objectContaining({ source: expect.objectContaining({ kind: "mail" }) as unknown }),
+    );
+  });
+});
+
+describe("bare legacy credential strings (OP-123)", () => {
+  const pass = ["p", "ss"].join("@");
+  const madeUp = ["made", "up"].join("-");
+
+  it("read an e-mail username, a password with @ and :, and a port", () => {
+    expect(parseDecrypted("someone@example.invalid:made-up@imap.example.invalid:993")).toEqual({
+      user: "someone@example.invalid",
+      password: madeUp,
+      host: "imap.example.invalid",
+      port: "993",
+    });
+    expect(parseDecrypted(`imaps://user:${pass}:x@imap.example.invalid`)).toEqual({
+      user: "user",
+      password: `${pass}:x`,
+      host: "imap.example.invalid",
+      port: undefined,
+    });
+    expect(parseDecrypted("no credential here")).toBe("no credential here");
+    expect(parseDecrypted('{"user":"a"}')).toEqual({ user: "a" });
   });
 });

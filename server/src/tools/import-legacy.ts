@@ -6,35 +6,30 @@
  * Uses the same OPENPARCELS_* environment as the server (data directory, encryption key). The old
  * encryption key, needed only to carry IMAP mailboxes over, is read from OPENPARCELS_LEGACY_KEY,
  * never from the command line. Prints counts only; no parcel data is written to the output.
+ * A dry run works on a temporary copy of the database and changes nothing.
  */
 import { systemClock } from "../clock.js";
-import { loadConfig } from "../config.js";
-import { loadSecretKey, SecretBox } from "../crypto/secrets.js";
-import { migrateToLatest, openDatabase } from "../db/database.js";
 import { importLegacy } from "../migrate/legacy.js";
+import { parseImportArgs, RESTART_NOTICE, withImportTarget } from "./import-target.js";
 
 async function main(): Promise<void> {
-  const args = process.argv.slice(2);
-  const legacyPath = args.find((arg) => !arg.startsWith("--"));
-  if (legacyPath === undefined) {
-    throw new Error("Pass the path of the old data.db.");
-  }
-  const config = loadConfig();
-  const { db } = openDatabase(config.databasePath);
-  try {
-    await migrateToLatest(db);
-    const { key } = loadSecretKey(config.secretKey, config.dataDir);
-    const report = await importLegacy({
-      legacyPath,
+  const { input, dryRun } = parseImportArgs(
+    process.argv.slice(2),
+    "Usage: import-legacy <path of the old data.db> [--dry-run]",
+  );
+  const report = await withImportTarget(dryRun, (db, secrets) =>
+    importLegacy({
+      legacyPath: input,
       db,
-      secrets: new SecretBox(key),
+      secrets,
       clock: systemClock,
       legacyKeyHex: process.env["OPENPARCELS_LEGACY_KEY"],
-      dryRun: args.includes("--dry-run"),
-    });
-    process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
-  } finally {
-    await db.destroy();
+      dryRun,
+    }),
+  );
+  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  if (!dryRun) {
+    process.stderr.write(RESTART_NOTICE);
   }
 }
 

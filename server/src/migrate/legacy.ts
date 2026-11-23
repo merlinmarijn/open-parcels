@@ -2,7 +2,7 @@ import { createDecipheriv } from "node:crypto";
 import SQLite from "better-sqlite3";
 import type { Kysely, Transaction } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
-import type { SecretBox } from "../crypto/secrets.js";
+import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database } from "../db/schema.js";
 import { isPlausibleOrder, shopFromDomain } from "../domain/order.js";
 import type { ParcelStatus } from "../domain/parcel.js";
@@ -11,7 +11,8 @@ import { BUILTIN_CARRIERS } from "../engine/builtin-carriers.js";
 import { linkUntrackedParcels, trackingSourceIn } from "../engine/linking.js";
 import { PluginRegistry } from "../engine/registry.js";
 import { secretAad } from "../engine/sources.js";
-import { MAIL_PLUGIN, mailboxLabel } from "../mail/types.js";
+import { appendEvent } from "../events/bus.js";
+import { MAIL_PLUGIN, mailConfigSchema, mailSecretSchema, mailboxLabel } from "../mail/types.js";
 import { fixesCarrier, resolveLegacyCarrier } from "./legacy-carrier.js";
 import { DELIBERATELY_SKIPPED, isMailService, parseLegacyImap, serviceKey } from "./legacy-imap.js";
 
@@ -91,6 +92,15 @@ function toIso(value: unknown): string | null {
   return new Date(value > 1e12 ? value : value * 1000).toISOString();
 }
 
+function parseJson(value: string): unknown {
+  try {
+    return JSON.parse(value) as unknown;
+  } catch {
+    // Unreadable stored JSON counts as nothing; the caller's schema check then fails.
+    return undefined;
+  }
+}
+
 function text(value: unknown): string | null {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
@@ -132,7 +142,8 @@ interface Counters {
 }
 
 interface ImportedOrder {
-  readonly id: string;
+  /** Null when the user deleted the order here: its shop still helps to name the carrier. */
+  readonly id: string | null;
   readonly shop: string;
 }
 
@@ -177,10 +188,15 @@ async function importOrders(
     const shop = legacyShop(row, orderNumber, labelShops);
     const existing = await trx
       .selectFrom("orders")
-      .select("id")
+      .select(["id", "deleted_at"])
       .where("shop", "=", shop)
       .where("order_number", "=", orderNumber)
       .executeTakeFirst();
+    if (existing !== undefined && existing.deleted_at !== null) {
+      // The user deleted this order: its parcels come over without one, never under the tombstone.
+      ids.set(String(row["id"]), { id: null, shop });
+      continue;
+    }
     const id = existing?.id ?? crypto.randomUUID();
     if (existing === undefined) {
       await trx
@@ -258,7 +274,7 @@ async function importParcels(
         delivered_at: delivered ? updatedAt : null,
         planned_from: delivered ? null : toIso(row["estimated_delivery_start"]),
         planned_to: delivered ? null : toIso(row["estimated_delivery_end"]),
-        pickup: 0,
+        pickup: status === "at_pickup_point" ? 1 : 0,
         label: text(row["name"]),
         order_id: order?.id ?? null,
         // A status the user set by hand stays theirs.
@@ -285,7 +301,9 @@ async function importEvents(
     const at = toIso(row["timestamp"]);
     const description = text(row["description"]);
     // Rows written by the old live scraper were courier positions; positions are never history.
-    if (/live/i.test(text(row["source"]) ?? "")) {
+    // Only the scraper's own names (`live`, `amazon-live`), never a source that merely contains
+    // the letters (`delivery`, `delivered`).
+    if (/(?:^|[-_])live$/i.test(text(row["source"]) ?? "")) {
       counters.droppedPositionEvents += 1;
       continue;
     }
@@ -293,7 +311,7 @@ async function importEvents(
       continue;
     }
     const location = text(row["location"]);
-    await trx
+    const [inserted] = await trx
       .insertInto("parcel_events")
       .values({
         parcel_id: parcelId,
@@ -306,7 +324,8 @@ async function importEvents(
       })
       .onConflict((oc) => oc.columns(["parcel_id", "fingerprint"]).doNothing())
       .execute();
-    counters.events += 1;
+    // A re-run inserts nothing for rows it imported before.
+    counters.events += Number(inserted?.numInsertedOrUpdatedRows ?? 0n);
   }
 }
 
@@ -315,6 +334,7 @@ interface ImportCredentials {
   readonly rows: readonly Row[];
   readonly key: Buffer | undefined;
   readonly secrets: SecretBox;
+  readonly clock: Clock;
   readonly now: string;
   /** Mailbox settings the old app kept outside the credential (imap_host, imap_port, ...). */
   readonly settings: Readonly<Record<string, unknown>>;
@@ -335,15 +355,29 @@ function skipReason(service: string, key: Buffer | undefined, encrypted: string 
   return key === undefined ? "No old key given (OPENPARCELS_LEGACY_KEY)." : null;
 }
 
-/** The decrypted credential: JSON, or a bare `user:password@host:port` string. */
-function parseDecrypted(plain: string): unknown {
+/**
+ * The decrypted credential: JSON, or a bare `user:password@host:port` string. The server is after
+ * the last `@` and the user before the first `:`, so an e-mail address as the user and a password
+ * holding `@` or `:` both read correctly.
+ */
+export function parseDecrypted(plain: string): unknown {
   try {
     return JSON.parse(plain) as unknown;
   } catch {
-    const match = /^(?:imaps?:\/\/)?([^:@]+):([^@]+)@([^:/]+)(?::(\d+))?/.exec(plain.trim());
-    return match === null
-      ? plain
-      : { user: match[1], password: match[2], host: match[3], port: match[4] };
+    const value = plain.trim().replace(/^imaps?:\/\//i, "");
+    const at = value.lastIndexOf("@");
+    const login = value.slice(0, Math.max(at, 0));
+    const colon = login.indexOf(":");
+    const server = /^([^\s:/@]+)(?::(\d+))?\/?$/.exec(value.slice(at + 1));
+    if (at < 0 || colon <= 0 || colon === login.length - 1 || server === null) {
+      return plain;
+    }
+    return {
+      user: login.slice(0, colon),
+      password: login.slice(colon + 1),
+      host: server[1],
+      port: server[2],
+    };
   }
 }
 
@@ -364,8 +398,9 @@ async function importCredentials(
     try {
       plain = decryptLegacy(encrypted, input.key);
     } catch {
-      // Wrong key or damaged data: counted in the report; the mailbox can be added by hand.
+      // Wrong key or damaged data: counted and named in the report; it can be added by hand.
       counters.undecryptableCredentials += 1;
+      skipped.push({ service, reason: "It cannot be decrypted with the old key given." });
       continue;
     }
     const decrypted = parseDecrypted(plain);
@@ -399,14 +434,23 @@ async function hasMailbox(
     .execute();
   const same = (a: string, b: string): boolean => a.trim().toLowerCase() === b.trim().toLowerCase();
   return rows.some((row) => {
-    const config = JSON.parse(row.config) as { host?: unknown };
-    if (typeof config.host !== "string" || !same(config.host, host) || row.secret_blob === null) {
+    const config = mailConfigSchema.safeParse(parseJson(row.config));
+    if (!config.success || !same(config.data.host, host) || row.secret_blob === null) {
       return false;
     }
-    const stored = input.secrets.decryptJson(row.secret_blob, secretAad(row.id)) as {
-      username?: unknown;
-    };
-    return typeof stored.username === "string" && same(stored.username, username);
+    let stored: unknown;
+    try {
+      stored = input.secrets.decryptJson(row.secret_blob, secretAad(row.id));
+    } catch (error) {
+      if (!(error instanceof DecryptionError)) {
+        throw error;
+      }
+      // A mailbox whose sign-in this key cannot read is not the same one; it never aborts the
+      // whole import.
+      return false;
+    }
+    const secret = mailSecretSchema.safeParse(stored);
+    return secret.success && same(secret.data.username, username);
   });
 }
 
@@ -420,13 +464,14 @@ async function insertMailbox(
     return false;
   }
   const id = crypto.randomUUID();
+  const label = mailboxLabel(secret.username, config.host);
   await input.trx
     .insertInto("sources")
     .values({
       id,
       plugin: MAIL_PLUGIN,
       kind: "mail",
-      label: mailboxLabel(secret.username, config.host),
+      label,
       config: JSON.stringify(config),
       secret_blob: input.secrets.encryptJson(secret, secretAad(id)),
       session_blob: null,
@@ -437,6 +482,12 @@ async function insertMailbox(
       updated_at: input.now,
     })
     .execute();
+  // Clients add the mailbox's device when the running server next delivers events.
+  await appendEvent(input.trx, input.clock, {
+    type: "source.added",
+    parcelId: null,
+    payload: { source: { id, plugin: MAIL_PLUGIN, label, kind: "mail" }, state: "ok", detail: null },
+  });
   return true;
 }
 
@@ -490,9 +541,10 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
     carriers: {},
   };
   const skipped: SkippedCredential[] = [];
-  const settingRows = readAll(legacy, "settings");
-  const settingKeys = settingRows.map((row) => String(row["key"]));
+  let settingKeys: string[] = [];
   try {
+    const settingRows = readAll(legacy, "settings");
+    settingKeys = settingRows.map((row) => String(row["key"]));
     await options.db.transaction().execute(async (trx) => {
       const now = isoNow(options.clock);
       const legacyParcels = readAll(legacy, "parcels");
@@ -510,6 +562,7 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
           rows: readAll(legacy, "credentials"),
           key,
           secrets: options.secrets,
+          clock: options.clock,
           now,
           settings: mailSettings(settingRows),
         },

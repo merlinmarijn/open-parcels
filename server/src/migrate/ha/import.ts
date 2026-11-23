@@ -7,9 +7,10 @@ import type { Database } from "../../db/schema.js";
 import { normaliseBarcode } from "../../engine/barcode.js";
 import { BUILTIN_CARRIERS } from "../../engine/builtin-carriers.js";
 import { trackingSourceIn } from "../../engine/linking.js";
-import { PluginRegistry } from "../../engine/registry.js";
+import { InvalidSourceConfigError, PluginRegistry } from "../../engine/registry.js";
 import { configKey } from "../../engine/source-dedup.js";
-import { secretAad, sessionAad } from "../../engine/sources.js";
+import { NOT_RUN_YET, secretAad, sessionAad } from "../../engine/sources.js";
+import { appendEvent } from "../../events/bus.js";
 import { parseConfigEntries, planEntry, type SourcePlan } from "./entries.js";
 
 /**
@@ -104,13 +105,21 @@ async function readMarker(trx: Transaction<Database>, entryId: string): Promise<
   if (row === undefined) {
     return null;
   }
-  const parsed = markerSchema.safeParse(JSON.parse(row.value));
+  let stored: unknown;
+  try {
+    stored = JSON.parse(row.value);
+  } catch {
+    // A damaged marker only means the entry is treated as new.
+    return null;
+  }
+  const parsed = markerSchema.safeParse(stored);
   return parsed.success ? parsed.data : null;
 }
 
 interface Context {
   readonly trx: Transaction<Database>;
   readonly secrets: SecretBox;
+  readonly clock: Clock;
   readonly now: string;
 }
 
@@ -203,6 +212,9 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
     return { id: existing.id, action: "updated", credentialsWritten: fresh };
   }
   const id = crypto.randomUUID();
+  const written = blobs(ctx, id, plan);
+  // As SourceService.create: nothing has run yet, and that is what the source says.
+  const detail = written.state === "ok" ? (written.state_detail ?? NOT_RUN_YET) : written.state_detail;
   await ctx.trx
     .insertInto("sources")
     .values({
@@ -211,12 +223,23 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
       kind: plan.kind,
       label: plan.label,
       config: JSON.stringify(plan.config),
-      ...blobs(ctx, id, plan),
+      ...written,
+      state_detail: detail,
       next_run_at: plan.state === "ok" ? ctx.now : null,
       created_at: ctx.now,
       updated_at: ctx.now,
     })
     .execute();
+  // Clients add the source's device when the running server next delivers events.
+  await appendEvent(ctx.trx, ctx.clock, {
+    type: "source.added",
+    parcelId: null,
+    payload: {
+      source: { id, plugin: plan.plugin, label: plan.label, kind: plan.kind },
+      state: plan.state,
+      detail,
+    },
+  });
   await writeMarker(ctx, plan.entryId, { sourceId: id, credentials: fingerprint });
   return { id, action: "created", credentialsWritten: true };
 }
@@ -296,6 +319,32 @@ function note(entry: { entryId: string; domain: string; title: string }, reason:
   return { entryId: entry.entryId, domain: entry.domain, title: entry.title, reason };
 }
 
+const REGISTRY = new PluginRegistry(BUILTIN_CARRIERS);
+
+/**
+ * Why a planned source would not work, checked against its plug-in's own schemas as
+ * SourceService.create does; null when it fits. Reported as skipped instead of an import that
+ * says "ok" and fails on its first run.
+ */
+function planProblem(plan: SourcePlan): string | null {
+  const plugin = REGISTRY.get(plan.plugin);
+  if (plugin === undefined) {
+    return `There is no carrier plug-in called ${plan.plugin}.`;
+  }
+  try {
+    plugin.validateConfig(plan.config);
+  } catch (error) {
+    if (error instanceof InvalidSourceConfigError) {
+      return error.message;
+    }
+    throw error;
+  }
+  if (plan.secret !== null && !plugin.info.secretSchema.safeParse(plan.secret).success) {
+    return `The sign-in data does not fit ${plugin.info.name}.`;
+  }
+  return null;
+}
+
 /** Tracking entries first, so DHL account codes go to the imported "DHL tracking" source. */
 function order(plans: readonly SourcePlan[]): SourcePlan[] {
   return [...plans].sort((a, b) => Number(b.kind === "tracking") - Number(a.kind === "tracking"));
@@ -307,8 +356,13 @@ async function importPlans(
   plans: readonly SourcePlan[],
   counts: ParcelCounts,
 ): Promise<HaSourceReport[]> {
-  const ctx: Context = { trx, secrets: options.secrets, now: isoNow(options.clock) };
-  const trackingFor = trackingSourceIn(trx, new PluginRegistry(BUILTIN_CARRIERS), options.clock);
+  const ctx: Context = {
+    trx,
+    secrets: options.secrets,
+    clock: options.clock,
+    now: isoNow(options.clock),
+  };
+  const trackingFor = trackingSourceIn(trx, REGISTRY, options.clock);
   let dhlTracking: string | undefined;
   const reports: HaSourceReport[] = [];
   for (const plan of order(plans)) {
@@ -353,7 +407,12 @@ export async function importHaEntries(options: HaImportOptions): Promise<HaImpor
   for (const entry of parseConfigEntries(options.configEntries)) {
     const plan = planEntry(entry);
     if (plan.type === "source") {
-      plans.push(plan.plan);
+      const problem = planProblem(plan.plan);
+      if (problem === null) {
+        plans.push(plan.plan);
+      } else {
+        skipped.push(note(entry, problem));
+      }
     } else if (plan.type === "covered") {
       covered.push(note(entry, plan.reason));
     } else if (plan.type === "skipped") {

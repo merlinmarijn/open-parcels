@@ -33,15 +33,25 @@ export interface LoadedKey {
 /**
  * Returns the encryption key: from the environment when given, otherwise from
  * `<dataDir>/secret.key`, creating it with mode 0600 on first start. Never invents a throwaway
- * key: losing the key would silently make every stored credential unreadable.
+ * key: losing the key would silently make every stored credential unreadable. With
+ * `create: false` (a dry run) a missing key is an error instead of a new file.
  */
-export function loadSecretKey(envValue: string | undefined, dataDir: string): LoadedKey {
+export function loadSecretKey(
+  envValue: string | undefined,
+  dataDir: string,
+  options: { readonly create?: boolean } = {},
+): LoadedKey {
   if (envValue !== undefined) {
     return { key: decodeKey(envValue, "OPENPARCELS_SECRET_KEY"), created: false };
   }
   const file = path.join(dataDir, "secret.key");
   if (existsSync(file)) {
     return { key: decodeKey(readFileSync(file, "utf8"), file), created: false };
+  }
+  if (options.create === false) {
+    throw new SecretKeyError(
+      `There is no encryption key: set OPENPARCELS_SECRET_KEY, or start the server once so it creates ${file}.`,
+    );
   }
   const key = randomBytes(KEY_BYTES);
   writeFileSync(file, `${key.toString("base64")}\n`, { mode: 0o600, flag: "wx" });
