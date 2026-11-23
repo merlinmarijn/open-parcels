@@ -3311,6 +3311,127 @@ export type PostApiV1SourcesIdClear404 = {
   message: string;
 };
 
+export type GetApiV1Data200CacheBytes = {
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  images: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  tiles: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  collages: number;
+};
+
+export type GetApiV1Data200 = {
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  archived_parcels: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * Tracking scans (parcel history rows).
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  scans: number;
+  /**
+   * Raw carrier answers kept for diagnosing plug-ins.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  raw_payloads: number;
+  /**
+   * Rows in the replay log for live clients.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  events: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  database_bytes: number;
+  cache_bytes: GetApiV1Data200CacheBytes;
+};
+
+export type PostApiV1DataClearBody =
+  | {
+      what: "archived";
+    }
+  | {
+      what: "older_than";
+      /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+      before: string;
+    }
+  | {
+      what: "raw_payloads";
+    }
+  | {
+      what: "archived_scans";
+    }
+  | {
+      what: "cache";
+      cache: "images" | "tiles" | "collages";
+    }
+  | {
+      what: "everything";
+      confirm: string;
+    };
+
+export type PostApiV1DataClear200 = {
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * Other rows removed (scans, raw payloads).
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  rows: number;
+  /**
+   * Bytes freed from a cache.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  bytes: number;
+  /**
+   * Database backup written before deleting everything.
+   * @nullable
+   */
+  backup: string | null;
+};
+
+export type PostApiV1DataClear400 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
 export type GetApiV1SourcesIdSignInFlows200ItemType =
   (typeof GetApiV1SourcesIdSignInFlows200ItemType)[keyof typeof GetApiV1SourcesIdSignInFlows200ItemType];
 
@@ -4525,6 +4646,42 @@ export const postApiV1SourcesIdClear = async (
   return apiFetch<PostApiV1SourcesIdClear200>(getPostApiV1SourcesIdClearUrl(id), {
     ...options,
     method: "POST",
+  });
+};
+
+export const getGetApiV1DataUrl = () => {
+  return `/api/v1/data`;
+};
+
+/**
+ * @summary Counts and sizes of what is stored.
+ */
+export const getApiV1Data = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1Data200> => {
+  return apiFetch<GetApiV1Data200>(getGetApiV1DataUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1DataClearUrl = () => {
+  return `/api/v1/data/clear`;
+};
+
+/**
+ * `archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: "DELETE"`. Sources, sign-ins and settings stay.
+ * @summary Delete stored data on the owner's request.
+ */
+export const postApiV1DataClear = async (
+  postApiV1DataClearBody: PostApiV1DataClearBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1DataClear200> => {
+  return apiFetch<PostApiV1DataClear200>(getPostApiV1DataClearUrl(), {
+    ...options,
+    method: "POST",
+    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+    body: JSON.stringify(postApiV1DataClearBody),
   });
 };
 

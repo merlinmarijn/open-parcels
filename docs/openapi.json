@@ -6488,6 +6488,300 @@
         }
       }
     },
+    "/api/v1/data": {
+      "get": {
+        "summary": "Counts and sizes of what is stored.",
+        "tags": [
+          "data"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "archived_parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "scans": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Tracking scans (parcel history rows)."
+                    },
+                    "raw_payloads": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Raw carrier answers kept for diagnosing plug-ins."
+                    },
+                    "events": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Rows in the replay log for live clients."
+                    },
+                    "database_bytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "cache_bytes": {
+                      "type": "object",
+                      "properties": {
+                        "images": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "tiles": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "collages": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        }
+                      },
+                      "required": [
+                        "images",
+                        "tiles",
+                        "collages"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "parcels",
+                    "archived_parcels",
+                    "orders",
+                    "scans",
+                    "raw_payloads",
+                    "events",
+                    "database_bytes",
+                    "cache_bytes"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/data/clear": {
+      "post": {
+        "summary": "Delete stored data on the owner's request.",
+        "tags": [
+          "data"
+        ],
+        "description": "`archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: \"DELETE\"`. Sources, sign-ins and settings stay.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "oneOf": [
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "archived"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "what"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "older_than"
+                        ]
+                      },
+                      "before": {
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      }
+                    },
+                    "required": [
+                      "what",
+                      "before"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "raw_payloads"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "what"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "archived_scans"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "what"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "cache"
+                        ]
+                      },
+                      "cache": {
+                        "type": "string",
+                        "enum": [
+                          "images",
+                          "tiles",
+                          "collages"
+                        ]
+                      }
+                    },
+                    "required": [
+                      "what",
+                      "cache"
+                    ]
+                  },
+                  {
+                    "type": "object",
+                    "properties": {
+                      "what": {
+                        "type": "string",
+                        "enum": [
+                          "everything"
+                        ]
+                      },
+                      "confirm": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "what",
+                      "confirm"
+                    ]
+                  }
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "rows": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Other rows removed (scans, raw payloads)."
+                    },
+                    "bytes": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Bytes freed from a cache."
+                    },
+                    "backup": {
+                      "nullable": true,
+                      "description": "Database backup written before deleting everything.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "parcels",
+                    "orders",
+                    "rows",
+                    "bytes",
+                    "backup"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sources/{id}/sign-in/flows": {
       "get": {
         "summary": "The ways this source can sign in, the default first.",

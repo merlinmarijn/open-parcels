@@ -17,6 +17,7 @@ import {
   type ParcelLabelMode,
 } from "./home";
 import { useIsAdmin } from "./server-settings";
+import { DataCard } from "./DataCard";
 import { ServerSettingsCards } from "./ServerSettings";
 
 interface Place {
@@ -242,7 +243,10 @@ export function SettingsPage(): ReactNode {
         <HomeSection />
         <LabelSection />
         {admin ? (
-          <ServerSettingsCards />
+          <>
+            <ServerSettingsCards />
+            <DataCard />
+          </>
         ) : (
           <section className="card stack">
             <h2>Server settings</h2>

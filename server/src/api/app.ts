@@ -30,6 +30,7 @@ import { registerParcelRoutes } from "./routes/parcels.js";
 import { registerSessionRoutes } from "./routes/session.js";
 import { registerSettingsRoutes } from "./routes/settings.js";
 import { registerSignInRoutes } from "./routes/sign-in.js";
+import { registerDataRoutes } from "./routes/data.js";
 import { registerSourceDataRoutes } from "./routes/source-data.js";
 import { registerSourceRoutes } from "./routes/sources.js";
 import { registerTokenRoutes } from "./routes/tokens.js";
@@ -179,6 +180,7 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
   registerOrderRoutes(typed, services);
   registerSourceRoutes(typed, services);
   registerSourceDataRoutes(typed, services);
+  registerDataRoutes(typed, services);
   registerSignInRoutes(typed, services);
   registerCalendarRoutes(typed, services);
   registerImageRoutes(typed, services);

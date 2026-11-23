@@ -8,6 +8,7 @@ import { removeOrphanedAutoSources } from "../engine/sources.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { clearSourceData, countSourceData, type SourceDataCounts } from "./clear-source.js";
+import { DataCleaner } from "./data-cleaner.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "./repository.js";
 
 export class DuplicateParcelError extends Error {
@@ -189,6 +190,16 @@ export class ParcelService {
       await this.bus.notify();
     }
     return deleted;
+  }
+
+  /** The owner's clean-up actions for the Data page. */
+  cleaner(): DataCleaner {
+    return new DataCleaner({
+      db: this.db,
+      bus: this.bus,
+      clock: this.clock,
+      presentation: this.presentation,
+    });
   }
 
   /** What clearing this source would remove. */

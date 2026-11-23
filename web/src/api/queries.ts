@@ -17,6 +17,7 @@ import {
   deleteApiV1TokensId,
   getApiV1Calendar,
   getApiV1Carriers,
+  getApiV1Data,
   getApiV1Diagnostics,
   getApiV1HealthReady,
   getApiV1Orders,
@@ -29,12 +30,14 @@ import {
   patchApiV1OrdersId,
   patchApiV1ParcelsId,
   patchApiV1SourcesId,
+  postApiV1DataClear,
   postApiV1Parcels,
   postApiV1Sources,
   postApiV1SourcesIdClear,
   postApiV1SourcesIdSync,
   postApiV1Tokens,
   type PatchApiV1OrdersIdBody,
+  type PostApiV1DataClearBody,
   type PatchApiV1ParcelsIdBody,
   type PatchApiV1SourcesIdBody,
   type PostApiV1ParcelsBody,
@@ -56,6 +59,7 @@ export const keys = {
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
   health: ["health"] as const,
   diagnostics: ["diagnostics"] as const,
+  data: ["data"] as const,
 };
 
 export function useParcels(includeArchived: boolean) {
@@ -311,6 +315,23 @@ export function useClearSource() {
         client.invalidateQueries({ queryKey: ["calendar"] }),
       ]);
     },
+  });
+}
+
+/** Counts and sizes for the Data page (admin only). */
+export function useDataSummary() {
+  return useQuery({
+    queryKey: keys.data,
+    queryFn: ({ signal }) => getApiV1Data({ signal }),
+  });
+}
+
+/** One of the owner's clean-up actions; everything shown afterwards is read again. */
+export function useClearData() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (body: PostApiV1DataClearBody) => postApiV1DataClear(body),
+    onSuccess: () => client.invalidateQueries(),
   });
 }
 

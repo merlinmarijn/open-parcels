@@ -1,10 +1,8 @@
 import type { Kysely } from "kysely";
 import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
-import { removeOrphanedAutoSources } from "../engine/sources.js";
-import { appendEvent } from "../events/bus.js";
-import { parcelEventPayload } from "../events/payload.js";
-import { ParcelRepository, type Presentation } from "./repository.js";
+import { deleteOrders, deleteParcels } from "./bulk-delete.js";
+import type { Presentation } from "./repository.js";
 
 /** What clearing a source removes, or would remove. */
 export interface SourceDataCounts {
@@ -102,34 +100,8 @@ export async function clearSourceData(deps: Deps, sourceId: string): Promise<Sou
   const { db, clock, presentation } = deps;
   return db.transaction().execute(async (trx) => {
     const counts = await countSourceData(trx, sourceId);
-    const parcelIds = await exclusiveParcels(trx, sourceId);
-    const orderIds = await exclusiveOrders(trx, sourceId);
-    const repository = new ParcelRepository(trx, presentation);
-    const otherSources = new Set<string>();
-    for (const id of parcelIds) {
-      const parcel = await repository.get(id);
-      if (parcel === undefined) continue;
-      for (const link of parcel.sources) otherSources.add(link.source_id);
-      await trx.deleteFrom("parcels").where("id", "=", id).execute();
-      await appendEvent(trx, clock, {
-        type: "parcel.deleted",
-        parcelId: id,
-        payload: parcelEventPayload({ ...parcel, history: [] }),
-      });
-    }
-    for (const id of orderIds) {
-      const parcels = await trx
-        .selectFrom("parcels")
-        .select("id")
-        .where("order_id", "=", id)
-        .execute();
-      await trx.deleteFrom("orders").where("id", "=", id).execute();
-      await appendEvent(trx, clock, {
-        type: "order.deleted",
-        parcelId: null,
-        payload: { id, parcel_ids: parcels.map((row) => row.id) },
-      });
-    }
+    await deleteParcels(trx, clock, presentation, await exclusiveParcels(trx, sourceId), sourceId);
+    await deleteOrders(trx, clock, await exclusiveOrders(trx, sourceId));
     await trx.deleteFrom("parcel_sources").where("source_id", "=", sourceId).execute();
     await trx.deleteFrom("order_sources").where("source_id", "=", sourceId).execute();
     await trx.deleteFrom("parcel_raw").where("source_id", "=", sourceId).execute();
@@ -140,8 +112,6 @@ export async function clearSourceData(deps: Deps, sourceId: string): Promise<Sou
       .where("id", "=", sourceId)
       .where("kind", "=", "mail")
       .execute();
-    otherSources.delete(sourceId);
-    await removeOrphanedAutoSources(trx, clock, [...otherSources]);
     return counts;
   });
 }

@@ -20,7 +20,7 @@ export function registerImageRoutes(app: TypedApp, services: Services): void {
       },
     },
     async (request, reply) => {
-      const parcel = await services.parcels.repository.get(request.params.id);
+      const parcel = await services.parcels.repository.getVisible(request.params.id);
       const pictures = (parcel?.items ?? [])
         .map((item) => item.image_url)
         .filter((url): url is string => url !== null);
