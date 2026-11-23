@@ -71,6 +71,15 @@ describe("Poczta Polska tracking", () => {
     });
   });
 
+  it("does not call a closed parcel delivered when its last scan is a problem (OP-084)", async () => {
+    const world = new World(pocztaPolska, [
+      portal(),
+      api(json(payload("P_ND", { finished: true }))),
+    ]);
+    const [parcel] = (await world.track([CODE])).snapshots;
+    expect(parcel).toMatchObject({ status: "problem", delivered: false });
+  });
+
   it("treats the not-found marker and grouped consignments as not found", async () => {
     const grouped = payload("P_D", { components: [{ number: OTHER }] });
     const world = new World(pocztaPolska, [portal(), api(json({ mailStatus: -1 }), json(grouped))]);

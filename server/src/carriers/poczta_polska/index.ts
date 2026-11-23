@@ -118,8 +118,9 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   if (code !== null && status === null) {
     report(code);
   }
-  // A closed return is finished but never reached the recipient.
-  const delivered = status === "delivered" || (mail["finished"] === true && status !== "returning");
+  // "Finished" alone means delivered only when the last scan says nothing else: a closed return
+  // or a closed problem (refused, lost) never reached the recipient.
+  const delivered = status === "delivered" || (mail["finished"] === true && status === null);
   const office = asObject(latestEvent?.["postOffice"]);
   return snapshot({
     carrier: CARRIER_ID,
