@@ -110,6 +110,35 @@ describe("calendar entries", () => {
     ]);
   });
 
+  it("give pictures through the image proxy, never the shop's own address (OP-009)", async () => {
+    const id = await parcelWithWindow(
+      "00340434000000000004",
+      "2026-11-20T10:00:00Z",
+      "2026-11-20T12:00:00Z",
+    );
+    await context.services.db
+      .insertInto("items")
+      .values({
+        parcel_id: id,
+        position: 0,
+        title: "Made-up lamp",
+        image_ref: "https://images.example.invalid/lamp.jpg",
+        url: null,
+        external_id: null,
+        quantity: null,
+        price: null,
+        currency: null,
+      })
+      .execute();
+    const response = await app.inject({
+      url: `/api/v1/calendar?from=${encodeURIComponent("2026-11-18T00:00:00Z")}&to=${encodeURIComponent("2026-11-30T00:00:00Z")}`,
+      headers,
+    });
+    const [entry] = response.json<{ image_url: string | null }[]>();
+    expect(entry?.image_url).toMatch(/^\/img\//);
+    expect(response.body).not.toContain("images.example.invalid");
+  });
+
   it("rejects inverted or huge ranges", async () => {
     const inverted = await app.inject({
       url: "/api/v1/calendar?from=2026-11-20T00:00:00Z&to=2026-11-10T00:00:00Z",

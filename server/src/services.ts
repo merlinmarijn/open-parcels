@@ -304,7 +304,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     runner,
     scheduler,
     live,
-    calendar: new CalendarService(db, clock, deps.config.timeZone),
+    calendar: new CalendarService(db, clock, deps.config.timeZone, presentation),
     signIn: new SignInService({
       db,
       registry,

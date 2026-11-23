@@ -4,6 +4,7 @@ import type { Database } from "../db/schema.js";
 import { parcelVisible } from "../db/visibility.js";
 import { effectiveDelivered, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
 import { localParts, nextLocalMidnight } from "../engine/tz.js";
+import { RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
 
 /** How long a delivered parcel's marker lasts on the calendar. */
 const DELIVERED_MARKER_MS = 30 * 60_000;
@@ -98,6 +99,8 @@ export class CalendarService {
     private readonly db: Kysely<Database>,
     private readonly clock: Clock,
     private readonly timeZone: string,
+    /** Remote pictures become the server's image-proxy addresses, as everywhere else. */
+    private readonly presentation: Presentation = RAW_PRESENTATION,
   ) {}
 
   async entries(from: Date, to: Date): Promise<CalendarEntry[]> {
@@ -111,10 +114,10 @@ export class CalendarService {
         "barcode",
         "status",
         "manual_status",
+        "manual_at",
         "delivered",
         "delivered_at",
         "planned_from",
-        "manual_at",
         "planned_to",
         "label",
         "url",
@@ -135,15 +138,15 @@ export class CalendarService {
             eb(eb.fn.coalesce("planned_to", "planned_from"), ">=", fromIso),
           ]),
           eb.and([eb("delivered_at", ">=", fromIso), eb("delivered_at", "<", toIso)]),
-        ]),
-      )
-      .execute();
           // Marked delivered by hand: delivered when the owner said so.
           eb.and([
             eb("manual_status", "=", "delivered"),
             eb("manual_at", ">=", fromIso),
             eb("manual_at", "<", toIso),
           ]),
+        ]),
+      )
+      .execute();
     const items =
       rows.length === 0
         ? []
@@ -177,7 +180,7 @@ export class CalendarService {
           carrier: row.carrier,
           barcode: row.barcode,
           status: asStatus(row.manual_status ?? row.status),
-          imageUrl: first?.image_ref ?? null,
+          imageUrl: this.presentation.imagePath(first?.image_ref ?? null),
           url: row.url,
           pickupPoint: row.pickup_point,
         };
