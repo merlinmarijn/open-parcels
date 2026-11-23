@@ -6,6 +6,7 @@ import {
   isObject,
   num,
   parseJsonBody,
+  requiredList,
   SignInRejectedError,
   text,
   TransientError,
@@ -207,7 +208,8 @@ export class CanadaPostAccount {
     let next: string | null = null;
     for (let pageNumber = 0; pageNumber < MAX_PAGES; pageNumber += 1) {
       const page = await this.#readPage(next, credentials);
-      for (const item of asArray(page["items"])) {
+      // A missing list stops the run; read as empty it would mark every parcel gone.
+      for (const item of requiredList(page, "items", "Canada Post's parcel list")) {
         if (
           isObject(item) &&
           text(item["trackId"]) !== null &&

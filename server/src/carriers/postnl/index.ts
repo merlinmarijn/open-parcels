@@ -115,6 +115,10 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
   }
   const session = new PostnlSession(context, context.secret.refreshToken);
   const tracked = await shipments(context, session);
+  // A renamed key or an error object must stop the run, never read as an empty account.
+  if (!Array.isArray(tracked["receiverShipments"]) && !Array.isArray(tracked["senderShipments"])) {
+    throw new UnexpectedResponseError("PostNL answered without its shipment lists.");
+  }
   const report = (kind: string, key: string): void => {
     context.reportUnknown(kind, key);
   };

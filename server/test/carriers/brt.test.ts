@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { brt } from "../../src/carriers/brt/index.js";
-import { SignInRejectedError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, UnexpectedResponseError } from "../../src/plugin/errors.js";
 import { json, madeUp, on, onPrefix, World } from "./harness.js";
 
 // Made-up parcel numbers, tokens and accounts only.
@@ -62,6 +62,12 @@ describe("BRT account", () => {
     world.stored = { token: "old" };
     await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
     expect(world.requests()).toEqual([LIST, LOGIN]);
+  });
+
+  it("stops on an answer without its shipment lists instead of reading an empty account (OP-083)", async () => {
+    const world = new World(brt, [on(LIST, json({ error: "maintenance" }))]);
+    world.stored = { token: "old" };
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(UnexpectedResponseError);
   });
 
   it("never signs in again on a network error", async () => {

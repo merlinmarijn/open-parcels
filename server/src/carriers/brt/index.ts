@@ -238,6 +238,14 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
     if (!isObject(payload)) {
       throw new UnexpectedResponseError("BRT parcels answered without a JSON object.");
     }
+    // A renamed key or an error object sent with HTTP 200 must stop the run, never read as an
+    // empty account (which would mark every parcel gone). An empty account still has the lists.
+    if (
+      !Array.isArray(payload["incomingShipments"]) &&
+      !Array.isArray(payload["sendingShipments"])
+    ) {
+      throw new UnexpectedResponseError("BRT parcels answered without its shipment lists.");
+    }
     const groups: readonly (readonly ["incoming" | "outgoing", Json[]])[] = [
       ["incoming", asList(payload["incomingShipments"]).filter(isObject)],
       ["outgoing", asList(payload["sendingShipments"]).filter(isObject)],

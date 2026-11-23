@@ -1,7 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { canadapost } from "../../src/carriers/canadapost/index.js";
 import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import {
+  SignInRejectedError,
+  TransientError,
+  UnexpectedResponseError,
+} from "../../src/plugin/errors.js";
 import { json, onFragment, World, type Route } from "./harness.js";
 
 // Made-up codes and values only.
@@ -148,6 +152,17 @@ describe("Canada Post account", () => {
     const world = new World(canadapost);
     world.routes = [onFragment("/oauth20/token", json({ error: "invalid_grant" }, 401))];
     await expect(world.fetchAccount({}, credentials)).rejects.toBeInstanceOf(SignInRejectedError);
+  });
+
+  it("stops on a list answer without its items instead of reading an empty account (OP-083)", async () => {
+    const world = new World(canadapost);
+    world.routes = [
+      onFragment("/oauth20/token", json(tokens(1))),
+      onFragment("/graphql", json({ data: { listTrackSyncItems: { nextToken: null } } })),
+    ];
+    await expect(world.fetchAccount({}, credentials)).rejects.toBeInstanceOf(
+      UnexpectedResponseError,
+    );
   });
 
   it("never signs in again on a network error", async () => {

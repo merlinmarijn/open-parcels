@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { postnl } from "../../src/carriers/postnl/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import {
+  SignInRejectedError,
+  TransientError,
+  UnexpectedResponseError,
+} from "../../src/plugin/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 import { pasted } from "./pasted.js";
 
@@ -146,6 +150,14 @@ describe("PostNL account", () => {
   it("treats a refused refresh token as a sign-in problem", async () => {
     const world = new World(postnl, [onPrefix(TOKEN, json({ error: "invalid_grant" }, 400))]);
     await expect(world.fetchAccount({}, secret)).rejects.toBeInstanceOf(SignInRejectedError);
+  });
+
+  it("stops on an answer without its shipment lists instead of reading an empty account (OP-083)", async () => {
+    const world = new World(postnl, [
+      onPrefix(TOKEN, tokens(1)),
+      onPrefix(GRAPHQL, json({ data: { trackedShipments: { error: "renamed" } } })),
+    ]);
+    await expect(world.fetchAccount({}, secret)).rejects.toBeInstanceOf(UnexpectedResponseError);
   });
 
   it("never refreshes again after a network error", async () => {
