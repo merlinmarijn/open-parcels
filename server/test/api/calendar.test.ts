@@ -139,6 +139,46 @@ describe("calendar entries", () => {
     expect(response.body).not.toContain("images.example.invalid");
   });
 
+  it("name parcels as the lists do, following the default label setting (OP-055)", async () => {
+    const id = await parcelWithWindow(
+      "00340434000000000005",
+      "2026-11-20T10:00:00Z",
+      "2026-11-20T12:00:00Z",
+    );
+    await context.services.db
+      .updateTable("parcels")
+      .set({ label: null })
+      .where("id", "=", id)
+      .execute();
+    await context.services.db
+      .insertInto("items")
+      .values({
+        parcel_id: id,
+        position: 0,
+        title: "Made-up kettle",
+        image_ref: null,
+        url: null,
+        external_id: null,
+        quantity: null,
+        price: null,
+        currency: null,
+      })
+      .execute();
+    const titles = async () =>
+      (
+        await context.services.calendar.entries(
+          new Date("2026-11-18T00:00:00Z"),
+          new Date("2026-11-30T00:00:00Z"),
+        )
+      ).map((entry) => entry.title);
+    const listed = async () =>
+      (await context.services.parcels.repository.get(id))?.display_name ?? "";
+    expect(await titles()).toEqual([await listed()]);
+    await context.services.settings.setLabelMode("items");
+    expect(await titles()).toEqual(["Made-up kettle"]);
+    expect(await listed()).toBe("Made-up kettle");
+  });
+
   it("rejects inverted or huge ranges", async () => {
     const inverted = await app.inject({
       url: "/api/v1/calendar?from=2026-11-20T00:00:00Z&to=2026-11-10T00:00:00Z",

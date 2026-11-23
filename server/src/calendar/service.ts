@@ -4,7 +4,7 @@ import type { Database } from "../db/schema.js";
 import { parcelVisible } from "../db/visibility.js";
 import { effectiveDelivered, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
 import { localParts, nextLocalMidnight } from "../engine/tz.js";
-import { RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
+import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
 
 /** How long a delivered parcel's marker lasts on the calendar. */
 const DELIVERED_MARKER_MS = 30 * 60_000;
@@ -147,40 +147,24 @@ export class CalendarService {
         ]),
       )
       .execute();
-    const items =
-      rows.length === 0
-        ? []
-        : await this.db
-            .selectFrom("items")
-            .select(["parcel_id", "title", "image_ref", "position"])
-            .where(
-              "parcel_id",
-              "in",
-              rows.map((row) => row.id),
-            )
-            .orderBy("position")
-            .execute();
+    // Named and pictured exactly as in the lists and Home Assistant: the label, else the "Default
+    // parcel label" setting (item names or the code), with order lines as items when needed.
+    const parcels = await new ParcelRepository(this.db, this.presentation).byIds(
+      rows.map((row) => row.id),
+    );
     const now = this.clock.now();
     return rows
       .map((row): CalendarEntry | undefined => {
-        const own = items.filter((item) => item.parcel_id === row.id);
-        const first = own[0];
-        const title =
-          row.label ??
-          // The carrier is shown next to the title by each reader, so it is not repeated here.
-          (first === undefined
-            ? row.barcode
-            : own.length > 1
-              ? `${first.title} +${own.length - 1}`
-              : first.title);
+        const parcel = parcels.get(row.id);
         const base = {
           uid: `${row.id}@open-parcels`,
           parcelId: row.id,
-          title,
+          // The carrier is shown next to the title by each reader, so it is not repeated here.
+          title: parcel?.display_name ?? row.label ?? row.barcode,
           carrier: row.carrier,
           barcode: row.barcode,
           status: asStatus(row.manual_status ?? row.status),
-          imageUrl: this.presentation.imagePath(first?.image_ref ?? null),
+          imageUrl: parcel?.items[0]?.image_url ?? null,
           url: row.url,
           pickupPoint: row.pickup_point,
         };

@@ -265,6 +265,14 @@ export class ParcelRepository {
     return row === undefined ? undefined : this.get(id);
   }
 
+  /** These parcels, without history, by id; ids that do not exist are left out. */
+  async byIds(ids: readonly string[]): Promise<Map<string, Parcel>> {
+    if (ids.length === 0) return new Map();
+    const rows = await this.db.selectFrom("parcels").selectAll().where("id", "in", ids).execute();
+    const related = await this.#loadRelated(rows, false);
+    return new Map(rows.map((row) => [row.id, this.#toParcel(row, related)]));
+  }
+
   /** Every visible parcel of these orders, archived ones included, without history. */
   async byOrders(orderIds: readonly string[]): Promise<{ orderId: string; parcel: Parcel }[]> {
     if (orderIds.length === 0) return [];
