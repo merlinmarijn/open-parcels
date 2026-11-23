@@ -1,7 +1,13 @@
 import { useQueryClient } from "@tanstack/react-query";
 import { useNavigate } from "@tanstack/react-router";
 import { Archive, ArchiveRestore, Check, Pencil, Trash2, X } from "lucide-react";
-import { useState, type KeyboardEvent, type ReactNode } from "react";
+import {
+  useState,
+  type FocusEvent,
+  type KeyboardEvent,
+  type MouseEvent,
+  type ReactNode,
+} from "react";
 import { keys, useDeleteParcel, useUpdateParcel } from "../api/queries";
 import { PARCEL_STATUSES, type ParcelDetail, type ParcelStatus } from "../api/types";
 import { useIsAdmin } from "../auth/session";
@@ -41,7 +47,19 @@ interface InlineTitleProps {
   readonly onSave: (label: string | null) => void;
 }
 
-/** A page heading renamed in place: Enter or leaving saves, Escape cancels. */
+/** True when focus moves to another control of the same inline editor. */
+function staysInGroup(event: FocusEvent<HTMLElement>): boolean {
+  const next = event.relatedTarget;
+  const group = event.currentTarget.parentElement;
+  return next instanceof Node && group !== null && group.contains(next);
+}
+
+/** A mouse press on the editor's buttons keeps focus where it is; the click then acts. */
+function keepFocus(event: MouseEvent<HTMLButtonElement>): void {
+  event.preventDefault();
+}
+
+/** A page heading renamed in place: Enter, Save or leaving saves; Escape or Cancel cancels. */
 export function InlineTitle(props: InlineTitleProps): ReactNode {
   const canEdit = useCanEdit();
   const [draft, setDraft] = useState<string | null>(null);
@@ -71,17 +89,18 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
             setDraft(e.target.value);
           }}
           onKeyDown={onKey}
-          onBlur={() => {
-            finish(true);
+          // Leaving the whole group saves; moving to its own Save or Cancel button does not, so
+          // a keyboard user can reach Cancel.
+          onBlur={(e) => {
+            if (!staysInGroup(e)) finish(true);
           }}
         />
         <button
           type="button"
           className="icon-button"
           aria-label="Save label"
-          // Before the input's blur, so the click is not lost.
-          onMouseDown={(e) => {
-            e.preventDefault();
+          onMouseDown={keepFocus}
+          onClick={() => {
             finish(true);
           }}
         >
@@ -91,8 +110,8 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
           type="button"
           className="icon-button"
           aria-label="Cancel"
-          onMouseDown={(e) => {
-            e.preventDefault();
+          onMouseDown={keepFocus}
+          onClick={() => {
             finish(false);
           }}
         >
@@ -136,43 +155,73 @@ export function EditableTitle({ parcel }: { readonly parcel: ParcelDetail }): Re
 
 const FROM_CARRIER = "";
 
-/** The status badge; the pencil opens a picker that saves the choice at once. */
+/**
+ * The status badge; the pencil opens a picker. A choice is saved with Enter or Save, never by
+ * moving through the list, so arrow keys can browse; Escape, Cancel or leaving closes it unsaved.
+ */
 export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const canEdit = useCanEdit();
   const update = useUpdateParcel(parcel.id);
-  const [open, setOpen] = useState(false);
+  const [choice, setChoice] = useState<string | null>(null);
 
-  if (open) {
+  const close = (save: boolean): void => {
+    if (choice === null) return;
+    setChoice(null);
+    const next = choice === FROM_CARRIER ? null : (choice as ParcelStatus);
+    if (save && next !== parcel.manual_status) update.mutate({ manual_status: next });
+  };
+
+  if (choice !== null) {
     return (
-      <select
-        className="inline-status-select"
-        aria-label="Status"
-        autoFocus
-        value={parcel.manual_status ?? FROM_CARRIER}
-        onChange={(e) => {
-          const value = e.target.value as ParcelStatus | typeof FROM_CARRIER;
-          setOpen(false);
-          update.mutate({ manual_status: value === FROM_CARRIER ? null : value });
-        }}
-        // Closing on blur waits a moment, so a choice that blurs the picker still saves.
-        onBlur={() => {
-          window.setTimeout(() => {
-            setOpen(false);
-          }, 200);
-        }}
-        onKeyDown={(e) => {
-          if (e.key === "Escape") setOpen(false);
-        }}
-      >
-        <option value={FROM_CARRIER}>
-          From the carrier ({STATUS_LABELS[parcel.carrier_status]})
-        </option>
-        {PARCEL_STATUSES.map((status) => (
-          <option key={status} value={status}>
-            {STATUS_LABELS[status]}
+      <span className="inline-edit">
+        <select
+          className="inline-status-select"
+          aria-label="Status"
+          autoFocus
+          value={choice}
+          onChange={(e) => {
+            setChoice(e.target.value);
+          }}
+          onBlur={(e) => {
+            if (!staysInGroup(e)) close(false);
+          }}
+          onKeyDown={(e) => {
+            if (e.key === "Enter") close(true);
+            if (e.key === "Escape") close(false);
+          }}
+        >
+          <option value={FROM_CARRIER}>
+            From the carrier ({STATUS_LABELS[parcel.carrier_status]})
           </option>
-        ))}
-      </select>
+          {PARCEL_STATUSES.map((status) => (
+            <option key={status} value={status}>
+              {STATUS_LABELS[status]}
+            </option>
+          ))}
+        </select>
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="Save status"
+          onMouseDown={keepFocus}
+          onClick={() => {
+            close(true);
+          }}
+        >
+          <Check size={16} aria-hidden="true" />
+        </button>
+        <button
+          type="button"
+          className="icon-button"
+          aria-label="Cancel"
+          onMouseDown={keepFocus}
+          onClick={() => {
+            close(false);
+          }}
+        >
+          <X size={16} aria-hidden="true" />
+        </button>
+      </span>
     );
   }
   return (
@@ -182,7 +231,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
         <PencilButton
           label="Change status"
           onClick={() => {
-            setOpen(true);
+            setChoice(parcel.manual_status ?? FROM_CARRIER);
           }}
         />
       ) : null}

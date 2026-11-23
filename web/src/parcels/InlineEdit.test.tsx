@@ -45,7 +45,7 @@ describe("editing a parcel in place", () => {
     expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(1);
   });
 
-  it("saves a picked status at once and puts it back when the server refuses", async () => {
+  it("saves a picked status with Save and puts it back when the server refuses", async () => {
     let refuse = false;
     const calls = routes((body) =>
       refuse
@@ -56,6 +56,7 @@ describe("editing a parcel in place", () => {
     renderApp(`/parcels/${ID}`);
     await user.click(await screen.findByRole("button", { name: "Change status" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "at_pickup_point");
+    await user.click(screen.getByRole("button", { name: "Save status" }));
     await waitFor(() => {
       expect(calls.find((call) => call.method === "PATCH")?.body).toEqual({
         manual_status: "at_pickup_point",
@@ -65,8 +66,40 @@ describe("editing a parcel in place", () => {
     refuse = true;
     await user.click(screen.getByRole("button", { name: "Change status" }));
     await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "delivered");
+    await user.click(screen.getByRole("button", { name: "Save status" }));
     // The refused save goes through a server round trip; allow a slow machine some time.
     expect(await screen.findByText("Try again.", {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.queryByText("Delivered", { selector: ".badge, .status-badge" })).toBeNull();
+  });
+
+  it("lets a keyboard user reach Cancel without saving the label (OP-155)", async () => {
+    const calls = routes((body) => ({ body: { ...BASE, ...(body as object) } }));
+    const user = userEvent.setup();
+    renderApp(`/parcels/${ID}`);
+    await user.click(await screen.findByRole("button", { name: "Rename" }));
+    await user.keyboard(" changed");
+    await user.tab();
+    await user.tab();
+    expect(screen.getByRole("button", { name: "Cancel" })).toHaveFocus();
+    await user.keyboard("{Enter}");
+    expect(await screen.findByRole("heading", { name: "Desk lamp" })).toBeInTheDocument();
+    expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(0);
+  });
+
+  it("browses statuses with the arrow keys and saves only on Enter (OP-156)", async () => {
+    const calls = routes((body) => ({ body: { ...BASE, ...(body as object) } }));
+    const user = userEvent.setup();
+    renderApp(`/parcels/${ID}`);
+    await user.click(await screen.findByRole("button", { name: "Change status" }));
+    const picker = screen.getByRole("combobox", { name: "Status" });
+    await user.selectOptions(picker, "registered");
+    await user.selectOptions(picker, "out_for_delivery");
+    expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(0);
+    await user.keyboard("{Enter}");
+    await waitFor(() => {
+      expect(calls.filter((call) => call.method === "PATCH").map((call) => call.body)).toEqual([
+        { manual_status: "out_for_delivery" },
+      ]);
+    });
   });
 });
