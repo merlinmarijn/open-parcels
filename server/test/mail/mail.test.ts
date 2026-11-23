@@ -240,6 +240,7 @@ describe("mail watcher", () => {
 
     mailbox.connectError = undefined;
     await context.services.mail.connect(id);
+    await context.services.mail.settled(id);
     mailbox.closed?.(new Error("connection reset"));
     await new Promise((resolve) => setImmediate(resolve));
     expect((await context.services.sources.get(id))?.state).toBe("error");
