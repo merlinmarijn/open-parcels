@@ -3255,6 +3255,62 @@ export type PostApiV1SourcesIdSync429 = {
   message: string;
 };
 
+export type GetApiV1SourcesIdData200 = {
+  /**
+   * Parcels only this source reported.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * Orders only this source reported.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * Parcels and orders other sources also reported; they stay, unlinked from it.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  shared: number;
+};
+
+export type GetApiV1SourcesIdData404 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
+export type PostApiV1SourcesIdClear200 = {
+  /**
+   * Parcels only this source reported.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * Orders only this source reported.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * Parcels and orders other sources also reported; they stay, unlinked from it.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  shared: number;
+};
+
+export type PostApiV1SourcesIdClear404 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
 export type GetApiV1SourcesIdSignInFlows200ItemType =
   (typeof GetApiV1SourcesIdSignInFlows200ItemType)[keyof typeof GetApiV1SourcesIdSignInFlows200ItemType];
 
@@ -4437,6 +4493,41 @@ export const postApiV1SourcesIdSync = async (
   });
 };
 
+export const getGetApiV1SourcesIdDataUrl = (id: string) => {
+  return `/api/v1/sources/${id}/data`;
+};
+
+/**
+ * @summary Count what clearing a source would remove.
+ */
+export const getApiV1SourcesIdData = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1SourcesIdData200> => {
+  return apiFetch<GetApiV1SourcesIdData200>(getGetApiV1SourcesIdDataUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1SourcesIdClearUrl = (id: string) => {
+  return `/api/v1/sources/${id}/clear`;
+};
+
+/**
+ * Parcels and orders only this source reported are deleted with their history and items; ones other sources also reported stay. A mailbox reads its mails again. The source and its sign-in are kept, and an enabled source runs again at once.
+ * @summary Remove everything a source imported, so it syncs again from scratch.
+ */
+export const postApiV1SourcesIdClear = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1SourcesIdClear200> => {
+  return apiFetch<PostApiV1SourcesIdClear200>(getPostApiV1SourcesIdClearUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
 export const getGetApiV1SourcesIdSignInFlowsUrl = (id: string) => {
   return `/api/v1/sources/${id}/sign-in/flows`;
 };
@@ -4777,7 +4868,7 @@ export const getGetApiV1EventsUrl = (params?: GetApiV1EventsParams) => {
 };
 
 /**
- * Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 7 days of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.
+ * Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.
  * @summary Server-Sent Events stream of parcel and source events.
  */
 export const getApiV1Events = async (

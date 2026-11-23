@@ -24,12 +24,14 @@ import {
   getApiV1Parcels,
   getApiV1ParcelsId,
   getApiV1Sources,
+  getApiV1SourcesIdData,
   getApiV1Tokens,
   patchApiV1OrdersId,
   patchApiV1ParcelsId,
   patchApiV1SourcesId,
   postApiV1Parcels,
   postApiV1Sources,
+  postApiV1SourcesIdClear,
   postApiV1SourcesIdSync,
   postApiV1Tokens,
   type PatchApiV1OrdersIdBody,
@@ -288,6 +290,27 @@ export function useDeleteSource() {
   return useMutation({
     mutationFn: (id: string) => deleteApiV1SourcesId(id),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+  });
+}
+
+/** What clearing a source would remove, read right before asking the owner. */
+export function sourceDataCounts(id: string) {
+  return getApiV1SourcesIdData(id);
+}
+
+/** Removes everything a source imported; parcels, orders and the calendar reload after. */
+export function useClearSource() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => postApiV1SourcesIdClear(id),
+    onSuccess: async () => {
+      await Promise.all([
+        client.invalidateQueries({ queryKey: keys.sources }),
+        client.invalidateQueries({ queryKey: keys.parcels }),
+        client.invalidateQueries({ queryKey: keys.orders }),
+        client.invalidateQueries({ queryKey: ["calendar"] }),
+      ]);
+    },
   });
 }
 

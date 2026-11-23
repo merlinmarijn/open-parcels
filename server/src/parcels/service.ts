@@ -7,6 +7,7 @@ import { deriveEvents, type EventView } from "../engine/rules.js";
 import { removeOrphanedAutoSources } from "../engine/sources.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
+import { clearSourceData, countSourceData, type SourceDataCounts } from "./clear-source.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "./repository.js";
 
 export class DuplicateParcelError extends Error {
@@ -188,6 +189,21 @@ export class ParcelService {
       await this.bus.notify();
     }
     return deleted;
+  }
+
+  /** What clearing this source would remove. */
+  countSourceData(sourceId: string): Promise<SourceDataCounts> {
+    return countSourceData(this.db, sourceId);
+  }
+
+  /** Removes everything this source imported; see `clearSourceData`. */
+  async clearSourceData(sourceId: string): Promise<SourceDataCounts> {
+    const counts = await clearSourceData(
+      { db: this.db, clock: this.clock, presentation: this.presentation },
+      sourceId,
+    );
+    await this.bus.notify();
+    return counts;
   }
 
   async #mustGet(id: string): Promise<Parcel> {

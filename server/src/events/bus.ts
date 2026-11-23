@@ -4,8 +4,22 @@ import { addMs, isoNow, type Clock } from "../clock.js";
 import type { Database, OutboxRow } from "../db/schema.js";
 import { EVENT_TYPES, type EventType, type OutboxEvent } from "./types.js";
 
-/** How long events stay replayable for clients that reconnect. */
-export const OUTBOX_RETENTION_MS = 7 * 24 * 60 * 60 * 1000;
+/**
+ * How long events stay replayable for clients that reconnect. A client away for longer gets
+ * `resync` and reloads over REST, so this only has to cover restarts and short outages.
+ */
+export const OUTBOX_RETENTION_MS = 24 * 60 * 60 * 1000;
+/**
+ * Events that only describe a moment (a courier's position, a finished run) are worthless when
+ * replayed hours later; they stay just long enough for a quick reconnect.
+ */
+export const SHORT_LIVED_RETENTION_MS = 15 * 60 * 1000;
+export const SHORT_LIVED_TYPES: readonly EventType[] = [
+  "parcel.live_updated",
+  "source.run_finished",
+];
+/** The most rows kept, whatever their age, so a burst (a history import) cannot grow it. */
+export const OUTBOX_MAX_ROWS = 2000;
 const REPLAY_LIMIT = 1000;
 
 export type EventListener = (event: OutboxEvent) => void;
@@ -178,12 +192,33 @@ export class EventBus {
     };
   }
 
+  /** Drops expired rows, short-lived ones sooner, then the oldest beyond the row cap. */
   async pruneExpired(): Promise<number> {
-    const cutoff = addMs(this.clock.now(), -OUTBOX_RETENTION_MS).toISOString();
-    const result = await this.db
+    const now = this.clock.now();
+    const cutoff = addMs(now, -OUTBOX_RETENTION_MS).toISOString();
+    const shortCutoff = addMs(now, -SHORT_LIVED_RETENTION_MS).toISOString();
+    const expired = await this.db
       .deleteFrom("outbox")
-      .where("created_at", "<", cutoff)
+      .where((eb) =>
+        eb.or([
+          eb("created_at", "<", cutoff),
+          eb.and([eb("type", "in", SHORT_LIVED_TYPES), eb("created_at", "<", shortCutoff)]),
+        ]),
+      )
       .executeTakeFirst();
-    return Number(result.numDeletedRows);
+    const newest = await this.db
+      .selectFrom("outbox")
+      .select((eb) => eb.fn.max("seq").as("max"))
+      .executeTakeFirst();
+    let capped = 0;
+    const max = newest?.max ?? null;
+    if (max !== null) {
+      const result = await this.db
+        .deleteFrom("outbox")
+        .where("seq", "<=", max - OUTBOX_MAX_ROWS)
+        .executeTakeFirst();
+      capped = Number(result.numDeletedRows);
+    }
+    return Number(expired.numDeletedRows) + capped;
   }
 }

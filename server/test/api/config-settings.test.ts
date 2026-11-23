@@ -109,7 +109,7 @@ describe("server settings", () => {
       method: "PATCH",
       url: "/api/v1/settings/config",
       headers,
-      payload: { OPENPARCELS_ARCHIVE_DAYS: 10, OPENPARCELS_DELETE_DAYS: 0 },
+      payload: { OPENPARCELS_ARCHIVE_DAYS: 10, OPENPARCELS_DELETE_DAYS: -1 },
     });
     expect(response.statusCode).toBe(400);
     expect(response.json()).toMatchObject({ error: "invalid_setting" });

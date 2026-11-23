@@ -304,7 +304,8 @@ There is one owner per container, so tables carry no user column.
   (`lookup.state = not_found`) are archived, never deleted early and without `parcel.removed`;
   a manual status keeps them. `OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS`, 0 turns it off;
 - `parcel_raw` is dropped 30 days after delivery;
-- the outbox is kept for 7 days;
+- the outbox is kept for 24 hours (courier positions and finished runs for 15 minutes), at
+  most 2000 rows;
 - the image cache is capped at 200 MB.
 
 ### 2.6 API and event contract
@@ -365,7 +366,7 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 `GET /api/v1/events` is the SSE stream.
 
 - Each message has `id: <outbox seq>`, `event: <type>` and `data: <JSON>`.
-- `Last-Event-ID` replays up to 7 days of events, page by page however many there are; the
+- `Last-Event-ID` replays up to 24 hours of events, page by page however many there are; the
   replay and the live stream join without a gap or a duplicate.
 - A connection without `Last-Event-ID` starts with `event: ready`, whose `id` and `data.seq` are
   the current sequence. A client that loads its state over REST resumes from there.

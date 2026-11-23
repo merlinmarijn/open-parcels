@@ -34,7 +34,7 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
         summary: "Server-Sent Events stream of parcel and source events.",
         description:
           "Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. " +
-          "Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 7 days of missed events. " +
+          "Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. " +
           "A connection without one starts with `ready` (its `id` is the current sequence). When the " +
           "given id is newer than any event or older than what is kept, `resync` (also carrying the " +
           "current sequence as `id`) tells the client to reload everything over REST. " +

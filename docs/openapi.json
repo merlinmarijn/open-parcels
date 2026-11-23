@@ -6321,6 +6321,173 @@
         }
       }
     },
+    "/api/v1/sources/{id}/data": {
+      "get": {
+        "summary": "Count what clearing a source would remove.",
+        "tags": [
+          "sources"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Parcels only this source reported."
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Orders only this source reported."
+                    },
+                    "shared": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Parcels and orders other sources also reported; they stay, unlinked from it."
+                    }
+                  },
+                  "required": [
+                    "parcels",
+                    "orders",
+                    "shared"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sources/{id}/clear": {
+      "post": {
+        "summary": "Remove everything a source imported, so it syncs again from scratch.",
+        "tags": [
+          "sources"
+        ],
+        "description": "Parcels and orders only this source reported are deleted with their history and items; ones other sources also reported stay. A mailbox reads its mails again. The source and its sign-in are kept, and an enabled source runs again at once.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Parcels only this source reported."
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Orders only this source reported."
+                    },
+                    "shared": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Parcels and orders other sources also reported; they stay, unlinked from it."
+                    }
+                  },
+                  "required": [
+                    "parcels",
+                    "orders",
+                    "shared"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/sources/{id}/sign-in/flows": {
       "get": {
         "summary": "The ways this source can sign in, the default first.",
@@ -8506,7 +8673,7 @@
         "tags": [
           "events"
         ],
-        "description": "Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 7 days of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.",
+        "description": "Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.",
         "parameters": [
           {
             "schema": {

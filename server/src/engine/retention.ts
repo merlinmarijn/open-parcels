@@ -7,7 +7,10 @@ const DAY = 24 * 60 * 60 * 1000;
 export interface RetentionPolicy {
   /** Delivered parcels leave the default lists this many days after delivery. */
   readonly archiveAfterDays: number;
-  /** Archived parcels, with their history and items, are deleted this many days after archiving. */
+  /**
+   * Archived parcels, with their history and items, are deleted this many days after archiving;
+   * 0 keeps them forever (the default), and raw carrier payloads are then kept too.
+   */
   readonly deleteAfterDays: number;
   /** Raw carrier payloads are dropped this many days after delivery. */
   readonly rawAfterDays: number;
@@ -57,6 +60,15 @@ export async function applyRetention(
               .executeTakeFirst()
           ).numUpdatedRows,
         );
+  // Deleting is the owner's choice: with deleteAfterDays 0 nothing is ever deleted on its own.
+  if (policy.deleteAfterDays === 0) {
+    return {
+      archived: Number(archived.numUpdatedRows),
+      notFoundArchived,
+      deleted: 0,
+      rawDropped: 0,
+    };
+  }
   const deleted = await db
     .deleteFrom("parcels")
     .where("archived_at", "<", iso(policy.deleteAfterDays))

@@ -1,7 +1,9 @@
-import { Mail, Pause, Pencil, Play, Trash2 } from "lucide-react";
+import { Eraser, Mail, Pause, Pencil, Play, Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import {
+  sourceDataCounts,
   useCarriers,
+  useClearSource,
   useDeleteSource,
   useParcels,
   useSources,
@@ -128,10 +130,12 @@ function SourceActions(props: {
   const sync = useSyncSource();
   const update = useUpdateSource();
   const remove = useDeleteSource();
+  const clear = useClearSource();
+  const [counting, setCounting] = useState(false);
   const enabled = source.state !== "disabled";
   return (
     <>
-      <ErrorNotice error={sync.error ?? update.error ?? remove.error} />
+      <ErrorNotice error={sync.error ?? update.error ?? remove.error ?? clear.error} />
       <div className="actions">
         {/* A disabled source neither runs nor signs in; enabling it comes first. */}
         {enabled && props.signIn ? (
@@ -180,6 +184,35 @@ function SourceActions(props: {
             ) : (
               <Play size={16} aria-hidden="true" />
             )}
+          </button>
+          <button
+            type="button"
+            className="icon-button"
+            aria-label="Clear data"
+            title="Clear data: remove what this source imported, so it syncs again from scratch"
+            disabled={counting || clear.isPending}
+            onClick={() => {
+              setCounting(true);
+              void sourceDataCounts(source.id)
+                .then((counts) => {
+                  const shared =
+                    counts.shared > 0
+                      ? ` ${String(counts.shared)} that other sources also reported stay.`
+                      : "";
+                  const question =
+                    `Clear the data of “${source.label}”? This deletes ${String(counts.parcels)} ` +
+                    `parcels and ${String(counts.orders)} orders only it reported.${shared} The ` +
+                    "source and its sign-in stay, and it syncs again from scratch.";
+                  if (window.confirm(question)) {
+                    clear.mutate(source.id);
+                  }
+                })
+                .finally(() => {
+                  setCounting(false);
+                });
+            }}
+          >
+            <Eraser size={16} aria-hidden="true" />
           </button>
           <button
             type="button"

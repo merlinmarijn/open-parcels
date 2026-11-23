@@ -209,9 +209,10 @@ export const SETTINGS = {
   }),
   OPENPARCELS_DELETE_DAYS: setting({
     group: "Retention",
-    description: "Days after archiving before a parcel is deleted.",
-    schema: z.coerce.number().int().min(1).max(36500),
-    default: 365,
+    description:
+      "Days after archiving before a parcel, its history and raw carrier data are deleted; 0 never (the default). Deleting by hand is always possible on the Data page.",
+    schema: z.coerce.number().int().min(0).max(36500),
+    default: 0,
     apply: "live",
     kind: "number",
   }),
