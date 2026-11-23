@@ -1,4 +1,5 @@
 import {
+  echoRef,
   carrierPattern,
   snapshot,
   TransientError,
@@ -112,7 +113,9 @@ export function trackingSnapshot(
   const code = text(raw["tracking_reference"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode,
+    externalRef: echoRef(code, barcode),
     status,
     rawStatus: latest?.rawStatus ?? null,
     delivered,

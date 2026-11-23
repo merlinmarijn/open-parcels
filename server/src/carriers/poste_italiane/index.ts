@@ -1,5 +1,6 @@
 import { z } from "zod";
 import {
+  echoRef,
   carrierPattern,
   defineCarrier,
   isoTime,
@@ -104,7 +105,9 @@ function toSnapshot(raw: Json, barcode: string, report: (text: string) => void):
   const code = text(raw["idTracciatura"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode,
+    externalRef: echoRef(code, barcode),
     status,
     rawStatus: latest?.rawStatus ?? text(raw["stato"]),
     delivered,

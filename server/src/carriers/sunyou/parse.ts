@@ -1,4 +1,5 @@
 import {
+  echoRef,
   ruleStatus,
   asObject,
   isoTime,
@@ -44,8 +45,9 @@ function collect(raw: Json): Json[] {
 }
 
 /**
- * Turns one `data[0]` entry into a snapshot. The barcode is SunYou's `orderNo`; the last-mile
- * carrier's number is a different parcel identity and stays in the raw payload.
+ * Turns one `data[0]` entry into a snapshot, filed under the code tracked; SunYou's `orderNo` is
+ * kept as the reference when it differs. The last-mile carrier's number is a different parcel
+ * identity and stays in the raw payload.
  */
 export function orderSnapshot(
   raw: Json,
@@ -72,16 +74,18 @@ export function orderSnapshot(
   if (code !== null && status === null) {
     report(code);
   }
-  const barcode = text(raw["orderNo"]) ?? requested;
+  const echoed = text(raw["orderNo"]);
   // `displayStatus` is a coarse UI bucket that disagrees with the events; it is not kept.
   const kept = Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "displayStatus"));
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode: requested,
+    externalRef: echoRef(echoed, requested),
     status,
     rawStatus: newest === undefined ? null : (text(newest.event["eventCode"]) ?? code),
     deliveredAt: status === "delivered" ? (newest?.at ?? null) : null,
-    url: rulesTrackingUrl(CARRIER_ID, barcode),
+    url: rulesTrackingUrl(CARRIER_ID, echoed ?? requested),
     history,
     raw: kept,
   });

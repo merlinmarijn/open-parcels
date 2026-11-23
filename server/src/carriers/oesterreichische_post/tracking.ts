@@ -1,4 +1,5 @@
 import {
+  echoRef,
   carrierPattern,
   snapshot,
   TransientError,
@@ -169,7 +170,9 @@ export function trackingSnapshot(
   const window = readWindow(raw);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode,
+    externalRef: echoRef(code, barcode),
     status,
     rawStatus: text(raw["status"]) ?? key,
     delivered,

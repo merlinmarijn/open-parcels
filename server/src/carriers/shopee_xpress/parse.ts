@@ -1,4 +1,5 @@
 import {
+  echoRef,
   ruleStatus,
   asArray,
   asObject,
@@ -87,17 +88,19 @@ export function orderSnapshot(
   const history = newestFirst(entries);
   const delivered = status === "delivered";
   const estimate = asObject(raw["edd_info"]);
-  const barcode = text(asObject(raw["order_info"])["spx_tn"], STRINGS) ?? requested;
+  const echoed = text(asObject(raw["order_info"])["spx_tn"], STRINGS);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode: requested,
+    externalRef: echoRef(echoed, requested),
     status,
     rawStatus: describe(newest),
     deliveredAt: delivered ? epochSeconds(newest["actual_time"]) : null,
     plannedFrom: delivered ? null : epochSeconds(estimate["edd_min"]),
     plannedTo: delivered ? null : epochSeconds(estimate["edd_max"]),
     receiver: text(asObject(raw["sls_tracking_info"])["receiver_name"], STRINGS),
-    url: rulesTrackingUrl(CARRIER_ID, barcode, MARKETS[market].locale),
+    url: rulesTrackingUrl(CARRIER_ID, echoed ?? requested, MARKETS[market].locale),
     history,
     raw,
   });

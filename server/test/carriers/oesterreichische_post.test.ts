@@ -96,6 +96,27 @@ describe("Austrian Post tracking", () => {
     });
   });
 
+  it("files a re-labelled parcel under the tracked code, with two codes tracked (OP-081)", async () => {
+    const OTHER = "1000000000000000000002";
+    const RELABEL = "1000000000000000000099";
+    const { fetchImpl } = scripted([
+      json(
+        shipment([event("2026-11-18T10:00:00+01:00", "deliveryParked", "x")], {
+          activeIdentityCode: RELABEL,
+          originalIdentityCode: CODE,
+        }),
+        200,
+      ),
+      json(shipment([event("2026-11-18T10:00:00+01:00", "deliveryParked", "x")], { activeIdentityCode: OTHER }), 200),
+    ]);
+    const { registered, base } = harness(oesterreichischePost, fetchImpl);
+    const { snapshots } = await registered.track(base, {}, null, [CODE, OTHER]);
+    expect(snapshots.map((parcel) => [parcel.barcode, parcel.externalRef])).toEqual([
+      [CODE, RELABEL],
+      [OTHER, null],
+    ]);
+  });
+
   it("treats a null shipment and a malformed-code rejection as not found", async () => {
     const { fetchImpl, calls } = scripted([
       json({ data: { einzelsendung: null } }, 200),

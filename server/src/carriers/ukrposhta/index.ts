@@ -3,6 +3,7 @@ import type { PluginHttp } from "../../plugin/api.js";
 import {
   carrierPattern,
   defineCarrier,
+  echoRef,
   snapshot,
   TransientError,
   UnexpectedResponseError,
@@ -125,7 +126,9 @@ export function ukrposhtaSnapshot(
   const code = text(final?.event["barcode"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
+    barcode,
+    externalRef: echoRef(code, barcode),
     status,
     rawStatus: final === undefined ? null : rawText(final.event),
     delivered,
