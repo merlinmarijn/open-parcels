@@ -142,6 +142,12 @@ export interface ParcelSourceTable {
   missing_since: ColumnType<Timestamp | null, Timestamp | null | undefined>;
 }
 
+/** Which sources reported an order. See migration 0015. */
+export interface OrderSourceTable {
+  order_id: string;
+  source_id: string;
+}
+
 export interface ParcelEventTable {
   id: Generated<number>;
   parcel_id: string;
@@ -261,6 +267,7 @@ export interface Database {
   orders: OrderTable;
   parcels: ParcelTable;
   parcel_sources: ParcelSourceTable;
+  order_sources: OrderSourceTable;
   parcel_events: ParcelEventTable;
   order_items: OrderItemTable;
   parcel_raw: ParcelRawTable;

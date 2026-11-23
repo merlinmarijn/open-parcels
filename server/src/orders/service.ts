@@ -1,6 +1,7 @@
 import type { Kysely, Selectable } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database, OrderTable } from "../db/schema.js";
+import { orderVisible } from "../db/visibility.js";
 import {
   inView,
   orderArchivedAt,
@@ -96,6 +97,7 @@ export class OrderService {
       .selectFrom("orders")
       .selectAll()
       .where("deleted_at", "is", null)
+      .where(orderVisible)
       .execute();
     const all = await this.#build(rows);
     const shown = all
@@ -113,6 +115,7 @@ export class OrderService {
       .selectAll()
       .where("id", "=", id)
       .where("deleted_at", "is", null)
+      .where(orderVisible)
       .executeTakeFirst();
     if (row === undefined) return undefined;
     const [order] = await this.#build([row]);

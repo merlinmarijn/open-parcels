@@ -1,6 +1,7 @@
 import type { Kysely } from "kysely";
 import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
+import { parcelVisible } from "../db/visibility.js";
 import { effectiveDelivered, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
 import { localParts, nextLocalMidnight } from "../engine/tz.js";
 
@@ -122,6 +123,7 @@ export class CalendarService {
       // A calendar is a history too: archived deliveries stay (decided per row below). Deleted
       // parcels are gone from the table; removed ones (vanished undelivered) never show.
       .where("removed_at", "is", null)
+      .where(parcelVisible)
       // Candidates only; whether a parcel counts as delivered (a manual status wins) is decided
       // below, per row.
       .where((eb) =>

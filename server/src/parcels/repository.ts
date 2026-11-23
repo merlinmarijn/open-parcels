@@ -1,5 +1,6 @@
 import type { Kysely, Selectable } from "kysely";
 import type { Database, OrderItemTable, ParcelRow } from "../db/schema.js";
+import { parcelVisible } from "../db/visibility.js";
 import {
   effectiveDelivered,
   effectiveStatus,
@@ -198,7 +199,7 @@ export class ParcelRepository {
   ) {}
 
   async list(filter: ParcelFilter, withHistory: boolean): Promise<Parcel[]> {
-    let query = this.db.selectFrom("parcels").selectAll();
+    let query = this.db.selectFrom("parcels").selectAll().where(parcelVisible);
     if (filter.includeArchived !== true) {
       query = query.where("archived_at", "is", null);
     }
@@ -253,13 +254,25 @@ export class ParcelRepository {
     return this.#toParcel(row, related);
   }
 
-  /** Every parcel of these orders, archived ones included, without history. */
+  /** A parcel the owner may see: undefined while every source it came from is disabled. */
+  async getVisible(id: string): Promise<Parcel | undefined> {
+    const row = await this.db
+      .selectFrom("parcels")
+      .select("id")
+      .where("id", "=", id)
+      .where(parcelVisible)
+      .executeTakeFirst();
+    return row === undefined ? undefined : this.get(id);
+  }
+
+  /** Every visible parcel of these orders, archived ones included, without history. */
   async byOrders(orderIds: readonly string[]): Promise<{ orderId: string; parcel: Parcel }[]> {
     if (orderIds.length === 0) return [];
     const rows = await this.db
       .selectFrom("parcels")
       .selectAll()
       .where("order_id", "in", orderIds)
+      .where(parcelVisible)
       .orderBy("first_seen_at")
       .orderBy("id")
       .execute();

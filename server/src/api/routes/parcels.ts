@@ -74,7 +74,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
       },
     },
     async (request) => {
-      const parcel = await services.parcels.repository.get(request.params.id);
+      const parcel = await services.parcels.repository.getVisible(request.params.id);
       if (parcel === undefined) {
         throw notFound("The parcel");
       }

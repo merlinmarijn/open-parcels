@@ -32,7 +32,7 @@ describe("migration 0014-place-candidates", () => {
                ('mayong town', null, null, null, null, 't')
       `.execute(raw);
 
-      expect(await migrateToLatest(db)).toEqual(["0014-place-candidates"]);
+      expect(await migrateToLatest(db)).toEqual(["0014-place-candidates", "0015-order-sources"]);
 
       expect(await db.selectFrom("places").selectAll().execute()).toEqual([]);
       await db

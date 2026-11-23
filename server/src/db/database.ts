@@ -15,6 +15,7 @@ import * as m0011 from "./migrations/0011-setting-overrides.js";
 import * as m0012 from "./migrations/0012-session-roles.js";
 import * as m0013 from "./migrations/0013-geocoded-events.js";
 import * as m0014 from "./migrations/0014-place-candidates.js";
+import * as m0015 from "./migrations/0015-order-sources.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -36,6 +37,7 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0012-session-roles": m0012,
   "0013-geocoded-events": m0013,
   "0014-place-candidates": m0014,
+  "0015-order-sources": m0015,
 };
 
 const staticProvider: MigrationProvider = {

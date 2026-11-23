@@ -473,6 +473,13 @@ export class Reconciler {
       merged.delivered && merged.deliveredAt === null ? { ...merged, deliveredAt: now } : merged;
     const parcelId = existing?.id ?? crypto.randomUUID();
     const orderId = await this.#upsertOrder(trx, snapshot, now);
+    if (orderId !== null) {
+      await trx
+        .insertInto("order_sources")
+        .values({ order_id: orderId, source_id: source.id })
+        .onConflict((oc) => oc.columns(["order_id", "source_id"]).doNothing())
+        .execute();
+    }
 
     if (existing === undefined) {
       await trx
