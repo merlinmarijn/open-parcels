@@ -216,6 +216,12 @@ export class Scheduler {
       .select(["parcels.status", "parcels.planned_from"])
       .where("parcel_sources.source_id", "=", sourceId)
       .where("parcels.delivered", "=", 0)
+      .where((eb) =>
+        eb.or([
+          eb("parcels.manual_status", "is", null),
+          eb("parcels.manual_status", "!=", "delivered"),
+        ]),
+      )
       .where("parcels.archived_at", "is", null)
       .where("parcels.removed_at", "is", null)
       .execute();

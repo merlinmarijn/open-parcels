@@ -62,6 +62,45 @@ describe("retention", () => {
     const later = await applyRetention(context.services.db, context.clock, policy);
     expect(later.deleted).toBe(1);
     expect(await context.services.parcels.repository.get(old)).toBeUndefined();
+
+    // Clients learn of both through events (OP-019).
+    const events = await context.services.db
+      .selectFrom("outbox")
+      .select(["type", "parcel_id"])
+      .where("type", "in", ["parcel.archived", "parcel.deleted"])
+      .orderBy("seq")
+      .execute();
+    expect(events).toContainEqual({ type: "parcel.archived", parcel_id: old });
+    expect(events).toContainEqual({ type: "parcel.deleted", parcel_id: old });
+  });
+
+  it("archives a parcel marked delivered by hand once its window has passed (OP-018)", async () => {
+    const policy = { archiveAfterDays: 30, deleteAfterDays: 0, rawAfterDays: 30, notFoundArchiveDays: 0 };
+    const parcel = await context.services.parcels.create({
+      carrier: "dhl",
+      barcode: "00340434000000000004",
+      direction: "incoming",
+      label: null,
+    });
+    await context.services.parcels.update(parcel.id, { manualStatus: "delivered" });
+    expect(await applyRetention(context.services.db, context.clock, policy)).toMatchObject({
+      archived: 0,
+    });
+    // It is a delivery in the calendar, on the day it was marked.
+    const today = context.clock.now();
+    const entries = await context.services.calendar.entries(
+      new Date(today.getTime() - DAY),
+      new Date(today.getTime() + DAY),
+    );
+    expect(entries.find((entry) => entry.parcelId === parcel.id)).toMatchObject({
+      kind: "delivered",
+    });
+
+    context.clock.advance(31 * DAY);
+    expect(await applyRetention(context.services.db, context.clock, policy)).toMatchObject({
+      archived: 1,
+    });
+    expect((await context.services.parcels.repository.get(parcel.id))?.archived_at).not.toBeNull();
   });
 });
 

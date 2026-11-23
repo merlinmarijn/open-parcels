@@ -73,6 +73,15 @@ describe("carrier lookups", () => {
     expect(types.map((row) => row.type)).not.toContain("parcel.removed");
   });
 
+  it("stops asking the carrier about a parcel marked delivered by hand (OP-018)", async () => {
+    const open = await track("FP4001");
+    const closed = await track("FP4002");
+    await context.services.parcels.update(closed, { manualStatus: "delivered" });
+    await context.services.scheduler.runDue();
+    expect(post.trackCalls.at(-1)).toEqual(["FP4001"]);
+    expect(await lookupOf(open)).toMatchObject({ state: "not_found" });
+  });
+
   it("judges only the codes a run really asked about, the others keep their state (OP-080)", async () => {
     post.complete = false;
     post.asked = ["FP3001"];

@@ -112,6 +112,8 @@ export interface ParcelTable {
   order_id: string | null;
   manual_status: string | null;
   manual_until: Timestamp | null;
+  /** When the owner set `manual_status`. See migration 0016. */
+  manual_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
   /** Time of the newest scan that set `status`; null when no scan carried a time. */
   status_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
   first_seen_at: Timestamp;

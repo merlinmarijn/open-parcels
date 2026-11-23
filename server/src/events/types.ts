@@ -13,6 +13,7 @@ export const EVENT_TYPES = [
   "parcel.location_changed",
   "parcel.removed",
   "parcel.deleted",
+  "parcel.archived",
   "source.added",
   "source.updated",
   "source.state_changed",

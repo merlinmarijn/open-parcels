@@ -114,6 +114,7 @@ export class CalendarService {
         "delivered",
         "delivered_at",
         "planned_from",
+        "manual_at",
         "planned_to",
         "label",
         "url",
@@ -137,6 +138,12 @@ export class CalendarService {
         ]),
       )
       .execute();
+          // Marked delivered by hand: delivered when the owner said so.
+          eb.and([
+            eb("manual_status", "=", "delivered"),
+            eb("manual_at", ">=", fromIso),
+            eb("manual_at", "<", toIso),
+          ]),
     const items =
       rows.length === 0
         ? []
@@ -176,14 +183,11 @@ export class CalendarService {
         };
         const delivered = effectiveDelivered(row.delivered === 1, asManual(row.manual_status));
         if (delivered) {
-          if (
-            row.delivered_at === null ||
-            row.delivered_at < fromIso ||
-            row.delivered_at >= toIso
-          ) {
+          const at = row.delivered_at ?? row.manual_at;
+          if (at === null || at < fromIso || at >= toIso) {
             return undefined;
           }
-          const start = new Date(row.delivered_at);
+          const start = new Date(at);
           // A delivery known only by its day is that whole day, not half an hour at midnight.
           const dateOnly = isDateOnly(start, this.timeZone);
           // The next local midnight, not 24 hours on: a daylight-saving day has 23 or 25.

@@ -3,6 +3,11 @@ import { isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelUpdate } from "../db/schema.js";
 import { type Direction, type Parcel, type ParcelStatus } from "../domain/parcel.js";
 import { normaliseBarcode } from "../engine/barcode.js";
+import {
+  applyRetention,
+  type RetentionPolicy,
+  type RetentionResult,
+} from "../engine/retention.js";
 import { deriveEvents, type EventView } from "../engine/rules.js";
 import { removeOrphanedAutoSources } from "../engine/sources.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
@@ -139,8 +144,9 @@ export class ParcelService {
     if (patch.label !== undefined) {
       changes.label = patch.label;
     }
-    if (patch.manualStatus !== undefined) {
+    if (patch.manualStatus !== undefined && patch.manualStatus !== before.manual_status) {
       changes.manual_status = patch.manualStatus;
+      changes.manual_at = patch.manualStatus === null ? null : now;
     }
     if (patch.archived !== undefined) {
       changes.archived_at = patch.archived ? now : null;
@@ -158,9 +164,25 @@ export class ParcelService {
           payload: parcelEventPayload(after, event.changes),
         });
       }
+      if (before.archived_at === null && after.archived_at !== null) {
+        await appendEvent(trx, this.clock, {
+          type: "parcel.archived",
+          parcelId: id,
+          payload: parcelEventPayload({ ...after, history: [] }),
+        });
+      }
     });
     await this.bus.notify();
     return this.#mustGet(id);
+  }
+
+  /** Applies the retention policy (see `applyRetention`) and delivers its events. */
+  async applyRetention(policy: RetentionPolicy): Promise<RetentionResult> {
+    const result = await applyRetention(this.db, this.clock, policy, this.presentation);
+    if (Object.values(result).some((count) => count > 0)) {
+      await this.bus.notify();
+    }
+    return result;
   }
 
   /**

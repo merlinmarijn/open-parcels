@@ -266,6 +266,13 @@ export class SourceRunner {
       .select(["parcels.id", "parcels.barcode"])
       .where("parcel_sources.source_id", "=", sourceId)
       .where("parcels.delivered", "=", 0)
+      // Marked delivered by hand: the owner closed it, so the carrier is not asked any more.
+      .where((eb) =>
+        eb.or([
+          eb("parcels.manual_status", "is", null),
+          eb("parcels.manual_status", "!=", "delivered"),
+        ]),
+      )
       .where("parcels.archived_at", "is", null)
       .execute();
   }

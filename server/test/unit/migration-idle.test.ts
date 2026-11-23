@@ -73,6 +73,7 @@ describe("migration 0009-idle-source-state", () => {
         "0013-geocoded-events",
         "0014-place-candidates",
         "0015-order-sources",
+        "0016-manual-at",
       ]);
 
       const rows = await sql<{ id: string; state: string; state_detail: string | null }>`

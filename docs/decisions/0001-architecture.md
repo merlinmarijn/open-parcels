@@ -390,7 +390,8 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 | `parcel.live_updated` | A live session starts or ends, its state changes, or `stops_away` changes. Never for a position change alone |
 | `parcel.location_changed` | Scans that named only a place gained approximate coordinates looked up from that name (history entries with `approximate: true`; a `location` with precision `area`) |
 | `parcel.removed` | An active parcel has been gone, undelivered, for 6 h. Nothing is judged while one of its sources is failing |
-| `parcel.deleted` | A parcel was deleted: by the user, or folded into another parcel with the same code (`merged_into`: its id) |
+| `parcel.deleted` | A parcel was deleted: by the user, by retention, or folded into another parcel with the same code (`merged_into`: its id) |
+| `parcel.archived` | A parcel was archived: by the user or by retention (delivered, by the carrier or by hand, longer ago than the archive period; or not found for too long) |
 | `source.added` | A source was created, by the user or by the app for a code added by hand. Clients add its device |
 | `source.updated` | A source's label or configuration changed. Clients rename its device |
 | `source.state_changed` | A source changes state, including "needs sign-in" |

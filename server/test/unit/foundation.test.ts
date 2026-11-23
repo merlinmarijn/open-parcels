@@ -168,6 +168,7 @@ describe("migrations", () => {
         "0013-geocoded-events",
         "0014-place-candidates",
         "0015-order-sources",
+        "0016-manual-at",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
     } finally {

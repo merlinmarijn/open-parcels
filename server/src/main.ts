@@ -7,7 +7,6 @@ import { loadConfig } from "./config.js";
 import { loadSecretKey, SecretBox } from "./crypto/secrets.js";
 import { migrateToLatest, openDatabase } from "./db/database.js";
 import { cleanupMailFalsePositives } from "./engine/mail-cleanup.js";
-import { applyRetention } from "./engine/retention.js";
 import { loadRules } from "open-parcels-rules";
 import { announceToHomeAssistant, isSupervised, supervisedEnvironment } from "./ha/supervisor.js";
 import { createLogger } from "./log/logger.js";
@@ -20,7 +19,7 @@ async function runMaintenance(services: Services): Promise<void> {
   const events = await services.bus.pruneExpired();
   const images = await services.images.prune();
   const tiles = await services.tiles.prune();
-  const retention = await applyRetention(services.db, services.clock, services.config.retention);
+  const retention = await services.parcels.applyRetention(services.config.retention);
   services.logger.debug({ sessions, events, images, tiles, ...retention }, "Maintenance finished.");
 }
 
