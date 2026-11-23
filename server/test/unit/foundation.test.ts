@@ -146,6 +146,21 @@ describe("login throttle", () => {
     clock.advance(15 * 60 * 1000 + 1);
     expect(throttle.retryAfterSeconds("ip")).toBe(0);
   });
+
+  it("does not grow without bound with many one-off addresses (OP-006)", () => {
+    const clock = new FakeClock();
+    const throttle = new LoginThrottle(clock, 5, 15 * 60 * 1000, 100);
+    for (let n = 0; n < 100; n += 1) throttle.recordFailure(`old-${n}`);
+    clock.advance(15 * 60 * 1000 + 1);
+    // Expired addresses make room first.
+    throttle.recordFailure("new-0");
+    expect(throttle.size).toBe(1);
+    // Live ones are capped too: the oldest go, a blocked address stays blocked while recent.
+    for (let n = 1; n < 250; n += 1) throttle.recordFailure(`new-${n}`);
+    expect(throttle.size).toBeLessThanOrEqual(100);
+    for (let attempt = 0; attempt < 5; attempt += 1) throttle.recordFailure("guesser");
+    expect(throttle.retryAfterSeconds("guesser")).toBeGreaterThan(0);
+  });
 });
 
 describe("migrations", () => {

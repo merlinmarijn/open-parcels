@@ -1,6 +1,12 @@
 import type { Clock } from "../clock.js";
 
-/** Limits failed sign-in attempts per client address to slow down password guessing. */
+/** Addresses remembered at most; beyond this the expired ones go, then the oldest. */
+export const MAX_TRACKED_ADDRESSES = 10_000;
+
+/**
+ * Limits failed sign-in attempts per client address to slow down password guessing. Addresses are
+ * forgotten once their failures expire, so many one-off addresses cannot grow it without bound.
+ */
 export class LoginThrottle {
   readonly #failures = new Map<string, number[]>();
 
@@ -8,7 +14,25 @@ export class LoginThrottle {
     private readonly clock: Clock,
     private readonly maxFailures = 5,
     private readonly windowMs = 15 * 60 * 1000,
+    private readonly maxAddresses = MAX_TRACKED_ADDRESSES,
   ) {}
+
+  /** How many addresses are remembered (for tests and diagnostics). */
+  get size(): number {
+    return this.#failures.size;
+  }
+
+  #sweep(): void {
+    const cutoff = this.clock.now().getTime() - this.windowMs;
+    for (const [key, times] of this.#failures) {
+      if (times.every((at) => at <= cutoff)) this.#failures.delete(key);
+    }
+    // Still full of live entries: the oldest addresses (first inserted) make room.
+    for (const key of this.#failures.keys()) {
+      if (this.#failures.size < this.maxAddresses) break;
+      this.#failures.delete(key);
+    }
+  }
 
   #recent(key: string): number[] {
     const cutoff = this.clock.now().getTime() - this.windowMs;
@@ -32,7 +56,11 @@ export class LoginThrottle {
   }
 
   recordFailure(key: string): void {
-    this.#failures.set(key, [...this.#recent(key), this.clock.now().getTime()]);
+    const times = [...this.#recent(key), this.clock.now().getTime()];
+    if (!this.#failures.has(key) && this.#failures.size >= this.maxAddresses) {
+      this.#sweep();
+    }
+    this.#failures.set(key, times);
   }
 
   reset(key: string): void {

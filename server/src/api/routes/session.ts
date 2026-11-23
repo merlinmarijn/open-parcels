@@ -52,6 +52,22 @@ async function startSession(
   return { csrf_token: session.csrfToken, role };
 }
 
+/**
+ * Behind a reverse proxy that is not in OPENPARCELS_TRUST_PROXY every visitor shares the proxy's
+ * address, so one person's wrong passwords block everyone's sign-in. Said once in the log.
+ */
+function proxyWarning(services: Services): (request: FastifyRequest) => void {
+  let warned = false;
+  return (request) => {
+    if (warned || request.headers["x-forwarded-for"] === undefined) return;
+    if (request.ip !== request.socket.remoteAddress) return;
+    warned = true;
+    services.logger.warn(
+      "Sign-ins arrive through a proxy that OPENPARCELS_TRUST_PROXY does not list: every visitor shares its address for the sign-in throttle. Add the proxy's address to OPENPARCELS_TRUST_PROXY.",
+    );
+  };
+}
+
 /** Throws 429 while the caller's address has too many recent failures. */
 function checkThrottle(
   throttle: LoginThrottle,
@@ -123,6 +139,7 @@ function registerAdminPasswordRoutes(app: TypedApp, services: Services): void {
 
 export function registerSessionRoutes(app: TypedApp, services: Services): void {
   const throttle = new LoginThrottle(services.clock);
+  const warnAboutProxy = proxyWarning(services);
 
   app.get(
     "/api/v1/session",
@@ -190,6 +207,7 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
       if (!services.access.setupPending) {
         throw new ApiError(409, "already_set_up", "The admin password is already set.");
       }
+      warnAboutProxy(request);
       checkThrottle(throttle, request, reply);
       // Home Assistant ingress has already authenticated the user, so it needs no setup code.
       if (
@@ -226,6 +244,7 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
       },
     },
     async (request, reply) => {
+      warnAboutProxy(request);
       checkThrottle(throttle, request, reply);
       const role = await services.access.roleFor(request.body.password);
       if (role === null) {
