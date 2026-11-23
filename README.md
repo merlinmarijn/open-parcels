@@ -91,4 +91,4 @@ API reference: [`docs/openapi.json`](docs/openapi.json). Branding assets: [`docs
 
 ## License
 
-See the repository's license file.
+Released into the public domain under [The Unlicense](LICENSE).

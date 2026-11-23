@@ -612,6 +612,7 @@ Every phase lands as reviewable commits, with the gate green at each one.
    `mail-parser-ts`.
 4. **DPD Germany's public tracking page:** used, at the normal polling rate.
 5. **Image registries:** Docker Hub and GHCR.
-6. **Licensing:** left undecided until publication.
+6. **Licensing:** The Unlicense (public domain), for every open-parcels repository (owner's
+   decision of 2026-11-23). See `LICENSE`.
 7. **Git history:** the scrubbed history is kept. The pre-rewrite code is on branch `legacy-ts`
    and tag `v1-final`.
