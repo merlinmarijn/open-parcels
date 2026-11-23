@@ -67,8 +67,9 @@ const TILE_IMAGE_RE = /class="product-image[^"]*">\s*(<img\b[^>]*>)/;
 const IMAGE_SRC_RE = /\b(data-a-hires|src)="(https:\/\/[^"]+)"/g;
 /** Characters after the last line searched for its image; a real line is about half this. */
 const TILE_SPAN = 4000;
+/** The placed date may carry a comma before its year, as US-style dates do ("November 10, 2026"). */
 const PLACED_RE =
-  /,\s*(?:Order placed|Bestellt am|Bestellung aufgegeben(?: am)?)\s+([^,]+)(?:,\s*(.*))?$/s;
+  /,\s*(?:Order placed|Bestellt am|Bestellung aufgegeben(?: am)?)\s+([^,]+(?:,\s*\d{4})?)(?:,\s*(.*))?$/s;
 const ORDER_ID_RE = /\d{3}-\d{7}-\d{7}/;
 const TRACK_LINK_RE = /href="([^"]*\/(?:ship-track|progress-tracker\/package\/?)\?[^"]*)"/;
 const TRACK_PAGE_PATH_RE =

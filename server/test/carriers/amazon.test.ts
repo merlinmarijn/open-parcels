@@ -10,6 +10,7 @@ import { authorizationCode, registerDevice, signInUrl } from "../../src/carriers
 import { pastDay } from "../../src/carriers/amazon/dates.js";
 import { amazonCarrier } from "../../src/carriers/amazon/index.js";
 import { readLive, stopsFromCallout } from "../../src/carriers/amazon/live.js";
+import { parseOrderTiles } from "../../src/carriers/amazon/pages.js";
 import { STOREFRONTS } from "../../src/carriers/amazon/storefronts.js";
 import { BUILTIN_CARRIERS } from "../../src/engine/builtin-carriers.js";
 import {
@@ -644,5 +645,33 @@ describe("Amazon registration", () => {
         "https://www.amazon.com/ap/maplanding",
       ),
     ).rejects.toBeInstanceOf(SignInRejectedError);
+  });
+});
+
+describe("Amazon order lines (OP-082)", () => {
+  const isStatus = (text: string): boolean => /^(Cancelled|Delivered|Arriving)/.test(text);
+  const tile = (label: string): string =>
+    `<a class="item-card__link" href="/gp/your-account/order-details?orderID=000-0000000-0000001" aria-label="${label}">`;
+
+  it("read a US-style placed date without losing the status", () => {
+    const [us] = parseOrderTiles(
+      tile("Example kettle, Order placed November 10, 2026, Cancelled"),
+      isStatus,
+    );
+    expect(us).toMatchObject({
+      title: "Example kettle",
+      placedText: "November 10, 2026",
+      statusText: "Cancelled",
+      note: null,
+    });
+    const [eu] = parseOrderTiles(
+      tile("Example kettle, Order placed 10 November 2026, Delivered, Left at the door"),
+      isStatus,
+    );
+    expect(eu).toMatchObject({
+      placedText: "10 November 2026",
+      statusText: "Delivered",
+      note: "Left at the door",
+    });
   });
 });
