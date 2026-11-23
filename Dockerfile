@@ -5,6 +5,11 @@
 # optional browser variant) does not support musl.
 
 ARG NODE_VERSION=26
+# Tailscale is built in (optional, off unless TS_STATE_DIR is set). Pinned; bump deliberately.
+ARG TAILSCALE_VERSION=v1.104.7
+
+# --- Tailscale binaries (copied into the runtime; no sidecar container needed) ----------------------
+FROM tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale
 
 # --- Build: compile TypeScript with the full toolchain -------------------------------------------
 FROM node:${NODE_VERSION}-slim AS build
@@ -42,6 +47,8 @@ COPY --from=deps --chown=root:root /app/node_modules ./node_modules
 COPY --from=build --chown=root:root /app/server/package.json ./server/package.json
 COPY --from=build --chown=root:root /app/server/dist ./server/dist
 COPY --from=build --chown=root:root /app/web/dist ./web/dist
+COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscaled /usr/local/bin/
+COPY --chmod=755 docker/tailscale-entrypoint.sh /usr/local/bin/tailscale-entrypoint.sh
 
 ENV NODE_ENV=production \
     OPENPARCELS_DATA_DIR=/data \
@@ -56,7 +63,9 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["node", "-e", "fetch('http://127.0.0.1:'+(process.env.OPENPARCELS_PORT||3000)+'/api/v1/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
-ENTRYPOINT ["/usr/bin/tini", "--"]
+# The entrypoint starts Tailscale first when TS_STATE_DIR is set, then execs the app; without it,
+# it only execs the app.
+ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/tailscale-entrypoint.sh"]
 CMD ["node", "server/dist/main.js"]
 
 LABEL org.opencontainers.image.title="open-parcels" \

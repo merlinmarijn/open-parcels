@@ -59,6 +59,16 @@ becomes the admin password (still hashed, shown as "saved in UI"), open sessions
 admin, and reading is open until `OPENPARCELS_PASSWORD` is set. To keep reading private as before,
 set `OPENPARCELS_PASSWORD` (or set it on the Security card right after upgrading).
 
+## Tailscale (built in)
+
+The image can join your tailnet itself, so no sidecar container is needed. Set `TS_STATE_DIR`
+(for example `/var/lib/tailscale`) and mount a persistent folder there, writable for uid 1000.
+On the first start also set `TS_AUTHKEY`; later starts reuse the saved state. The web UI is then
+served at `https://<TS_HOSTNAME>.<your-tailnet>.ts.net` (`TS_HOSTNAME` defaults to `open-parcels`).
+Tailscale runs in userspace mode, as the same unprivileged user, so the container needs no extra
+capabilities and no `/dev/net/tun`. Without `TS_STATE_DIR` the image behaves as before.
+Set `OPENPARCELS_PUBLIC_URL` to the tailnet address so links point there.
+
 ## Development
 
 ```sh

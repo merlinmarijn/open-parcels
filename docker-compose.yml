@@ -9,6 +9,7 @@ services:
       - "3000:3000"
     volumes:
       - open-parcels-data:/data
+      # - open-parcels-tailscale:/var/lib/tailscale
     environment:
       OPENPARCELS_LOG_LEVEL: info
       # OPENPARCELS_PUBLIC_URL: https://parcels.example.com
@@ -17,6 +18,11 @@ services:
       # OPENPARCELS_PASSWORD: change-me-reader
       # Without an admin password, the first start asks for the setup code from the log.
       # OPENPARCELS_ADMIN_PASSWORD: change-me-admin-password
+      # Built-in Tailscale (no sidecar): serves the web UI on https://<TS_HOSTNAME>.<tailnet>.ts.net.
+      # Needs the open-parcels-tailscale volume below. TS_AUTHKEY only for the first start.
+      # TS_STATE_DIR: /var/lib/tailscale
+      # TS_HOSTNAME: open-parcels
+      # TS_AUTHKEY: tskey-auth-...
     read_only: true
     tmpfs:
       - /tmp
@@ -27,3 +33,4 @@ services:
 
 volumes:
   open-parcels-data:
+  # open-parcels-tailscale:
