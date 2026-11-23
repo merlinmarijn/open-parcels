@@ -1,4 +1,4 @@
-import { useState, type SyntheticEvent, type ReactNode } from "react";
+import { useRef, useState, type SyntheticEvent, type ReactNode } from "react";
 import { useCreateToken, useRevokeToken, useTokens } from "../api/queries";
 import type { ApiToken } from "../api/types";
 import { useIsAdmin } from "../auth/session";
@@ -10,7 +10,30 @@ const SCOPES: readonly Scope[] = ["read", "write", "admin"];
 
 function CreateToken(): ReactNode {
   const create = useCreateToken();
+  const tokenRef = useRef<HTMLElement>(null);
+  const [copied, setCopied] = useState<string | null>(null);
   const [name, setName] = useState("");
+
+  /**
+   * The clipboard exists only in secure contexts (HTTPS or localhost); over plain HTTP on the LAN
+   * the token is selected for a manual copy instead. Either way the user is told what happened.
+   */
+  async function copyToken(token: string): Promise<void> {
+    if (window.isSecureContext && "clipboard" in navigator) {
+      try {
+        await navigator.clipboard.writeText(token);
+        setCopied("Copied.");
+        return;
+      } catch {
+        // Refused by the browser: fall through to selecting it for a manual copy.
+      }
+    }
+    const code = tokenRef.current;
+    if (code !== null) {
+      window.getSelection()?.selectAllChildren(code);
+    }
+    setCopied("Copying is not available here: the token is selected, copy it by hand.");
+  }
   const [scopes, setScopes] = useState<Scope[]>(["read"]);
 
   const submit = (event: SyntheticEvent): void => {
@@ -78,13 +101,16 @@ function CreateToken(): ReactNode {
           <p>
             Copy the token now. It is shown <strong>only once</strong>.
           </p>
-          <code className="mono">{create.data.token}</code>
+          {copied === null ? null : <p>{copied}</p>}
+          <code className="mono" ref={tokenRef}>
+            {create.data.token}
+          </code>
           <div className="actions">
             <button
               type="button"
               className="button"
               onClick={() => {
-                void navigator.clipboard.writeText(create.data.token);
+                void copyToken(create.data.token);
               }}
             >
               Copy
@@ -94,6 +120,7 @@ function CreateToken(): ReactNode {
               className="button"
               onClick={() => {
                 create.reset();
+                setCopied(null);
               }}
             >
               Done

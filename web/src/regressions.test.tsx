@@ -257,6 +257,27 @@ describe("API tokens", () => {
     });
     expect(within(updated).getByText("1 minute ago")).toBeInTheDocument();
   });
+
+  it("says whether Copy worked, and selects the token where the clipboard is missing (OP-146)", async () => {
+    mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/tokens": () => ({ body: [] }),
+      "POST /api/v1/tokens": () => ({
+        status: 201,
+        body: { ...token, last_used_at: null, token: "opt_made_up_value" },
+      }),
+    });
+    // Plain HTTP on the LAN: no secure context, so no clipboard.
+    Object.defineProperty(window, "isSecureContext", { value: false, configurable: true });
+    const user = userEvent.setup();
+    renderApp("/tokens");
+    await user.type(await screen.findByLabelText("Name"), "Made-up client");
+    await user.click(screen.getByRole("button", { name: "Create token" }));
+    await user.click(await screen.findByRole("button", { name: "Copy" }));
+    expect(await screen.findByText(/copy it by hand/)).toBeInTheDocument();
+    expect(window.getSelection()?.toString()).toBe("opt_made_up_value");
+    Reflect.deleteProperty(window, "isSecureContext");
+  });
 });
 
 describe("calendar", () => {
