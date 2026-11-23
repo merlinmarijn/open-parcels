@@ -1,4 +1,4 @@
-import { screen, waitFor } from "@testing-library/react";
+import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { mockApi, parcel, renderApp, SIGNED_IN } from "../test/helpers";
@@ -95,7 +95,7 @@ describe("editing a parcel in place", () => {
     await user.selectOptions(picker, "registered");
     await user.selectOptions(picker, "out_for_delivery");
     expect(calls.filter((call) => call.method === "PATCH")).toHaveLength(0);
-    await user.keyboard("{Enter}");
+    fireEvent.keyDown(picker, { key: "Enter" });
     await waitFor(() => {
       expect(calls.filter((call) => call.method === "PATCH").map((call) => call.body)).toEqual([
         { manual_status: "out_for_delivery" },

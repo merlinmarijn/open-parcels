@@ -157,7 +157,7 @@ const FROM_CARRIER = "";
 
 /**
  * The status badge; the pencil opens a picker. A choice is saved with Enter or Save, never by
- * moving through the list, so arrow keys can browse; Escape, Cancel or leaving closes it unsaved.
+ * moving through the list, so arrow keys can browse; Escape or Cancel closes it unsaved.
  */
 export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const canEdit = useCanEdit();
@@ -181,9 +181,6 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
           value={choice}
           onChange={(e) => {
             setChoice(e.target.value);
-          }}
-          onBlur={(e) => {
-            if (!staysInGroup(e)) close(false);
           }}
           onKeyDown={(e) => {
             if (e.key === "Enter") close(true);
