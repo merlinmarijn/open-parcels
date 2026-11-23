@@ -1,8 +1,12 @@
 import { existsSync, readFileSync } from "node:fs";
 import { hostname } from "node:os";
+import type { Kysely } from "kysely";
 import { z } from "zod";
 import type { Logger } from "pino";
 import type { AuthStore } from "../auth/store.js";
+import { isoNow, type Clock } from "../clock.js";
+import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
+import type { Database } from "../db/schema.js";
 
 /** Ingress port the Home Assistant app declares; the Supervisor proxies the web UI to it. */
 export const APP_INGRESS_PORT = 8099;
@@ -59,25 +63,89 @@ export function supervisedEnvironment(
   return result;
 }
 
+/** Where the discovery token is kept between starts, so it can be announced again unchanged. */
+export interface TokenVault {
+  /** The stored token, or null when there is none or it cannot be read. */
+  load(): Promise<string | null>;
+  save(token: string): Promise<void>;
+}
+
+const VAULT_KEY = "ha_discovery_token";
+const vaultAad = "settings:ha_discovery_token";
+
+/** Keeps the token encrypted in the settings table, bound to its row like source secrets. */
+export function settingsTokenVault(
+  db: Kysely<Database>,
+  secrets: SecretBox,
+  clock: Clock,
+): TokenVault {
+  return {
+    async load() {
+      const row = await db
+        .selectFrom("settings")
+        .select("value")
+        .where("key", "=", VAULT_KEY)
+        .executeTakeFirst();
+      if (row === undefined) {
+        return null;
+      }
+      try {
+        return secrets.decrypt(Buffer.from(row.value, "base64"), vaultAad);
+      } catch (error) {
+        if (error instanceof DecryptionError) {
+          // A changed encryption key: a new token is made and announced.
+          return null;
+        }
+        throw error;
+      }
+    },
+    async save(token) {
+      const value = secrets.encrypt(token, vaultAad).toString("base64");
+      const now = isoNow(clock);
+      await db
+        .insertInto("settings")
+        .values({ key: VAULT_KEY, value, updated_at: now })
+        .onConflict((oc) => oc.column("key").doUpdateSet({ value, updated_at: now }))
+        .execute();
+    },
+  };
+}
+
 export interface DiscoveryOptions {
   readonly token: string;
   readonly auth: AuthStore;
+  readonly vault: TokenVault;
   readonly port: number;
   readonly logger: Logger;
   readonly fetchImpl?: (url: string, init: RequestInit) => Promise<Response>;
 }
 
 /**
- * Announces this app to Home Assistant, so the integration can be set up with one click. The
- * payload carries a fresh API token made only for this; the previous one is revoked on each start.
+ * The API token the integration uses: the one made on an earlier start while it is still valid,
+ * so the integration's stored copy keeps working across restarts. Only when it is missing or was
+ * revoked is a new one made (and leftovers of the old one removed).
  */
-export async function announceToHomeAssistant(options: DiscoveryOptions): Promise<void> {
-  for (const existing of await options.auth.listTokens()) {
+async function discoveryToken(auth: AuthStore, vault: TokenVault): Promise<string> {
+  const stored = await vault.load();
+  if (stored !== null && (await auth.findToken(stored)) !== undefined) {
+    return stored;
+  }
+  for (const existing of await auth.listTokens()) {
     if (existing.name === DISCOVERY_TOKEN_NAME) {
-      await options.auth.deleteToken(existing.id);
+      await auth.deleteToken(existing.id);
     }
   }
-  const { token } = await options.auth.createToken(DISCOVERY_TOKEN_NAME, ["read", "write"], null);
+  const { token } = await auth.createToken(DISCOVERY_TOKEN_NAME, ["read", "write"], null);
+  await vault.save(token);
+  return token;
+}
+
+/**
+ * Announces this app to Home Assistant, so the integration can be set up with one click. The
+ * payload carries an API token made only for this, kept across restarts (see `discoveryToken`).
+ */
+export async function announceToHomeAssistant(options: DiscoveryOptions): Promise<void> {
+  const token = await discoveryToken(options.auth, options.vault);
   const send = options.fetchImpl ?? ((url, init) => fetch(url, init));
   const response = await send(`${SUPERVISOR_URL}/discovery`, {
     method: "POST",

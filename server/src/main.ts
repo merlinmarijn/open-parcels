@@ -8,7 +8,12 @@ import { loadSecretKey, SecretBox } from "./crypto/secrets.js";
 import { migrateToLatest, openDatabase } from "./db/database.js";
 import { cleanupMailFalsePositives } from "./engine/mail-cleanup.js";
 import { loadRules } from "open-parcels-rules";
-import { announceToHomeAssistant, isSupervised, supervisedEnvironment } from "./ha/supervisor.js";
+import {
+  announceToHomeAssistant,
+  isSupervised,
+  settingsTokenVault,
+  supervisedEnvironment,
+} from "./ha/supervisor.js";
 import { createLogger } from "./log/logger.js";
 import { createServices, type Services } from "./services.js";
 
@@ -87,6 +92,7 @@ async function main(): Promise<void> {
     announceToHomeAssistant({
       token: supervisorToken,
       auth: services.auth,
+      vault: settingsTokenVault(services.db, services.secrets, services.clock),
       port: config.port,
       logger,
     }).catch((error: unknown) => {

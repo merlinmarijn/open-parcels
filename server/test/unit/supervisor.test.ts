@@ -7,6 +7,7 @@ import {
   announceToHomeAssistant,
   APP_INGRESS_PORT,
   isSupervised,
+  settingsTokenVault,
   supervisedEnvironment,
 } from "../../src/ha/supervisor.js";
 import { createTestContext, type TestContext } from "../helpers.js";
@@ -41,7 +42,7 @@ describe("Home Assistant app support", () => {
     });
   });
 
-  it("announces itself with a fresh token and revokes the previous one", async () => {
+  it("announces itself with the same token on every start, and a new one once revoked (AP-002)", async () => {
     const context: TestContext = await createTestContext();
     try {
       const sent: { url: string; body: unknown }[] = [];
@@ -49,13 +50,20 @@ describe("Home Assistant app support", () => {
         sent.push({ url, body: JSON.parse(typeof init.body === "string" ? init.body : "null") });
         return Promise.resolve(new Response("{}", { status: 200 }));
       };
+      const { db, secrets, clock, auth } = context.services;
       const options = {
         token: "supervisor",
-        auth: context.services.auth,
+        auth,
+        // A fresh vault per start, as after a restart: only the database carries the token over.
+        get vault() {
+          return settingsTokenVault(db, secrets, clock);
+        },
         port: 3000,
         logger: pino({ level: "silent" }),
         fetchImpl,
       };
+      const announced = (index: number): string =>
+        (sent[index]?.body as { config: { api_token: string } }).config.api_token;
       await announceToHomeAssistant(options);
       await announceToHomeAssistant(options);
       expect(sent).toHaveLength(2);
@@ -63,10 +71,26 @@ describe("Home Assistant app support", () => {
         url: "http://supervisor/discovery",
         body: { service: "open_parcels", config: { port: 3000 } },
       });
-      const tokens = await context.services.auth.listTokens();
-      expect(tokens.filter((token) => token.name.startsWith("Home Assistant"))).toHaveLength(1);
-      const latest = (sent[1]?.body as { config: { api_token: string } }).config.api_token;
-      expect(await context.services.auth.findToken(latest)).toBeDefined();
+      expect(announced(1)).toBe(announced(0));
+      expect(await auth.findToken(announced(0))).toBeDefined();
+      const named = async () =>
+        (await auth.listTokens()).filter((token) => token.name.startsWith("Home Assistant"));
+      expect(await named()).toHaveLength(1);
+      // The value is stored encrypted, never in clear.
+      const row = await db
+        .selectFrom("settings")
+        .select("value")
+        .where("key", "=", "ha_discovery_token")
+        .executeTakeFirstOrThrow();
+      expect(row.value).not.toContain(announced(0));
+
+      // Revoked by the owner: the next start makes and announces a new one.
+      const [first] = await named();
+      await auth.deleteToken(first?.id ?? "");
+      await announceToHomeAssistant(options);
+      expect(announced(2)).not.toBe(announced(0));
+      expect(await auth.findToken(announced(2))).toBeDefined();
+      expect(await named()).toHaveLength(1);
     } finally {
       await context.close();
     }
