@@ -84,6 +84,12 @@ export function Shell(): ReactNode {
       ? ROLE_LABELS.anonymous
       : ROLE_LABELS.reader;
 
+  // Once the admin is signed in, the header's sign-in is done: a later drop to reader (password
+  // changed elsewhere) shows the read-only app with its Sign in button, not the sign-in page.
+  if (signingIn && admin) {
+    setSigningIn(false);
+  }
+
   // Reading is open (or a reader signed in) and the admin asked to sign in from the header.
   if (signingIn && !admin) {
     const back = (): void => {

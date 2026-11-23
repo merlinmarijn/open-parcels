@@ -1,6 +1,7 @@
 import { Package, Plus } from "lucide-react";
 import { useState, type ReactNode } from "react";
 import { useParcels } from "../api/queries";
+import { useIsAdmin } from "../auth/session";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { AddParcelDialog } from "./AddParcelDialog";
 import { flag, pickOne, useUrlParam } from "../lib/urlState";
@@ -19,6 +20,7 @@ export function ParcelsPage(): ReactNode {
     setStatusParam(value === "active" ? null : value);
   };
   const [adding, setAdding] = useState(false);
+  const admin = useIsAdmin();
   const parcels = useParcels(archived);
 
   return (
@@ -41,16 +43,19 @@ export function ParcelsPage(): ReactNode {
           />
           Include archived
         </label>
-        <button
-          type="button"
-          className="button primary"
-          onClick={() => {
-            setAdding(true);
-          }}
-        >
-          <Plus size={16} aria-hidden="true" />
-          Track a parcel
-        </button>
+        {/* Readers cannot add parcels: the button would only lead to a refusal. */}
+        {admin ? (
+          <button
+            type="button"
+            className="button primary"
+            onClick={() => {
+              setAdding(true);
+            }}
+          >
+            <Plus size={16} aria-hidden="true" />
+            Track a parcel
+          </button>
+        ) : null}
       </div>
       <ErrorNotice error={parcels.error} />
       {parcels.data === undefined ? (

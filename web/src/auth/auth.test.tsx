@@ -135,12 +135,15 @@ describe("first start and sign-in", () => {
     expect(screen.getByText("Read only")).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Add" })).not.toBeInTheDocument();
     expect(screen.queryByRole("link", { name: /API tokens/ })).not.toBeInTheDocument();
+    // Readers are not offered what they cannot do (OP-147).
+    expect(screen.queryByRole("button", { name: /Track a parcel/ })).not.toBeInTheDocument();
 
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     await user.type(await screen.findByLabelText("Password"), OWNER_PASSWORD);
     await user.click(screen.getByRole("button", { name: "Sign in" }));
     expect(await screen.findByText("Admin")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument();
+    expect(screen.getByRole("button", { name: /Track a parcel/ })).toBeInTheDocument();
   });
 
   it("shows the sign-in page and none of the data after signing out (OP-144)", async () => {
