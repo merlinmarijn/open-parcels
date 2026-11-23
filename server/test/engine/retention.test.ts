@@ -75,7 +75,12 @@ describe("retention", () => {
   });
 
   it("archives a parcel marked delivered by hand once its window has passed (OP-018)", async () => {
-    const policy = { archiveAfterDays: 30, deleteAfterDays: 0, rawAfterDays: 30, notFoundArchiveDays: 0 };
+    const policy = {
+      archiveAfterDays: 30,
+      deleteAfterDays: 0,
+      rawAfterDays: 30,
+      notFoundArchiveDays: 0,
+    };
     const parcel = await context.services.parcels.create({
       carrier: "dhl",
       barcode: "00340434000000000004",

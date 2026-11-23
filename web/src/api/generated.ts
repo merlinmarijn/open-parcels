@@ -92,6 +92,8 @@ export type GetApiV1Session200 = {
   /** OPENPARCELS_PASSWORD is set: reading needs a sign-in. */
   reader_required: boolean;
   setup_required: boolean;
+  /** Show the admin that OPENPARCELS_PASSWORD is not set (anyone who reaches the server can read), until the admin dismisses it. */
+  reader_password_notice: boolean;
 };
 
 export type PostApiV1SessionBody = {
@@ -4047,6 +4049,22 @@ export const deleteApiV1Session = async (
   });
 };
 
+export const getPostApiV1SessionReaderPasswordNoticeDismissUrl = () => {
+  return `/api/v1/session/reader-password-notice/dismiss`;
+};
+
+/**
+ * @summary Hide the notice that OPENPARCELS_PASSWORD is not set, for good and in every browser.
+ */
+export const postApiV1SessionReaderPasswordNoticeDismiss = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<null> => {
+  return apiFetch<null>(getPostApiV1SessionReaderPasswordNoticeDismissUrl(), {
+    ...options,
+    method: "POST",
+  });
+};
+
 export const getPostApiV1SetupUrl = () => {
   return `/api/v1/setup`;
 };
@@ -5025,7 +5043,7 @@ export const getGetApiV1EventsUrl = (params?: GetApiV1EventsParams) => {
 };
 
 /**
- * Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.
+ * Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed.
  * @summary Server-Sent Events stream of parcel and source events.
  */
 export const getApiV1Events = async (

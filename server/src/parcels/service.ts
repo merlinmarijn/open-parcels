@@ -3,11 +3,7 @@ import { isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelUpdate } from "../db/schema.js";
 import { type Direction, type Parcel, type ParcelStatus } from "../domain/parcel.js";
 import { normaliseBarcode } from "../engine/barcode.js";
-import {
-  applyRetention,
-  type RetentionPolicy,
-  type RetentionResult,
-} from "../engine/retention.js";
+import { applyRetention, type RetentionPolicy, type RetentionResult } from "../engine/retention.js";
 import { deriveEvents, type EventView } from "../engine/rules.js";
 import { removeOrphanedAutoSources } from "../engine/sources.js";
 import { appendEvent, type EventBus } from "../events/bus.js";

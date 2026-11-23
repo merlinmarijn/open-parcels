@@ -47,10 +47,7 @@ function effectivelyDelivered(eb: ExpressionBuilder<Database, "parcels">) {
 /** Delivered before `iso`: by the carrier's delivery time, else when it was marked by hand. */
 function deliveredBefore(iso: string) {
   return (eb: ExpressionBuilder<Database, "parcels">) =>
-    eb.and([
-      effectivelyDelivered(eb),
-      eb(eb.fn.coalesce("delivered_at", "manual_at"), "<", iso),
-    ]);
+    eb.and([effectivelyDelivered(eb), eb(eb.fn.coalesce("delivered_at", "manual_at"), "<", iso)]);
 }
 
 /**
@@ -99,7 +96,12 @@ export async function applyRetention(
       .where("archived_at", "is", null)
       .where(deliveredBefore(iso(policy.archiveAfterDays)))
       .execute();
-    const archived = await archive(trx, clock, presentation, delivered.map((row) => row.id));
+    const archived = await archive(
+      trx,
+      clock,
+      presentation,
+      delivered.map((row) => row.id),
+    );
     const lost =
       policy.notFoundArchiveDays <= 0
         ? []
@@ -112,7 +114,12 @@ export async function applyRetention(
             .where("lookup_state", "=", "not_found")
             .where("lookup_since", "<", iso(policy.notFoundArchiveDays))
             .execute();
-    const notFoundArchived = await archive(trx, clock, presentation, lost.map((row) => row.id));
+    const notFoundArchived = await archive(
+      trx,
+      clock,
+      presentation,
+      lost.map((row) => row.id),
+    );
     // Deleting is the owner's choice: with deleteAfterDays 0 nothing is ever deleted on its own.
     if (policy.deleteAfterDays === 0) {
       return { archived, notFoundArchived, deleted: 0, rawDropped: 0 };
@@ -131,7 +138,10 @@ export async function applyRetention(
     const rawDropped = await trx
       .deleteFrom("parcel_raw")
       .where("parcel_id", "in", (eb) =>
-        eb.selectFrom("parcels").select("id").where(deliveredBefore(iso(policy.rawAfterDays))),
+        eb
+          .selectFrom("parcels")
+          .select("id")
+          .where(deliveredBefore(iso(policy.rawAfterDays))),
       )
       .executeTakeFirst();
     return {

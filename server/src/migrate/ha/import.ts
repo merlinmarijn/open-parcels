@@ -214,7 +214,8 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
   const id = crypto.randomUUID();
   const written = blobs(ctx, id, plan);
   // As SourceService.create: nothing has run yet, and that is what the source says.
-  const detail = written.state === "ok" ? (written.state_detail ?? NOT_RUN_YET) : written.state_detail;
+  const detail =
+    written.state === "ok" ? (written.state_detail ?? NOT_RUN_YET) : written.state_detail;
   await ctx.trx
     .insertInto("sources")
     .values({

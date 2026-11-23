@@ -205,8 +205,7 @@ export class PluginHttp {
     let body = options.body;
     for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
       const cookie = jar === undefined ? "" : await jar.getCookieString(current);
-      const own =
-        current.host === url.host ? options.headers : withoutCredentials(options.headers);
+      const own = current.host === url.host ? options.headers : withoutCredentials(options.headers);
       const headers = { ...own, ...(cookie === "" ? {} : { cookie }) };
       const response = await this.#send(current, options, { method, headers, body });
       if (jar !== undefined) {

@@ -486,7 +486,11 @@ async function insertMailbox(
   await appendEvent(input.trx, input.clock, {
     type: "source.added",
     parcelId: null,
-    payload: { source: { id, plugin: MAIL_PLUGIN, label, kind: "mail" }, state: "ok", detail: null },
+    payload: {
+      source: { id, plugin: MAIL_PLUGIN, label, kind: "mail" },
+      state: "ok",
+      detail: null,
+    },
   });
   return true;
 }

@@ -260,21 +260,23 @@ export class SourceRunner {
   }
 
   async #trackedParcels(sourceId: string): Promise<{ id: string; barcode: string }[]> {
-    return this.deps.db
-      .selectFrom("parcel_sources")
-      .innerJoin("parcels", "parcels.id", "parcel_sources.parcel_id")
-      .select(["parcels.id", "parcels.barcode"])
-      .where("parcel_sources.source_id", "=", sourceId)
-      .where("parcels.delivered", "=", 0)
-      // Marked delivered by hand: the owner closed it, so the carrier is not asked any more.
-      .where((eb) =>
-        eb.or([
-          eb("parcels.manual_status", "is", null),
-          eb("parcels.manual_status", "!=", "delivered"),
-        ]),
-      )
-      .where("parcels.archived_at", "is", null)
-      .execute();
+    return (
+      this.deps.db
+        .selectFrom("parcel_sources")
+        .innerJoin("parcels", "parcels.id", "parcel_sources.parcel_id")
+        .select(["parcels.id", "parcels.barcode"])
+        .where("parcel_sources.source_id", "=", sourceId)
+        .where("parcels.delivered", "=", 0)
+        // Marked delivered by hand: the owner closed it, so the carrier is not asked any more.
+        .where((eb) =>
+          eb.or([
+            eb("parcels.manual_status", "is", null),
+            eb("parcels.manual_status", "!=", "delivered"),
+          ]),
+        )
+        .where("parcels.archived_at", "is", null)
+        .execute()
+    );
   }
 
   #pluginLogger(log: Logger): PluginLogger {
