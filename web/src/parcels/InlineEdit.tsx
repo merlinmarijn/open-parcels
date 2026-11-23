@@ -51,7 +51,7 @@ interface InlineTitleProps {
 function staysInGroup(event: FocusEvent<HTMLElement>): boolean {
   const next = event.relatedTarget;
   const group = event.currentTarget.parentElement;
-  return next instanceof Node && group !== null && group.contains(next);
+  return next instanceof Node && group?.contains(next) === true;
 }
 
 /** A mouse press on the editor's buttons keeps focus where it is; the click then acts. */

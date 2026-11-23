@@ -5803,7 +5803,7 @@
                       "shop",
                       "mail"
                     ],
-                    "description": "Mailboxes use the plug-in \"imap\" with config {host, port, secure, folders}."
+                    "description": "Mailboxes use the plug-in \"imap\" with config {host, port, secure, allowPlaintext, folders, initialDays}."
                   },
                   "label": {
                     "type": "string",

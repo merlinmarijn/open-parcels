@@ -44,7 +44,7 @@ describe("tile proxy", () => {
       cacheDir: dir,
       userAgent: "open-parcels/test",
       fetchImpl: (input, init) => {
-        calls.push({ url: urlOf(input), agent: new Headers(init?.headers).get("user-agent") });
+        calls.push({ url: urlOf(input), agent: new Headers(init.headers).get("user-agent") });
         return Promise.resolve(png());
       },
     });

@@ -45,7 +45,8 @@ class FakeMailbox implements MailboxClient {
   async *fetchAfter(afterUid: number): AsyncIterable<FetchedMessage> {
     const newer = this.#folder().messages.filter((entry) => entry.uid > afterUid);
     const newest = this.#folder().messages.at(-1);
-    const answer = newer.length === 0 && this.replayNewest && newest !== undefined ? [newest] : newer;
+    const answer =
+      newer.length === 0 && this.replayNewest && newest !== undefined ? [newest] : newer;
     for (const message of answer) {
       this.fetched.push(message.uid);
       yield await Promise.resolve(message);

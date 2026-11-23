@@ -10,7 +10,11 @@ describe("IMAP connection options (OP-012)", () => {
     expect(imapOptions(tls, secret)).toMatchObject({ secure: true });
     expect(imapOptions(tls, secret)).not.toHaveProperty("doSTARTTLS");
 
-    const starttls = mailConfigSchema.parse({ host: "imap.example.invalid", port: 143, secure: false });
+    const starttls = mailConfigSchema.parse({
+      host: "imap.example.invalid",
+      port: 143,
+      secure: false,
+    });
     expect(imapOptions(starttls, secret)).toMatchObject({ secure: false, doSTARTTLS: true });
 
     const cleartext = mailConfigSchema.parse({

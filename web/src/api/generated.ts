@@ -3076,7 +3076,7 @@ export type GetApiV1Sources200Item = {
 };
 
 /**
- * Mailboxes use the plug-in "imap" with config {host, port, secure, folders}.
+ * Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.
  */
 export type PostApiV1SourcesBodyKind =
   (typeof PostApiV1SourcesBodyKind)[keyof typeof PostApiV1SourcesBodyKind];
@@ -3094,7 +3094,7 @@ export type PostApiV1SourcesBody = {
    * @maxLength 64
    */
   plugin: string;
-  /** Mailboxes use the plug-in "imap" with config {host, port, secure, folders}. */
+  /** Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}. */
   kind: PostApiV1SourcesBodyKind;
   /**
    * @minLength 1

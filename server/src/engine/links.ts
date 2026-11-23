@@ -28,8 +28,6 @@ export function withSafeLinks(snapshot: ParcelSnapshot): ParcelSnapshot {
     ...snapshot,
     url: safeUrl(snapshot.url),
     items: snapshot.items.map(safeItem),
-    ...(snapshot.orderItems === undefined
-      ? {}
-      : { orderItems: snapshot.orderItems.map(safeItem) }),
+    ...(snapshot.orderItems === undefined ? {} : { orderItems: snapshot.orderItems.map(safeItem) }),
   };
 }

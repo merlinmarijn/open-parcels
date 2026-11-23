@@ -107,7 +107,12 @@ describe("Austrian Post tracking", () => {
         }),
         200,
       ),
-      json(shipment([event("2026-11-18T10:00:00+01:00", "deliveryParked", "x")], { activeIdentityCode: OTHER }), 200),
+      json(
+        shipment([event("2026-11-18T10:00:00+01:00", "deliveryParked", "x")], {
+          activeIdentityCode: OTHER,
+        }),
+        200,
+      ),
     ]);
     const { registered, base } = harness(oesterreichischePost, fetchImpl);
     const { snapshots } = await registered.track(base, {}, null, [CODE, OTHER]);

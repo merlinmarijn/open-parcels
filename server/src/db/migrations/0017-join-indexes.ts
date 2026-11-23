@@ -7,7 +7,12 @@ import type { Kysely } from "kysely";
  * carrier). Each statement is safe on its own, so a half-run migration can simply run again.
  */
 export async function up(db: Kysely<unknown>): Promise<void> {
-  await db.schema.createIndex("parcels_order").ifNotExists().on("parcels").column("order_id").execute();
+  await db.schema
+    .createIndex("parcels_order")
+    .ifNotExists()
+    .on("parcels")
+    .column("order_id")
+    .execute();
   await db.schema
     .createIndex("order_items_parcel")
     .ifNotExists()
@@ -20,5 +25,10 @@ export async function up(db: Kysely<unknown>): Promise<void> {
     .on("parcel_events")
     .column("source_id")
     .execute();
-  await db.schema.createIndex("parcels_barcode").ifNotExists().on("parcels").column("barcode").execute();
+  await db.schema
+    .createIndex("parcels_barcode")
+    .ifNotExists()
+    .on("parcels")
+    .column("barcode")
+    .execute();
 }

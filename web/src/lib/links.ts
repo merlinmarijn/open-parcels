@@ -3,7 +3,10 @@
  * cleans stored links too; this is the last check before the user's click, so a link that slipped
  * through (`javascript:`, `data:`, an app scheme) is shown as plain text instead.
  */
-export function safeHref(url: string | null | undefined, schemes = ["http:", "https:"]): string | null {
+export function safeHref(
+  url: string | null | undefined,
+  schemes = ["http:", "https:"],
+): string | null {
   if (url === null || url === undefined) {
     return null;
   }
