@@ -142,12 +142,15 @@ function checkCsrf(request: FastifyRequest, auth: AuthContext): void {
 /**
  * Routes anyone may call: those that declare `security: []` in their schema (sign-in, setup,
  * health, the secret calendar feed) and the web UI's own files, which hold no data and must load
- * so the sign-in page can show.
+ * so the sign-in page can show. Decided from the route that matched, never from the raw URL alone:
+ * the router decodes the path, so `/%61pi/v1/...` reaches an API route while its raw URL does
+ * not look like one.
  */
 function isPublicRoute(request: FastifyRequest): boolean {
   const security = (request.routeOptions.schema as { security?: unknown } | undefined)?.security;
   if (Array.isArray(security) && security.length === 0) return true;
-  return !isServerPath(request.url);
+  const route = request.routeOptions.url;
+  return !isServerPath(request.url) && (route === undefined || !isServerPath(route));
 }
 
 /**

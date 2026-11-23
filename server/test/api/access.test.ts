@@ -3,8 +3,10 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { sql, type Kysely } from "kysely";
 import { Migrator, type Migration } from "kysely/migration";
+import cookie from "@fastify/cookie";
+import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
-import { HA_INGRESS_ADDRESS } from "../../src/api/auth-plugin.js";
+import { HA_INGRESS_ADDRESS, registerAuth } from "../../src/api/auth-plugin.js";
 import type { App } from "../../src/api/app.js";
 import { hashPassword, sha256Hex } from "../../src/auth/crypto.js";
 import { openDatabase } from "../../src/db/database.js";
@@ -185,6 +187,38 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
       payload: { password: READER_PASSWORD },
     });
     expect(blocked.statusCode).toBe(429);
+  });
+});
+
+describe("percent-encoded paths (OP-001)", () => {
+  it("reach the access rule like the plain path", async () => {
+    const { ctx, app } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
+    await signIn(ctx, app);
+    expect((await app.inject("/%61pi/v1/parcels")).statusCode).toBe(401);
+    const write = await app.inject({ method: "POST", url: "/%61pi/v1/parcels", payload: BARCODE });
+    expect(write.statusCode).toBe(401);
+  });
+
+  it("guard a route that has no guard of its own", async () => {
+    const { ctx } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
+    const bare = Fastify();
+    await bare.register(cookie);
+    registerAuth(bare, {
+      store: ctx.services.auth,
+      access: ctx.services.access,
+      trustedIngressAddress: undefined,
+    });
+    bare.get("/api/v1/unguarded", () => ({ ok: true }));
+    bare.post("/api/v1/unguarded", () => ({ ok: true }));
+    await bare.ready();
+    try {
+      for (const url of ["/api/v1/unguarded", "/%61pi/v1/unguarded", "/api/v1/%75nguarded"]) {
+        expect((await bare.inject(url)).statusCode, url).toBe(401);
+        expect((await bare.inject({ method: "POST", url })).statusCode, url).toBe(401);
+      }
+    } finally {
+      await bare.close();
+    }
   });
 });
 
