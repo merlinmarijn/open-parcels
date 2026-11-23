@@ -17,7 +17,7 @@ import { Suspense, useState, type ReactNode } from "react";
 import { useLiveUpdates, type LiveState } from "../api/events";
 import { SetupPage, SignInPage } from "../auth/AuthPages";
 import { useSession, useSignOut } from "../auth/session";
-import { Spinner } from "../components/ui";
+import { ErrorNotice, Spinner } from "../components/ui";
 import { useTheme, type ThemeChoice } from "../lib/theme";
 import { AddParcelDialog } from "../parcels/AddParcelDialog";
 
@@ -173,6 +173,7 @@ export function Shell(): ReactNode {
         </div>
       </header>
       <main id="main" className="content">
+        {signOut.isError ? <ErrorNotice error={signOut.error} /> : null}
         <Suspense fallback={<Spinner />}>
           <Outlet />
         </Suspense>

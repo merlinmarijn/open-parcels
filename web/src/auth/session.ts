@@ -82,9 +82,13 @@ export function useSignOut() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: () => deleteApiV1Session(),
-    onSuccess: () => {
+    onSuccess: async () => {
       setCsrfToken(null);
-      client.clear();
+      // Nothing of the signed-in session may stay on screen: unused data goes, and every query
+      // still shown is reset (its observers see that at once) and asked again, the session
+      // first among them, so a reader password brings the sign-in page back.
+      client.removeQueries({ type: "inactive" });
+      await client.resetQueries();
     },
   });
 }

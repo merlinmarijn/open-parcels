@@ -143,6 +143,41 @@ describe("first start and sign-in", () => {
     expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument();
   });
 
+  it("shows the sign-in page and none of the data after signing out (OP-144)", async () => {
+    let signedIn = true;
+    mockApi({
+      "GET /api/v1/session": () => ({
+        body: signedIn
+          ? { ...SIGNED_IN, reader_required: true }
+          : {
+              authenticated: false,
+              method: null,
+              role: null,
+              scopes: [],
+              csrf_token: null,
+              reader_required: true,
+              setup_required: false,
+            },
+      }),
+      "DELETE /api/v1/session": () => {
+        signedIn = false;
+        return { status: 204 };
+      },
+      "GET /api/v1/parcels": () =>
+        signedIn
+          ? { body: [] }
+          : { status: 401, body: { error: "unauthorized", message: "Sign in first." } },
+    });
+    const user = userEvent.setup();
+    renderApp();
+
+    expect(await screen.findByRole("heading", { name: "Parcels" })).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Sign out" }));
+    expect(await screen.findByLabelText("Password")).toBeInTheDocument();
+    expect(screen.queryByRole("heading", { name: "Parcels" })).not.toBeInTheDocument();
+    expect(screen.queryByText("Admin")).not.toBeInTheDocument();
+  });
+
   it("needs no sign-in under Home Assistant ingress", async () => {
     mockApi({
       "GET /api/v1/session": () => ({
