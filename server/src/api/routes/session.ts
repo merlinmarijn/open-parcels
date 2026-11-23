@@ -39,7 +39,9 @@ async function startSession(
     path: "/",
     httpOnly: true,
     sameSite: "lax",
-    secure: services.config.secureCookies,
+    // Secure whenever the request came over HTTPS (directly, or through a trusted proxy); the
+    // setting forces it for set-ups where the server cannot tell.
+    secure: services.config.secureCookies || reply.request.protocol === "https",
     expires: new Date(session.expiresAt),
   });
   return { csrf_token: session.csrfToken, role };

@@ -190,6 +190,27 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
   });
 });
 
+describe("session cookies (OP-011)", () => {
+  it("are Secure when the request came over HTTPS through a trusted proxy", async () => {
+    const { ctx, app } = await start({ env: { OPENPARCELS_TRUST_PROXY: "127.0.0.1" } });
+    await signIn(ctx, app);
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/session",
+      headers: { "x-forwarded-proto": "https" },
+      payload: { password: OWNER_PASSWORD },
+    });
+    expect(response.statusCode).toBe(200);
+    expect(response.cookies.find((cookie) => cookie.name === "op_session")?.secure).toBe(true);
+    const plain = await app.inject({
+      method: "POST",
+      url: "/api/v1/session",
+      payload: { password: OWNER_PASSWORD },
+    });
+    expect(plain.cookies.find((cookie) => cookie.name === "op_session")?.secure).toBeUndefined();
+  });
+});
+
 describe("percent-encoded paths (OP-001)", () => {
   it("reach the access rule like the plain path", async () => {
     const { ctx, app } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
