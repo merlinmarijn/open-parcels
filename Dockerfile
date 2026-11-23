@@ -40,8 +40,8 @@ FROM node:${NODE_VERSION}-slim AS runtime
 RUN apt-get update \
  && apt-get install --no-install-recommends -y tini \
  && rm -rf /var/lib/apt/lists/* \
- && mkdir -p /data \
- && chown node:node /data
+ && mkdir -p /data /var/lib/tailscale \
+ && chown node:node /data /var/lib/tailscale
 WORKDIR /app
 COPY --from=deps --chown=root:root /app/node_modules ./node_modules
 COPY --from=build --chown=root:root /app/server/package.json ./server/package.json
@@ -55,7 +55,8 @@ ENV NODE_ENV=production \
     OPENPARCELS_PORT=3000
 
 # Runs as the image's unprivileged `node` user (uid 1000). The application files are owned by root
-# and read-only for it; /data is the only place it writes.
+# and read-only for it; /data is the only place it writes, plus /var/lib/tailscale for the
+# optional built-in Tailscale (a named volume mounted there inherits the ownership).
 USER node
 VOLUME ["/data"]
 EXPOSE 3000

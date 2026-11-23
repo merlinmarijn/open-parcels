@@ -78,6 +78,9 @@ On the first start also set `TS_AUTHKEY`; later starts reuse the saved state. Th
 served at `https://<TS_HOSTNAME>.<your-tailnet>.ts.net` (`TS_HOSTNAME` defaults to `open-parcels`).
 Tailscale runs in userspace mode, as the same unprivileged user, so the container needs no extra
 capabilities and no `/dev/net/tun`. Without `TS_STATE_DIR` the image behaves as before.
+Tailnet visitors reach the app through `tailscale serve` on 127.0.0.1, so the image then sets
+`OPENPARCELS_TRUST_PROXY=127.0.0.1` itself (unless you set it), and the sign-in throttle sees each
+visitor's own address.
 Set `OPENPARCELS_PUBLIC_URL` to the tailnet address so links point there.
 
 ## Development

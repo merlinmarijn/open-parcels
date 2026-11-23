@@ -7,7 +7,16 @@
 #   TS_SERVE_PORT local port to publish (default: $OPENPARCELS_PORT or 3000)
 set -eu
 
-if [ -n "${TS_STATE_DIR:-}" ]; then
+if [ -n "${TS_STATE_DIR:-}" ] && [ ! -w "$TS_STATE_DIR" ]; then
+    echo "[ts] $TS_STATE_DIR is not writable for uid $(id -u): app runs without the tailnet." \
+        "Make the folder or volume writable for uid 1000."
+elif [ -n "${TS_STATE_DIR:-}" ]; then
+    # `tailscale serve` proxies every tailnet visitor from 127.0.0.1 and names the real address in
+    # X-Forwarded-For: trust it, unless the user chose otherwise, so the sign-in throttle tells
+    # tailnet visitors apart.
+    if [ -z "${OPENPARCELS_TRUST_PROXY:-}" ]; then
+        export OPENPARCELS_TRUST_PROXY=127.0.0.1
+    fi
     sock=/tmp/tailscaled.sock
     port="${TS_SERVE_PORT:-${OPENPARCELS_PORT:-3000}}"
     ts() { tailscale --socket="$sock" "$@"; }
@@ -26,7 +35,12 @@ if [ -n "${TS_STATE_DIR:-}" ]; then
     if ! ts status >/dev/null 2>&1; then
         if [ -n "${TS_AUTHKEY:-}" ]; then
             echo "[ts] logging in as ${TS_HOSTNAME:-open-parcels}"
-            ts up --authkey="$TS_AUTHKEY" --hostname="${TS_HOSTNAME:-open-parcels}" --accept-dns=false || true
+            # The key goes through a private file, never the command line other processes can read.
+            keyfile=/tmp/ts-authkey
+            (umask 077 && printf '%s' "$TS_AUTHKEY" >"$keyfile")
+            ts up --auth-key="file:$keyfile" --hostname="${TS_HOSTNAME:-open-parcels}" \
+                --accept-dns=false || echo "[ts] tailscale up failed (exit $?)"
+            rm -f "$keyfile"
         else
             echo "[ts] not logged in and no TS_AUTHKEY set: app runs without the tailnet"
         fi

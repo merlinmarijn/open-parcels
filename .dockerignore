@@ -9,14 +9,21 @@
 packages
 docs
 unraid
-*.db
-*.db-*
-*.sqlite
-.env
-.env.*
-secret.key
-imap-config.json
-parsed_mails.json
-*.eml
-*.har
-*.log
+# Tests and their fixtures are not part of the image.
+server/test
+# Local data, secrets and mail exports, wherever they lie in a working copy: without the **/
+# prefix these would match only at the context root and be copied into the build stage.
+data/
+server/data/
+web/data/
+**/*.db
+**/*.db-*
+**/*.sqlite
+**/.env
+**/.env.*
+**/secret.key
+**/imap-config.json
+**/parsed_mails.json
+**/*.eml
+**/*.har
+**/*.log
