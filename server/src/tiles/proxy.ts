@@ -41,7 +41,8 @@ export interface TileProxyOptions {
   readonly userAgent: string;
   /** The layers that may be fetched, read on every request so setting changes apply at once. */
   readonly layers?: () => readonly TileLayerDef[];
-  readonly fetchImpl?: typeof fetch;
+  /** Unset: the guarded transport, which refuses non-public addresses at connect time. */
+  readonly fetchImpl?: (input: URL, init: RequestInit) => Promise<Response>;
   readonly now?: () => number;
   /** Tiles not refreshed for this long are deleted by `prune()`. */
   readonly maxAgeMs?: number;

@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
 import {
   createTestContext,
@@ -15,24 +15,25 @@ const CUSTOM = "https://tiles.example.org/{z}/{x}/{y}.jpg?key={key}";
 let context: TestContext;
 let upstream: string[];
 
+/** The tile servers: every request is recorded and answered with a made-up tile. */
+const fetchImpl = (input: URL): Promise<Response> => {
+  upstream.push(input.toString());
+  return Promise.resolve(
+    new Response(JPEG, { status: 200, headers: { "content-type": "image/jpeg" } }),
+  );
+};
+
 beforeEach(() => {
   upstream = [];
-  vi.stubGlobal("fetch", (input: string | URL | Request) => {
-    upstream.push(input instanceof Request ? input.url : input.toString());
-    return Promise.resolve(
-      new Response(JPEG, { status: 200, headers: { "content-type": "image/jpeg" } }),
-    );
-  });
 });
 afterEach(async () => {
-  vi.unstubAllGlobals();
   await context.close();
 });
 
 async function setUp(
   options: TestOptions = {},
 ): Promise<{ app: App; headers: Record<string, string> }> {
-  context = await createTestContext(options);
+  context = await createTestContext({ fetchImpl, ...options });
   const app = await context.app();
   const session = await signIn(context, app);
   return { app, headers: { cookie: session.cookie, "x-csrf-token": session.csrf } };

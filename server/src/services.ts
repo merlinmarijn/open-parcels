@@ -195,6 +195,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     userAgent: USER_AGENT,
     // Read per request: a custom provider saved in the UI applies at once.
     layers: () => availableLayers(deps.config.map.custom, deps.config.map.cartoKey),
+    ...(deps.fetchImpl === undefined ? {} : { fetchImpl: deps.fetchImpl }),
   });
   const geocoder = new Geocoder({
     userAgent: USER_AGENT,
