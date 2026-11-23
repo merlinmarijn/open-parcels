@@ -12,7 +12,10 @@ export const HOT_LOOKAHEAD_MS = HOUR;
 export const QUIET_START_HOUR = 0;
 export const QUIET_END_HOUR = 6;
 export const CAPTCHA_PAUSE_MS = 6 * HOUR;
+/** The longest our own backoff after a 429 grows to. */
 export const RATE_LIMIT_MAX_MS = HOUR;
+/** The longest `Retry-After` honoured; a carrier asking for more is asked again after a day. */
+export const RETRY_AFTER_MAX_MS = 24 * HOUR;
 
 export interface ActiveParcel {
   readonly status: ParcelStatus;
@@ -93,11 +96,15 @@ export function delayAfterFailure(
   retryAfterSeconds?: number,
 ): number | null {
   switch (kind) {
-    case "rate_limited":
-      if (retryAfterSeconds !== undefined) {
-        return Math.min(retryAfterSeconds * 1000, RATE_LIMIT_MAX_MS);
+    case "rate_limited": {
+      // Our own backoff is the floor: a carrier answering "Retry-After: 0" (or a date already
+      // past) is not asked again at once. A longer wait the carrier asks for is honoured.
+      const backoff = Math.min(60_000 * 2 ** consecutive, RATE_LIMIT_MAX_MS);
+      if (retryAfterSeconds === undefined || !Number.isFinite(retryAfterSeconds)) {
+        return backoff;
       }
-      return Math.min(60_000 * 2 ** consecutive, RATE_LIMIT_MAX_MS);
+      return Math.min(Math.max(retryAfterSeconds * 1000, backoff), RETRY_AFTER_MAX_MS);
+    }
     case "captcha":
       return CAPTCHA_PAUSE_MS;
     case "transient":

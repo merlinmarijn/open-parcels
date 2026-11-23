@@ -143,9 +143,14 @@ describe("poll scheduling", () => {
 });
 
 describe("failure backoff", () => {
-  it("honours Retry-After, capped at one hour", () => {
-    expect(delayAfterFailure("rate_limited", 1, 120)).toBe(120_000);
-    expect(delayAfterFailure("rate_limited", 1, 99_999)).toBe(3_600_000);
+  it("honours a longer Retry-After up to a day, never less than its own backoff (OP-036)", () => {
+    expect(delayAfterFailure("rate_limited", 1, 300)).toBe(300_000);
+    expect(delayAfterFailure("rate_limited", 1, 7200)).toBe(7_200_000);
+    expect(delayAfterFailure("rate_limited", 1, 999_999)).toBe(24 * 3_600_000);
+    // 0 seconds, or a date already past (parsed as 0), must not mean "again at once".
+    expect(delayAfterFailure("rate_limited", 1, 0)).toBe(120_000);
+    expect(delayAfterFailure("rate_limited", 3, 0)).toBe(480_000);
+    expect(delayAfterFailure("rate_limited", 1, 30)).toBe(120_000);
   });
 
   it("doubles without Retry-After: 120 s for the first 429", () => {

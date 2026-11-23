@@ -235,7 +235,8 @@ It implements the suite's polling rules:
 - **Fast tier:** every 15 min for parcels out for delivery within an hour of `planned_from`.
 - **Slow tier:** every 45 min for everything else.
 - **Stagger** per install and per source.
-- **On 429:** honour `Retry-After`, otherwise back off 60 s × 2ⁿ, up to 1 h.
+- **On 429:** back off 60 s × 2ⁿ, up to 1 h; a longer `Retry-After` is honoured up to 24 h, a
+  shorter one (or `0`) never brings the run forward.
 - **Account-less sources stop** when they track nothing active.
 
 On top of that:
