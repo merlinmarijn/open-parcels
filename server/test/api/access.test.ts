@@ -190,6 +190,42 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
   });
 });
 
+describe("the notice that reading is open", () => {
+  it("shows to the admin until dismissed, for every browser, and never to readers", async () => {
+    const { ctx, app } = await start();
+    const owner = await signIn(ctx, app);
+    const admin = { ...owner, role: "admin" };
+    expect(await sessionState(app)).toMatchObject({ reader_password_notice: false });
+    expect(await sessionState(app, headersOf(admin))).toMatchObject({
+      reader_password_notice: true,
+    });
+    const dismissed = await app.inject({
+      method: "POST",
+      url: "/api/v1/session/reader-password-notice/dismiss",
+      headers: headersOf(admin),
+    });
+    expect(dismissed.statusCode).toBe(204);
+    expect(await sessionState(app, headersOf(admin))).toMatchObject({
+      reader_password_notice: false,
+    });
+    // Kept on the server: another sign-in (another browser) does not see it again.
+    const other = await signInWith(app, OWNER_PASSWORD);
+    expect(await sessionState(app, headersOf(other))).toMatchObject({
+      reader_password_notice: false,
+    });
+    await ctx.services.settings.load();
+    expect(ctx.services.settings.readerNoticeDismissed).toBe(true);
+  });
+
+  it("is not shown while a reader password is set", async () => {
+    const { ctx, app } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
+    const owner = await signIn(ctx, app);
+    expect(await sessionState(app, headersOf({ ...owner, role: "admin" }))).toMatchObject({
+      reader_password_notice: false,
+    });
+  });
+});
+
 describe("session cookies (OP-011)", () => {
   it("are Secure when the request came over HTTPS through a trusted proxy", async () => {
     const { ctx, app } = await start({ env: { OPENPARCELS_TRUST_PROXY: "127.0.0.1" } });

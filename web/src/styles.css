@@ -571,6 +571,23 @@ fieldset.inline {
   color: var(--danger);
 }
 
+.notice-warning {
+  border-left-color: var(--warn);
+}
+
+.reader-notice {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 8px 16px;
+  margin-bottom: 16px;
+}
+
+.reader-notice p {
+  flex: 1 1 320px;
+  margin: 0;
+}
+
 .token-value code {
   display: block;
   word-break: break-all;

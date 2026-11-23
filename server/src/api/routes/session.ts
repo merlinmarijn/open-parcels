@@ -24,6 +24,11 @@ const sessionStateSchema = z.object({
   csrf_token: z.string().nullable(),
   reader_required: z.boolean().describe("OPENPARCELS_PASSWORD is set: reading needs a sign-in."),
   setup_required: z.boolean(),
+  reader_password_notice: z
+    .boolean()
+    .describe(
+      "Show the admin that OPENPARCELS_PASSWORD is not set (anyone who reaches the server can read), until the admin dismisses it.",
+    ),
 });
 
 const signedInSchema = z.object({ csrf_token: z.string(), role: z.enum(ROLES) });
@@ -139,7 +144,28 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
         csrf_token: auth?.kind === "session" ? auth.csrfToken : null,
         reader_required: services.access.readerRequired,
         setup_required: services.access.setupPending,
+        reader_password_notice:
+          auth?.role === "admin" &&
+          !services.access.readerRequired &&
+          !services.settings.readerNoticeDismissed,
       };
+    },
+  );
+
+  app.post(
+    "/api/v1/session/reader-password-notice/dismiss",
+    {
+      preHandler: requireScope("admin"),
+      schema: {
+        tags: ["session"],
+        summary:
+          "Hide the notice that OPENPARCELS_PASSWORD is not set, for good and in every browser.",
+        response: { 204: z.null() },
+      },
+    },
+    async (_request, reply) => {
+      await services.settings.dismissReaderNotice();
+      return reply.code(204).send(null);
     },
   );
 

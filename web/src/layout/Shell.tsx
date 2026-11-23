@@ -20,6 +20,7 @@ import { useSession, useSignOut } from "../auth/session";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { useTheme, type ThemeChoice } from "../lib/theme";
 import { AddParcelDialog } from "../parcels/AddParcelDialog";
+import { ReaderNotice } from "./ReaderNotice";
 
 const NAV = [
   { to: "/", label: "Parcels", icon: Package },
@@ -174,6 +175,7 @@ export function Shell(): ReactNode {
       </header>
       <main id="main" className="content">
         {signOut.isError ? <ErrorNotice error={signOut.error} /> : null}
+        <ReaderNotice />
         <Suspense fallback={<Spinner />}>
           <Outlet />
         </Suspense>

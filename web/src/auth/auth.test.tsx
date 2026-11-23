@@ -178,6 +178,31 @@ describe("first start and sign-in", () => {
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
   });
 
+  it("tells the admin once that reading is open, until dismissed", async () => {
+    let dismissed = false;
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({
+        body: { ...SIGNED_IN, reader_password_notice: !dismissed },
+      }),
+      "POST /api/v1/session/reader-password-notice/dismiss": () => {
+        dismissed = true;
+        return { status: 204 };
+      },
+      "GET /api/v1/parcels": () => ({ body: [] }),
+    });
+    const user = userEvent.setup();
+    renderApp();
+
+    expect(await screen.findByText(/No reader password is set/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Dismiss" }));
+    await waitFor(() => {
+      expect(screen.queryByText(/No reader password is set/)).not.toBeInTheDocument();
+    });
+    expect(
+      calls.some((call) => call.path === "/api/v1/session/reader-password-notice/dismiss"),
+    ).toBe(true);
+  });
+
   it("needs no sign-in under Home Assistant ingress", async () => {
     mockApi({
       "GET /api/v1/session": () => ({

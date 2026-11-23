@@ -15,6 +15,7 @@ export type Home = z.infer<typeof homeSchema>;
 
 const HOME = "home";
 const PARCEL_LABEL = "parcel_label";
+const READER_NOTICE = "reader_password_notice_dismissed";
 const labelSchema = z.enum(PARCEL_LABEL_MODES);
 
 /**
@@ -24,6 +25,7 @@ const labelSchema = z.enum(PARCEL_LABEL_MODES);
 export class SettingsStore {
   #home: Home | null = null;
   #labelMode: ParcelLabelMode = "tracking_number";
+  #readerNoticeDismissed = false;
 
   constructor(
     private readonly db: Kysely<Database>,
@@ -41,6 +43,7 @@ export class SettingsStore {
     };
     this.#home = read(HOME, homeSchema) ?? null;
     this.#labelMode = read(PARCEL_LABEL, labelSchema) ?? "tracking_number";
+    this.#readerNoticeDismissed = read(READER_NOTICE, z.literal(true)) ?? false;
   }
 
   get home(): Home | null {
@@ -49,6 +52,16 @@ export class SettingsStore {
 
   get labelMode(): ParcelLabelMode {
     return this.#labelMode;
+  }
+
+  /** The admin dismissed the "no reader password" notice; kept here so every browser knows. */
+  get readerNoticeDismissed(): boolean {
+    return this.#readerNoticeDismissed;
+  }
+
+  async dismissReaderNotice(): Promise<void> {
+    await this.#write(READER_NOTICE, true);
+    this.#readerNoticeDismissed = true;
   }
 
   async setHome(home: Home | null): Promise<void> {

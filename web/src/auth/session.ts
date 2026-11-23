@@ -6,6 +6,7 @@ import {
   putApiV1AdminPassword,
   getApiV1Session,
   postApiV1Session,
+  postApiV1SessionReaderPasswordNoticeDismiss,
   postApiV1Setup,
 } from "../api/generated";
 
@@ -73,6 +74,17 @@ export function useResetAdminPassword() {
     mutationFn: () => deleteApiV1AdminPassword(),
     onSuccess: async () => {
       setCsrfToken(null);
+      await client.invalidateQueries({ queryKey: SESSION_KEY });
+    },
+  });
+}
+
+/** Hides the "no reader password" notice for good; the server keeps it, for every browser. */
+export function useDismissReaderNotice() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => postApiV1SessionReaderPasswordNoticeDismiss(),
+    onSuccess: async () => {
       await client.invalidateQueries({ queryKey: SESSION_KEY });
     },
   });
