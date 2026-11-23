@@ -136,14 +136,22 @@ describe("live courier tracking", () => {
       ["en_route", "en_route", 13],
       ["en_route", "next_stop", 0],
     ]);
-    expect(positions).toHaveLength(3);
+    expect(positions).toHaveLength(4);
     const parcel = await context.services.parcels.repository.get(parcelId);
-    // From next_stop on, coordinates are never published.
+    // The courier stays on the map until the delivery ends, the next stop included.
     expect(parcel?.live).toMatchObject({
       state: "next_stop",
       stops_away: 0,
-      latitude: null,
-      longitude: null,
+      latitude: COURIER.latitude,
+      longitude: COURIER.longitude,
+    });
+    // The message names its time in snake case like every other field; the camelCase name stays
+    // for one release.
+    expect(positions.at(-1)?.payload).toMatchObject({
+      parcel_id: parcelId,
+      position_at: "2026-11-18T14:00:00Z",
+      positionAt: "2026-11-18T14:00:00Z",
+      stops_away: 0,
     });
   });
 

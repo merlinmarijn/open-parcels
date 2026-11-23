@@ -38,7 +38,10 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
           "A connection without one starts with `ready` (its `id` is the current sequence). When the " +
           "given id is newer than any event or older than what is kept, `resync` (also carrying the " +
           "current sequence as `id`) tells the client to reload everything over REST. " +
-          "`parcel.live_position` messages carry the courier's position while en route; they have no `id` and are never replayed.",
+          "`parcel.live_position` messages carry the courier's position while on the road until " +
+          "the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and " +
+          "`stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, " +
+          "the same value as `position_at`, is still sent for one release and will be removed.",
         querystring: z.object({ last_event_id: z.coerce.number().int().nonnegative().optional() }),
       },
     },

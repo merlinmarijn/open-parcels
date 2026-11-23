@@ -66,7 +66,8 @@ export type ParcelLabelMode = (typeof PARCEL_LABEL_MODES)[number];
 
 /**
  * parcel-live/1: the courier on the last mile. Coordinates are the courier's, never the
- * destination's, and are null from `next_stop` on.
+ * destination's, shown while the courier is on the road (the last stops included) and null once
+ * the session has ended.
  */
 export const liveSchema = z.object({
   state: z.enum(LIVE_STATES),

@@ -271,9 +271,9 @@ export class LiveTracker {
     }
     const session: Session = { state: reading.state, stopsAway: reading.stopsAway };
     this.#sessions.set(parcelId, session);
-    // From `next_stop` on, the position would point at the destination; it is never published.
-    const hasFix =
-      reading.state === "en_route" && reading.latitude !== null && reading.longitude !== null;
+    // The courier is shown until the delivery ends, the last stops included (owner's decision).
+    // Positions stay in memory and in this ephemeral message; never in history or the outbox.
+    const hasFix = onRoad(session) && reading.latitude !== null && reading.longitude !== null;
     if (hasFix) {
       const position: LivePosition = {
         latitude: reading.latitude,
@@ -284,7 +284,16 @@ export class LiveTracker {
       this.#positions.set(parcelId, position);
       this.deps.bus.publishEphemeral({
         type: "parcel.live_position",
-        payload: { parcel_id: parcelId, ...position, stops_away: reading.stopsAway },
+        payload: {
+          parcel_id: parcelId,
+          latitude: position.latitude,
+          longitude: position.longitude,
+          accuracy: position.accuracy,
+          position_at: position.positionAt,
+          // Deprecated: the camelCase name of `position_at`, kept for one release.
+          positionAt: position.positionAt,
+          stops_away: reading.stopsAway,
+        },
       });
     } else {
       this.#positions.delete(parcelId);
