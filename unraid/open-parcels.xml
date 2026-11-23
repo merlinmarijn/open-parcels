@@ -8,7 +8,7 @@
   <Privileged>false</Privileged>
   <Support>https://github.com/open-parcels/open-parcels/issues</Support>
   <Project>https://github.com/open-parcels/open-parcels</Project>
-  <TemplateURL>https://raw.githubusercontent.com/open-parcels/open-parcels/master/unraid/open-parcels.xml</TemplateURL>
+  <TemplateURL>https://raw.githubusercontent.com/open-parcels/open-parcels/main/unraid/open-parcels.xml</TemplateURL>
   <Overview>Self-hosted parcel and order tracking. Signs in to carriers and shops, reads shipping mails, follows couriers live on a map, keeps a delivery calendar (also as an ICS feed) and publishes events for Home Assistant and other clients.&#xD;
 &#xD;
 Set an admin password below, or on first start read the one-time setup code from the container log and enter it in the web UI to choose one. Without a reader password anyone on your network can read (not change) your parcels.&#xD;
@@ -16,7 +16,7 @@ Set an admin password below, or on first start read the one-time setup code from
 The image runs as uid 1000. The data folder must be writable for that user (chown 1000:1000), or set Extra Parameters to --user 99:100 and make the folder writable for nobody:users.</Overview>
   <Category>Tools:Utilities HomeAutomation:</Category>
   <WebUI>http://[IP]:[PORT:3000]</WebUI>
-  <Icon>https://raw.githubusercontent.com/open-parcels/open-parcels/master/docs/icon.png</Icon>
+  <Icon>https://raw.githubusercontent.com/open-parcels/open-parcels/main/docs/icon.png</Icon>
   <ExtraParams>--read-only --tmpfs /tmp --security-opt no-new-privileges</ExtraParams>
   <PostArgs/>
   <Config Name="Web UI port" Target="3000" Default="3000" Mode="tcp" Description="Port of the web UI and the API." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
