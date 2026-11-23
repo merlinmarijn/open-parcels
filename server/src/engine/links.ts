@@ -18,15 +18,18 @@ export function safeUrl(value: string | null): string | null {
   }
 }
 
-/** The snapshot with every link it carries checked. */
+function safeItem<T extends { url: string | null; imageUrl: string | null }>(item: T): T {
+  return { ...item, url: safeUrl(item.url), imageUrl: safeUrl(item.imageUrl) };
+}
+
+/** The snapshot with every link it carries checked: its own, its items' and its order lines'. */
 export function withSafeLinks(snapshot: ParcelSnapshot): ParcelSnapshot {
   return {
     ...snapshot,
     url: safeUrl(snapshot.url),
-    items: snapshot.items.map((item) => ({
-      ...item,
-      url: safeUrl(item.url),
-      imageUrl: safeUrl(item.imageUrl),
-    })),
+    items: snapshot.items.map(safeItem),
+    ...(snapshot.orderItems === undefined
+      ? {}
+      : { orderItems: snapshot.orderItems.map(safeItem) }),
   };
 }

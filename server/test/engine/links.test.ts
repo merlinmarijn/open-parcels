@@ -47,6 +47,19 @@ describe("a stored link", () => {
               currency: null,
             },
           ],
+          // Order lines too (OP-008).
+          order: { shop: "example-shop.de", orderNumber: "100001", placedAt: null },
+          orderItems: [
+            {
+              title: "Kettle",
+              imageUrl: "data:image/png;base64,AAAA",
+              url: "javascript:alert(2)",
+              externalId: null,
+              quantity: 1,
+              price: null,
+              currency: null,
+            },
+          ],
         }),
       ];
       const source = await context.services.sources.create({
@@ -67,6 +80,11 @@ describe("a stored link", () => {
         .select(["url", "image_ref"])
         .executeTakeFirstOrThrow();
       expect(item).toEqual({ url: null, image_ref: null });
+      const line = await context.services.db
+        .selectFrom("order_items")
+        .select(["url", "image_ref"])
+        .executeTakeFirstOrThrow();
+      expect(line).toEqual({ url: null, image_ref: null });
     });
   });
 });
