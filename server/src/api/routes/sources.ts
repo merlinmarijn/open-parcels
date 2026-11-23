@@ -151,7 +151,7 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
           kind: z
             .enum(["account", "tracking", "shop", "mail"])
             .describe(
-              'Mailboxes use the plug-in "imap" with config {host, port, secure, folders}.',
+              'Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.',
             ),
           label: z.string().min(1).max(80),
           config: z.unknown().default({}),

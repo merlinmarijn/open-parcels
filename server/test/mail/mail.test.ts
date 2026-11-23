@@ -32,15 +32,21 @@ class FakeMailbox implements MailboxClient {
     this.current = folder;
     return Promise.resolve({ uidValidity: this.#folder().uidValidity });
   }
-  searchSince(since: Date): Promise<number[]> {
-    return Promise.resolve(
-      this.#folder()
-        .messages.filter((message) => message.date >= since)
-        .map((message) => message.uid),
-    );
+  async searchSince(since: Date): Promise<number[]> {
+    await this.searchGate;
+    return this.#folder()
+      .messages.filter((message) => message.date >= since)
+      .map((message) => message.uid);
   }
+  /** Like a real server for `UID FETCH n:*`: the newest message comes back even when not newer. */
+  replayNewest = false;
+  /** When set, searches wait for it, so a test can hold the first sync. */
+  searchGate: Promise<void> | undefined;
   async *fetchAfter(afterUid: number): AsyncIterable<FetchedMessage> {
-    for (const message of this.#folder().messages.filter((entry) => entry.uid > afterUid)) {
+    const newer = this.#folder().messages.filter((entry) => entry.uid > afterUid);
+    const newest = this.#folder().messages.at(-1);
+    const answer = newer.length === 0 && this.replayNewest && newest !== undefined ? [newest] : newer;
+    for (const message of answer) {
       this.fetched.push(message.uid);
       yield await Promise.resolve(message);
     }
@@ -145,7 +151,9 @@ async function addMailbox(): Promise<string> {
   });
   expect(response.statusCode).toBe(201);
   expect(response.body).not.toContain("made-up");
-  return response.json<{ id: string }>().id;
+  const id = response.json<{ id: string }>().id;
+  await context.services.mail.settled(id);
+  return id;
 }
 
 describe("mail watcher", () => {
@@ -211,6 +219,7 @@ describe("mail watcher", () => {
     mailbox.add(1, "2026-11-18T09:00:00Z", "Rebuilt FP0003");
     mailbox.fetched = [];
     await context.services.mail.connect(id);
+    await context.services.mail.settled(id);
     expect(mailbox.fetched).toEqual([1]);
   });
 
@@ -283,6 +292,7 @@ describe("mail watcher", () => {
       host: "mail.example.invalid",
       port: 993,
       secure: true,
+      allowPlaintext: false,
       folders: ["INBOX"],
       initialDays: 30,
     });
@@ -303,6 +313,50 @@ describe("mail watcher", () => {
     });
     expect(response.statusCode).toBe(400);
     expect(await context.services.sources.list()).toEqual([]);
+  });
+
+  it("does not read the newest mail again when the server returns it for n:* (OP-023)", async () => {
+    mailbox.add(1, "2026-11-17T10:00:00Z", "First FP0001");
+    const id = await addMailbox();
+    mailbox.replayNewest = true;
+    seen = [];
+    mailbox.newMail?.();
+    await context.services.mail.settled(id);
+    expect(seen).toEqual([]);
+  });
+
+  it("answers the add request before the first sync is done (OP-024)", async () => {
+    mailbox.add(1, "2026-11-17T10:00:00Z", "First FP0001");
+    let release = (): void => undefined;
+    mailbox.searchGate = new Promise((resolve) => {
+      release = resolve;
+    });
+    const response = await app.inject({
+      method: "POST",
+      url: "/api/v1/sources",
+      headers,
+      payload: {
+        plugin: "imap",
+        kind: "mail",
+        label: "Inbox",
+        config: { host: "imap.example.invalid" },
+        secret: mailSecret,
+      },
+    });
+    expect(response.statusCode).toBe(201);
+    expect(seen).toEqual([]);
+    release();
+    await context.services.mail.settled(response.json<{ id: string }>().id);
+    expect(seen.map((mail) => mail.subject)).toEqual(["First FP0001"]);
+  });
+
+  it("schedules one reconnect however often a mailbox fails before it runs (OP-040)", async () => {
+    mailbox.connectError = new Error("connection refused");
+    const id = await addMailbox();
+    const setState = vi.spyOn(context.services.sources, "setState");
+    await context.services.mail.connect(id);
+    await context.services.mail.connect(id);
+    expect(setState).not.toHaveBeenCalled();
   });
 
   it("rejects mailboxes without a host or sign-in", async () => {

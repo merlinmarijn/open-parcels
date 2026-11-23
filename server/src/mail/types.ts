@@ -7,7 +7,13 @@ export const MAIL_PLUGIN = "imap";
 export const mailConfigSchema = z.object({
   host: z.string().min(1).max(255),
   port: z.number().int().min(1).max(65535).default(993),
+  /** TLS from the start (993). Without it the connection must upgrade with STARTTLS. */
   secure: z.boolean().default(true),
+  /**
+   * Without `secure`, allow staying in cleartext when the server offers no STARTTLS, which sends
+   * the password unencrypted. Off unless the user chooses it.
+   */
+  allowPlaintext: z.boolean().default(false),
   folders: z.array(z.string().min(1).max(200)).min(1).max(20).default(["INBOX"]),
   /** How far back the first sync looks. */
   initialDays: z.number().int().min(1).max(365).default(30),

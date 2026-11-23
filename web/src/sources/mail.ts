@@ -10,7 +10,19 @@ export const MAIL_CONFIG_SCHEMA: JsonSchema = {
   properties: {
     host: { type: "string", title: "IMAP server", description: "For example imap.example.org." },
     port: { type: "integer", minimum: 1, maximum: 65535, default: 993 },
-    secure: { type: "boolean", title: "Use TLS", default: true },
+    secure: {
+      type: "boolean",
+      title: "Use TLS",
+      description: "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
+      default: true,
+    },
+    allowPlaintext: {
+      type: "boolean",
+      title: "Allow an unencrypted connection",
+      description:
+        "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
+      default: false,
+    },
     folders: { type: "array", items: { type: "string" }, default: ["INBOX"] },
     initialDays: {
       type: "integer",

@@ -205,8 +205,14 @@ export class MailWatcher {
       this.#queueSync(sourceId, connection, config.folders);
     }, RESYNC_MS);
     connection.resync.unref();
+    // The first sync (up to `initialDays` of mail) runs on in the background: adding a mailbox or
+    // starting the server does not wait for it. Its failures go to #failed like any other.
     this.#queueSync(sourceId, connection, config.folders);
-    await connection.syncing;
+  }
+
+  /** Resolves once the syncs queued so far on this mailbox have run. */
+  async settled(sourceId: string): Promise<void> {
+    await this.#connections.get(sourceId)?.syncing;
   }
 
   async disconnect(sourceId: string): Promise<void> {
@@ -297,6 +303,7 @@ export class MailWatcher {
       const { uidValidity } = await connection.client.open(folder);
       const known = progress[folder];
       let lastUid = known?.uidValidity === uidValidity ? known.lastUid : 0;
+      const readUpTo = lastUid;
       const messages: AsyncIterable<FetchedMessage> =
         known?.uidValidity === uidValidity
           ? connection.client.fetchAfter(lastUid)
@@ -306,6 +313,9 @@ export class MailWatcher {
               ),
             );
       for await (const message of messages) {
+        // `UID FETCH n:*` returns the newest message even when nothing newer exists (`*` is the
+        // highest UID, so the range turns around); it was read already.
+        if (message.uid <= readUpTo) continue;
         lastUid = Math.max(lastUid, message.uid);
         const mail = await toMailInput(
           message.source,
@@ -357,6 +367,11 @@ export class MailWatcher {
         "needs_sign_in",
         "The mail server rejected the sign-in. Enter the password again.",
       );
+      return;
+    }
+    if (this.#timers.has(sourceId)) {
+      // A reconnect is already on its way: another failure before it runs must not add a second
+      // one, or a refusing server gets a burst of reconnects.
       return;
     }
     const attempt = (this.#retries.get(sourceId) ?? 0) + 1;

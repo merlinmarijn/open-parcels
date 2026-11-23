@@ -1,16 +1,30 @@
-import { ImapFlow } from "imapflow";
-import type { FetchedMessage, MailboxClient, MailboxClientFactory } from "./types.js";
+import { ImapFlow, type ImapFlowOptions } from "imapflow";
+import type {
+  FetchedMessage,
+  MailboxClient,
+  MailboxClientFactory,
+  MailConfig,
+  MailSecret,
+} from "./types.js";
 
-/** The real IMAP connection. Folders are opened read-only, so nothing is ever marked as read. */
-export const imapClientFactory: MailboxClientFactory = (config, secret) => {
-  const client = new ImapFlow({
+/** The connection options for a mailbox. */
+export function imapOptions(config: MailConfig, secret: MailSecret): ImapFlowOptions {
+  return {
     host: config.host,
     port: config.port,
     secure: config.secure,
+    // Not secure from the start: the connection must upgrade with STARTTLS (or fail), so the
+    // password never crosses the network in clear text, unless the user allowed exactly that.
+    ...(config.secure || config.allowPlaintext ? {} : { doSTARTTLS: true }),
     auth: { user: secret.username, pass: secret.password },
     // imapflow's own logging would print server responses, which can contain personal data.
     logger: false,
-  });
+  };
+}
+
+/** The real IMAP connection. Folders are opened read-only, so nothing is ever marked as read. */
+export const imapClientFactory: MailboxClientFactory = (config, secret) => {
+  const client = new ImapFlow(imapOptions(config, secret));
   async function* toMessages(range: string): AsyncIterable<FetchedMessage> {
     const query = { uid: true, source: true, internalDate: true };
     for await (const message of client.fetch(range, query, { uid: true })) {
