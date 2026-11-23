@@ -158,6 +158,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   }
   const repairedOrders = await repairOrderShops(db, clock);
   if (repairedOrders > 0) {
+    await bus.notify();
     logger.info({ repaired: repairedOrders }, "Moved orders filed under the wrong shop.");
   }
   const rewrittenTimes = await rewriteOffsetTimes(db);

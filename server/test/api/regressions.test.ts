@@ -219,4 +219,127 @@ describe("shop attribution", () => {
       .executeTakeFirstOrThrow();
     expect(order.shop).toBe("example-shop.de");
   });
+
+  async function order(shop: string, orderNumber: string, deletedAt: string | null = null) {
+    const now = context.clock.now().toISOString();
+    const id = crypto.randomUUID();
+    await context.services.db
+      .insertInto("orders")
+      .values({
+        id,
+        shop,
+        order_number: orderNumber,
+        placed_at: null,
+        status: null,
+        created_at: now,
+        updated_at: now,
+        ...(deletedAt === null ? {} : { deleted_at: deletedAt }),
+      })
+      .execute();
+    return id;
+  }
+
+  async function item(orderId: string, position: number, title: string) {
+    await context.services.db
+      .insertInto("order_items")
+      .values({
+        order_id: orderId,
+        position,
+        title,
+        image_ref: null,
+        url: null,
+        external_id: null,
+        quantity: null,
+        price: null,
+        currency: null,
+        parcel_id: null,
+      })
+      .execute();
+  }
+
+  it("merges a misfiled order into its twin with its items and source links (OP-122)", async () => {
+    const twin = await order("example-shop.de", "1234567");
+    await item(twin, 0, "Made-up lamp");
+    const misfiled = await order("amazon", "1234567");
+    await item(misfiled, 0, "Made-up kettle");
+    await item(misfiled, 1, "Made-up mug");
+    const parcelId = await parcel("00340434000000000208", {
+      order_id: misfiled,
+      label: "example-shop.de",
+    });
+    const now = context.clock.now().toISOString();
+    const sourceId = crypto.randomUUID();
+    await context.services.db
+      .insertInto("sources")
+      .values({
+        id: sourceId,
+        plugin: "example-shop",
+        kind: "shop",
+        label: "Made-up shop",
+        config: "{}",
+        secret_blob: null,
+        session_blob: null,
+        state: "ok",
+        state_detail: null,
+        backoff_until: null,
+        next_run_at: null,
+        last_run_at: null,
+        last_ok_at: null,
+        created_at: now,
+        updated_at: now,
+      })
+      .execute();
+    await context.services.db
+      .insertInto("order_sources")
+      .values({ order_id: misfiled, source_id: sourceId })
+      .execute();
+
+    expect(await repairOrderShops(context.services.db, context.clock)).toBe(1);
+
+    const db = context.services.db;
+    const items = await db
+      .selectFrom("order_items")
+      .select(["order_id", "position", "title"])
+      .orderBy("position")
+      .execute();
+    expect(items).toEqual([
+      { order_id: twin, position: 0, title: "Made-up lamp" },
+      { order_id: twin, position: 1, title: "Made-up kettle" },
+      { order_id: twin, position: 2, title: "Made-up mug" },
+    ]);
+    const links = await db.selectFrom("order_sources").select("order_id").execute();
+    expect(links).toEqual([{ order_id: twin }]);
+    const moved = await db
+      .selectFrom("parcels")
+      .select("order_id")
+      .where("id", "=", parcelId)
+      .executeTakeFirstOrThrow();
+    expect(moved.order_id).toBe(twin);
+    const events = await db.selectFrom("outbox").select(["type", "payload"]).execute();
+    const deleted = events.find((event) => event.type === "order.deleted");
+    expect(JSON.parse(deleted?.payload ?? "{}")).toEqual({
+      id: misfiled,
+      parcel_ids: [parcelId],
+      merged_into: twin,
+    });
+  });
+
+  it("drops a misfiled order whose twin the user deleted, keeping its parcels (OP-122)", async () => {
+    await order("example-shop.de", "7654321", context.clock.now().toISOString());
+    const misfiled = await order("amazon", "7654321");
+    await item(misfiled, 0, "Made-up kettle");
+    const parcelId = await parcel("00340434000000000209", {
+      order_id: misfiled,
+      label: "example-shop.de",
+    });
+    expect(await repairOrderShops(context.services.db, context.clock)).toBe(1);
+    const kept = await context.services.db
+      .selectFrom("parcels")
+      .select("order_id")
+      .where("id", "=", parcelId)
+      .executeTakeFirstOrThrow();
+    expect(kept.order_id).toBeNull();
+    const types = await context.services.db.selectFrom("outbox").select("type").execute();
+    expect(types.map((row) => row.type)).toContain("order.deleted");
+  });
 });
