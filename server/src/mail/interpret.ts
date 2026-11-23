@@ -8,6 +8,7 @@ import {
 } from "open-parcels-rules";
 import { isPlausibleOrder, shopFromDomain } from "../domain/order.js";
 import type { ParcelStatus } from "../domain/parcel.js";
+import { redactText } from "../log/redact.js";
 import { snapshot, type ParcelSnapshot } from "../plugin/snapshot.js";
 import type { MailInput, MailInterpreter } from "./types.js";
 
@@ -80,6 +81,21 @@ function mailId(mail: MailInput): string {
   return `mail:${digest}`;
 }
 
+/** Runs of this many digits or more in a subject are masked: pickup codes, PINs, numbers. */
+const SUBJECT_DIGITS = /\d{5,}/gu;
+
+/**
+ * A mail subject as the parcel's status text, which is stored, sent in events and shown to every
+ * client: e-mail addresses, tracking and order numbers and other digit runs are masked, and a
+ * mail that carries a pickup code gives no subject at all, since some services put the code that
+ * opens the locker into it. Names cannot be told apart reliably and stay.
+ */
+export function subjectAsStatus(subject: string, carriesPickupCode: boolean): string | null {
+  if (carriesPickupCode) return null;
+  const masked = redactText(subject).replace(SUBJECT_DIGITS, "…").trim();
+  return masked === "" ? null : masked;
+}
+
 /**
  * Turns shipping mails into parcel snapshots using the shared rules. Only mails that name a
  * tracking number produce a parcel; pickup codes are never carried over, because codes that open
@@ -110,16 +126,18 @@ export function createMailInterpreter(rules: Rules, timeZone: string): MailInter
           continue;
         }
         const status = result.status ?? textStatus(rules, carrier, mail.subject);
+        const rawStatus = subjectAsStatus(mail.subject, result.pickupCode !== undefined);
         snapshots.push(
           snapshot({
             carrier,
             barcode: trackingNumber,
             status,
-            rawStatus: mail.subject,
+            rawStatus,
             plannedFrom: result.arrival?.from ?? null,
             plannedTo: result.arrival?.to ?? null,
             url: result.trackingUrl ?? null,
-            history: [{ at, status, rawStatus: mail.subject, location: null, id }],
+            // A history entry needs a text: a neutral one when the subject must not be kept.
+            history: [{ at, status, rawStatus: rawStatus ?? "Shipping mail", location: null, id }],
             items: (result.items ?? []).map((title) => ({
               title,
               imageUrl: null,

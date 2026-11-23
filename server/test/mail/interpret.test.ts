@@ -1,6 +1,6 @@
 import { loadRules } from "open-parcels-rules";
 import { describe, expect, it } from "vitest";
-import { createMailInterpreter } from "../../src/mail/interpret.js";
+import { createMailInterpreter, subjectAsStatus } from "../../src/mail/interpret.js";
 
 const interpret = createMailInterpreter(loadRules(), "Europe/Berlin");
 
@@ -28,5 +28,15 @@ describe("mail interpretation with the shared rules", () => {
         date: null,
       }),
     ).toEqual([]);
+  });
+});
+
+describe("mail subjects as status text (OP-131)", () => {
+  it("mask addresses, codes and digit runs, and drop a subject that came with a pickup code", () => {
+    expect(
+      subjectAsStatus("Abholcode 482913 für someone@example.invalid, Sendung 00340434000000000017", false),
+    ).toBe("Abholcode … für [email], Sendung 0034…");
+    expect(subjectAsStatus("Your parcel is on its way", false)).toBe("Your parcel is on its way");
+    expect(subjectAsStatus("Code 482913 opens locker 12", true)).toBeNull();
   });
 });
