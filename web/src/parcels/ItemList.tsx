@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { apiUrl } from "../api/fetcher";
+import { safeHref } from "../lib/links";
 
 export interface ListedItem {
   readonly title: string;
@@ -32,6 +33,7 @@ export function ItemList(props: {
       {props.items.map((item, index) => {
         const price = priceText(item);
         const note = props.note?.(item, index);
+        const href = safeHref(item.url);
         return (
           <li key={`${item.title}-${String(index)}`}>
             {item.image_url === null ? (
@@ -42,10 +44,10 @@ export function ItemList(props: {
             <span className="item-text">
               <span>
                 {item.quantity !== null && item.quantity > 1 ? `${String(item.quantity)} × ` : ""}
-                {item.url === null ? (
+                {href === null ? (
                   item.title
                 ) : (
-                  <a href={item.url} target="_blank" rel="noreferrer noopener">
+                  <a href={href} target="_blank" rel="noreferrer noopener">
                     {item.title}
                   </a>
                 )}

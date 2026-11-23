@@ -54,6 +54,36 @@ describe("sign-in step renderer", () => {
     open.mockRestore();
   });
 
+  it("open_url: opens only https pages, without a handle on this tab (OP-007)", async () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    const { user } = setup({
+      kind: "open_url",
+      url: "javascript:alert(1)",
+      redirect_prefix: null,
+      resume_url: null,
+    });
+    await user.click(screen.getByRole("button", { name: /open the sign-in page/i }));
+    expect(open).not.toHaveBeenCalled();
+    open.mockRestore();
+  });
+
+  it("open_url: the window is opened with noopener", async () => {
+    const open = vi.spyOn(window, "open").mockReturnValue(null);
+    const { user } = setup({
+      kind: "open_url",
+      url: "https://login.example.invalid/start",
+      redirect_prefix: null,
+      resume_url: null,
+    });
+    await user.click(screen.getByRole("button", { name: /open the sign-in page/i }));
+    expect(open).toHaveBeenCalledWith(
+      "https://login.example.invalid/start",
+      "open-parcels-sign-in",
+      expect.stringContaining("noopener"),
+    );
+    open.mockRestore();
+  });
+
   describe("open_url to an app address", () => {
     const APP_STEP: SignInStep = {
       kind: "open_url",

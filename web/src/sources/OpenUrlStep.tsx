@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ReactNode, type SyntheticEvent } from "react";
 import type { SignInStep } from "../api/types";
 import { Field } from "../components/ui";
+import { safeHref } from "../lib/links";
 import { captureSignIn, EXTENSION_URL, useCompanionExtension } from "./extension";
 
 type OpenUrl = Extract<SignInStep, { kind: "open_url" }>;
@@ -13,10 +14,17 @@ interface Props {
 
 /** One named window, so "Continue" reopens the sign-in where the user already is. */
 const POPUP = "open-parcels-sign-in";
-const POPUP_FEATURES = "popup,width=520,height=760";
+/** `noopener`: the carrier's page gets no handle on this tab (no reverse tabnabbing). */
+const POPUP_FEATURES = "popup,width=520,height=760,noopener";
 
-function openPopup(url: string): void {
-  window.open(url, POPUP, POPUP_FEATURES);
+/** Opens the carrier's sign-in page; only an https address is ever opened. */
+function openPopup(url: string): boolean {
+  const href = safeHref(url, ["https:"]);
+  if (href === null) {
+    return false;
+  }
+  window.open(href, POPUP, POPUP_FEATURES);
+  return true;
 }
 
 /** An app address (`dhllogin://…`) the browser cannot open, unlike a web page it lands on. */

@@ -16,6 +16,7 @@ import {
 } from "../lib/format";
 import { ArchivedBadge, LookupBadge } from "./badges";
 import { formatDistance } from "../lib/geo";
+import { safeHref } from "../lib/links";
 import { useHome } from "../settings/home";
 import { kmToHome } from "./distance";
 import { EditableStatus, EditableTitle, ParcelActions, useCanEdit } from "./InlineEdit";
@@ -24,6 +25,7 @@ import { ItemList } from "./ItemList";
 const LocationMap = lazy(() => import("../map/LocationMap"));
 
 function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
+  const carrierPage = safeHref(parcel.url);
   const rows: [string, ReactNode][] = [
     ["Tracking code", <span className="mono">{parcel.barcode}</span>],
     ["Carrier says", parcel.raw_status ?? "—"],
@@ -59,11 +61,11 @@ function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
             <dd>{value}</dd>
           </div>
         ))}
-        {parcel.url === null ? null : (
+        {carrierPage === null ? null : (
           <div>
             <dt>Carrier page</dt>
             <dd>
-              <a href={parcel.url} target="_blank" rel="noreferrer noopener">
+              <a href={carrierPage} target="_blank" rel="noreferrer noopener">
                 Open on the carrier’s site <ExternalLink size={12} aria-hidden="true" />
               </a>
             </dd>
