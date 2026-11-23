@@ -35,6 +35,18 @@ describe("web UI serving", () => {
     }
   });
 
+  it("sends a strict content security policy with the page", async () => {
+    const app = await ctx.app({ webDir });
+    const response = await app.inject({ url: "/", headers: HTML });
+    const csp = String(response.headers["content-security-policy"]);
+    expect(csp).toContain("script-src 'self'");
+    expect(csp).toContain("frame-ancestors 'self'");
+    const scriptSrc = csp.split("; ").find((d) => d.startsWith("script-src")) ?? "";
+    expect(scriptSrc).toBe("script-src 'self'");
+    expect(response.headers["x-frame-options"]).toBe("SAMEORIGIN");
+    expect(response.headers["x-content-type-options"]).toBe("nosniff");
+  });
+
   it("serves hashed assets with long caching", async () => {
     const app = await ctx.app({ webDir });
     const response = await app.inject({ url: "/assets/app-1234.js" });

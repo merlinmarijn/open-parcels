@@ -9,6 +9,38 @@ const BASE_PLACEHOLDER = "%OPENPARCELS_BASE%";
 /** Home Assistant ingress prefixes look like `/api/hassio_ingress/<token>`. */
 const INGRESS_PATH = /^\/api\/hassio_ingress\/[\w-]{1,128}$/;
 
+/**
+ * The page may load code, styles and fonts only from this server and talk only to it. Map tiles
+ * and item pictures come through this server's own /tiles/ and /img/ proxies, so images need only
+ * 'self' plus data: and blob: URLs. Scripts never run inline. Styles allow 'unsafe-inline' because
+ * leaflet-ant-path ships its CSS through a style-loader runtime that injects <style> elements;
+ * inline CSS cannot run code, so the script rule is what matters.
+ */
+export const CONTENT_SECURITY_POLICY = [
+  "default-src 'self'",
+  "script-src 'self'",
+  "style-src 'self' 'unsafe-inline'",
+  "img-src 'self' data: blob:",
+  "connect-src 'self'",
+  "font-src 'self' data:", // FullCalendar embeds its icon font as a data: URL
+  "object-src 'none'",
+  "base-uri 'self'",
+  "form-action 'self'",
+  // Home Assistant shows ingress pages in a frame on its own origin, which is this one.
+  "frame-ancestors 'self'",
+].join("; ");
+
+/** Headers for the HTML page; the hashed assets only carry caching headers. */
+export const PAGE_HEADERS: Readonly<Record<string, string>> = {
+  "cache-control": "no-cache",
+  "content-security-policy": CONTENT_SECURITY_POLICY,
+  "x-content-type-options": "nosniff",
+  "x-frame-options": "SAMEORIGIN",
+  "referrer-policy": "same-origin",
+  // "Use my location" in Settings needs geolocation; nothing else is used.
+  "permissions-policy": "geolocation=(self), camera=(), microphone=(), payment=()",
+};
+
 export interface WebUiOptions {
   /** Folder holding the built UI (`index.html` plus `assets/`). */
   readonly root: string;
@@ -43,9 +75,7 @@ function sendIndex(reply: FastifyReply, template: string, base: string): Fastify
   return reply
     .code(200)
     .type("text/html; charset=utf-8")
-    .header("cache-control", "no-cache")
-    .header("x-content-type-options", "nosniff")
-    .header("referrer-policy", "same-origin")
+    .headers(PAGE_HEADERS)
     .send(template.replaceAll(BASE_PLACEHOLDER, escapeAttribute(base)));
 }
 
