@@ -49,6 +49,15 @@ already fixed. Still open, by audit group:
       provider rewrite starts.
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
+- [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
+      Theme (default, installed themes) and Mode (Automatic from device / Light / Dark); a theme
+      may ship a light and a dark variant (Automatic follows the device), or one variant that
+      fixes the mode. A theme is declarative only (design tokens: colours, fonts, radius, spacing,
+      map style, logo/icons; no JS, no external URLs — bundled assets only, CSP stays strict), so
+      community themes can't run code or leak data. Distributed standalone or inside a provider
+      repo (the repo manifest lists themes), installed from the providers page with the same tiers
+      and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
+      everywhere, no hard-coded colours.
 - [ ] Provider sandbox (child process with Node permission model, broker for HTTP, secrets per call)
 - [ ] Source actions and jobs (buttons on source cards, progress, cancel, resume, HA buttons)
 - [ ] Amazon "Import history" job (all years, resumable, conservative pacing, imported history kept)

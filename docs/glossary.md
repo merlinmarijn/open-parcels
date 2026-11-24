@@ -52,6 +52,8 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | Order | One purchase at a shop, with its items and parcels. Status words use the participle form (ordered, shipped, delivered, …) | purchase, Bestellung |
 | Return | Sending items back to a shop: return-by date, pickup points, cost, label, the sending parcel. Status words: requested, returning, returned, refunded, rejected, cancelled, expired | Rücksendung, Retoure, RMA |
 | Refund | Money a shop pays back, with or without a return. Status word: refunded | reimbursement, Erstattung, credit |
+| Theme | An installable, declarative look for the whole web UI (colours, fonts, spacing, map style, logo); may come with a light and a dark variant | skin, style, look, Design |
+| Mode | Light, dark or automatic (follow the device); chosen separately from the theme | colour scheme, appearance, dark mode, light mode |
 
 ## Renames this implies
 
