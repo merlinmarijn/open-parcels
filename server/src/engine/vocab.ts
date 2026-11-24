@@ -36,34 +36,28 @@ export async function recordUnknown(
   const { provider, kind } = value;
   const now = isoNow(deps.clock);
   const key = value.key.slice(0, 120);
-  const existing = await deps.db
-    .selectFrom("unknown_vocab")
-    .select("count")
-    .where("provider", "=", provider)
-    .where("kind", "=", kind)
-    .where("key", "=", key)
-    .executeTakeFirst();
-  if (existing !== undefined) {
-    await deps.db
-      .updateTable("unknown_vocab")
-      .set({ count: existing.count + 1, last_seen_at: now })
-      .where("provider", "=", provider)
-      .where("kind", "=", kind)
-      .where("key", "=", key)
-      .execute();
-    return;
-  }
-  await deps.db.transaction().execute(async (trx) => {
-    await trx
+  // One statement, so two writers reporting the same new value count it twice instead of failing.
+  const first = await deps.db.transaction().execute(async (trx) => {
+    const { count } = await trx
       .insertInto("unknown_vocab")
       .values({ provider, kind, key, first_seen_at: now, last_seen_at: now, count: 1 })
-      .execute();
+      .onConflict((oc) =>
+        oc.columns(["provider", "kind", "key"]).doUpdateSet((eb) => ({
+          count: eb("unknown_vocab.count", "+", 1),
+          last_seen_at: now,
+        })),
+      )
+      .returning("count")
+      .executeTakeFirstOrThrow();
+    if (count !== 1) return false;
     await appendEvent(trx, deps.clock, {
       type: "vocab.unknown",
       parcelId: null,
       payload: { provider, kind, key },
     });
+    return true;
   });
+  if (!first) return;
   await deps.bus.notify();
   log.warn({ provider, kind, key }, "Unrecognised value. Please report it so it can be mapped.");
 }
