@@ -17,6 +17,7 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | --- | --- | --- |
 | Provider | Installable package that talks to one carrier, shop or other service (e.g. the Amazon provider, the DHL provider) | plugin, plug-in, integration, connector, carrier module |
 | Connection | One configured use of a provider: a signed-in account, a keyless tracking setup or a mailbox (e.g. "Amazon.de · Bluscream", "DHL tracking") | source, account, link, instance |
+| Fallback service | A provider that is not a carrier but asks many of them (universal lookup, 17TRACK); asked only about parcels no built-in carrier follows or finds | aggregator, meta tracker, universal tracker, fallback provider |
 | Parcel | One physical box or envelope travelling under one tracking number | shipment, package, consignment, Sendung, Paket |
 | Tracking number | The code that identifies a parcel at its carrier (may contain letters) | barcode, tracking code, parcel number, tracking id, Sendungsnummer |
 | Carrier | The company that transports a parcel (DHL, Hermes, DPD) | courier company, delivery company, shipping company, Paketdienst, Zusteller (company) |

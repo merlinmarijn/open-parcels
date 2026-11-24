@@ -50,6 +50,12 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
 - Order totals as the emails state them (rules 2.0.0-dev.12): an order's `total` is the shop's
   stated total, else a payment receipt's until the shop states one, else the sum of its priced
   lines (migration `0021-order-totals`). Boykisser.gg order confirmations.
+- **Fallback services** (optional connections, off until added): **Universal lookup** (a
+  universal-lookup service's address) and **17TRACK** (your own API key, API v2.2). They are asked
+  only about parcels no built-in carrier follows, or that their carrier has not found for a day,
+  one service at a time, cached and paced (see the README); their answers are filed under the
+  parcel's own carrier. A code no carrier recognises can be added while one exists.
+  `GET /api/v1/carriers` says `fallback` per provider.
 - Live event `order.created` when an email starts an order; its data is the order like
   `order.updated` (without parcels).
 

@@ -70,6 +70,25 @@ otherwise only to these:
   answer is cached. Turn the setting off (**Settings → Map**, admin only) to keep them on this server.
 - **Map tiles** are fetched by the server from the map provider you choose and cached.
 
+## Fallback services
+
+Two optional connections ask about parcels the built-in carriers cannot follow: a code no carrier
+recognises, a carrier without a provider (or whose provider needs settings you have not given),
+or a parcel its carrier has not found for a day. Both are off until you add them under
+**Connections**, and both may exist side by side:
+
+| Service | What you enter | Notes |
+| :--- | :--- | :--- |
+| **Universal lookup** | The address of a universal-lookup service (`GET <url>/api/parcel/<tracking number>`), e.g. one you host yourself | Each code is asked at most every 3 hours, one request every 5 seconds, at most 20 codes a run. The address must be reachable on a public address (the server refuses private network addresses). |
+| **17TRACK** | Your own API key of the [17TRACK tracking API](https://api.17track.net) (v2.2) | Each number is registered once (that uses one unit of your quota) and then read at most every 6 hours. The quota is checked before registering (at most every 12 hours), today's cap is respected, and registering pauses for 12 hours once the quota is used up; parcels waiting for a registration keep their state. |
+
+They are asked one at a time: the universal lookup first, 17TRACK only when the one before has
+not found the parcel for a day either. Their answers are filed under the parcel's own carrier, so
+no second parcel appears, and once a parcel is handed to a fallback service, its answers decide
+whether the parcel counts as found. A code no carrier recognises can be added by hand while a
+fallback service exists; it is then filed under that service. Both services see the tracking
+numbers they are asked about, and nothing else.
+
 ## Tailscale (built in)
 
 The image can join your tailnet itself, so no sidecar container is needed. Set `TS_STATE_DIR`
