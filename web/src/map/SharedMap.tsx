@@ -5,6 +5,7 @@ import { MapContainer, TileLayer, useMap } from "react-leaflet";
 import { LayerControl } from "./LayerControl";
 import { tileUrl, useMapStyle, type MapLayer } from "./layers";
 import type { LatLng } from "./mapIcons";
+import { useResolvedMode } from "../lib/theme";
 
 /**
  * Tiles come through this server's own cache (`/tiles/<layer>/…`, see `layers.ts`): the tile
@@ -12,13 +13,6 @@ import type { LatLng } from "./mapIcons";
  * their usage policies ask. Dark mode is a CSS filter on the tile pane (see `.map-dark`), left
  * off for satellite imagery, where inverted colours make no sense.
  */
-function prefersDark(): boolean {
-  const forced = document.documentElement.dataset["theme"];
-  return forced === undefined
-    ? window.matchMedia("(prefers-color-scheme: dark)").matches
-    : forced === "dark";
-}
-
 /**
  * Keeps the map sized to its container and fitted to the given points, until the user pans or
  * zooms: after that, new points (a courier moving) no longer pull the view back.
@@ -95,10 +89,12 @@ export function SharedMap(props: {
   readonly style?: { readonly base: MapLayer; readonly overlay: MapLayer | null };
 }): ReactNode {
   const chosen = useMapStyle();
+  // Follows a mode change at once, the device's included (OP-150).
+  const mode = useResolvedMode();
   const base = props.style?.base ?? chosen.base;
   const overlay = props.style === undefined ? chosen.overlay : props.style.overlay;
   // Satellite imagery and styles that are dark already keep their own colours.
-  const dark = prefersDark() && !base.satellite && !base.dark;
+  const dark = mode === "dark" && !base.satellite && !base.dark;
   return (
     <div
       className={dark ? "map-frame map-dark" : "map-frame"}
