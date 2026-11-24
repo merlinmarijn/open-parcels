@@ -42,14 +42,14 @@ already fixed. Still open, by audit group:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
-- [ ] Glossary pass in the other repos (the server repo is done, see `DONE.md`; the server keeps
-      the old names for one release, `CHANGELOG.md`):
+- [ ] Glossary pass in the other repos, in lockstep with the server (the server repo is done, see
+      `DONE.md`; it no longer serves any old name, `CHANGELOG.md`):
   - open-parcels-ha: read `/api/v1/connections`, `tracking_number`, `expected_from`/`expected_to`
     (and `expected_days` for whole-day dates in sensors and the calendar), `direction`
     `receiving`/`sending` (today `!= "outgoing"` counts sending parcels as receiving), live events
     `connection.*` and `parcel.sending_registered`/`_delivered` (`const.py`); send
     `tracking_number` and `receiving`/`sending` in `add_parcel`; rename the `barcode` attribute to
-    `tracking_number` (old one kept a release), source devices/buttons/translations to
+    `tracking_number`, source devices/buttons/translations to
     connections (entity and device ids kept), Home Assistant event names with "sending"; texts:
     Inbox, email, Log in (web UI) vs Sign in (carrier)
   - open-parcels-ha-apps: option descriptions, translations, DOCS/README and changelog text

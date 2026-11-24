@@ -58,14 +58,18 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 ## Renames this implies
 
 The first pass over all code, docs and websites brings everything in line (`tasks/TODO.md` §3).
-Renames that cross a public boundary keep the old name working for at least one release:
+Old names are never kept next to new ones (owner decision 2026-11-24: migrate, don't keep legacy
+code). A rename is done in one step: stored data is migrated automatically (a database migration),
+or, where that cannot work, by a documented manual step in `CHANGELOG.md`. Clients that cross a
+public boundary (the Home Assistant integration and app, the browser extension) are updated in
+lockstep.
 
-| Old | New | Where | Compatibility |
+| Old | New | Where | How it was migrated |
 | --- | --- | --- | --- |
-| plugin, plug-in | provider | code, docs | internal only |
-| source | connection | API (`/api/v1/sources`), DB, UI, events (`source.*`), HA devices | old API paths and event names kept as aliases for one release; DB via migration; HA entities keep their ids |
-| barcode | tracking number (`tracking_number`) | API fields, DB, UI | API returns both fields for one release |
-| direction `incoming` / `outgoing` | `receiving` / `sending` | API, DB, UI, HA sensors | API accepts and returns both for one release; HA sensor entity ids kept |
+| plugin, plug-in | provider | code, docs, API (`provider`) | renamed; DB via migration 0019 |
+| source | connection | API (`/api/v1/connections`), DB, UI, live events (`connection.*`), HA devices | renamed; DB via migration 0019, HA import markers via 0020; HA entities keep their ids |
+| barcode | tracking number (`tracking_number`) | API fields, DB, UI | renamed; DB via migration 0019 |
+| direction `incoming` / `outgoing` | `receiving` / `sending` | API, DB, UI, HA sensors | renamed; DB via migration 0019; HA sensor entity ids kept |
 | mailbox, mail | inbox, email | UI, docs, code | internal and UI only |
-| eta, planned_from/to, forecast | expected delivery (UI), `expected_from` / `expected_to` (API) | API, UI, calendar | API returns both for one release |
+| eta, planned_from/to, forecast | expected delivery (UI), `expected_from` / `expected_to` (API) | API, UI, calendar | renamed; DB via migration 0019 |
 | history entry, scan | event | UI, docs | outbox/SSE messages become "live events" in docs and UI text |

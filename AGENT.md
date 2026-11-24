@@ -44,5 +44,10 @@ npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc
 - **Carrier knowledge that other projects could reuse goes to `open-parcels-rules`, not here.**
   That covers regexes, status tables, locale tables and email rules.
 - **Don't name the projects an endpoint was learned from** in code, docs or commit messages.
+- **Migrate, don't keep legacy code.** A rename or format change is done in one step: no
+  deprecated aliases, old fields next to new ones, old names accepted in requests or code that
+  reads two shapes of stored data. Stored data is migrated once (a database migration), or by a
+  documented manual step in `CHANGELOG.md` where that makes more sense. Our own clients (Home
+  Assistant integration and app, extension) are updated in lockstep.
 - **GitHub Actions never run under this account.** Workflows keep only `workflow_dispatch` active;
   automatic triggers stay commented out, with the reason written above them.
