@@ -14,6 +14,10 @@ export default tseslint.config(
       "web/src/api/generated.ts",
       ".references/**",
       ".scratch/**",
+      // Git-ignored local folders: agent worktrees, browser captures, unpacked packages.
+      ".claude/**",
+      ".playwright-mcp/**",
+      "packages/**",
     ],
   },
   js.configs.recommended,
