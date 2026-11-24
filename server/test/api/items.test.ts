@@ -120,14 +120,15 @@ describe("image proxy paths", () => {
 });
 
 describe("gridFor", () => {
+  // The grid is square: gridFor returns its side, the number of rows and of columns.
   it.each([
-    [1, 1],
-    [2, 2],
-    [4, 2],
-    [5, 3],
-    [9, 3],
-    [12, 3],
-  ])("puts %i pictures in a %i×%i grid", (count, columns) => {
-    expect(gridFor(count)).toBe(columns);
+    { count: 1, side: 1 },
+    { count: 2, side: 2 },
+    { count: 4, side: 2 },
+    { count: 5, side: 3 },
+    { count: 9, side: 3 },
+    { count: 12, side: 3 },
+  ])("puts $count pictures in a $side×$side grid", ({ count, side }) => {
+    expect(gridFor(count)).toBe(side);
   });
 });
