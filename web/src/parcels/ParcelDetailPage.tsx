@@ -144,12 +144,23 @@ function History({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   );
 }
 
-function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
-  // The order's other lines: in another parcel, or in one not known yet.
+/**
+ * The order's other items: in another parcel, or in one not known yet. Items the server linked to
+ * a parcel are told apart by that link; only unlinked ones fall back to the title (OP-151).
+ */
+export function otherOrderItems<Line extends { title: string; parcel_id: string | null }>(parcel: {
+  readonly id: string;
+  readonly items: readonly { title: string }[];
+  readonly order: { readonly items: readonly Line[] } | null;
+}): Line[] {
   const own = new Set(parcel.items.map((item) => item.title));
-  const otherLines = (parcel.order?.items ?? []).filter(
-    (line) => line.parcel_id !== parcel.id && !own.has(line.title),
+  return (parcel.order?.items ?? []).filter((line) =>
+    line.parcel_id === null ? !own.has(line.title) : line.parcel_id !== parcel.id,
   );
+}
+
+function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
+  const otherLines = otherOrderItems(parcel);
   return (
     <section className="detail-section" aria-labelledby="items-title">
       <h2 id="items-title">Items</h2>
@@ -169,7 +180,15 @@ function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
           />
         </>
       )}
-      <h2>Sources</h2>
+    </section>
+  );
+}
+
+/** Its own section, so assistive tech does not read the sources as part of "Items" (OP-157). */
+function Sources({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
+  return (
+    <section className="detail-section" aria-labelledby="sources-title">
+      <h2 id="sources-title">Sources</h2>
       {parcel.sources.length === 0 ? (
         <p className="muted">No source follows this parcel.</p>
       ) : (
@@ -234,6 +253,7 @@ function Overview({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         <EtaCard parcel={parcel} />
         <History parcel={parcel} />
         <Items parcel={parcel} />
+        <Sources parcel={parcel} />
         <Facts parcel={parcel} />
       </div>
     </div>

@@ -11,12 +11,14 @@ export interface ListedItem {
   readonly currency: string | null;
 }
 
-function priceText(item: ListedItem): string | null {
+export function priceText(item: ListedItem): string | null {
   if (item.price === null) return null;
+  // No currency known: a bare number, never a guessed one (OP-151).
+  if (item.currency === null) return item.price.toFixed(2);
   try {
     return new Intl.NumberFormat(undefined, {
       style: "currency",
-      currency: item.currency ?? "EUR",
+      currency: item.currency,
     }).format(item.price);
   } catch {
     return item.price.toFixed(2);

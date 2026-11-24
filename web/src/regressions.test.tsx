@@ -143,8 +143,10 @@ describe("parcel detail", () => {
     renderApp("/parcels/00000000-0000-4000-8000-0000000000a1");
     await screen.findByRole("heading", { name: "Old lamp" });
     expect(screen.getByText("Archived")).toBeInTheDocument();
-    expect(screen.getByText(/DHL account/)).toBeInTheDocument();
-    expect(screen.getByText(/DHL tracking/)).toBeInTheDocument();
+    // The sources are their own region, not part of "Items" (OP-157).
+    const sources = screen.getByRole("region", { name: "Sources" });
+    expect(within(sources).getByText(/DHL account/)).toBeInTheDocument();
+    expect(within(sources).getByText(/DHL tracking/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Unarchive" }));
     expect(await screen.findByText("Restored from the archive.")).toBeInTheDocument();
     expect(calls.find((call) => call.method === "PATCH")?.body).toEqual({ archived: false });

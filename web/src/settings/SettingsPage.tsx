@@ -127,7 +127,12 @@ function HomeSection(): ReactNode {
           </button>
         </form>
       ) : null}
-      {searchError === null ? null : <p className="error">{searchError}</p>}
+      {/* Announced and styled like every other error (OP-157). */}
+      {searchError === null ? null : (
+        <p role="alert" className="notice notice-error">
+          {searchError}
+        </p>
+      )}
       {places === null ? null : places.length === 0 ? (
         <p className="muted">Nothing found. Try a fuller address or coordinates.</p>
       ) : (
