@@ -29,6 +29,9 @@ const SOURCE_EVENTS = [
 /** An order renamed, (un)archived by hand, or deleted. */
 const ORDER_EVENTS = ["order.updated", "order.deleted"] as const;
 
+/** A return started or changed: the returns list, its order and the calendar's deadlines. */
+const RETURN_EVENTS = ["return.created", "return.updated"] as const;
+
 export type LiveState = "connecting" | "live" | "offline";
 
 /** Live position updates arrive every 30 s per parcel; the lists follow them at most this often. */
@@ -151,6 +154,14 @@ export function useLiveUpdates(enabled: boolean): LiveState {
     };
     for (const type of ORDER_EVENTS) {
       source.addEventListener(type, onOrder);
+    }
+    const onReturn = (): void => {
+      void client.invalidateQueries({ queryKey: keys.returns });
+      void client.invalidateQueries({ queryKey: keys.orders });
+      void client.invalidateQueries({ queryKey: ["calendar"] });
+    };
+    for (const type of RETURN_EVENTS) {
+      source.addEventListener(type, onReturn);
     }
     // The server could not replay what was missed (too old, or a reset database): reload all.
     const onResync = (): void => {

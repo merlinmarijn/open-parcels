@@ -24,6 +24,8 @@ function order(overrides: Partial<Order> = {}): Order {
     parcel_count: 2,
     delivered_count: 1,
     total: { amount: 39.9, currency: "EUR" },
+    return_until: null,
+    returns: [],
     items: [
       {
         title: "Desk lamp",

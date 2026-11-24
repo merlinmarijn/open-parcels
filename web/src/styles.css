@@ -1293,6 +1293,38 @@ tbody tr:hover {
   gap: 14px;
 }
 
+.return-card {
+  padding: 16px 20px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+
+.return-card h3 {
+  margin: 0;
+  font-size: 1rem;
+}
+
+.return-facts {
+  display: grid;
+  grid-template-columns: max-content 1fr;
+  gap: 4px 16px;
+  margin: 0;
+}
+
+.return-facts dt {
+  color: var(--muted);
+}
+
+.return-facts dd {
+  margin: 0;
+}
+
+.return-drop-off {
+  margin: 0;
+  padding-left: 1.1rem;
+}
+
 .order-head {
   display: flex;
   align-items: center;
@@ -1510,6 +1542,12 @@ tbody tr:hover {
   --fc-event-bg-color: var(--ok);
   background: var(--ok);
   border-color: var(--ok);
+}
+
+.cal-return_by {
+  background: var(--tint-strong);
+  border-color: var(--accent);
+  color: var(--text);
 }
 
 .cal-late {

@@ -11,12 +11,17 @@ export function toCalendarEvent(entry: CalendarEntry, carrierName: string): Even
     entry.all_day && entry.start_date !== null && entry.end_date !== null
       ? { start: entry.start_date, end: entry.end_date, allDay: true }
       : { start: entry.start, end: entry.end, allDay: false };
+  // The title is the label, first item or barcode; the carrier is added here, once. A return's
+  // deadline says so and lists where to hand it in and what it costs.
+  const title =
+    entry.kind === "return_by"
+      ? [`Return by: ${entry.title}`, ...entry.details].join(" · ")
+      : `${entry.title} · ${carrierName}`;
   return {
     id: entry.uid,
-    // The title is the label, first item or barcode; the carrier is added here, once.
-    title: `${entry.title} · ${carrierName}`,
+    title,
     ...span,
     classNames: [`cal-${entry.kind}`, ...(entry.late ? ["cal-late"] : [])],
-    extendedProps: { parcelId: entry.parcel_id },
+    extendedProps: { parcelId: entry.parcel_id, orderId: entry.order_id },
   };
 }

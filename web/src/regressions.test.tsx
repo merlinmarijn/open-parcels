@@ -285,6 +285,9 @@ describe("calendar", () => {
     const entry: CalendarEntry = {
       uid: "p1@open-parcels",
       parcel_id: "00000000-0000-4000-8000-0000000000b1",
+      return_id: null,
+      order_id: null,
+      details: [],
       title: "Lamp",
       carrier: "dhl",
       barcode: "TEST0000000009",

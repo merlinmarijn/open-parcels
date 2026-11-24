@@ -2445,6 +2445,124 @@ export type GetApiV1Orders200ItemItemsItem = {
   parcel_id: string | null;
 };
 
+export type GetApiV1Orders200ItemReturnsItemStatus =
+  (typeof GetApiV1Orders200ItemReturnsItemStatus)[keyof typeof GetApiV1Orders200ItemReturnsItemStatus];
+
+export const GetApiV1Orders200ItemReturnsItemStatus = {
+  requested: "requested",
+  label_created: "label_created",
+  dropped_off: "dropped_off",
+  in_transit: "in_transit",
+  received: "received",
+  refunded: "refunded",
+  rejected: "rejected",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type GetApiV1Orders200ItemReturnsItemDropOffItemKind =
+  (typeof GetApiV1Orders200ItemReturnsItemDropOffItemKind)[keyof typeof GetApiV1Orders200ItemReturnsItemDropOffItemKind];
+
+export const GetApiV1Orders200ItemReturnsItemDropOffItemKind = {
+  shop: "shop",
+  parcel_locker: "parcel_locker",
+  post_office: "post_office",
+  pickup: "pickup",
+  any: "any",
+} as const;
+
+export type GetApiV1Orders200ItemReturnsItemDropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: GetApiV1Orders200ItemReturnsItemDropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * What sending it back costs; null when not known.
+ * @nullable
+ */
+export type GetApiV1Orders200ItemReturnsItemCost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
+export type GetApiV1Orders200ItemReturnsItemRefundStatus =
+  (typeof GetApiV1Orders200ItemReturnsItemRefundStatus)[keyof typeof GetApiV1Orders200ItemReturnsItemRefundStatus];
+
+export const GetApiV1Orders200ItemReturnsItemRefundStatus = {
+  pending: "pending",
+  issued: "issued",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1Orders200ItemReturnsItemRefund = {
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+  status: GetApiV1Orders200ItemReturnsItemRefundStatus;
+} | null;
+
+export type GetApiV1Orders200ItemReturnsItemItemsItem = {
+  title: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  order_item_position: number | null;
+};
+
+export type GetApiV1Orders200ItemReturnsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  order_id: string;
+  shop: string;
+  order_number: string;
+  status: GetApiV1Orders200ItemReturnsItemStatus;
+  /** @nullable */
+  reason: string | null;
+  /**
+   * The last local day to hand the return in.
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_by: string | null;
+  drop_off: GetApiV1Orders200ItemReturnsItemDropOffItem[];
+  /**
+   * What sending it back costs; null when not known.
+   * @nullable
+   */
+  cost: GetApiV1Orders200ItemReturnsItemCost;
+  /**
+   * An http(s) address.
+   * @nullable
+   */
+  label_url: string | null;
+  /** @nullable */
+  carrier: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /** @nullable */
+  refund: GetApiV1Orders200ItemReturnsItemRefund;
+  items: GetApiV1Orders200ItemReturnsItemItemsItem[];
+  created_at: string;
+  updated_at: string;
+};
+
 export type GetApiV1Orders200ItemParcelsItemDirection =
   (typeof GetApiV1Orders200ItemParcelsItemDirection)[keyof typeof GetApiV1Orders200ItemParcelsItemDirection];
 
@@ -2574,6 +2692,12 @@ export type GetApiV1Orders200Item = {
   /** @nullable */
   total: GetApiV1Orders200ItemTotal;
   items: GetApiV1Orders200ItemItemsItem[];
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_until: string | null;
+  returns: GetApiV1Orders200ItemReturnsItem[];
   parcels: GetApiV1Orders200ItemParcelsItem[];
   created_at: string;
   updated_at: string;
@@ -2629,6 +2753,124 @@ export type GetApiV1OrdersId200ItemsItem = {
    * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
    */
   parcel_id: string | null;
+};
+
+export type GetApiV1OrdersId200ReturnsItemStatus =
+  (typeof GetApiV1OrdersId200ReturnsItemStatus)[keyof typeof GetApiV1OrdersId200ReturnsItemStatus];
+
+export const GetApiV1OrdersId200ReturnsItemStatus = {
+  requested: "requested",
+  label_created: "label_created",
+  dropped_off: "dropped_off",
+  in_transit: "in_transit",
+  received: "received",
+  refunded: "refunded",
+  rejected: "rejected",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type GetApiV1OrdersId200ReturnsItemDropOffItemKind =
+  (typeof GetApiV1OrdersId200ReturnsItemDropOffItemKind)[keyof typeof GetApiV1OrdersId200ReturnsItemDropOffItemKind];
+
+export const GetApiV1OrdersId200ReturnsItemDropOffItemKind = {
+  shop: "shop",
+  parcel_locker: "parcel_locker",
+  post_office: "post_office",
+  pickup: "pickup",
+  any: "any",
+} as const;
+
+export type GetApiV1OrdersId200ReturnsItemDropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: GetApiV1OrdersId200ReturnsItemDropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * What sending it back costs; null when not known.
+ * @nullable
+ */
+export type GetApiV1OrdersId200ReturnsItemCost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
+export type GetApiV1OrdersId200ReturnsItemRefundStatus =
+  (typeof GetApiV1OrdersId200ReturnsItemRefundStatus)[keyof typeof GetApiV1OrdersId200ReturnsItemRefundStatus];
+
+export const GetApiV1OrdersId200ReturnsItemRefundStatus = {
+  pending: "pending",
+  issued: "issued",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1OrdersId200ReturnsItemRefund = {
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+  status: GetApiV1OrdersId200ReturnsItemRefundStatus;
+} | null;
+
+export type GetApiV1OrdersId200ReturnsItemItemsItem = {
+  title: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  order_item_position: number | null;
+};
+
+export type GetApiV1OrdersId200ReturnsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  order_id: string;
+  shop: string;
+  order_number: string;
+  status: GetApiV1OrdersId200ReturnsItemStatus;
+  /** @nullable */
+  reason: string | null;
+  /**
+   * The last local day to hand the return in.
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_by: string | null;
+  drop_off: GetApiV1OrdersId200ReturnsItemDropOffItem[];
+  /**
+   * What sending it back costs; null when not known.
+   * @nullable
+   */
+  cost: GetApiV1OrdersId200ReturnsItemCost;
+  /**
+   * An http(s) address.
+   * @nullable
+   */
+  label_url: string | null;
+  /** @nullable */
+  carrier: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /** @nullable */
+  refund: GetApiV1OrdersId200ReturnsItemRefund;
+  items: GetApiV1OrdersId200ReturnsItemItemsItem[];
+  created_at: string;
+  updated_at: string;
 };
 
 export type GetApiV1OrdersId200ParcelsItemDirection =
@@ -2760,6 +3002,12 @@ export type GetApiV1OrdersId200 = {
   /** @nullable */
   total: GetApiV1OrdersId200Total;
   items: GetApiV1OrdersId200ItemsItem[];
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_until: string | null;
+  returns: GetApiV1OrdersId200ReturnsItem[];
   parcels: GetApiV1OrdersId200ParcelsItem[];
   created_at: string;
   updated_at: string;
@@ -2832,6 +3080,124 @@ export type PatchApiV1OrdersId200ItemsItem = {
    * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
    */
   parcel_id: string | null;
+};
+
+export type PatchApiV1OrdersId200ReturnsItemStatus =
+  (typeof PatchApiV1OrdersId200ReturnsItemStatus)[keyof typeof PatchApiV1OrdersId200ReturnsItemStatus];
+
+export const PatchApiV1OrdersId200ReturnsItemStatus = {
+  requested: "requested",
+  label_created: "label_created",
+  dropped_off: "dropped_off",
+  in_transit: "in_transit",
+  received: "received",
+  refunded: "refunded",
+  rejected: "rejected",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type PatchApiV1OrdersId200ReturnsItemDropOffItemKind =
+  (typeof PatchApiV1OrdersId200ReturnsItemDropOffItemKind)[keyof typeof PatchApiV1OrdersId200ReturnsItemDropOffItemKind];
+
+export const PatchApiV1OrdersId200ReturnsItemDropOffItemKind = {
+  shop: "shop",
+  parcel_locker: "parcel_locker",
+  post_office: "post_office",
+  pickup: "pickup",
+  any: "any",
+} as const;
+
+export type PatchApiV1OrdersId200ReturnsItemDropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: PatchApiV1OrdersId200ReturnsItemDropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * What sending it back costs; null when not known.
+ * @nullable
+ */
+export type PatchApiV1OrdersId200ReturnsItemCost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
+export type PatchApiV1OrdersId200ReturnsItemRefundStatus =
+  (typeof PatchApiV1OrdersId200ReturnsItemRefundStatus)[keyof typeof PatchApiV1OrdersId200ReturnsItemRefundStatus];
+
+export const PatchApiV1OrdersId200ReturnsItemRefundStatus = {
+  pending: "pending",
+  issued: "issued",
+} as const;
+
+/**
+ * @nullable
+ */
+export type PatchApiV1OrdersId200ReturnsItemRefund = {
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+  status: PatchApiV1OrdersId200ReturnsItemRefundStatus;
+} | null;
+
+export type PatchApiV1OrdersId200ReturnsItemItemsItem = {
+  title: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  order_item_position: number | null;
+};
+
+export type PatchApiV1OrdersId200ReturnsItem = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  order_id: string;
+  shop: string;
+  order_number: string;
+  status: PatchApiV1OrdersId200ReturnsItemStatus;
+  /** @nullable */
+  reason: string | null;
+  /**
+   * The last local day to hand the return in.
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_by: string | null;
+  drop_off: PatchApiV1OrdersId200ReturnsItemDropOffItem[];
+  /**
+   * What sending it back costs; null when not known.
+   * @nullable
+   */
+  cost: PatchApiV1OrdersId200ReturnsItemCost;
+  /**
+   * An http(s) address.
+   * @nullable
+   */
+  label_url: string | null;
+  /** @nullable */
+  carrier: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /** @nullable */
+  refund: PatchApiV1OrdersId200ReturnsItemRefund;
+  items: PatchApiV1OrdersId200ReturnsItemItemsItem[];
+  created_at: string;
+  updated_at: string;
 };
 
 export type PatchApiV1OrdersId200ParcelsItemDirection =
@@ -2963,6 +3329,12 @@ export type PatchApiV1OrdersId200 = {
   /** @nullable */
   total: PatchApiV1OrdersId200Total;
   items: PatchApiV1OrdersId200ItemsItem[];
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_until: string | null;
+  returns: PatchApiV1OrdersId200ReturnsItem[];
   parcels: PatchApiV1OrdersId200ParcelsItem[];
   created_at: string;
   updated_at: string;
@@ -2976,6 +3348,261 @@ export type PatchApiV1OrdersId404 = {
 };
 
 export type DeleteApiV1OrdersId404 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
+export type GetApiV1ReturnsParams = {
+  view?: GetApiV1ReturnsView;
+};
+
+export type GetApiV1ReturnsView = (typeof GetApiV1ReturnsView)[keyof typeof GetApiV1ReturnsView];
+
+export const GetApiV1ReturnsView = {
+  open: "open",
+  closed: "closed",
+  all: "all",
+} as const;
+
+export type GetApiV1Returns200ItemStatus =
+  (typeof GetApiV1Returns200ItemStatus)[keyof typeof GetApiV1Returns200ItemStatus];
+
+export const GetApiV1Returns200ItemStatus = {
+  requested: "requested",
+  label_created: "label_created",
+  dropped_off: "dropped_off",
+  in_transit: "in_transit",
+  received: "received",
+  refunded: "refunded",
+  rejected: "rejected",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type GetApiV1Returns200ItemDropOffItemKind =
+  (typeof GetApiV1Returns200ItemDropOffItemKind)[keyof typeof GetApiV1Returns200ItemDropOffItemKind];
+
+export const GetApiV1Returns200ItemDropOffItemKind = {
+  shop: "shop",
+  parcel_locker: "parcel_locker",
+  post_office: "post_office",
+  pickup: "pickup",
+  any: "any",
+} as const;
+
+export type GetApiV1Returns200ItemDropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: GetApiV1Returns200ItemDropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * What sending it back costs; null when not known.
+ * @nullable
+ */
+export type GetApiV1Returns200ItemCost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
+export type GetApiV1Returns200ItemRefundStatus =
+  (typeof GetApiV1Returns200ItemRefundStatus)[keyof typeof GetApiV1Returns200ItemRefundStatus];
+
+export const GetApiV1Returns200ItemRefundStatus = {
+  pending: "pending",
+  issued: "issued",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1Returns200ItemRefund = {
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+  status: GetApiV1Returns200ItemRefundStatus;
+} | null;
+
+export type GetApiV1Returns200ItemItemsItem = {
+  title: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  order_item_position: number | null;
+};
+
+export type GetApiV1Returns200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  order_id: string;
+  shop: string;
+  order_number: string;
+  status: GetApiV1Returns200ItemStatus;
+  /** @nullable */
+  reason: string | null;
+  /**
+   * The last local day to hand the return in.
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_by: string | null;
+  drop_off: GetApiV1Returns200ItemDropOffItem[];
+  /**
+   * What sending it back costs; null when not known.
+   * @nullable
+   */
+  cost: GetApiV1Returns200ItemCost;
+  /**
+   * An http(s) address.
+   * @nullable
+   */
+  label_url: string | null;
+  /** @nullable */
+  carrier: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /** @nullable */
+  refund: GetApiV1Returns200ItemRefund;
+  items: GetApiV1Returns200ItemItemsItem[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type GetApiV1ReturnsId200Status =
+  (typeof GetApiV1ReturnsId200Status)[keyof typeof GetApiV1ReturnsId200Status];
+
+export const GetApiV1ReturnsId200Status = {
+  requested: "requested",
+  label_created: "label_created",
+  dropped_off: "dropped_off",
+  in_transit: "in_transit",
+  received: "received",
+  refunded: "refunded",
+  rejected: "rejected",
+  cancelled: "cancelled",
+  expired: "expired",
+} as const;
+
+export type GetApiV1ReturnsId200DropOffItemKind =
+  (typeof GetApiV1ReturnsId200DropOffItemKind)[keyof typeof GetApiV1ReturnsId200DropOffItemKind];
+
+export const GetApiV1ReturnsId200DropOffItemKind = {
+  shop: "shop",
+  parcel_locker: "parcel_locker",
+  post_office: "post_office",
+  pickup: "pickup",
+  any: "any",
+} as const;
+
+export type GetApiV1ReturnsId200DropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: GetApiV1ReturnsId200DropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * What sending it back costs; null when not known.
+ * @nullable
+ */
+export type GetApiV1ReturnsId200Cost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
+export type GetApiV1ReturnsId200RefundStatus =
+  (typeof GetApiV1ReturnsId200RefundStatus)[keyof typeof GetApiV1ReturnsId200RefundStatus];
+
+export const GetApiV1ReturnsId200RefundStatus = {
+  pending: "pending",
+  issued: "issued",
+} as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1ReturnsId200Refund = {
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+  status: GetApiV1ReturnsId200RefundStatus;
+} | null;
+
+export type GetApiV1ReturnsId200ItemsItem = {
+  title: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  order_item_position: number | null;
+};
+
+export type GetApiV1ReturnsId200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  order_id: string;
+  shop: string;
+  order_number: string;
+  status: GetApiV1ReturnsId200Status;
+  /** @nullable */
+  reason: string | null;
+  /**
+   * The last local day to hand the return in.
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  return_by: string | null;
+  drop_off: GetApiV1ReturnsId200DropOffItem[];
+  /**
+   * What sending it back costs; null when not known.
+   * @nullable
+   */
+  cost: GetApiV1ReturnsId200Cost;
+  /**
+   * An http(s) address.
+   * @nullable
+   */
+  label_url: string | null;
+  /** @nullable */
+  carrier: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /** @nullable */
+  refund: GetApiV1ReturnsId200Refund;
+  items: GetApiV1ReturnsId200ItemsItem[];
+  created_at: string;
+  updated_at: string;
+};
+
+export type GetApiV1ReturnsId404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
@@ -3842,23 +4469,46 @@ export type GetApiV1CalendarParams = {
   to: string;
 };
 
+/**
+ * `return_by`: the last day to hand a return in (all day).
+ */
 export type GetApiV1Calendar200ItemKind =
   (typeof GetApiV1Calendar200ItemKind)[keyof typeof GetApiV1Calendar200ItemKind];
 
 export const GetApiV1Calendar200ItemKind = {
   expected: "expected",
   delivered: "delivered",
+  return_by: "return_by",
 } as const;
 
 export type GetApiV1Calendar200Item = {
   uid: string;
-  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
-  parcel_id: string;
+  /**
+   * Null for a return's deadline.
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  parcel_id: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  return_id: string | null;
+  /**
+   * @nullable
+   * @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$
+   */
+  order_id: string | null;
   title: string;
+  /** For a return: its carrier, else a drop-off option's, else the shop. */
   carrier: string;
+  /** For a return: the order number. */
   barcode: string;
   status: string;
+  /** `return_by`: the last day to hand a return in (all day). */
   kind: GetApiV1Calendar200ItemKind;
+  /** For a return: where it may be handed in and what sending it back costs. */
+  details: string[];
   start: string;
   end: string;
   all_day: boolean;
@@ -4506,6 +5156,52 @@ export const deleteApiV1OrdersId = async (
   });
 };
 
+export const getGetApiV1ReturnsUrl = (params?: GetApiV1ReturnsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/returns?${stringifiedParams}` : `/api/v1/returns`;
+};
+
+/**
+ * A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.
+ * @summary List returns, newest first.
+ */
+export const getApiV1Returns = async (
+  params?: GetApiV1ReturnsParams,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1Returns200Item[]> => {
+  return apiFetch<GetApiV1Returns200Item[]>(getGetApiV1ReturnsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1ReturnsIdUrl = (id: string) => {
+  return `/api/v1/returns/${id}`;
+};
+
+/**
+ * A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.
+ * @summary One return.
+ */
+export const getApiV1ReturnsId = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1ReturnsId200> => {
+  return apiFetch<GetApiV1ReturnsId200>(getGetApiV1ReturnsIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
 export const getGetApiV1CarriersUrl = () => {
   return `/api/v1/carriers`;
 };
@@ -4860,7 +5556,7 @@ export const getGetApiV1CalendarUrl = (params: GetApiV1CalendarParams) => {
 };
 
 /**
- * @summary Expected deliveries and delivered parcels in a time range (what the Calendar tab and the ICS feed show).
+ * @summary Expected deliveries, delivered parcels and return deadlines in a time range (what the Calendar tab and the ICS feed show).
  */
 export const getApiV1Calendar = async (
   params: GetApiV1CalendarParams,

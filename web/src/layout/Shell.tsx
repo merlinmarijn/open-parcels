@@ -11,6 +11,7 @@ import {
   Plus,
   Settings,
   ShoppingBag,
+  Undo2,
   type LucideIcon,
 } from "lucide-react";
 import { Suspense, useState, type ReactNode } from "react";
@@ -26,6 +27,7 @@ const NAV = [
   { to: "/", label: "Parcels", icon: Package },
   { to: "/map", label: "Live Map", icon: Map },
   { to: "/orders", label: "Orders", icon: ShoppingBag },
+  { to: "/returns", label: "Returns", icon: Undo2 },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
   { to: "/sources", label: "Sources", icon: Plug },
   { to: "/tokens", label: "API tokens", icon: KeyRound, adminOnly: true },

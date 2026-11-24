@@ -22,6 +22,7 @@ import {
   getApiV1HealthReady,
   getApiV1Orders,
   getApiV1OrdersId,
+  getApiV1Returns,
   getApiV1Parcels,
   getApiV1ParcelsId,
   getApiV1Sources,
@@ -44,7 +45,7 @@ import {
   type PostApiV1SourcesBody,
   type PostApiV1TokensBody,
 } from "./generated";
-import type { OrderView, ParcelDetail } from "./types";
+import type { OrderView, ParcelDetail, ReturnView } from "./types";
 
 export const keys = {
   parcels: ["parcels"] as const,
@@ -53,6 +54,8 @@ export const keys = {
   orders: ["orders"] as const,
   orderList: (view: OrderView) => ["orders", "list", { view }] as const,
   order: (id: string) => ["orders", "one", id] as const,
+  returns: ["returns"] as const,
+  returnList: (view: ReturnView) => ["returns", "list", { view }] as const,
   sources: ["sources"] as const,
   carriers: ["carriers"] as const,
   tokens: ["tokens"] as const,
@@ -229,6 +232,14 @@ export function useOrders(view: OrderView) {
   return useQuery({
     queryKey: keys.orderList(view),
     queryFn: ({ signal }) => getApiV1Orders({ view, limit: 500 }, { signal }),
+    placeholderData: keepPreviousData,
+  });
+}
+
+export function useReturns(view: ReturnView) {
+  return useQuery({
+    queryKey: keys.returnList(view),
+    queryFn: ({ signal }) => getApiV1Returns({ view }, { signal }),
     placeholderData: keepPreviousData,
   });
 }

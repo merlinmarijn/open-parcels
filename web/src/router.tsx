@@ -13,6 +13,7 @@ import { OrderDetailPage } from "./orders/OrderDetailPage";
 import { OrdersPage } from "./orders/OrdersPage";
 import { ParcelDetailPage } from "./parcels/ParcelDetailPage";
 import { ParcelsPage } from "./parcels/ParcelsPage";
+import { ReturnsPage } from "./returns/ReturnsPage";
 import { SettingsPage } from "./settings/SettingsPage";
 import { SourcesPage } from "./sources/SourcesPage";
 
@@ -62,6 +63,7 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: "/sources", component: SourcesPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/map", component: MapPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/orders", component: OrdersPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: "/returns", component: ReturnsPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/calendar", component: CalendarPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/tokens", component: TokensPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/status", component: StatusPage }),

@@ -9,6 +9,7 @@ import { ErrorNotice, Spinner } from "../components/ui";
 import { formatDateTime } from "../lib/format";
 import { InlineTitle, useCanEdit } from "../parcels/InlineEdit";
 import { ItemList } from "../parcels/ItemList";
+import { formatDay, ReturnCard } from "../returns/parts";
 import { OrderBadges, OrderParcels, OrderProgress, orderSummary } from "./parts";
 
 /** Says in words why the order is (or is not) in the archive. */
@@ -138,6 +139,22 @@ function Items({ order }: { readonly order: Order }): ReactNode {
   );
 }
 
+/** The order's returns, and the shop's return window while none was started. */
+function Returns({ order }: { readonly order: Order }): ReactNode {
+  if (order.returns.length === 0 && order.return_until === null) return null;
+  return (
+    <section className="detail-section" aria-labelledby="order-returns-title">
+      <h2 id="order-returns-title">Returns</h2>
+      {order.return_until === null ? null : (
+        <p className="muted">Return window: until {formatDay(order.return_until)}.</p>
+      )}
+      {order.returns.map((entry) => (
+        <ReturnCard key={entry.id} entry={entry} />
+      ))}
+    </section>
+  );
+}
+
 export function OrderDetailPage({ orderId }: { readonly orderId: string }): ReactNode {
   const query = useOrder(orderId);
   const order = query.data;
@@ -172,6 +189,7 @@ export function OrderDetailPage({ orderId }: { readonly orderId: string }): Reac
               <OrderParcels order={order} />
             )}
           </section>
+          <Returns order={order} />
         </div>
       )}
     </section>

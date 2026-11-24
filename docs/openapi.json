@@ -4605,6 +4605,211 @@
                           "additionalProperties": false
                         }
                       },
+                      "return_until": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "returns": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "order_id": {
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "shop": {
+                              "type": "string"
+                            },
+                            "order_number": {
+                              "type": "string"
+                            },
+                            "status": {
+                              "type": "string",
+                              "enum": [
+                                "requested",
+                                "label_created",
+                                "dropped_off",
+                                "in_transit",
+                                "received",
+                                "refunded",
+                                "rejected",
+                                "cancelled",
+                                "expired"
+                              ]
+                            },
+                            "reason": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "return_by": {
+                              "nullable": true,
+                              "description": "The last local day to hand the return in.",
+                              "type": "string",
+                              "format": "date",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                            },
+                            "drop_off": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "carrier": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "kind": {
+                                    "type": "string",
+                                    "enum": [
+                                      "shop",
+                                      "parcel_locker",
+                                      "post_office",
+                                      "pickup",
+                                      "any"
+                                    ]
+                                  },
+                                  "description": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "carrier",
+                                  "kind",
+                                  "description"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "cost": {
+                              "nullable": true,
+                              "description": "What sending it back costs; null when not known.",
+                              "type": "object",
+                              "properties": {
+                                "free": {
+                                  "type": "boolean"
+                                },
+                                "amount": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "free",
+                                "amount",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "label_url": {
+                              "nullable": true,
+                              "type": "string",
+                              "description": "An http(s) address."
+                            },
+                            "carrier": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "tracking_number": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "parcel_id": {
+                              "nullable": true,
+                              "type": "string",
+                              "format": "uuid",
+                              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                            },
+                            "refund": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "amount": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "pending",
+                                    "issued"
+                                  ]
+                                }
+                              },
+                              "required": [
+                                "amount",
+                                "currency",
+                                "status"
+                              ],
+                              "additionalProperties": false
+                            },
+                            "items": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "title": {
+                                    "type": "string"
+                                  },
+                                  "order_item_position": {
+                                    "nullable": true,
+                                    "type": "integer",
+                                    "minimum": -9007199254740991,
+                                    "maximum": 9007199254740991
+                                  }
+                                },
+                                "required": [
+                                  "title",
+                                  "order_item_position"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "created_at": {
+                              "type": "string"
+                            },
+                            "updated_at": {
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "order_id",
+                            "shop",
+                            "order_number",
+                            "status",
+                            "reason",
+                            "return_by",
+                            "drop_off",
+                            "cost",
+                            "label_url",
+                            "carrier",
+                            "tracking_number",
+                            "parcel_id",
+                            "refund",
+                            "items",
+                            "created_at",
+                            "updated_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
                       "parcels": {
                         "type": "array",
                         "items": {
@@ -4771,6 +4976,8 @@
                       "delivered_count",
                       "total",
                       "items",
+                      "return_until",
+                      "returns",
                       "parcels",
                       "created_at",
                       "updated_at"
@@ -4932,6 +5139,211 @@
                           "price",
                           "currency",
                           "parcel_id"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "return_until": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "returns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "order_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "shop": {
+                            "type": "string"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "requested",
+                              "label_created",
+                              "dropped_off",
+                              "in_transit",
+                              "received",
+                              "refunded",
+                              "rejected",
+                              "cancelled",
+                              "expired"
+                            ]
+                          },
+                          "reason": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "return_by": {
+                            "nullable": true,
+                            "description": "The last local day to hand the return in.",
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "drop_off": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "carrier": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shop",
+                                    "parcel_locker",
+                                    "post_office",
+                                    "pickup",
+                                    "any"
+                                  ]
+                                },
+                                "description": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "carrier",
+                                "kind",
+                                "description"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "cost": {
+                            "nullable": true,
+                            "description": "What sending it back costs; null when not known.",
+                            "type": "object",
+                            "properties": {
+                              "free": {
+                                "type": "boolean"
+                              },
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "free",
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "label_url": {
+                            "nullable": true,
+                            "type": "string",
+                            "description": "An http(s) address."
+                          },
+                          "carrier": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "tracking_number": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "parcel_id": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "refund": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "issued"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "order_item_position": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "order_item_position"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "order_id",
+                          "shop",
+                          "order_number",
+                          "status",
+                          "reason",
+                          "return_by",
+                          "drop_off",
+                          "cost",
+                          "label_url",
+                          "carrier",
+                          "tracking_number",
+                          "parcel_id",
+                          "refund",
+                          "items",
+                          "created_at",
+                          "updated_at"
                         ],
                         "additionalProperties": false
                       }
@@ -5102,6 +5514,8 @@
                     "delivered_count",
                     "total",
                     "items",
+                    "return_until",
+                    "returns",
                     "parcels",
                     "created_at",
                     "updated_at"
@@ -5310,6 +5724,211 @@
                         "additionalProperties": false
                       }
                     },
+                    "return_until": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "returns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "order_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "shop": {
+                            "type": "string"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "requested",
+                              "label_created",
+                              "dropped_off",
+                              "in_transit",
+                              "received",
+                              "refunded",
+                              "rejected",
+                              "cancelled",
+                              "expired"
+                            ]
+                          },
+                          "reason": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "return_by": {
+                            "nullable": true,
+                            "description": "The last local day to hand the return in.",
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "drop_off": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "carrier": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shop",
+                                    "parcel_locker",
+                                    "post_office",
+                                    "pickup",
+                                    "any"
+                                  ]
+                                },
+                                "description": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "carrier",
+                                "kind",
+                                "description"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "cost": {
+                            "nullable": true,
+                            "description": "What sending it back costs; null when not known.",
+                            "type": "object",
+                            "properties": {
+                              "free": {
+                                "type": "boolean"
+                              },
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "free",
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "label_url": {
+                            "nullable": true,
+                            "type": "string",
+                            "description": "An http(s) address."
+                          },
+                          "carrier": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "tracking_number": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "parcel_id": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "refund": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "issued"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "order_item_position": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "order_item_position"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "order_id",
+                          "shop",
+                          "order_number",
+                          "status",
+                          "reason",
+                          "return_by",
+                          "drop_off",
+                          "cost",
+                          "label_url",
+                          "carrier",
+                          "tracking_number",
+                          "parcel_id",
+                          "refund",
+                          "items",
+                          "created_at",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
                     "parcels": {
                       "type": "array",
                       "items": {
@@ -5476,6 +6095,8 @@
                     "delivered_count",
                     "total",
                     "items",
+                    "return_until",
+                    "returns",
                     "parcels",
                     "created_at",
                     "updated_at"
@@ -5541,6 +6162,490 @@
                   "enum": [
                     null
                   ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/returns": {
+      "get": {
+        "summary": "List returns, newest first.",
+        "tags": [
+          "returns"
+        ],
+        "description": "A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "open",
+              "type": "string",
+              "enum": [
+                "open",
+                "closed",
+                "all"
+              ]
+            },
+            "in": "query",
+            "name": "view",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "order_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "shop": {
+                        "type": "string"
+                      },
+                      "order_number": {
+                        "type": "string"
+                      },
+                      "status": {
+                        "type": "string",
+                        "enum": [
+                          "requested",
+                          "label_created",
+                          "dropped_off",
+                          "in_transit",
+                          "received",
+                          "refunded",
+                          "rejected",
+                          "cancelled",
+                          "expired"
+                        ]
+                      },
+                      "reason": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "return_by": {
+                        "nullable": true,
+                        "description": "The last local day to hand the return in.",
+                        "type": "string",
+                        "format": "date",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                      },
+                      "drop_off": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "carrier": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shop",
+                                "parcel_locker",
+                                "post_office",
+                                "pickup",
+                                "any"
+                              ]
+                            },
+                            "description": {
+                              "nullable": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "carrier",
+                            "kind",
+                            "description"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "cost": {
+                        "nullable": true,
+                        "description": "What sending it back costs; null when not known.",
+                        "type": "object",
+                        "properties": {
+                          "free": {
+                            "type": "boolean"
+                          },
+                          "amount": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "currency": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "free",
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "label_url": {
+                        "nullable": true,
+                        "type": "string",
+                        "description": "An http(s) address."
+                      },
+                      "carrier": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "tracking_number": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "parcel_id": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "refund": {
+                        "nullable": true,
+                        "type": "object",
+                        "properties": {
+                          "amount": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "currency": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "pending",
+                              "issued"
+                            ]
+                          }
+                        },
+                        "required": [
+                          "amount",
+                          "currency",
+                          "status"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "items": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "title": {
+                              "type": "string"
+                            },
+                            "order_item_position": {
+                              "nullable": true,
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991
+                            }
+                          },
+                          "required": [
+                            "title",
+                            "order_item_position"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "order_id",
+                      "shop",
+                      "order_number",
+                      "status",
+                      "reason",
+                      "return_by",
+                      "drop_off",
+                      "cost",
+                      "label_url",
+                      "carrier",
+                      "tracking_number",
+                      "parcel_id",
+                      "refund",
+                      "items",
+                      "created_at",
+                      "updated_at"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/returns/{id}": {
+      "get": {
+        "summary": "One return.",
+        "tags": [
+          "returns"
+        ],
+        "description": "A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "order_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "shop": {
+                      "type": "string"
+                    },
+                    "order_number": {
+                      "type": "string"
+                    },
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "requested",
+                        "label_created",
+                        "dropped_off",
+                        "in_transit",
+                        "received",
+                        "refunded",
+                        "rejected",
+                        "cancelled",
+                        "expired"
+                      ]
+                    },
+                    "reason": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "return_by": {
+                      "nullable": true,
+                      "description": "The last local day to hand the return in.",
+                      "type": "string",
+                      "format": "date",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                    },
+                    "drop_off": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "carrier": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "shop",
+                              "parcel_locker",
+                              "post_office",
+                              "pickup",
+                              "any"
+                            ]
+                          },
+                          "description": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "carrier",
+                          "kind",
+                          "description"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "cost": {
+                      "nullable": true,
+                      "description": "What sending it back costs; null when not known.",
+                      "type": "object",
+                      "properties": {
+                        "free": {
+                          "type": "boolean"
+                        },
+                        "amount": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "currency": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "free",
+                        "amount",
+                        "currency"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "label_url": {
+                      "nullable": true,
+                      "type": "string",
+                      "description": "An http(s) address."
+                    },
+                    "carrier": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "tracking_number": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "parcel_id": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "refund": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "amount": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "currency": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "status": {
+                          "type": "string",
+                          "enum": [
+                            "pending",
+                            "issued"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "amount",
+                        "currency",
+                        "status"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "items": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "title": {
+                            "type": "string"
+                          },
+                          "order_item_position": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "title",
+                          "order_item_position"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "order_id",
+                    "shop",
+                    "order_number",
+                    "status",
+                    "reason",
+                    "return_by",
+                    "drop_off",
+                    "cost",
+                    "label_url",
+                    "carrier",
+                    "tracking_number",
+                    "parcel_id",
+                    "refund",
+                    "items",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "additionalProperties": false
                 }
               }
             }
@@ -8502,7 +9607,7 @@
     },
     "/api/v1/calendar": {
       "get": {
-        "summary": "Expected deliveries and delivered parcels in a time range (what the Calendar tab and the ICS feed show).",
+        "summary": "Expected deliveries, delivered parcels and return deadlines in a time range (what the Calendar tab and the ICS feed show).",
         "tags": [
           "calendar"
         ],
@@ -8542,6 +9647,20 @@
                         "type": "string"
                       },
                       "parcel_id": {
+                        "nullable": true,
+                        "description": "Null for a return's deadline.",
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "return_id": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "order_id": {
+                        "nullable": true,
                         "type": "string",
                         "format": "uuid",
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
@@ -8550,10 +9669,12 @@
                         "type": "string"
                       },
                       "carrier": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "For a return: its carrier, else a drop-off option's, else the shop."
                       },
                       "barcode": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "For a return: the order number."
                       },
                       "status": {
                         "type": "string"
@@ -8562,8 +9683,17 @@
                         "type": "string",
                         "enum": [
                           "expected",
-                          "delivered"
-                        ]
+                          "delivered",
+                          "return_by"
+                        ],
+                        "description": "`return_by`: the last day to hand a return in (all day)."
+                      },
+                      "details": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "For a return: where it may be handed in and what sending it back costs."
                       },
                       "start": {
                         "type": "string"
@@ -8607,11 +9737,14 @@
                     "required": [
                       "uid",
                       "parcel_id",
+                      "return_id",
+                      "order_id",
                       "title",
                       "carrier",
                       "barcode",
                       "status",
                       "kind",
+                      "details",
                       "start",
                       "end",
                       "all_day",

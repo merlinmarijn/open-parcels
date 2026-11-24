@@ -91,8 +91,12 @@ export default function CalendarPage(): ReactNode {
 
   const onClick = (arg: EventClickArg): void => {
     const parcelId: unknown = arg.event.extendedProps["parcelId"];
+    const orderId: unknown = arg.event.extendedProps["orderId"];
     if (typeof parcelId === "string") {
       void navigate({ to: "/parcels/$parcelId", params: { parcelId } });
+    } else if (typeof orderId === "string") {
+      // A return's deadline belongs to its order.
+      void navigate({ to: "/orders/$orderId", params: { orderId } });
     }
   };
 

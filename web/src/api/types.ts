@@ -6,6 +6,8 @@ import type {
   GetApiV1OrdersView,
   GetApiV1Parcels200Item,
   GetApiV1ParcelsId200,
+  GetApiV1Returns200Item,
+  GetApiV1ReturnsView,
   GetApiV1Session200,
   GetApiV1Sources200Item,
   GetApiV1SourcesIdSignInFlows200Item,
@@ -30,6 +32,9 @@ export type CalendarEntry = GetApiV1Calendar200Item;
 export type Order = GetApiV1Orders200Item;
 export type OrderStatus = Order["status"];
 export type OrderView = GetApiV1OrdersView;
+export type Return = GetApiV1Returns200Item;
+export type ReturnStatus = Return["status"];
+export type ReturnView = GetApiV1ReturnsView;
 
 export const PARCEL_STATUSES: readonly ParcelStatus[] = [
   "registered",
