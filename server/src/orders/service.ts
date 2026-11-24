@@ -13,6 +13,8 @@ import {
 import type { OrderItem, Parcel } from "../domain/parcel.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
+import type { Return } from "../domain/return.js";
+import type { ReturnService } from "../returns/service.js";
 
 export interface OrderFilter {
   readonly view: OrderView;
@@ -31,7 +33,13 @@ type OrderRow = Selectable<OrderTable>;
 /** Orders per page when no limit is given. */
 export const ORDER_PAGE_DEFAULT = 100;
 
-function toOrder(row: OrderRow, items: OrderItem[], parcels: readonly Parcel[], now: Date): Order {
+interface OrderParts {
+  readonly items: OrderItem[];
+  readonly parcels: readonly Parcel[];
+  readonly returns: Return[];
+}
+
+function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Date): Order {
   const status = orderStatus(parcels);
   const archivedAt = orderArchivedAt(
     row.archive_mode,
@@ -55,6 +63,8 @@ function toOrder(row: OrderRow, items: OrderItem[], parcels: readonly Parcel[], 
     delivered_count: parcels.filter((parcel) => parcel.delivered).length,
     total: orderTotal(items),
     items,
+    return_until: row.return_until,
+    returns,
     parcels: parcels.map((parcel) => ({
       id: parcel.id,
       carrier: parcel.carrier,
@@ -87,6 +97,8 @@ export class OrderService {
     private readonly bus: EventBus,
     private readonly clock: Clock,
     private readonly presentation: Presentation = RAW_PRESENTATION,
+    /** Embeds each order's returns; without it orders list none. */
+    private readonly returns?: ReturnService,
   ) {
     this.#parcels = new ParcelRepository(db, presentation);
   }
@@ -185,7 +197,7 @@ export class OrderService {
   async #build(rows: readonly OrderRow[]): Promise<Order[]> {
     const ids = rows.map((row) => row.id);
     if (ids.length === 0) return [];
-    const [lines, parcels] = await Promise.all([
+    const [lines, parcels, returns] = await Promise.all([
       this.db
         .selectFrom("order_items")
         .selectAll()
@@ -194,23 +206,27 @@ export class OrderService {
         .orderBy("position")
         .execute(),
       this.#parcels.byOrders(ids),
+      this.returns?.byOrders(ids) ?? Promise.resolve([]),
     ]);
     const now = this.clock.now();
     return rows.map((row) =>
       toOrder(
         row,
-        lines
-          .filter((line) => line.order_id === row.id)
-          .map((line) => ({
-            title: line.title,
-            image_url: this.presentation.imagePath(line.image_ref),
-            url: line.url,
-            quantity: line.quantity,
-            price: line.price,
-            currency: line.currency,
-            parcel_id: line.parcel_id,
-          })),
-        parcels.filter((entry) => entry.orderId === row.id).map((entry) => entry.parcel),
+        {
+          items: lines
+            .filter((line) => line.order_id === row.id)
+            .map((line) => ({
+              title: line.title,
+              image_url: this.presentation.imagePath(line.image_ref),
+              url: line.url,
+              quantity: line.quantity,
+              price: line.price,
+              currency: line.currency,
+              parcel_id: line.parcel_id,
+            })),
+          parcels: parcels.filter((entry) => entry.orderId === row.id).map((entry) => entry.parcel),
+          returns: returns.filter((entry) => entry.order_id === row.id),
+        },
         now,
       ),
     );

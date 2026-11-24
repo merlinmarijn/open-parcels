@@ -15,12 +15,21 @@ const FEED_FUTURE_MS = 60 * DAY;
 
 const entrySchema = z.object({
   uid: z.string(),
-  parcel_id: z.uuid(),
+  parcel_id: z.uuid().nullable().describe("Null for a return's deadline."),
+  return_id: z.uuid().nullable(),
+  order_id: z.uuid().nullable(),
   title: z.string(),
-  carrier: z.string(),
-  barcode: z.string(),
+  carrier: z
+    .string()
+    .describe("For a return: its carrier, else a drop-off option's, else the shop."),
+  barcode: z.string().describe("For a return: the order number."),
   status: z.string(),
-  kind: z.enum(["expected", "delivered"]),
+  kind: z
+    .enum(["expected", "delivered", "return_by"])
+    .describe("`return_by`: the last day to hand a return in (all day)."),
+  details: z
+    .array(z.string())
+    .describe("For a return: where it may be handed in and what sending it back costs."),
   start: z.string(),
   end: z.string(),
   all_day: z.boolean(),
@@ -52,7 +61,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
       schema: {
         tags: ["calendar"],
         summary:
-          "Expected deliveries and delivered parcels in a time range (what the Calendar tab and the ICS feed show).",
+          "Expected deliveries, delivered parcels and return deadlines in a time range (what the Calendar tab and the ICS feed show).",
         querystring: z.object({
           from: z.iso.datetime({ offset: true }),
           to: z.iso.datetime({ offset: true }),
@@ -74,11 +83,14 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
       return entries.map((entry) => ({
         uid: entry.uid,
         parcel_id: entry.parcelId,
+        return_id: entry.returnId,
+        order_id: entry.orderId,
         title: entry.title,
         carrier: entry.carrier,
         barcode: entry.barcode,
         status: entry.status,
         kind: entry.kind,
+        details: [...entry.details],
         start: entry.start,
         end: entry.end,
         all_day: entry.allDay,

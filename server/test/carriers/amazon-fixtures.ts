@@ -13,6 +13,8 @@ export interface TileSpec {
   readonly direct?: boolean;
   /** Raw attributes of the line's product-image `<img>`, e.g. `src="…"`. */
   readonly image?: string;
+  /** Text shown under the line, such as its return window. */
+  readonly note?: string;
 }
 
 const attr = (text: string): string =>
@@ -41,6 +43,7 @@ export function ordersPage(tiles: readonly TileSpec[]): string {
         (tile.image === undefined
           ? ""
           : `<div class="product-image a-spacing-none"><img alt="" ${tile.image}></div>`) +
+        (tile.note === undefined ? "" : `<span class="a-color-secondary">${tile.note}</span>`) +
         `</div>`,
     )
     .join("\n");

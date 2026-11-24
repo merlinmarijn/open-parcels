@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ParcelSnapshot } from "../plugin/snapshot.js";
+import type { ParcelSnapshot, ReturnSnapshot } from "../plugin/snapshot.js";
 
 /** Plug-in id of mailbox sources. Mail is handled by the core, not by a carrier plug-in. */
 export const MAIL_PLUGIN = "imap";
@@ -61,6 +61,9 @@ export interface MailInput {
  * itself knows nothing about carriers.
  */
 export type MailInterpreter = (mail: MailInput) => readonly ParcelSnapshot[];
+
+/** Turns a return or refund mail into return reports, also from the shared rules. */
+export type MailReturnInterpreter = (mail: MailInput) => readonly ReturnSnapshot[];
 
 export interface FetchedMessage {
   readonly uid: number;

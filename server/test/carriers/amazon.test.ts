@@ -675,3 +675,41 @@ describe("Amazon order lines (OP-082)", () => {
     });
   });
 });
+
+describe("Amazon returns", () => {
+  it("reads each order's return window and reports lines that are being returned", async () => {
+    const open: TileSpec = { ...OWN_FLEET, note: "Rückgabe bis 10. Dezember 2026" };
+    const closed: TileSpec = {
+      ...BY_DPD,
+      note: "Return window closed on 3 November 2026",
+    };
+    const returned: TileSpec = {
+      orderId: "000-1111111-0000005",
+      title: "Example headphones",
+      status: "Rückgabe gestartet",
+    };
+    const refunded: TileSpec = {
+      orderId: "000-1111111-0000006",
+      title: "Example cable",
+      status: "Refund issued",
+    };
+    const h = harness(storefront([open, closed, returned, refunded], PAGES));
+    const result = await readAccount(h.context, rules);
+    const [own, dpd] = result.snapshots;
+    expect(own?.order).toMatchObject({ returnUntil: "2026-12-10" });
+    expect(dpd?.order).toMatchObject({ returnUntil: "2026-11-03" });
+    expect(result.returns).toEqual([
+      expect.objectContaining({
+        order: { shop: "amazon", orderNumber: returned.orderId },
+        status: "requested",
+        items: ["Example headphones"],
+        mayCreate: true,
+      }),
+      expect.objectContaining({
+        order: { shop: "amazon", orderNumber: refunded.orderId },
+        status: "refunded",
+        mayCreate: false,
+      }),
+    ]);
+  });
+});

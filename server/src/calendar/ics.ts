@@ -7,6 +7,17 @@ function utcDay(day: string): Date {
   return new Date(`${day}T00:00:00.000Z`);
 }
 
+function summaryOf(entry: CalendarEntry, title: string): string {
+  switch (entry.kind) {
+    case "delivered":
+      return `Delivered: ${title}`;
+    case "return_by":
+      return `Return by ${entry.startDate ?? entry.start.slice(0, 10)}: ${entry.title}`;
+    case "expected":
+      return title;
+  }
+}
+
 export interface IcsOptions {
   readonly timeZone: string;
   readonly name: string;
@@ -29,23 +40,26 @@ export function renderIcs(entries: readonly CalendarEntry[], options: IcsOptions
   for (const entry of entries) {
     const start = new Date(entry.start);
     const end = new Date(entry.end);
+    const path =
+      entry.parcelId === null ? `orders/${entry.orderId ?? ""}` : `parcels/${entry.parcelId}`;
     const parcelUrl =
-      options.publicUrl === undefined
-        ? null
-        : new URL(`parcels/${entry.parcelId}`, options.publicUrl).toString();
+      options.publicUrl === undefined ? null : new URL(path, options.publicUrl).toString();
     const carrier = findCarrier(loadRules(), entry.carrier)?.name ?? entry.carrier;
     const title = `${entry.title} (${carrier})`;
-    const lines = [
-      `Carrier: ${carrier}`,
-      `Tracking: ${entry.barcode}`,
-      `Status: ${entry.status.replaceAll("_", " ")}`,
-    ];
+    const lines =
+      entry.kind === "return_by"
+        ? [`Order: ${entry.barcode}`, ...entry.details]
+        : [`Carrier: ${carrier}`, `Tracking: ${entry.barcode}`];
+    lines.push(`Status: ${entry.status.replaceAll("_", " ")}`);
+    if (entry.kind === "return_by" && entry.url !== null) {
+      lines.push(`Label: ${entry.url}`);
+    }
     if (entry.pickupPoint !== null) {
       lines.push(`Pickup point: ${entry.pickupPoint}`);
     }
     calendar.createEvent({
       id: entry.uid,
-      summary: entry.kind === "delivered" ? `Delivered: ${title}` : title,
+      summary: summaryOf(entry, title),
       description: lines.join("\n"),
       ...(entry.allDay && entry.startDate !== null && entry.endDate !== null
         ? {

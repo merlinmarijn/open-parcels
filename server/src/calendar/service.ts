@@ -3,8 +3,15 @@ import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
 import { parcelVisible } from "../db/visibility.js";
 import { effectiveDelivered, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
-import { localParts, nextLocalMidnight } from "../engine/tz.js";
+import { localParts, nextLocalMidnight, zonedTime } from "../engine/tz.js";
+import {
+  awaitingDropOff,
+  returnDetails,
+  type Return,
+  type ReturnStatus,
+} from "../domain/return.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
+import type { ReturnService } from "../returns/service.js";
 
 /** How long a delivered parcel's marker lasts on the calendar. */
 const DELIVERED_MARKER_MS = 30 * 60_000;
@@ -16,12 +23,20 @@ const DELIVERED_MARKER_MS = 30 * 60_000;
  */
 export interface CalendarEntry {
   readonly uid: string;
-  readonly parcelId: string;
+  /** Null for a return's deadline, which belongs to an order. */
+  readonly parcelId: string | null;
+  readonly returnId: string | null;
+  readonly orderId: string | null;
   readonly title: string;
+  /** For a return: its carrier, else the first drop-off option's, else the shop. */
   readonly carrier: string;
+  /** For a return: the order number. */
   readonly barcode: string;
-  readonly status: ParcelStatus;
-  readonly kind: "expected" | "delivered";
+  readonly status: ParcelStatus | ReturnStatus;
+  /** `return_by`: the last day to hand a return in, all day. */
+  readonly kind: "expected" | "delivered" | "return_by";
+  /** For a return: where to hand it in and what it costs, one line each. */
+  readonly details: readonly string[];
   readonly start: string;
   readonly end: string;
   readonly allDay: boolean;
@@ -84,6 +99,12 @@ export function allDayRange(
   return { startDate, endDate };
 }
 
+/** Local midnight at the start of a `YYYY-MM-DD` day. */
+function zonedDayStart(day: string, timeZone: string): Date {
+  const [year = 1970, month = 1, date = 1] = day.split("-").map(Number);
+  return zonedTime({ year, month, day: date, hour: 0, minute: 0 }, timeZone);
+}
+
 function asStatus(value: string | null): ParcelStatus {
   return asManual(value) ?? "unknown";
 }
@@ -101,9 +122,60 @@ export class CalendarService {
     private readonly timeZone: string,
     /** Remote pictures become the server's image-proxy addresses, as everywhere else. */
     private readonly presentation: Presentation = RAW_PRESENTATION,
+    /** Adds each return's "return by" day; without it the calendar shows parcels only. */
+    private readonly returns?: ReturnService,
   ) {}
 
   async entries(from: Date, to: Date): Promise<CalendarEntry[]> {
+    const [parcels, returns] = await Promise.all([
+      this.#parcelEntries(from, to),
+      this.#returnEntries(from, to),
+    ]);
+    return [...parcels, ...returns].sort((a, b) => a.start.localeCompare(b.start));
+  }
+
+  /**
+   * Returns still to be handed in (or no longer, `expired`) on their return-by day. Once handed
+   * in, the deadline no longer matters and the entry goes.
+   */
+  async #returnEntries(from: Date, to: Date): Promise<CalendarEntry[]> {
+    if (this.returns === undefined) return [];
+    const all = await this.returns.list("all");
+    const entries: CalendarEntry[] = [];
+    for (const entry of all) {
+      if (entry.return_by === null) continue;
+      if (!awaitingDropOff(entry.status) && entry.status !== "expired") continue;
+      const start = zonedDayStart(entry.return_by, this.timeZone);
+      const end = nextLocalMidnight(start, this.timeZone);
+      if (end <= from || start >= to) continue;
+      entries.push(this.#returnEntry(entry, start, end));
+    }
+    return entries;
+  }
+
+  #returnEntry(entry: Return, start: Date, end: Date): CalendarEntry {
+    const item = entry.items[0]?.title;
+    return {
+      uid: `return-${entry.id}@open-parcels`,
+      parcelId: null,
+      returnId: entry.id,
+      orderId: entry.order_id,
+      title: item ?? `${entry.shop} ${entry.order_number}`,
+      carrier:
+        entry.carrier ?? entry.drop_off.find((o) => o.carrier !== null)?.carrier ?? entry.shop,
+      barcode: entry.order_number,
+      status: entry.status,
+      kind: "return_by",
+      details: returnDetails(entry),
+      late: entry.status === "expired",
+      imageUrl: null,
+      url: entry.label_url,
+      pickupPoint: null,
+      ...this.#span(start, end, true),
+    };
+  }
+
+  async #parcelEntries(from: Date, to: Date): Promise<CalendarEntry[]> {
     const fromIso = from.toISOString();
     const toIso = to.toISOString();
     const rows = await this.db
@@ -159,6 +231,9 @@ export class CalendarService {
         const base = {
           uid: `${row.id}@open-parcels`,
           parcelId: row.id,
+          returnId: null,
+          orderId: null,
+          details: [],
           // The carrier is shown next to the title by each reader, so it is not repeated here.
           title: parcel?.display_name ?? row.label ?? row.barcode,
           carrier: row.carrier,
@@ -206,8 +281,7 @@ export class CalendarService {
           ...this.#span(start, end, pointIsDay || isWholeDays(start, end, this.timeZone)),
         };
       })
-      .filter((entry): entry is CalendarEntry => entry !== undefined)
-      .sort((a, b) => a.start.localeCompare(b.start));
+      .filter((entry): entry is CalendarEntry => entry !== undefined);
   }
 
   #span(start: Date, end: Date, allDay: boolean) {

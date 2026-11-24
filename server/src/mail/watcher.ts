@@ -7,7 +7,7 @@ import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, SourceRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type SourceService } from "../engine/sources.js";
-import type { ParcelSnapshot } from "../plugin/snapshot.js";
+import type { ParcelSnapshot, ReturnSnapshot } from "../plugin/snapshot.js";
 import {
   MAIL_PLUGIN,
   mailConfigSchema,
@@ -19,6 +19,7 @@ import {
   type MailConfig,
   type MailInput,
   type MailInterpreter,
+  type MailReturnInterpreter,
   type MailProgress,
   type MailSecret,
   isGenericMailboxLabel,
@@ -39,6 +40,8 @@ export interface MailWatcherDeps {
   readonly logger: Logger;
   readonly clientFactory: MailboxClientFactory;
   readonly interpret: MailInterpreter;
+  /** Return and refund mails; unset in tests that only look at parcels. */
+  readonly interpretReturns?: MailReturnInterpreter;
   /** Links parcels found in mail to their carrier's tracking source, so they get polled. */
   readonly followUp: (sourceId: string) => Promise<void>;
 }
@@ -295,6 +298,7 @@ export class MailWatcher {
 
   async #sync(sourceId: string, connection: Connection, folders: readonly string[]): Promise<void> {
     const snapshots: ParcelSnapshot[] = [];
+    const returns: ReturnSnapshot[] = [];
     // Built on a copy and committed only once the mails are stored: a failed batch is read again
     // on the next sync, whatever else runs on the connection in between.
     let progress = connection.progress;
@@ -322,12 +326,13 @@ export class MailWatcher {
           message.receivedAt ?? null,
           this.deps.clock.now(),
         );
-        snapshots.push(...this.#interpret(sourceId, mail));
+        snapshots.push(...this.#interpret(sourceId, mail, this.deps.interpret));
+        returns.push(...this.#interpret(sourceId, mail, this.deps.interpretReturns));
       }
       progress = { ...progress, [folder]: { uidValidity, lastUid } };
     }
-    if (snapshots.length > 0) {
-      await this.deps.reconciler.ingest(sourceId, { snapshots, complete: false });
+    if (snapshots.length > 0 || returns.length > 0) {
+      await this.deps.reconciler.ingest(sourceId, { snapshots, returns, complete: false });
       await this.deps.followUp(sourceId);
     }
     connection.progress = progress;
@@ -343,9 +348,13 @@ export class MailWatcher {
     await this.deps.sources.setState(sourceId, "ok", null);
   }
 
-  #interpret(sourceId: string, mail: MailInput): readonly ParcelSnapshot[] {
+  #interpret<T>(
+    sourceId: string,
+    mail: MailInput,
+    interpret: ((mail: MailInput) => readonly T[]) | undefined,
+  ): readonly T[] {
     try {
-      return this.deps.interpret(mail);
+      return interpret?.(mail) ?? [];
     } catch (error) {
       // One odd mail must not stop the mailbox; the content is never logged.
       this.deps.logger.warn(

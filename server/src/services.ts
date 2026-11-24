@@ -28,6 +28,8 @@ import { ImageProxy } from "./images/proxy.js";
 import { loadRules } from "open-parcels-rules";
 import { imapClientFactory } from "./mail/imap-client.js";
 import { createMailInterpreter } from "./mail/interpret.js";
+import { createReturnInterpreter } from "./mail/returns.js";
+import { ReturnService } from "./returns/service.js";
 import type { MailboxClientFactory, MailInterpreter } from "./mail/types.js";
 import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
@@ -74,6 +76,7 @@ export interface Services {
   readonly signIn: SignInService;
   readonly parcels: ParcelService;
   readonly orders: OrderService;
+  readonly returns: ReturnService;
   readonly access: AccessControl;
 }
 
@@ -209,7 +212,10 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     imagePath: (remote) => images.pathFor(remote),
     labelMode: () => settings.labelMode,
   };
-  const reconciler = new Reconciler(db, bus, clock, logger, presentation);
+  const reconciler = new Reconciler(db, bus, clock, logger, {
+    presentation,
+    timeZone: deps.config.timeZone,
+  });
   const runner = new SourceRunner({
     db,
     registry,
@@ -287,6 +293,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     logger,
     clientFactory: deps.mailClientFactory ?? imapClientFactory,
     interpret: deps.mailInterpreter ?? createMailInterpreter(loadRules(), deps.config.timeZone),
+    interpretReturns: createReturnInterpreter(loadRules(), deps.config.timeZone),
     followUp: async (sourceId) => {
       if (await followUntracked(sources, registry, logger, sourceId)) {
         scheduler.wake();
@@ -294,6 +301,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     },
   });
   const access = await AccessControl.create(auth, deps.config, configSettings, logger);
+  const returns = new ReturnService(db, clock, deps.config.timeZone);
   return {
     ...deps,
     installId,
@@ -313,7 +321,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     runner,
     scheduler,
     live,
-    calendar: new CalendarService(db, clock, deps.config.timeZone, presentation),
+    calendar: new CalendarService(db, clock, deps.config.timeZone, presentation, returns),
     signIn: new SignInService({
       db,
       registry,
@@ -325,7 +333,8 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
       exclusive: (sourceId, work) => runner.exclusive(sourceId, work),
     }),
     parcels,
-    orders: new OrderService(db, bus, clock, presentation),
+    orders: new OrderService(db, bus, clock, presentation, returns),
+    returns,
     access,
   };
 }

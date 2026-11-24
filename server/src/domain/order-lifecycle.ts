@@ -6,6 +6,7 @@ import {
   DIRECTIONS,
   type ParcelStatus,
 } from "./parcel.js";
+import { returnSchema } from "./return.js";
 
 /**
  * Where an order stands, derived from its parcels in this one place:
@@ -148,6 +149,10 @@ export const orderSchema = z.object({
   delivered_count: z.number().int().nonnegative(),
   total: z.object({ amount: z.number(), currency: z.string() }).nullable(),
   items: z.array(orderItemSchema),
+  /** Last day of the shop's return window, as it lists it; null when unknown. */
+  return_until: z.iso.date().nullable(),
+  /** Returns of the order, newest first. */
+  returns: z.array(returnSchema),
   parcels: z.array(orderParcelSchema),
   created_at: z.string(),
   updated_at: z.string(),

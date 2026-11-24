@@ -21,6 +21,7 @@ import { normaliseBarcode } from "./barcode.js";
 import { foldParcel } from "./fold.js";
 import { scrubRaw } from "./raw-scrub.js";
 import { withSafeLinks } from "./links.js";
+import { applyReturns } from "./returns.js";
 import { maskIdentifiers, recordUnknown, type UnknownValue } from "./vocab.js";
 
 /** A parcel missing from every complete listing for this long, undelivered, counts as removed. */
@@ -300,13 +301,20 @@ async function findParcel(
  * events, in one transaction per source run.
  */
 export class Reconciler {
+  private readonly presentation: Presentation;
+  /** The server's zone: return-by days are local days. */
+  private readonly timeZone: string;
+
   constructor(
     private readonly db: Kysely<Database>,
     private readonly bus: EventBus,
     private readonly clock: Clock,
     private readonly logger: Logger,
-    private readonly presentation: Presentation = RAW_PRESENTATION,
-  ) {}
+    options: { readonly presentation?: Presentation; readonly timeZone?: string } = {},
+  ) {
+    this.presentation = options.presentation ?? RAW_PRESENTATION;
+    this.timeZone = options.timeZone ?? "UTC";
+  }
 
   /**
    * Applies one source run. `asked` lists the parcels a tracking run asked the carrier about;
@@ -358,6 +366,10 @@ export class Reconciler {
         await this.#markMissing(trx, sourceId, seen);
       }
       summary.found = await this.#recordLookup(trx, asked, seen);
+      const trackParcel = async (parcel: ParcelSnapshot): Promise<string> =>
+        (await this.#applySnapshot(trx, source, withSafeLinks(normalisedCodes(parcel)))).parcelId;
+      const env = { clock: this.clock, timeZone: this.timeZone, trackParcel };
+      summary.events += await applyReturns(trx, env, source.id, result.returns ?? []);
     });
     await this.bus.notify();
     const vocab = { db: this.db, bus: this.bus, clock: this.clock };
@@ -715,6 +727,17 @@ export class Reconciler {
           .where((eb) => eb.or([eb("placed_at", "is", null), eb("placed_at", "!=", placedAt)]))
           .execute();
       }
+      const returnUntil = snapshot.order.returnUntil ?? null;
+      if (returnUntil !== null) {
+        await trx
+          .updateTable("orders")
+          .set({ return_until: returnUntil, updated_at: now })
+          .where("id", "=", existing.id)
+          .where((eb) =>
+            eb.or([eb("return_until", "is", null), eb("return_until", "!=", returnUntil)]),
+          )
+          .execute();
+      }
       return existing.id;
     }
     const id = crypto.randomUUID();
@@ -725,6 +748,7 @@ export class Reconciler {
         shop: snapshot.order.shop,
         order_number: snapshot.order.orderNumber,
         placed_at: snapshot.order.placedAt,
+        return_until: snapshot.order.returnUntil ?? null,
         status: null,
         created_at: now,
         updated_at: now,

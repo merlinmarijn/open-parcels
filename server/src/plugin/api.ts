@@ -3,7 +3,7 @@ import type { Clock } from "../clock.js";
 import type { HttpPolicy, PluginHttp } from "./http.js";
 import type { LiveReading, LiveTarget } from "./live.js";
 import type { SignInFlow } from "./sign-in.js";
-import type { ParcelSnapshot } from "./snapshot.js";
+import type { ParcelSnapshot, ReturnSnapshot } from "./snapshot.js";
 
 export * from "./errors.js";
 export * from "./kit/html.js";
@@ -14,6 +14,7 @@ export * from "./rules.js";
 export * from "./snapshot.js";
 export type { Clock } from "../clock.js";
 export type { Direction } from "../domain/parcel.js";
+export type { DropOffKind, DropOffOption, ReturnStatus } from "../domain/return.js";
 export type { LiveReading, LiveTarget } from "./live.js";
 export { CookieJar, restoreJar, serializeJar } from "./cookies.js";
 export { sameSite } from "./http.js";
@@ -54,6 +55,8 @@ export interface PluginContext<Config, Secret> {
 
 export interface FetchResult {
   readonly snapshots: readonly ParcelSnapshot[];
+  /** Returns the source reported. They never count towards `complete`: a return is never "gone". */
+  readonly returns?: readonly ReturnSnapshot[];
   /**
    * True when the list is everything the source currently has. Only complete results let the
    * reconciler conclude that a missing parcel is gone. Ignored for tracking sources: a lookup

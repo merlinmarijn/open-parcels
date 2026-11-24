@@ -12,6 +12,7 @@ import {
 import { mintCookies, type AmazonSecret } from "./auth.js";
 import { AMAZON_ID, buildSnapshot, isSkipped, readsAsStatus } from "./build.js";
 import { pastDay, today, type Day } from "./dates.js";
+import { returnUntil, tileReturns } from "./returns.js";
 import {
   hasMoreOrderPages,
   isTrackPagePath,
@@ -302,7 +303,12 @@ async function collect(
     if (built === null) {
       continue;
     }
-    snapshots.push(built);
+    const until = returnUntil(rules, lead, now, storefront);
+    snapshots.push(
+      until === null || built.order === null
+        ? built
+        : { ...built, order: { ...built.order, returnUntil: until } },
+    );
     if (loads.has(key)) {
       session.shipments[key] = {
         readAt: now.toISOString(),
@@ -312,5 +318,5 @@ async function collect(
       };
     }
   }
-  return { snapshots, complete };
+  return { snapshots, returns: tileReturns(rules, tiles), complete };
 }

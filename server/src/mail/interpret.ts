@@ -36,11 +36,12 @@ export function orderOf(
   return shop === null ? null : { shop, orderNumber, placedAt: null };
 }
 
-function senderDomain(from: string): string | undefined {
+export function senderDomain(from: string): string | undefined {
   return /@([^>\s]+)>?\s*$/.exec(from)?.[1]?.toLowerCase();
 }
 
-function carrierFor(
+/** The carrier of a tracking number in a mail: the rule's, else the best detected match. */
+export function carrierFor(
   rules: Rules,
   result: MailParseResult,
   trackingNumber: string,

@@ -20,6 +20,8 @@ export interface OrderTile {
   readonly position: number;
   /** The line's product thumbnail, the larger one when offered. */
   readonly imageUrl: string | null;
+  /** "Return window closed on 3 November", "Eligible through 10 December", when shown. */
+  readonly returnWindowText: string | null;
 }
 
 /** The shipment a line belongs to; a line not yet shipped is keyed by its line id. */
@@ -65,6 +67,9 @@ const TILE_RE = /<a class="item-card__link" href="([^"]*)" aria-label="([^"]*)"/
  */
 const TILE_IMAGE_RE = /class="product-image[^"]*">\s*(<img\b[^>]*>)/;
 const IMAGE_SRC_RE = /\b(data-a-hires|src)="(https:\/\/[^"]+)"/g;
+/** The return window an order line names, read from its stretch of page as text. */
+const RETURN_WINDOW_RE =
+  /\b(?:Return window (?:closed|closes|ends) on|Eligible (?:for return )?(?:through|until)|Rückgabe(?:zeitraum)? (?:endete am|endet am|möglich bis|bis zum|bis)|Rücksendung möglich bis)\s+[^<>|]{3,30}/i;
 /** Characters after the last line searched for its image; a real line is about half this. */
 const TILE_SPAN = 4000;
 /** The placed date may carry a comma before its year, as US-style dates do ("November 10, 2026"). */
@@ -150,6 +155,11 @@ function tileImage(fragment: string): string | null {
   return url === undefined || url === "" ? null : unescapeHtml(url);
 }
 
+function returnWindow(fragment: string): string | null {
+  const text = cleanText(unescapeHtml(fragment.replace(/<[^>]*>/g, " ")));
+  return RETURN_WINDOW_RE.exec(text)?.[0] ?? null;
+}
+
 /** Every order line on an orders page, in page order. */
 export function parseOrderTiles(page: string, isStatus: (text: string) => boolean): OrderTile[] {
   const tiles: OrderTile[] = [];
@@ -181,6 +191,7 @@ export function parseOrderTiles(page: string, isStatus: (text: string) => boolea
       placedText: parts.placedText,
       position,
       imageUrl: tileImage(fragment),
+      returnWindowText: returnWindow(fragment),
     });
     position += 1;
   }
