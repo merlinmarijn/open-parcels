@@ -5,9 +5,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -49,7 +49,7 @@ function isInvalidCode(errors: unknown[]): boolean {
  * scanned code and for a code the carrier calls malformed; neither is an error.
  */
 export async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   barcode: string,
   language: "de" | "en",
 ): Promise<Json | null> {
@@ -113,15 +113,15 @@ function combine(date: unknown, time: unknown): string | null {
   return isoTime(day);
 }
 
-function readWindow(raw: Json): { plannedFrom: string | null; plannedTo: string | null } {
+function readWindow(raw: Json): { expectedFrom: string | null; expectedTo: string | null } {
   const eta = asObject(raw["estimatedDelivery"]);
   const from = combine(eta["startDate"], eta["startTime"]);
   if (from === null) {
-    return { plannedFrom: isoTime(raw["estimatedDeliveryDate"]), plannedTo: null };
+    return { expectedFrom: isoTime(raw["estimatedDeliveryDate"]), expectedTo: null };
   }
   const to = combine(eta["endDate"], eta["endTime"]);
   // The same instant twice is a point estimate, not a window.
-  return { plannedFrom: from, plannedTo: to === from ? null : to };
+  return { expectedFrom: from, expectedTo: to === from ? null : to };
 }
 
 interface Step extends SnapshotEvent {
@@ -171,14 +171,14 @@ export function trackingSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(code, barcode),
     status,
     rawStatus: text(raw["status"]) ?? key,
     delivered,
     deliveredAt: delivered ? (steps.find((s) => s.status === "delivered")?.at ?? null) : null,
-    plannedFrom: delivered ? null : window.plannedFrom,
-    plannedTo: delivered ? null : window.plannedTo,
+    expectedFrom: delivered ? null : window.expectedFrom,
+    expectedTo: delivered ? null : window.expectedTo,
     pickup: status === "at_pickup_point",
     pickupPoint: text(raw["branchkey"]),
     url: publicUrl(code),

@@ -21,7 +21,7 @@ export function inReturnView(view: ReturnView, status: ReturnStatus): boolean {
   }
 }
 
-/** Returns as their own resource; read-only, since sources are what change them. */
+/** Returns as their own resource; read-only, since connections are what change them. */
 export class ReturnService {
   constructor(
     private readonly db: Kysely<Database>,

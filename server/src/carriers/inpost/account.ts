@@ -8,12 +8,12 @@ import {
   TransientError,
   UnexpectedResponseError,
   type Json,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import type { InPostSession } from "./session.js";
 import { CARRIER_ID, INBOX_HOST, text, type Market } from "./shared.js";
 
-type Http = PluginContext<unknown, unknown>["http"];
+type Http = ProviderContext<unknown, unknown>["http"];
 
 export const PL_INBOX_URL = `https://${INBOX_HOST}/v3/parcels/tracked`;
 export const IT_INBOX_URL = `https://${INBOX_HOST}/global/cps/api/v1/parcels`;

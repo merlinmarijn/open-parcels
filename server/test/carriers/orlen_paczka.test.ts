@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { orlenPaczka } from "../../src/carriers/orlen_paczka/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, raw, type Answer } from "./harness.js";
 
 // Made-up codes and values only.
@@ -59,14 +59,14 @@ describe("ORLEN Paczka public tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [ACTIVE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "orlen_paczka",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "delivered",
       rawStatus: "Doręczona",
       delivered: true,
       // November is CET (UTC+1).
       deliveredAt: "2026-11-18T08:30:00.000Z",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T08:30:00.000Z", "delivered"],
@@ -103,7 +103,7 @@ describe("ORLEN Paczka public tracking", () => {
     });
     const { base, unknown } = context(fetchImpl);
     const result = await plugin.track(base, {}, null, [ACTIVE, PICKUP]);
-    expect(result.snapshots.map((p) => [p.barcode, p.status])).toEqual([
+    expect(result.snapshots.map((p) => [p.trackingNumber, p.status])).toEqual([
       [ACTIVE, null],
       [PICKUP, null],
     ]);

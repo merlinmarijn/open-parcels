@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { ctt } from "../../src/carriers/ctt/index.js";
 import { resetPortal } from "../../src/carriers/ctt/portal.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onFragment, World, type Route } from "./harness.js";
 
 // Made-up codes and values only.
@@ -145,8 +145,8 @@ describe("CTT tracking", () => {
     const [parcel] = (await world.track([EXPRESS], {}, null)).snapshots;
     expect(parcel).toMatchObject({
       status: "in_transit",
-      barcode: EXPRESS,
-      plannedFrom: "2026-11-18T23:00:00.000Z",
+      trackingNumber: EXPRESS,
+      expectedFrom: "2026-11-18T23:00:00.000Z",
     });
     expect(world.calls).toHaveLength(1);
   });

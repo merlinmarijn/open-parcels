@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { postnord } from "../../src/carriers/postnord/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -55,7 +55,7 @@ describe("PostNord tracking", () => {
       carrier: "postnord",
       status: "out_for_delivery",
       rawStatus: "Overskrift",
-      plannedFrom: "2026-11-19T12:00:00.000Z",
+      expectedFrom: "2026-11-19T12:00:00.000Z",
       sender: "Testbutik",
       receiver: "T. Person",
       weightKg: 0.75,
@@ -84,7 +84,7 @@ describe("PostNord tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T09:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 
@@ -101,7 +101,7 @@ describe("PostNord tracking", () => {
       onPrefix(API, shipment("EN_ROUTE", [], { shipmentId: OTHER })),
     ]);
     const [parcel] = (await world.track([CODE])).snapshots;
-    expect(parcel).toMatchObject({ barcode: CODE, externalRef: OTHER });
+    expect(parcel).toMatchObject({ trackingNumber: CODE, externalRef: OTHER });
   });
 
   it("reports an unknown shipment status", async () => {

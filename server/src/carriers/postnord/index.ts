@@ -11,8 +11,8 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 
 import { ACCOUNT_HOST, accountSignIn, fetchPostnordAccount } from "./account.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parcel.js";
@@ -27,7 +27,7 @@ const secretSchema = z.object({ refreshToken: z.string().min(1) }).nullable();
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (status: string): void => {
     context.reportUnknown("status_code", status);
@@ -74,7 +74,7 @@ export const postnord = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "PostNord",
   countries: ["DK", "SE", "NO", "FI"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [accountSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

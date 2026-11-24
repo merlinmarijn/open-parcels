@@ -7,8 +7,8 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { readAccount } from "./account.js";
 import { TokenKeeper } from "./auth.js";
 import { CARRIER_ID, scanSnapshot } from "./scans.js";
@@ -17,7 +17,7 @@ import { API_BASE, API_HOST, AUTH_HOST, getJson, parcelOf, resultOf, text } from
 const BARCODE = carrierPattern("posta_slovenije");
 
 const configSchema = z.object({});
-/** Tracking sources need nothing; account sources store the MojaPošta username and password. */
+/** Tracking connections need nothing; account connections store the MojaPošta username and password. */
 const secretSchema = z
   .object({ username: z.string().min(1), password: z.string().min(1) })
   .nullable();
@@ -25,12 +25,12 @@ type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 
 const reporter =
-  (context: PluginContext<Config, Secret>) =>
+  (context: ProviderContext<Config, Secret>) =>
   (code: string): void => {
     context.reportUnknown("status_code", code);
   };
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   for (const barcode of barcodes) {
     if (!BARCODE.test(barcode)) {
@@ -59,7 +59,7 @@ async function track(context: PluginContext<Config, Secret>, barcodes: readonly 
         {
           barcode,
           statuses: result["statuses"],
-          direction: "incoming",
+          direction: "receiving",
           sender: null,
           receiver: null,
           raw: answer.payload,
@@ -71,7 +71,7 @@ async function track(context: PluginContext<Config, Secret>, barcodes: readonly 
   return { snapshots, complete: true };
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("The MojaPošta account needs a username and password.");
   }
@@ -85,7 +85,7 @@ export const postaSlovenije = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Pošta Slovenije",
   countries: ["SI"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

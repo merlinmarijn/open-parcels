@@ -5,9 +5,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -36,7 +36,7 @@ export type LookUpResult = { readonly raw: Json } | { readonly untrackable: stri
  * Looks one code up. The answer is JSON wrapped in `callback(…);`, which is only unwrapped and
  * parsed, never run. Returns null for the empty "no data" envelope.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<LookUpResult> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<LookUpResult> {
   const url = new URL(`https://${TRACKING_HOST}/parcel/api-status`);
   url.searchParams.set("id", barcode);
   url.searchParams.set("jsonp", "callback");
@@ -92,7 +92,7 @@ function readEvents(raw: Json): SnapshotEvent[] {
 export function untrackableSnapshot(barcode: string, error: string): ParcelSnapshot {
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status: null,
     rawStatus: `err ${error}`,
     raw: { err: error },
@@ -119,7 +119,7 @@ export function trackingSnapshot(
   const safe = Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "historyHtml"));
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["truckNo"]) ?? text(raw["number"]), barcode),
     status,
     rawStatus: label ?? text(raw["label"]) ?? latestCode,

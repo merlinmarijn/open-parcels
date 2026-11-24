@@ -10,9 +10,9 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   CARRIER_ID,
   HISTORY_LIMIT,
@@ -32,7 +32,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
 }
 
 /** One waybill from the public website tracking. Null when the carrier does not know it (404). */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/site/v.1.0/shipments/tracking/${encodeURIComponent(barcode)}`,
   );
@@ -115,13 +115,13 @@ export function trackingSnapshot(
   const planned = delivered ? null : novaTime(raw["scheduled_delivery_date"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(latest["event_name"]) ?? code,
     delivered,
     deliveredAt: delivered ? novaTime(receivedHop?.["date"]) : null,
-    plannedFrom: planned,
-    plannedTo: planned,
+    expectedFrom: planned,
+    expectedTo: planned,
     pickup: status === "at_pickup_point",
     pickupPoint: text(latest["division_name"]),
     url: publicUrl(barcode),

@@ -24,7 +24,7 @@ export const realSleep: Sleep = (ms) =>
     setTimeout(resolve, ms);
   });
 
-/** Token bucket per host, shared by every source of the same carrier. */
+/** Token bucket per host, shared by every connection of the same carrier. */
 export class HostLimiter {
   readonly #buckets = new Map<
     string,
@@ -94,7 +94,7 @@ export interface RequestOptions {
   readonly maxBytes?: number;
   /** How to decode the body when the carrier declares no charset. Defaults to UTF-8. */
   readonly encoding?: "utf8" | "latin1";
-  /** Follow redirects automatically. Off when a plug-in has to inspect them (allow-listing). */
+  /** Follow redirects automatically. Off when a provider has to inspect them (allow-listing). */
   readonly redirect?: "follow" | "manual";
   /** Send and store cookies through this jar, also those set by redirects along the way. */
   readonly jar?: CookieJar;
@@ -176,8 +176,8 @@ export interface HttpResponse {
 
 const DEFAULT_LIMIT: HostLimit = { intervalMs: 2_000, burst: 3 };
 
-/** The only way plug-ins reach the network. */
-export class PluginHttp {
+/** The only way providers reach the network. */
+export class ProviderHttp {
   constructor(
     private readonly policy: HttpPolicy,
     private readonly limiter: HostLimiter,
@@ -242,7 +242,7 @@ export class PluginHttp {
   }
 
   async #send(url: URL, options: RequestOptions, hop: Hop): Promise<Response> {
-    // Plug-ins build some URLs from carrier data (links, redirects); none may point inward.
+    // Providers build some URLs from carrier data (links, redirects); none may point inward.
     if (isNonPublicHostLiteral(url.hostname)) {
       throw new TransientError("Refusing a request to a non-public address.");
     }

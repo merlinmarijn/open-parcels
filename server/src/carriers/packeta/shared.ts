@@ -5,13 +5,13 @@ import {
   text as kitText,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "packeta";
 /** One host serves both brands (Packeta and Zásilkovna). */
 export const TRACKING_HOST = "tracking.packeta.com";
 
-export { asObject, type Json } from "../../plugin/api.js";
+export { asObject, type Json } from "../../provider/api.js";
 
 /** Packeta's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

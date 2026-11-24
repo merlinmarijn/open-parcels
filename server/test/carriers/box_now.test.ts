@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { boxNow } from "../../src/carriers/box_now/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes, lockers and values only.
@@ -38,12 +38,12 @@ describe("BOX NOW tracking", () => {
     const [parcel] = (await w.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "box_now",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       pickup: true,
       pickupPoint: "BOX NOW - Locker 1",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://boxnow.gr/homepage-gr?track=${CODE}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([

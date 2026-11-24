@@ -2,9 +2,9 @@ import { createDecipheriv } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { appHeaders, portalPhoneKey } from "../../src/carriers/cargus/shared.js";
 import { cargus } from "../../src/carriers/cargus/index.js";
-import { InvalidSourceConfigError } from "../../src/engine/registry.js";
-import { carrierKey } from "../../src/plugin/rules.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { carrierKey } from "../../src/provider/rules.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, madeUp, on, raw, World } from "./harness.js";
 
 // Made-up AWBs, phone numbers, tokens and accounts only.
@@ -59,7 +59,7 @@ describe("Cargus tracking", () => {
     expect(world.calls[0]?.headers.get("k")).not.toBeNull();
     expect(world.calls[0]?.url.searchParams.get("lang")).toBe("EN");
     expect(found).toMatchObject({
-      barcode: AWB,
+      trackingNumber: AWB,
       status: "out_for_delivery",
       history: [{ at: "2026-11-18T06:00:00.000Z" }, { status: "in_transit" }],
     });
@@ -119,9 +119,9 @@ describe("Cargus account", () => {
     expect(world.calls[0]?.headers.get("k")).not.toBeNull();
     expect(result.snapshots[0]).toMatchObject({
       status: "out_for_delivery",
-      direction: "incoming",
-      plannedFrom: "2026-11-18T08:00:00.000Z",
-      plannedTo: "2026-11-18T12:00:00.000Z",
+      direction: "receiving",
+      expectedFrom: "2026-11-18T08:00:00.000Z",
+      expectedTo: "2026-11-18T12:00:00.000Z",
     });
   });
 
@@ -151,6 +151,8 @@ describe("Cargus account", () => {
 
   it("reports a missing phone number as a settings problem, not a refused sign-in (OP-087)", async () => {
     const world = new World(cargus, []);
-    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(InvalidSourceConfigError);
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(
+      InvalidConnectionConfigError,
+    );
   });
 });

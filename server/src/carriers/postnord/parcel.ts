@@ -11,7 +11,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "postnord";
 const STRINGS = { numbers: false } as const;
@@ -135,12 +135,12 @@ export function shipmentSnapshot(
   const shipmentId = text(raw["shipmentId"], STRINGS) ?? code;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: shipmentId,
+    trackingNumber: shipmentId,
     status,
     rawStatus: text(asObject(raw["statusText"])["header"], STRINGS) ?? statusCode,
     delivered,
     deliveredAt: delivered ? (deliveries.at(-1)?.at ?? null) : null,
-    plannedFrom: delivered ? null : isoTime(raw["estimatedTimeOfArrival"], INSTANT),
+    expectedFrom: delivered ? null : isoTime(raw["estimatedTimeOfArrival"], INSTANT),
     pickup: status === "at_pickup_point",
     pickupPoint: pickupPoint(raw, ordered),
     url: rulesTrackingUrl(CARRIER_ID, shipmentId),

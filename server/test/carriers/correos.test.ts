@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { correos } from "../../src/carriers/correos/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.

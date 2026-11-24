@@ -5,8 +5,8 @@ import {
   defineCarrier,
   unknownReporter,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { DE_IDENTITY_HOST, DE_PARCEL_HOST, deSnapshot, GlsGermany } from "./de.js";
 import { ES_HOST, esSnapshot, lookUpEs } from "./es.js";
 import { groupSnapshot, lookUpGroup } from "./group.js";
@@ -24,7 +24,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
 
 /**
  * Every GLS lookup is keyed on the delivery country and, for history, the delivery postcode, so
- * a tracking source covers parcels delivered to one address. Poland and the US never send it.
+ * a tracking connection covers parcels delivered to one address. Poland and the US never send it.
  */
 const configSchema = z.looseObject({
   country: z.enum(COUNTRIES),
@@ -42,7 +42,7 @@ type Report = (code: string) => void;
 type Lookup = (barcode: string) => Promise<ParcelSnapshot | null>;
 
 function nationalLookup(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   country: NationalCountry,
   report: Report,
   germany: () => GlsGermany,
@@ -84,7 +84,7 @@ function nationalLookup(
   }
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const { country, postalCode } = context.config;
   const report = unknownReporter(context, "status_code", { once: false });
   let germany: GlsGermany | null = null;
@@ -131,7 +131,7 @@ export const gls = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "GLS",
   countries: [...COUNTRIES],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

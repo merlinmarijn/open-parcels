@@ -18,9 +18,9 @@ import {
   type InteractiveSignIn,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SignInScope,
-} from "../../../plugin/api.js";
+} from "../../../provider/api.js";
 import { captcha, PL_HOST, plCall, plStatus } from "./public.js";
 
 /** How this service shows in the account's device list; DHL binds the session to it. */
@@ -140,7 +140,7 @@ const fingerprint = (value: unknown): string =>
  * that recovery sends the user back through the SMS sign-in.
  */
 async function bearer(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   signedIn: PlSignedIn,
   jar: CookieJar,
 ) {
@@ -180,21 +180,21 @@ function accountSnapshot(raw: Json, report: (key: string) => void): ParcelSnapsh
   const delivered = status === "delivered";
   return snapshot({
     carrier: "dhl",
-    barcode: number,
+    trackingNumber: number,
     status,
     rawStatus: text(raw["status"]),
     delivered,
     deliveredAt: delivered ? isoTime(timeline["dateUtc"], { naive: "utc" }) : null,
     pickup: status === "at_pickup_point",
     sender: text(raw["sender"]),
-    // The locker PIN never leaves the plug-in.
+    // The locker PIN never leaves the provider.
     raw: Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "shipmentPin")),
   });
 }
 
 /** The own and the observed incoming lists, merged; the account lists no outgoing parcels. */
 export async function fetchPlAccount(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   signedIn: PlSignedIn,
 ): Promise<FetchResult> {
   const stored = storedSchema.safeParse(context.session.load());

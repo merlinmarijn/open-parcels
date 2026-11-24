@@ -14,9 +14,9 @@ import {
   type FetchResult,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { IDENTITY_HOST, idToken } from "./auth.js";
 
 const CARRIER_ID = "an_post";
@@ -42,13 +42,13 @@ export function anPostSnapshot(item: Json, report: (key: string) => void): Parce
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: typeof category === "number" ? String(category) : null,
     delivered,
     deliveredAt: delivered ? isoTime(item["dateDelivered"], { naive: { zone: ZONE } }) : null,
     // A single expected moment, not a window.
-    plannedFrom: delivered
+    expectedFrom: delivered
       ? null
       : isoTime(item["estimatedDeliveryDateTime"], { naive: { zone: ZONE } }),
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -63,7 +63,7 @@ const secretSchema = z.object({ username: z.string().min(1), password: z.string(
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 
-async function fetchAccount(context: PluginContext<Config, Secret>): Promise<FetchResult> {
+async function fetchAccount(context: ProviderContext<Config, Secret>): Promise<FetchResult> {
   const { token, uid } = await idToken(context.http, context.session, context.secret);
   const url = new URL(
     `https://${API_HOST}/an-post-my-deliveries-api/v2/api/customer/${encodeURIComponent(uid)}/trackingitems`,
@@ -98,7 +98,7 @@ export const anPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "An Post",
   countries: ["IE"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "credentials" },

@@ -1,4 +1,4 @@
-import { rulesStatus, type ParcelStatus } from "../../plugin/api.js";
+import { rulesStatus, type ParcelStatus } from "../../provider/api.js";
 
 /*
  * UPS status vocabularies, all in the shared rules (`ups`). Keys are prefixed by vocabulary

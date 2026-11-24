@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   carrierPattern,
   defineCarrier,
@@ -8,10 +8,10 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   carrierKey,
   expectStatus,
@@ -21,7 +21,7 @@ import {
   ruleStatus,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "ukrposhta";
 const API_HOST = "www.ukrposhta.ua";
@@ -43,7 +43,7 @@ const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
 /** The event list, oldest first; null when the carrier has no events for the code. */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json[] | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json[] | null> {
   const url = new URL(`https://${API_HOST}/status-tracking/0.0.1/statuses`);
   url.searchParams.set("barcode", barcode);
   url.searchParams.set("lang", "en");
@@ -127,7 +127,7 @@ export function ukrposhtaSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(code, barcode),
     status,
     rawStatus: final === undefined ? null : rawText(final.event),
@@ -143,7 +143,7 @@ export function ukrposhtaSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("event_code", code);
@@ -164,7 +164,7 @@ export const ukrposhta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Ukrposhta",
   countries: ["UA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

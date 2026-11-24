@@ -1,6 +1,6 @@
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   defineCarrier,
@@ -15,11 +15,11 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   ruleStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { z } from "zod";
 
 const CARRIER_ID = "4px";
@@ -30,7 +30,7 @@ const PLAUSIBLE = carrierPattern("4px");
  * One code per request. A code 4PX does not know comes back as one item whose `serverCode` and
  * `tracks` are both null; every other unusual envelope is a broken response, not a miss.
  */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${HOST}/track/v2/front/listTrackV3`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -93,7 +93,7 @@ export function fourPxSnapshot(
   const resolved = text(raw["serverCode"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: resolved,
+    trackingNumber: resolved,
     status,
     rawStatus: text(latest["tkDesc"]) ?? code,
     delivered,
@@ -112,14 +112,14 @@ export const fourPx = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "4PX",
   countries: ["*"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
   http: {
     limits: { [HOST]: { intervalMs: 5_000, burst: 2 }, "*": { intervalMs: 10_000, burst: 1 } },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const raw = await lookUp(context.http, barcode);
       return raw === null

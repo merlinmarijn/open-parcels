@@ -1,6 +1,6 @@
 import { findCarrier, parseArrival, type Rules } from "open-parcels-rules";
 import type { DropOffKind, DropOffOption, ReturnStatus } from "../domain/return.js";
-import { unescapeHtml } from "../plugin/kit/html.js";
+import { unescapeHtml } from "../provider/kit/html.js";
 
 /**
  * Readers for the details of return and refund mails that the shared mail rules do not extract

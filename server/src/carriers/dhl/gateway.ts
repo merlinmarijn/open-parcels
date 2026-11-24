@@ -3,21 +3,21 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   objects,
   parseJsonBody,
   isoTime,
   rulesStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { GATEWAY_BATCH, GATEWAY_URL, publicTrackingUrl } from "./constants.js";
 import { asString, type Json } from "./util.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "reportUnknown">;
 
 /**
  * The keyless DHL Parcel gateway. One request answers a comma-separated batch; codes it does
- * not know are simply missing, so answers are matched on their `barcode`, never on position.
+ * not know are simply missing, so answers are matched on their `tracking number`, never on position.
  */
 export async function fetchGateway(
   deps: Deps,
@@ -93,12 +93,12 @@ export function normalizeGateway(deps: Deps, code: string, raw: Json): ParcelSna
   const pickup = status === "at_pickup_point";
   return snapshot({
     carrier: "dhl",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: last === undefined ? null : (asString(last["status"]) ?? asString(last["category"])),
     delivered,
     deliveredAt: delivered ? deliveredAt : null,
-    plannedFrom: delivered ? null : isoTime(last?.["momentIndication"], { naive: "reject" }),
+    expectedFrom: delivered ? null : isoTime(last?.["momentIndication"], { naive: "reject" }),
     pickup,
     url: publicTrackingUrl(code),
     history,

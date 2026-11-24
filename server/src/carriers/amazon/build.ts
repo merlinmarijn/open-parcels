@@ -8,7 +8,7 @@ import {
   snapshot,
   type ParcelSnapshot,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { arrivalWindow, parseClock, pastDay, localIso, type Day } from "./dates.js";
 import { shipmentKey, type OrderTile, type TrackPage } from "./pages.js";
 import type { Storefront } from "./storefronts.js";
@@ -163,17 +163,17 @@ export function buildSnapshot(input: BuildInput): ParcelSnapshot | null {
     track === null ? AMAZON_ID : carrierFor(input.rules, track.carrierCode, input.report);
   const handoff =
     trackingId !== null && carrier !== null && carrier !== AMAZON_ID
-      ? { carrier, barcode: trackingId }
+      ? { carrier, trackingNumber: trackingId }
       : null;
   return snapshot({
     carrier: AMAZON_ID,
-    barcode: trackingId ?? key,
+    trackingNumber: trackingId ?? key,
     status,
     rawStatus: events[0]?.rawStatus ?? (lead.statusText === "" ? null : lead.statusText),
     delivered,
     deliveredAt: delivered ? deliveredAt(input, lead, events, timeZone) : null,
-    plannedFrom: window?.from ?? null,
-    plannedTo: window?.to ?? null,
+    expectedFrom: window?.from ?? null,
+    expectedTo: window?.to ?? null,
     pickup,
     url: pageUrl(input.storefront, input.trackPath ?? lead.path),
     history: events,

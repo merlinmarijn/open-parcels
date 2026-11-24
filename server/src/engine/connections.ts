@@ -1,126 +1,134 @@
 import type { Kysely } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
 import type { SecretBox } from "../crypto/secrets.js";
-import type { Database, SourceRow } from "../db/schema.js";
+import type { Database, ConnectionRow } from "../db/schema.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
-import { MAIL_PLUGIN, mailConfigSchema, mailSecretSchema } from "../mail/types.js";
+import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema } from "../mail/types.js";
 import {
   linkUntrackedParcels,
-  trackingSourceIn,
+  trackingConnectionIn,
   type LinkOptions,
   type LinkResult,
 } from "./linking.js";
-import { InvalidSourceConfigError, type PluginRegistry } from "./registry.js";
+import { InvalidConnectionConfigError, type ProviderRegistry } from "./registry.js";
 
-export type SourceKind = SourceRow["kind"];
-export type SourceState = SourceRow["state"];
+export type ConnectionKind = ConnectionRow["kind"];
+export type ConnectionState = ConnectionRow["state"];
 
-/** Details of a source no run has judged yet. */
+/** Details of a connection no run has judged yet. */
 export const NOT_SIGNED_IN_YET = "Not signed in yet.";
 export const NOT_RUN_YET = "Not run yet.";
 
 /**
- * Writes `source.removed` inside the caller's transaction. `mergedInto` names the source that
+ * Writes `connection.removed` inside the caller's transaction. `mergedInto` names the connection that
  * took over the removed one's parcels, when it was merged rather than deleted.
  */
-export async function appendSourceRemoved(
+export async function appendConnectionRemoved(
   trx: Kysely<Database>,
   clock: Clock,
-  source: { id: string; plugin: string; label: string; kind: SourceKind },
+  connection: { id: string; provider: string; label: string; kind: ConnectionKind },
   mergedInto: string | null,
 ): Promise<void> {
   await appendEvent(trx, clock, {
-    type: "source.removed",
+    type: "connection.removed",
     parcelId: null,
     payload: {
-      source: { id: source.id, plugin: source.plugin, label: source.label, kind: source.kind },
+      connection: {
+        id: connection.id,
+        provider: connection.provider,
+        label: connection.label,
+        kind: connection.kind,
+      },
       merged_into: mergedInto,
     },
   });
 }
 
 /**
- * Removes those of `sourceIds` that the app created on its own (keyless tracking sources made
- * when a code was added by hand) and that no parcel links to any more, firing `source.removed`
- * for each inside the caller's transaction. Sources the user made or imported are never touched,
+ * Removes those of `connectionIds` that the app created on its own (keyless tracking connections made
+ * when a code was added by hand) and that no parcel links to any more, firing `connection.removed`
+ * for each inside the caller's transaction. Connections the user made or imported are never touched,
  * and neither is one that has gained sign-in data since. Returns how many were removed.
  */
-export async function removeOrphanedAutoSources(
+export async function removeOrphanedAutoConnections(
   trx: Kysely<Database>,
   clock: Clock,
-  sourceIds: readonly string[],
+  connectionIds: readonly string[],
 ): Promise<number> {
-  if (sourceIds.length === 0) {
+  if (connectionIds.length === 0) {
     return 0;
   }
   const orphans = await trx
-    .selectFrom("sources")
-    .select(["id", "plugin", "label", "kind"])
-    .where("id", "in", sourceIds)
+    .selectFrom("connections")
+    .select(["id", "provider", "label", "kind"])
+    .where("id", "in", connectionIds)
     .where("auto_created", "=", 1)
     .where("kind", "=", "tracking")
-    // Sign-in data is the stored secret. The session store is not: keyless plug-ins keep run
+    // Sign-in data is the stored secret. The session store is not: keyless providers keep run
     // state there (cookies, rate budgets) on every run, so it says nothing about the user.
     .where("secret_blob", "is", null)
     .where((eb) =>
       eb.not(
         eb.exists(
           eb
-            .selectFrom("parcel_sources")
-            .select("parcel_sources.parcel_id")
-            .whereRef("parcel_sources.source_id", "=", "sources.id"),
+            .selectFrom("parcel_connections")
+            .select("parcel_connections.parcel_id")
+            .whereRef("parcel_connections.connection_id", "=", "connections.id"),
         ),
       ),
     )
     .execute();
   for (const orphan of orphans) {
-    await trx.deleteFrom("sources").where("id", "=", orphan.id).execute();
-    await appendSourceRemoved(trx, clock, orphan, null);
+    await trx.deleteFrom("connections").where("id", "=", orphan.id).execute();
+    await appendConnectionRemoved(trx, clock, orphan, null);
   }
   return orphans.length;
 }
 
-type EventRow = Pick<SourceRow, "id" | "plugin" | "label" | "kind" | "state" | "state_detail">;
+type EventRow = Pick<
+  ConnectionRow,
+  "id" | "provider" | "label" | "kind" | "state" | "state_detail"
+>;
 
-/** The payload of `source.added`, `source.updated` and `source.run_finished`. */
-function sourcePayload(row: EventRow): Record<string, unknown> {
+/** The payload of `connection.added`, `connection.updated` and `connection.run_finished`. */
+function connectionPayload(row: EventRow): Record<string, unknown> {
   return {
-    source: { id: row.id, plugin: row.plugin, label: row.label, kind: row.kind },
+    connection: { id: row.id, provider: row.provider, label: row.label, kind: row.kind },
     state: row.state,
     detail: row.state_detail,
   };
 }
 
-/** Associated data for a source's encrypted blobs: a blob copied to another row fails to decrypt. */
-export const secretAad = (sourceId: string): string => `source:${sourceId}:secret`;
-export const sessionAad = (sourceId: string): string => `source:${sourceId}:session`;
+/** Associated data for a connection's encrypted blobs: a blob copied to another row fails to decrypt. */
+export const secretAad = (connectionId: string): string => `source:${connectionId}:secret`;
+export const sessionAad = (connectionId: string): string => `source:${connectionId}:session`;
 
-export interface SourceView {
+export interface ConnectionView {
   readonly id: string;
-  readonly plugin: string;
-  readonly kind: SourceKind;
+  readonly provider: string;
+  readonly kind: ConnectionKind;
   readonly label: string;
   readonly config: unknown;
   readonly hasSecret: boolean;
-  readonly state: SourceState;
+  readonly state: ConnectionState;
   readonly stateDetail: string | null;
   readonly nextRunAt: string | null;
   readonly lastRunAt: string | null;
   readonly lastOkAt: string | null;
 }
 
-export interface NewSource {
-  readonly plugin: string;
-  readonly kind: SourceKind;
+export interface NewConnection {
+  readonly provider: string;
+  readonly kind: ConnectionKind;
   readonly label: string;
   readonly config: unknown;
   readonly secret: unknown;
 }
 
-function toView(row: SourceRow): SourceView {
+function toView(row: ConnectionRow): ConnectionView {
   return {
     id: row.id,
-    plugin: row.plugin,
+    provider: row.provider,
     kind: row.kind,
     label: row.label,
     config: JSON.parse(row.config) as unknown,
@@ -133,50 +141,54 @@ function toView(row: SourceRow): SourceView {
   };
 }
 
-/** Creating, configuring and inspecting sources. Secrets never leave this class unencrypted. */
-export class SourceService {
+/** Creating, configuring and inspecting connections. Secrets never leave this class unencrypted. */
+export class ConnectionService {
   constructor(
     private readonly db: Kysely<Database>,
-    private readonly registry: PluginRegistry,
+    private readonly registry: ProviderRegistry,
     private readonly secrets: SecretBox,
     private readonly bus: EventBus,
     private readonly clock: Clock,
   ) {}
 
-  async list(): Promise<SourceView[]> {
-    const rows = await this.db.selectFrom("sources").selectAll().orderBy("created_at").execute();
+  async list(): Promise<ConnectionView[]> {
+    const rows = await this.db
+      .selectFrom("connections")
+      .selectAll()
+      .orderBy("created_at")
+      .execute();
     return rows.map(toView);
   }
 
-  async get(id: string): Promise<SourceView | undefined> {
+  async get(id: string): Promise<ConnectionView | undefined> {
     const row = await this.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
       .where("id", "=", id)
       .executeTakeFirst();
     return row === undefined ? undefined : toView(row);
   }
 
-  async create(input: NewSource): Promise<SourceView> {
+  async create(input: NewConnection): Promise<ConnectionView> {
     const config = this.#validate(input);
     const id = crypto.randomUUID();
     const now = isoNow(this.clock);
     await this.db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id,
-        plugin: input.plugin,
+        provider: input.provider,
         kind: input.kind,
         label: input.label,
         config: JSON.stringify(config),
         secret_blob:
           input.secret === null ? null : this.secrets.encryptJson(input.secret, secretAad(id)),
         session_blob: null,
-        // Nothing has judged the source yet; its first run (due at once) decides, and a run that
+        // Nothing has judged the connection yet; its first run (due at once) decides, and a run that
         // finds no stored sign-in says "not signed in yet", never "rejected".
         state: "ok",
         state_detail: input.kind === "mail" ? null : NOT_RUN_YET,
-        // Mailboxes are driven by the mail watcher (IMAP IDLE), never by the poll scheduler.
+        // Inboxes are driven by the mail watcher (IMAP IDLE), never by the poll scheduler.
         next_run_at: input.kind === "mail" ? null : now,
         created_at: now,
         updated_at: now,
@@ -184,84 +196,94 @@ export class SourceService {
       .execute();
     const created = await this.get(id);
     if (created === undefined) {
-      throw new Error("Created source could not be read back.");
+      throw new Error("Created connection could not be read back.");
     }
-    await this.#announceSource(id, "source.added");
+    await this.#announceConnection(id, "connection.added");
     return created;
   }
 
-  /** Validates a new source and returns its configuration with defaults applied. */
-  #validate(input: NewSource): unknown {
-    if (input.kind === "mail" || input.plugin === MAIL_PLUGIN) {
-      if (input.kind !== "mail" || input.plugin !== MAIL_PLUGIN) {
-        throw new InvalidSourceConfigError(
-          `Mailboxes use the plug-in "${MAIL_PLUGIN}" and the kind "mail".`,
+  /** Validates a new connection and returns its configuration with defaults applied. */
+  #validate(input: NewConnection): unknown {
+    if (input.kind === "mail" || input.provider === MAIL_PROVIDER) {
+      if (input.kind !== "mail" || input.provider !== MAIL_PROVIDER) {
+        throw new InvalidConnectionConfigError(
+          `Inboxes use the provider "${MAIL_PROVIDER}" and the kind "mail".`,
         );
       }
       const config = mailConfigSchema.safeParse(input.config);
       const secret = mailSecretSchema.safeParse(input.secret);
       if (!config.success || !secret.success) {
-        throw new InvalidSourceConfigError("The mailbox needs a host, a username and a password.");
+        throw new InvalidConnectionConfigError(
+          "The inbox needs a host, a username and a password.",
+        );
       }
       return config.data;
     }
-    const plugin = this.registry.get(input.plugin);
-    if (plugin === undefined) {
-      throw new InvalidSourceConfigError(`There is no carrier plug-in called ${input.plugin}.`);
+    const provider = this.registry.get(input.provider);
+    if (provider === undefined) {
+      throw new InvalidConnectionConfigError(
+        `There is no carrier provider called ${input.provider}.`,
+      );
     }
-    if (!plugin.info.sourceKinds.includes(input.kind)) {
-      throw new InvalidSourceConfigError(`${plugin.info.name} has no ${input.kind} source.`);
+    if (!provider.info.connectionKinds.includes(input.kind)) {
+      throw new InvalidConnectionConfigError(
+        `${provider.info.name} has no ${input.kind} connection.`,
+      );
     }
-    const config = plugin.validateConfig(input.config);
-    if (input.secret !== null && !plugin.info.secretSchema.safeParse(input.secret).success) {
-      throw new InvalidSourceConfigError(`The sign-in data does not fit ${plugin.info.name}.`);
+    const config = provider.validateConfig(input.config);
+    if (input.secret !== null && !provider.info.secretSchema.safeParse(input.secret).success) {
+      throw new InvalidConnectionConfigError(
+        `The sign-in data does not fit ${provider.info.name}.`,
+      );
     }
     return config;
   }
 
-  /** Validates changed settings of an existing source and returns them with defaults applied. */
-  #validateChange(row: Pick<SourceRow, "plugin" | "kind">, config: unknown): unknown {
+  /** Validates changed settings of an existing connection and returns them with defaults applied. */
+  #validateChange(row: Pick<ConnectionRow, "provider" | "kind">, config: unknown): unknown {
     if (row.kind === "mail") {
       const parsed = mailConfigSchema.safeParse(config);
       if (!parsed.success) {
-        throw new InvalidSourceConfigError("The mailbox needs a host.");
+        throw new InvalidConnectionConfigError("The inbox needs a host.");
       }
       return parsed.data;
     }
-    const plugin = this.registry.get(row.plugin);
-    return plugin === undefined ? config : plugin.validateConfig(config);
+    const provider = this.registry.get(row.provider);
+    return provider === undefined ? config : provider.validateConfig(config);
   }
 
   /**
-   * The tracking source of a plug-in, created on first use. Codes the user adds by hand, and codes
+   * The tracking connection of a provider, created on first use. Codes the user adds by hand, and codes
    * handed over by shops, are tracked through it.
    */
-  async ensureTrackingSource(pluginId: string): Promise<string> {
-    const id = await trackingSourceIn(this.db, this.registry, this.clock)(pluginId);
+  async ensureTrackingConnection(providerId: string): Promise<string> {
+    const id = await trackingConnectionIn(this.db, this.registry, this.clock)(providerId);
     if (id === undefined) {
-      throw new InvalidSourceConfigError(`There is no carrier plug-in that tracks ${pluginId}.`);
+      throw new InvalidConnectionConfigError(
+        `There is no carrier provider that tracks ${providerId}.`,
+      );
     }
     return id;
   }
 
-  /** Links active parcels no carrier source follows to their tracking source; see `linking.ts`. */
+  /** Links active parcels no carrier connection follows to their tracking connection; see `linking.ts`. */
   async linkUntracked(options: LinkOptions = {}): Promise<LinkResult> {
     return linkUntrackedParcels(
       this.db,
       this.clock,
-      trackingSourceIn(this.db, this.registry, this.clock),
+      trackingConnectionIn(this.db, this.registry, this.clock),
       options,
     );
   }
 
   /**
-   * Checks sign-in data against the source's plug-in before it is stored, so a malformed secret
-   * is refused at once instead of failing every later run. Throws InvalidSourceConfigError.
+   * Checks sign-in data against the connection's provider before it is stored, so a malformed secret
+   * is refused at once instead of failing every later run. Throws InvalidConnectionConfigError.
    */
   async checkSecret(id: string, secret: unknown): Promise<void> {
     const row = await this.db
-      .selectFrom("sources")
-      .select(["plugin", "kind"])
+      .selectFrom("connections")
+      .select(["provider", "kind"])
       .where("id", "=", id)
       .executeTakeFirst();
     if (row === undefined) {
@@ -269,19 +291,21 @@ export class SourceService {
     }
     if (row.kind === "mail") {
       if (!mailSecretSchema.safeParse(secret).success) {
-        throw new InvalidSourceConfigError("The mailbox needs a username and a password.");
+        throw new InvalidConnectionConfigError("The inbox needs a username and a password.");
       }
       return;
     }
-    const plugin = this.registry.get(row.plugin);
-    if (plugin !== undefined && !plugin.info.secretSchema.safeParse(secret).success) {
-      throw new InvalidSourceConfigError(`The sign-in data does not fit ${plugin.info.name}.`);
+    const provider = this.registry.get(row.provider);
+    if (provider !== undefined && !provider.info.secretSchema.safeParse(secret).success) {
+      throw new InvalidConnectionConfigError(
+        `The sign-in data does not fit ${provider.info.name}.`,
+      );
     }
   }
 
   async setSecret(id: string, secret: unknown): Promise<void> {
     await this.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({
         secret_blob: this.secrets.encryptJson(secret, secretAad(id)),
         session_blob: null,
@@ -296,9 +320,9 @@ export class SourceService {
   async updateSettings(
     id: string,
     changes: { label?: string; config?: unknown; enabled?: boolean },
-  ): Promise<SourceView | undefined> {
+  ): Promise<ConnectionView | undefined> {
     const row = await this.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
       .where("id", "=", id)
       .executeTakeFirst();
@@ -310,7 +334,7 @@ export class SourceService {
         ? undefined
         : JSON.stringify(this.#validateChange(row, changes.config));
     await this.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({
         ...(changes.label === undefined ? {} : { label: changes.label }),
         ...(config === undefined ? {} : { config }),
@@ -320,7 +344,7 @@ export class SourceService {
       .execute();
     const labelChanged = changes.label !== undefined && changes.label !== row.label;
     if (labelChanged || (config !== undefined && config !== row.config)) {
-      await this.#announceSource(id, "source.updated");
+      await this.#announceConnection(id, "connection.updated");
     }
     if (changes.enabled === false) {
       await this.setState(id, "disabled", null);
@@ -331,11 +355,11 @@ export class SourceService {
   }
 
   /**
-   * Re-enables a disabled source without claiming more than is known: one that never ran
+   * Re-enables a disabled connection without claiming more than is known: one that never ran
    * successfully says "not run yet" instead of a bare OK. It is due at once, so a run decides
    * (and a run without any stored sign-in reports "not signed in yet").
    */
-  async #enable(row: SourceRow): Promise<void> {
+  async #enable(row: ConnectionRow): Promise<void> {
     const proven = row.last_ok_at !== null || row.kind === "mail";
     await this.setState(row.id, "ok", proven ? null : NOT_RUN_YET);
     if (row.kind !== "mail") {
@@ -343,19 +367,19 @@ export class SourceService {
     }
   }
 
-  /** Deletes the source and fires `source.removed`, so clients drop its device at once. */
+  /** Deletes the connection and fires `connection.removed`, so clients drop its device at once. */
   async delete(id: string): Promise<boolean> {
     const deleted = await this.db.transaction().execute(async (trx) => {
       const row = await trx
-        .selectFrom("sources")
-        .select(["id", "plugin", "label", "kind"])
+        .selectFrom("connections")
+        .select(["id", "provider", "label", "kind"])
         .where("id", "=", id)
         .executeTakeFirst();
       if (row === undefined) {
         return false;
       }
-      await trx.deleteFrom("sources").where("id", "=", id).execute();
-      await appendSourceRemoved(trx, this.clock, row, null);
+      await trx.deleteFrom("connections").where("id", "=", id).execute();
+      await appendConnectionRemoved(trx, this.clock, row, null);
       return true;
     });
     if (deleted) {
@@ -365,7 +389,7 @@ export class SourceService {
   }
 
   /**
-   * Fires `source.run_finished`: a run ended, whatever its outcome. It carries the source's
+   * Fires `connection.run_finished`: a run ended, whatever its outcome. It carries the connection's
    * current label, state and detail, so a client that missed a change catches up here.
    */
   async announceRun(id: string, ok: boolean): Promise<void> {
@@ -374,39 +398,46 @@ export class SourceService {
       return;
     }
     await appendEvent(this.db, this.clock, {
-      type: "source.run_finished",
+      type: "connection.run_finished",
       parcelId: null,
-      payload: { ...sourcePayload(row), ok },
+      payload: { ...connectionPayload(row), ok },
     });
     await this.bus.notify();
   }
 
-  /** Fires `source.added` or `source.updated` with the source as it now is. */
-  async #announceSource(id: string, type: "source.added" | "source.updated"): Promise<void> {
+  /** Fires `connection.added` or `connection.updated` with the connection as it now is. */
+  async #announceConnection(
+    id: string,
+    type: "connection.added" | "connection.updated",
+  ): Promise<void> {
     const row = await this.#eventRow(id);
     if (row === undefined) {
       return;
     }
-    await appendEvent(this.db, this.clock, { type, parcelId: null, payload: sourcePayload(row) });
+    await appendEvent(this.db, this.clock, {
+      type,
+      parcelId: null,
+      payload: connectionPayload(row),
+    });
     await this.bus.notify();
   }
 
   async #eventRow(id: string): Promise<EventRow | undefined> {
     return this.db
-      .selectFrom("sources")
-      .select(["id", "plugin", "label", "kind", "state", "state_detail"])
+      .selectFrom("connections")
+      .select(["id", "provider", "label", "kind", "state", "state_detail"])
       .where("id", "=", id)
       .executeTakeFirst();
   }
 
   /**
-   * Asks the scheduler to run this source as soon as possible, but never before its backoff ends:
+   * Asks the scheduler to run this connection as soon as possible, but never before its backoff ends:
    * a captcha pause or a carrier's 429 is honoured whoever asks. Returns the time the run was
    * deferred to, or null when it is due now.
    */
   async requestRun(id: string): Promise<{ deferredUntil: string | null }> {
     const row = await this.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .select("backoff_until")
       .where("id", "=", id)
       .executeTakeFirst();
@@ -416,18 +447,18 @@ export class SourceService {
     const deferredUntil =
       Number.isFinite(backoff) && backoff > now ? new Date(backoff).toISOString() : null;
     await this.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({ next_run_at: deferredUntil ?? isoNow(this.clock) })
       .where("id", "=", id)
       .execute();
     return { deferredUntil };
   }
 
-  /** Changes the state and fires `source.state_changed` when it actually changed. */
-  async setState(id: string, state: SourceState, detail: string | null): Promise<void> {
+  /** Changes the state and fires `connection.state_changed` when it actually changed. */
+  async setState(id: string, state: ConnectionState, detail: string | null): Promise<void> {
     const row = await this.db
-      .selectFrom("sources")
-      .select(["state", "plugin", "label"])
+      .selectFrom("connections")
+      .select(["state", "provider", "label"])
       .where("id", "=", id)
       .executeTakeFirst();
     if (row === undefined) {
@@ -435,16 +466,16 @@ export class SourceService {
     }
     await this.db.transaction().execute(async (trx) => {
       await trx
-        .updateTable("sources")
+        .updateTable("connections")
         .set({ state, state_detail: detail, updated_at: isoNow(this.clock) })
         .where("id", "=", id)
         .execute();
       if (row.state !== state) {
         await appendEvent(trx, this.clock, {
-          type: "source.state_changed",
+          type: "connection.state_changed",
           parcelId: null,
           payload: {
-            source: { id, plugin: row.plugin, label: row.label },
+            connection: { id, provider: row.provider, label: row.label },
             old_state: row.state,
             new_state: state,
             detail,

@@ -8,10 +8,10 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderHttp,
+  type ProviderLogger,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { ACCOUNT_HOST } from "./shared.js";
 
 const BASE = `https://${ACCOUNT_HOST}/api/v12/`;
@@ -23,7 +23,7 @@ const BASE = `https://${ACCOUNT_HOST}/api/v12/`;
 const appKey = (): string => carrierKey("hermes", "app_key");
 
 /**
- * The account's sign-in. The password is missing when the source was imported with only a token
+ * The account's sign-in. The password is missing when the connection was imported with only a token
  * pair; once those tokens are refused, the user has to sign in again.
  */
 export interface Credentials {
@@ -50,8 +50,8 @@ function parseJson(response: HttpResponse, what: string): unknown {
 
 export class HermesAccount {
   constructor(
-    private readonly http: PluginHttp,
-    private readonly logger: PluginLogger,
+    private readonly http: ProviderHttp,
+    private readonly logger: ProviderLogger,
   ) {}
 
   async #call(path: string, options: { body?: Json; token?: string }): Promise<HttpResponse> {

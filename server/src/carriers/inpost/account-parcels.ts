@@ -6,7 +6,7 @@ import {
   type Json,
   type ParcelSnapshot,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, isoTime, lookUpCode, publicUrl, text } from "./shared.js";
 
 type Report = (code: string) => void;
@@ -26,7 +26,7 @@ function firstText(object: Json, keys: readonly string[]): string | null {
   return null;
 }
 
-/** The locker's open code and QR code open the locker; they never leave the plug-in. */
+/** The locker's open code and QR code open the locker; they never leave the provider. */
 const LOCKER_CODES: ReadonlySet<string> = new Set([
   "openCode",
   "qrCode",
@@ -84,7 +84,7 @@ export function plSnapshot(raw: Json, report: Report): ParcelSnapshot | null {
   const operations = asObject(raw["operations"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus,
     delivered,
@@ -95,7 +95,7 @@ export function plSnapshot(raw: Json, report: Report): ParcelSnapshot | null {
     sender: nameOf(raw["sender"]),
     receiver: nameOf(raw["receiver"]),
     history: inboxHistory(raw, report),
-    // The locker's open code and QR code must never leave the plug-in.
+    // The locker's open code and QR code must never leave the provider.
     raw: withoutCodes(raw),
   });
 }
@@ -133,7 +133,7 @@ export function itSnapshot(raw: Json, report: Report): ParcelSnapshot | null {
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: latest?.rawStatus ?? null,
     delivered,
@@ -144,7 +144,7 @@ export function itSnapshot(raw: Json, report: Report): ParcelSnapshot | null {
     sender: text(asObject(raw["sender"])["representativeName"]),
     receiver: text(asObject(raw["receiver"])["representativeName"]),
     history: sorted,
-    // The same as the Polish inbox: locker codes never leave the plug-in.
+    // The same as the Polish inbox: locker codes never leave the provider.
     raw: withoutCodes(raw),
   });
 }

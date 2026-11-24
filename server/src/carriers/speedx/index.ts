@@ -6,9 +6,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
-import type { PluginHttp } from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import { flightEvents } from "./flight.js";
 import { CARRIER_ID, eventsSnapshot, type Json } from "./parse.js";
 
@@ -20,7 +20,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 
 /** The full history from the tracking page; undefined when the page lost its flight data. */
-async function pageEvents(http: PluginHttp, code: string): Promise<Json[] | null | undefined> {
+async function pageEvents(http: ProviderHttp, code: string): Promise<Json[] | null | undefined> {
   const response = await http.request(new URL(`https://${HOST}/${encodeURIComponent(code)}`), {
     headers: { accept: "text/html" },
   });
@@ -31,7 +31,7 @@ async function pageEvents(http: PluginHttp, code: string): Promise<Json[] | null
 }
 
 /** Only the current scan; the fallback when the page carries no history. */
-async function currentScan(http: PluginHttp, code: string): Promise<Json | null> {
+async function currentScan(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${HOST}/api/tracks`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -55,7 +55,7 @@ async function currentScan(http: PluginHttp, code: string): Promise<Json | null>
     : null;
 }
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json[] | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json[] | null> {
   const events = await pageEvents(http, code);
   if (events !== null && events !== undefined && events.length > 0) {
     return events;
@@ -70,7 +70,7 @@ async function lookUp(http: PluginHttp, code: string): Promise<Json[] | null> {
   return null;
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
@@ -91,7 +91,7 @@ export const speedx = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "SpeedX",
   countries: ["US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

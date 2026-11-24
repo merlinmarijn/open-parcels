@@ -8,11 +8,11 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "speedx";
 
-import type { Json } from "../../plugin/api.js";
+import type { Json } from "../../provider/api.js";
 
 export type { Json };
 
@@ -99,7 +99,7 @@ export function eventsSnapshot(
   }
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(newest["eventCode"]) ?? key,
     deliveredAt: status === "delivered" ? eventTime(newest) : null,

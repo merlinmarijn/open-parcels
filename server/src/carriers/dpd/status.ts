@@ -3,7 +3,7 @@ import {
   rulesTrackingUrl,
   type MappedStatus,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export type { ParcelStatus };
 

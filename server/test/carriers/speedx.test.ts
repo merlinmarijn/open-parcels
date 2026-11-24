@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { speedx } from "../../src/carriers/speedx/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -49,11 +49,11 @@ describe("SpeedX tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "speedx",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "57110",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://tracking.speedx.io/${CODE}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([

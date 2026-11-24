@@ -2,13 +2,17 @@ import type { Kysely } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelUpdate } from "../db/schema.js";
 import { type Direction, type Parcel, type ParcelStatus } from "../domain/parcel.js";
-import { normaliseBarcode } from "../engine/barcode.js";
+import { normaliseTrackingNumber } from "../engine/tracking-number.js";
 import { applyRetention, type RetentionPolicy, type RetentionResult } from "../engine/retention.js";
 import { deriveEvents, type EventView } from "../engine/rules.js";
-import { removeOrphanedAutoSources } from "../engine/sources.js";
+import { removeOrphanedAutoConnections } from "../engine/connections.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
-import { clearSourceData, countSourceData, type SourceDataCounts } from "./clear-source.js";
+import {
+  clearConnectionData,
+  countConnectionData,
+  type ConnectionDataCounts,
+} from "./clear-connection.js";
 import { DataCleaner } from "./data-cleaner.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "./repository.js";
 
@@ -22,7 +26,7 @@ export class DuplicateParcelError extends Error {
 
 export interface NewParcelInput {
   readonly carrier: string;
-  readonly barcode: string;
+  readonly trackingNumber: string;
   readonly direction: Direction;
   readonly label: string | null;
 }
@@ -34,8 +38,8 @@ export interface ParcelPatch {
 }
 
 /**
- * Called after a code was added by hand, so the carrier's tracking source picks it up. Returns the
- * source id it was linked to, or undefined when no installed plug-in can track this carrier.
+ * Called after a code was added by hand, so the carrier's tracking connection picks it up. Returns the
+ * connection id it was linked to, or undefined when no installed provider can track this carrier.
  */
 export type TrackingLinker = (carrier: string) => Promise<string | undefined>;
 
@@ -45,8 +49,8 @@ function view(parcel: Parcel): EventView {
     direction: parcel.direction,
     status: parcel.status,
     delivered: parcel.delivered,
-    plannedFrom: parcel.planned_from,
-    plannedTo: parcel.planned_to,
+    expectedFrom: parcel.expected_from,
+    expectedTo: parcel.expected_to,
   };
 }
 
@@ -66,20 +70,23 @@ export class ParcelService {
 
   async create(given: NewParcelInput): Promise<Parcel> {
     // Stored in the carrier's own spelling, the one its answers come back in.
-    const input = { ...given, barcode: normaliseBarcode(given.carrier, given.barcode) };
-    // Checked first so a duplicate never links a tracking source, and again inside the write.
-    const known = await this.repository.findIdByBarcode(input.carrier, input.barcode);
+    const input = {
+      ...given,
+      trackingNumber: normaliseTrackingNumber(given.carrier, given.trackingNumber),
+    };
+    // Checked first so a duplicate never links a tracking connection, and again inside the write.
+    const known = await this.repository.findIdByTrackingNumber(input.carrier, input.trackingNumber);
     if (known !== undefined) {
       throw new DuplicateParcelError(known);
     }
-    const sourceId = await this.linkTracking(input.carrier);
+    const connectionId = await this.linkTracking(input.carrier);
     const id = crypto.randomUUID();
     const now = isoNow(this.clock);
     await this.db.transaction().execute(async (trx) => {
       // Checked inside the transaction, so two adds of one code can never both pass the check.
-      const existing = await new ParcelRepository(trx, this.presentation).findIdByBarcode(
+      const existing = await new ParcelRepository(trx, this.presentation).findIdByTrackingNumber(
         input.carrier,
-        input.barcode,
+        input.trackingNumber,
       );
       if (existing !== undefined) {
         throw new DuplicateParcelError(existing);
@@ -89,7 +96,7 @@ export class ParcelService {
         .values({
           id,
           carrier: input.carrier,
-          barcode: input.barcode,
+          tracking_number: input.trackingNumber,
           direction: input.direction,
           status: "registered",
           raw_status: null,
@@ -101,12 +108,12 @@ export class ParcelService {
           updated_at: now,
         })
         .execute();
-      if (sourceId !== undefined) {
+      if (connectionId !== undefined) {
         await trx
-          .insertInto("parcel_sources")
+          .insertInto("parcel_connections")
           .values({
             parcel_id: id,
-            source_id: sourceId,
+            connection_id: connectionId,
             external_ref: null,
             role: "primary",
             last_seen_at: now,
@@ -182,8 +189,8 @@ export class ParcelService {
   }
 
   /**
-   * Deletes the parcel and fires `parcel.deleted`, so clients drop it at once. A tracking source
-   * the app created for it alone goes too, with `source.removed`.
+   * Deletes the parcel and fires `parcel.deleted`, so clients drop it at once. A tracking connection
+   * the app created for it alone goes too, with `connection.removed`.
    */
   async delete(id: string): Promise<boolean> {
     const deleted = await this.db.transaction().execute(async (trx) => {
@@ -197,10 +204,10 @@ export class ParcelService {
         parcelId: id,
         payload: parcelEventPayload({ ...parcel, history: [] }),
       });
-      await removeOrphanedAutoSources(
+      await removeOrphanedAutoConnections(
         trx,
         this.clock,
-        parcel.sources.map((source) => source.source_id),
+        parcel.connections.map((connection) => connection.connection_id),
       );
       return true;
     });
@@ -220,16 +227,16 @@ export class ParcelService {
     });
   }
 
-  /** What clearing this source would remove. */
-  countSourceData(sourceId: string): Promise<SourceDataCounts> {
-    return countSourceData(this.db, sourceId);
+  /** What clearing this connection would remove. */
+  countConnectionData(connectionId: string): Promise<ConnectionDataCounts> {
+    return countConnectionData(this.db, connectionId);
   }
 
-  /** Removes everything this source imported; see `clearSourceData`. */
-  async clearSourceData(sourceId: string): Promise<SourceDataCounts> {
-    const counts = await clearSourceData(
+  /** Removes everything this connection imported; see `clearConnectionData`. */
+  async clearConnectionData(connectionId: string): Promise<ConnectionDataCounts> {
+    const counts = await clearConnectionData(
       { db: this.db, clock: this.clock, presentation: this.presentation },
-      sourceId,
+      connectionId,
     );
     await this.bus.notify();
     return counts;

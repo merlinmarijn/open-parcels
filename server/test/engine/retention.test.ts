@@ -12,11 +12,11 @@ afterEach(async () => {
   await context.close();
 });
 
-async function delivered(barcode: string, daysAgo: number): Promise<string> {
+async function delivered(trackingNumber: string, daysAgo: number): Promise<string> {
   const parcel = await context.services.parcels.create({
     carrier: "dhl",
-    barcode,
-    direction: "incoming",
+    trackingNumber,
+    direction: "receiving",
     label: null,
   });
   const at = new Date(context.clock.now().getTime() - daysAgo * DAY).toISOString();
@@ -40,8 +40,8 @@ describe("retention", () => {
     const recent = await delivered("00340434000000000002", 5);
     const active = await context.services.parcels.create({
       carrier: "dhl",
-      barcode: "00340434000000000003",
-      direction: "incoming",
+      trackingNumber: "00340434000000000003",
+      direction: "receiving",
       label: null,
     });
 
@@ -83,8 +83,8 @@ describe("retention", () => {
     };
     const parcel = await context.services.parcels.create({
       carrier: "dhl",
-      barcode: "00340434000000000004",
-      direction: "incoming",
+      trackingNumber: "00340434000000000004",
+      direction: "receiving",
       label: null,
     });
     await context.services.parcels.update(parcel.id, { manualStatus: "delivered" });
@@ -115,8 +115,8 @@ describe("diagnostics", () => {
     // Reading is open here, but diagnostics need the admin.
     expect((await app.inject("/api/v1/diagnostics")).statusCode).toBe(403);
     const session = await signIn(context, app);
-    await context.services.sources.create({
-      plugin: "imap",
+    await context.services.connections.create({
+      provider: "imap",
       kind: "mail",
       label: "Inbox",
       config: { host: "imap.example.invalid" },
@@ -129,6 +129,6 @@ describe("diagnostics", () => {
     expect(response.statusCode).toBe(200);
     expect(response.body).not.toContain("example.invalid");
     expect(response.body).not.toContain("made-up");
-    expect(response.json()).toMatchObject({ sources: [{ plugin: "imap", kind: "mail" }] });
+    expect(response.json()).toMatchObject({ connections: [{ provider: "imap", kind: "mail" }] });
   });
 });

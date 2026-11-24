@@ -11,7 +11,7 @@ export interface VocabDeps {
 }
 
 export interface UnknownValue {
-  readonly plugin: string;
+  readonly provider: string;
   readonly kind: string;
   readonly key: string;
 }
@@ -33,13 +33,13 @@ export async function recordUnknown(
   value: UnknownValue,
   log: Logger,
 ): Promise<void> {
-  const { plugin, kind } = value;
+  const { provider, kind } = value;
   const now = isoNow(deps.clock);
   const key = value.key.slice(0, 120);
   const existing = await deps.db
     .selectFrom("unknown_vocab")
     .select("count")
-    .where("plugin", "=", plugin)
+    .where("provider", "=", provider)
     .where("kind", "=", kind)
     .where("key", "=", key)
     .executeTakeFirst();
@@ -47,7 +47,7 @@ export async function recordUnknown(
     await deps.db
       .updateTable("unknown_vocab")
       .set({ count: existing.count + 1, last_seen_at: now })
-      .where("plugin", "=", plugin)
+      .where("provider", "=", provider)
       .where("kind", "=", kind)
       .where("key", "=", key)
       .execute();
@@ -56,14 +56,14 @@ export async function recordUnknown(
   await deps.db.transaction().execute(async (trx) => {
     await trx
       .insertInto("unknown_vocab")
-      .values({ plugin, kind, key, first_seen_at: now, last_seen_at: now, count: 1 })
+      .values({ provider, kind, key, first_seen_at: now, last_seen_at: now, count: 1 })
       .execute();
     await appendEvent(trx, deps.clock, {
       type: "vocab.unknown",
       parcelId: null,
-      payload: { plugin, kind, key },
+      payload: { provider, kind, key },
     });
   });
   await deps.bus.notify();
-  log.warn({ plugin, kind, key }, "Unrecognised value. Please report it so it can be mapped.");
+  log.warn({ provider, kind, key }, "Unrecognised value. Please report it so it can be mapped.");
 }

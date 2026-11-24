@@ -1,4 +1,4 @@
-import { textOf, unescapeHtml } from "../../plugin/api.js";
+import { textOf, unescapeHtml } from "../../provider/api.js";
 
 /**
  * A small, dependency-free reader for the server-rendered myDPD pages. Everything is looked up by

@@ -1,4 +1,4 @@
-import { cleanText, unescapeHtml, UnexpectedResponseError } from "../../plugin/api.js";
+import { cleanText, unescapeHtml, UnexpectedResponseError } from "../../provider/api.js";
 
 /**
  * A strict reader for the Colis Privé result page. It fails closed: anything it cannot

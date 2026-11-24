@@ -10,11 +10,11 @@ import {
   zonedIso,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { parseResultPage, type ResultPage, type Row } from "./page.js";
 
 const CARRIER_ID = "colis_prive";
@@ -84,13 +84,13 @@ export function toSnapshot(
   const outDay = status === "out_for_delivery" ? stageDay(page.rows, lang, status) : null;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: page.statusText,
     delivered,
     deliveredAt: delivered ? stageDay(page.rows, lang, "delivered") : null,
-    plannedFrom: outDay,
-    plannedTo: outDay === null ? null : new Date(Date.parse(outDay) + 86_399_000).toISOString(),
+    expectedFrom: outDay,
+    expectedTo: outDay === null ? null : new Date(Date.parse(outDay) + 86_399_000).toISOString(),
     url: rulesTrackingUrl(CARRIER_ID, code + postal, undefined, { lang }),
     sender: page.sender,
     history: history(page.rows, lang),
@@ -100,7 +100,7 @@ export function toSnapshot(
 }
 
 async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   code: string,
   postal: string,
   lang: Lang,
@@ -134,7 +134,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const postal = context.config.postalCode.replace(/[\s-]/g, "");
   const lang = context.config.language ?? "fr";
   const report = unknownReporter(context, "status_code", { once: false });
@@ -148,7 +148,7 @@ export const colisPrive = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Colis Privé",
   countries: ["FR", "BE", "NL"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

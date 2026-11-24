@@ -1,4 +1,4 @@
-import { walkHtml } from "../../plugin/api.js";
+import { walkHtml } from "../../provider/api.js";
 
 /** The target of the first `<meta http-equiv="refresh">`, if any. */
 export function refreshTarget(html: string): string | null {

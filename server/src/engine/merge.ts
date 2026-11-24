@@ -1,5 +1,5 @@
 import type { Direction, ParcelStatus } from "../domain/parcel.js";
-import type { ParcelSnapshot, SnapshotEvent } from "../plugin/snapshot.js";
+import type { ParcelSnapshot, SnapshotEvent } from "../provider/snapshot.js";
 import { compareTimes } from "./utc.js";
 
 /** The parcel fields a snapshot can change. */
@@ -10,8 +10,8 @@ export interface ParcelState {
   readonly statusAt: string | null;
   readonly delivered: boolean;
   readonly deliveredAt: string | null;
-  readonly plannedFrom: string | null;
-  readonly plannedTo: string | null;
+  readonly expectedFrom: string | null;
+  readonly expectedTo: string | null;
   readonly pickup: boolean;
   readonly pickupPoint: string | null;
   readonly url: string | null;
@@ -42,7 +42,7 @@ function newest(events: readonly SnapshotEvent[]): SnapshotEvent | undefined {
   return best;
 }
 
-/** The newest history entry that maps, across every source's history given. */
+/** The newest history entry that maps, across every connection's history given. */
 export function newestMapped(
   ...histories: readonly (readonly SnapshotEvent[])[]
 ): SnapshotEvent | undefined {
@@ -96,7 +96,7 @@ function maySetStatus(
     const order = compareTimes(snapshotAt, current.statusAt);
     return authority === "carrier" ? order >= 0 : order > 0;
   }
-  // A source without history cannot show that it is newer than a status set by a timed scan;
+  // A connection without history cannot show that it is newer than a status set by a timed scan;
   // it may lag behind (DHL NL's account, the DHL PL lookup), so only its delivered stands.
   if (snapshotAt === null && current.statusAt !== null) {
     return authority === "carrier" && signal === "delivered";
@@ -113,9 +113,9 @@ interface StatusDecision {
 }
 
 /**
- * The canonical status is the newest mapped signal across all sources. A snapshot that signals
+ * The canonical status is the newest mapped signal across all connections. A snapshot that signals
  * nothing never overrides a mapped status; with nothing mapped stored either, the merged history
- * (the stored events of every source plus this snapshot's) gives the newest entry that maps.
+ * (the stored events of every connection plus this snapshot's) gives the newest entry that maps.
  */
 function decideStatus(
   current: ParcelState | null,
@@ -174,14 +174,14 @@ export function healState(
     statusAt,
     delivered,
     deliveredAt: delivered ? (state.deliveredAt ?? statusAt) : null,
-    plannedFrom: delivered ? null : state.plannedFrom,
-    plannedTo: delivered ? null : state.plannedTo,
+    expectedFrom: delivered ? null : state.expectedFrom,
+    expectedTo: delivered ? null : state.expectedTo,
   };
 }
 
 /**
  * Merges one snapshot into the stored state. Pure: no I/O, no clock. `storedHistory` is the
- * parcel's stored history from every source, used only when nothing else maps.
+ * parcel's stored history from every connection, used only when nothing else maps.
  */
 export function mergeParcel(
   current: ParcelState | null,
@@ -210,7 +210,7 @@ export function mergeParcel(
   // pickup and the expected delivery as they are now, instead of keeping ones an earlier state set:
   // an estimate it withdrew after a missed delivery is gone (OP-022).
   const wholeTruth = setStatus && authority === "carrier" && snapshot.historyComplete === true;
-  const windowFromSnapshot = setStatus && (snapshot.plannedFrom !== null || wholeTruth);
+  const windowFromSnapshot = setStatus && (snapshot.expectedFrom !== null || wholeTruth);
   return {
     direction: current?.direction ?? snapshot.direction,
     status,
@@ -223,16 +223,16 @@ export function mergeParcel(
         : (current?.deliveredAt ?? fallback?.at ?? snapshotAt)
       : null,
     // A delivered parcel has no plan any more.
-    plannedFrom: delivered
+    expectedFrom: delivered
       ? null
       : windowFromSnapshot
-        ? snapshot.plannedFrom
-        : (current?.plannedFrom ?? snapshot.plannedFrom),
-    plannedTo: delivered
+        ? snapshot.expectedFrom
+        : (current?.expectedFrom ?? snapshot.expectedFrom),
+    expectedTo: delivered
       ? null
       : windowFromSnapshot
-        ? snapshot.plannedTo
-        : (current?.plannedTo ?? snapshot.plannedTo),
+        ? snapshot.expectedTo
+        : (current?.expectedTo ?? snapshot.expectedTo),
     pickup: wholeTruth
       ? snapshot.pickup
       : setStatus

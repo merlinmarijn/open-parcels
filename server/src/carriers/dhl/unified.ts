@@ -4,7 +4,7 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   objects,
   num,
@@ -12,11 +12,11 @@ import {
   isoTime,
   epoch,
   rulesStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { publicTrackingUrl, UNIFIED_URL } from "./constants.js";
 import { asObject, asString, type Json } from "./util.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "reportUnknown">;
 
 const KG_PER_UNIT: Readonly<Record<string, number>> = {
   kg: 1,
@@ -122,13 +122,13 @@ export function normalizeUnified(deps: Deps, code: string, shipment: Json): Parc
     : null;
   return snapshot({
     carrier: "dhl",
-    barcode: code,
+    trackingNumber: code,
     status: mapped,
     rawStatus: asString(status["status"]) ?? asString(status["statusCode"]),
     delivered,
     deliveredAt,
-    plannedFrom: delivered ? null : from,
-    plannedTo: delivered ? null : to,
+    expectedFrom: delivered ? null : from,
+    expectedTo: delivered ? null : to,
     url: publicTrackingUrl(code),
     weightKg: weightKg(asObject(shipment["details"])),
     history,

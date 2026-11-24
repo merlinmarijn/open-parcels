@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cainiao } from "../../src/carriers/cainiao/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -38,11 +38,11 @@ describe("Cainiao tracking", () => {
     // B has no events yet: not found.
     expect(result.snapshots).toHaveLength(1);
     expect(result.snapshots[0]).toMatchObject({
-      barcode: A,
+      trackingNumber: A,
       status: "out_for_delivery",
       rawStatus: "Latest step",
-      plannedFrom: new Date(1_795_100_000_000).toISOString(),
-      plannedTo: new Date(1_795_200_000_000).toISOString(),
+      expectedFrom: new Date(1_795_100_000_000).toISOString(),
+      expectedTo: new Date(1_795_200_000_000).toISOString(),
     });
     expect(result.snapshots[0]?.history.map((e) => e.status)).toEqual([
       "out_for_delivery",

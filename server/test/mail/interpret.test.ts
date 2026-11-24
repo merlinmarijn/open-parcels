@@ -14,7 +14,9 @@ describe("mail interpretation with the shared rules", () => {
       html: null,
       date: new Date("2026-11-18T07:00:00Z"),
     });
-    expect(snapshots.map((s) => [s.carrier, s.barcode])).toEqual([["dhl", "00340434000000000017"]]);
+    expect(snapshots.map((s) => [s.carrier, s.trackingNumber])).toEqual([
+      ["dhl", "00340434000000000017"],
+    ]);
   });
 
   it("ignores mails without a tracking number", () => {

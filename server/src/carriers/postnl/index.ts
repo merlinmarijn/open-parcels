@@ -12,8 +12,8 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { finishSignIn, LOGIN_HOST, PostnlSession, startSignIn } from "./auth.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parcel.js";
 
@@ -40,7 +40,7 @@ type Secret = z.infer<typeof secretSchema>;
 
 /** A signed-in request. PostNL refusing the token leads to one refresh, never more. */
 async function signed(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   session: PostnlSession,
   url: URL,
   body?: string,
@@ -67,7 +67,7 @@ async function signed(
 }
 
 async function shipments(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   session: PostnlSession,
 ): Promise<Json> {
   const url = new URL(`https://${API_HOST}/account/api/graphql`);
@@ -83,9 +83,9 @@ async function shipments(
   return tracked;
 }
 
-/** The colli for one shipment, or null when track & trace has none for its barcode. */
+/** The colli for one shipment, or null when track & trace has none for its tracking number. */
 async function colli(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   session: PostnlSession,
   shipment: Json,
 ): Promise<Json | null> {
@@ -109,7 +109,7 @@ async function colli(
   return isObject(found) ? found : null;
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("Sign in to your PostNL account first.");
   }
@@ -125,8 +125,8 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
   const snapshots: ParcelSnapshot[] = [];
   let details = 0;
   const lists = [
-    ["receiverShipments", "incoming"],
-    ["senderShipments", "outgoing"],
+    ["receiverShipments", "receiving"],
+    ["senderShipments", "sending"],
   ] as const;
   for (const [list, direction] of lists) {
     for (const shipment of objects(tracked[list])) {
@@ -147,7 +147,7 @@ export const postnl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "PostNL",
   countries: ["NL", "BE"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

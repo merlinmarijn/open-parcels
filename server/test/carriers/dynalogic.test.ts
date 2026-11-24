@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dynalogic } from "../../src/carriers/dynalogic/index.js";
-import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up order numbers, postcodes and values only.
@@ -41,12 +41,12 @@ describe("Dynalogic tracking", () => {
     expect(calls).toHaveLength(1);
     expect(found).toMatchObject({
       carrier: "dynalogic",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "delivered",
       rawStatus: "DEL_DEF/4/0",
       deliveredAt: "2026-11-18T08:30:00.000Z",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       sender: "Example Shop",
       receiver: "Test Person",
     });
@@ -98,7 +98,7 @@ describe("Dynalogic tracking", () => {
     const { fetchImpl } = fakeNetwork([routeTable({}, "host")]);
     const { base } = fakeContext(dynalogic.http, fetchImpl);
     await expect(plugin.track(base, { postalCode: "x" }, null, [CODE])).rejects.toBeInstanceOf(
-      InvalidSourceConfigError,
+      InvalidConnectionConfigError,
     );
   });
 });

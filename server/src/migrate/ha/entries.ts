@@ -1,8 +1,8 @@
 import { z } from "zod";
-import type { SourceKind } from "../../engine/sources.js";
+import type { ConnectionKind } from "../../engine/connections.js";
 
 /**
- * Turns the config entries of the Home Assistant parcel suite into open-parcels source plans.
+ * Turns the config entries of the Home Assistant parcel suite into open-parcels connection plans.
  * Pure: reads the parsed `core.config_entries` file, touches no database. `apply.ts` writes the
  * plans.
  */
@@ -18,22 +18,22 @@ export interface HaEntry {
 }
 
 export interface ParcelPlan {
-  readonly barcode: string;
-  readonly direction: "incoming" | "outgoing";
+  readonly trackingNumber: string;
+  readonly direction: "receiving" | "sending";
 }
 
-/** Where an entry's codes are tracked: by the entry's own source, or by DHL's tracking source. */
+/** Where an entry's codes are tracked: by the entry's own connection, or by DHL's tracking connection. */
 export type ParcelTarget = "self" | "dhl_tracking";
 
-export interface SourcePlan {
+export interface ConnectionPlan {
   readonly entryId: string;
   readonly domain: string;
-  readonly plugin: string;
-  readonly kind: SourceKind;
+  readonly provider: string;
+  readonly kind: ConnectionKind;
   /** The HA entry title, so the HA integration's devices keep their names and entity ids. */
   readonly label: string;
   readonly config: Readonly<Record<string, unknown>>;
-  /** Encrypted into `secret_blob`; null when the source needs none. */
+  /** Encrypted into `secret_blob`; null when the connection needs none. */
   readonly secret: unknown;
   /** Encrypted into `session_blob`; null when there is nothing to carry over. */
   readonly session: unknown;
@@ -46,7 +46,7 @@ export interface SourcePlan {
 }
 
 export type EntryPlan =
-  | { readonly type: "source"; readonly plan: SourcePlan }
+  | { readonly type: "connection"; readonly plan: ConnectionPlan }
   | { readonly type: "covered"; readonly entry: HaEntry; readonly reason: string }
   | { readonly type: "skipped"; readonly entry: HaEntry; readonly reason: string }
   | { readonly type: "unrecognised"; readonly entry: HaEntry };
@@ -112,33 +112,33 @@ function codes(value: unknown, key: string): ParcelPlan[] {
   for (const item of Array.isArray(value) ? value : []) {
     const record =
       item !== null && typeof item === "object" ? (item as Record<string, unknown>) : null;
-    const barcode = text(record === null ? item : record[key])
+    const trackingNumber = text(record === null ? item : record[key])
       ?.replace(/\s+/g, "")
       .toUpperCase();
-    if (barcode === undefined || seen.has(barcode)) {
+    if (trackingNumber === undefined || seen.has(trackingNumber)) {
       continue;
     }
-    const direction = record?.["direction"] === "outgoing" ? "outgoing" : "incoming";
-    seen.set(barcode, { barcode, direction });
+    const direction = record?.["direction"] === "outgoing" ? "sending" : "receiving";
+    seen.set(trackingNumber, { trackingNumber, direction });
   }
   return [...seen.values()];
 }
 
-type Base = Pick<SourcePlan, "entryId" | "domain" | "label">;
+type Base = Pick<ConnectionPlan, "entryId" | "domain" | "label">;
 
 function base(entry: HaEntry, fallback: string): Base {
   return { entryId: entry.entryId, domain: entry.domain, label: entry.title || fallback };
 }
 
-function signedIn(): Pick<SourcePlan, "state" | "stateDetail"> {
+function signedIn(): Pick<ConnectionPlan, "state" | "stateDetail"> {
   return { state: "ok", stateDetail: null };
 }
 
-function needsSignIn(detail: string): Pick<SourcePlan, "state" | "stateDetail"> {
+function needsSignIn(detail: string): Pick<ConnectionPlan, "state" | "stateDetail"> {
   return { state: "needs_sign_in", stateDetail: detail };
 }
 
-/** Storefronts the `amazon` plug-in reads; kept here so the importer needs no plug-in import. */
+/** Storefronts the `amazon` provider reads; kept here so the importer needs no provider import. */
 const AMAZON_STOREFRONTS: ReadonlySet<string> = new Set([
   "amazon.de",
   "amazon.co.uk",
@@ -155,7 +155,7 @@ function amazonPlan(entry: HaEntry): EntryPlan {
     return {
       type: "skipped",
       entry,
-      reason: `The amazon plug-in does not read the storefront ${storefront ?? "(none)"} yet.`,
+      reason: `The amazon provider does not read the storefront ${storefront ?? "(none)"} yet.`,
     };
   }
   const refreshToken = text(entry.data["refresh_token"]);
@@ -163,10 +163,10 @@ function amazonPlan(entry: HaEntry): EntryPlan {
   const usable =
     refreshToken !== null && deviceSerial !== null && /^[0-9A-F]{32}$/.test(deviceSerial);
   return {
-    type: "source",
+    type: "connection",
     plan: {
       ...base(entry, `Amazon (${storefront})`),
-      plugin: "amazon",
+      provider: "amazon",
       kind: "shop",
       config: { storefront },
       secret: usable ? { refreshToken, deviceSerial } : null,
@@ -185,7 +185,7 @@ function dhlAccountPlan(entry: HaEntry): EntryPlan {
   const country = text(entry.data["country"])?.toUpperCase() ?? "DE";
   const parcels = codes(entry.options["tracked_codes"], "tracking_code");
   const common = {
-    plugin: "dhl",
+    provider: "dhl",
     kind: "account" as const,
     session: null,
     parcels,
@@ -194,7 +194,7 @@ function dhlAccountPlan(entry: HaEntry): EntryPlan {
   };
   if (country === "PL") {
     return {
-      type: "source",
+      type: "connection",
       plan: {
         ...base(entry, "Poland"),
         ...common,
@@ -206,11 +206,15 @@ function dhlAccountPlan(entry: HaEntry): EntryPlan {
     };
   }
   if (country !== "DE") {
-    return { type: "skipped", entry, reason: `No DHL account source for the country ${country}.` };
+    return {
+      type: "skipped",
+      entry,
+      reason: `No DHL account connection for the country ${country}.`,
+    };
   }
   const refreshToken = text(entry.data["refresh_token"]);
   return {
-    type: "source",
+    type: "connection",
     plan: {
       ...base(entry, "Germany"),
       ...common,
@@ -224,22 +228,22 @@ function dhlAccountPlan(entry: HaEntry): EntryPlan {
 }
 
 function dhlPlan(entry: HaEntry): EntryPlan {
-  const source = text(entry.data["source"]) ?? "account";
-  if (source === "account") {
+  const kind = text(entry.data["source"]) ?? "account";
+  if (kind === "account") {
     return dhlAccountPlan(entry);
   }
-  if (source !== "tracking") {
+  if (kind !== "tracking") {
     return {
       type: "skipped",
       entry,
-      reason: `DHL "${source}" entries are not imported; add the source by hand.`,
+      reason: `DHL "${kind}" entries are not imported; add the connection by hand.`,
     };
   }
   return {
-    type: "source",
+    type: "connection",
     plan: {
       ...base(entry, "DHL tracking"),
-      plugin: "dhl",
+      provider: "dhl",
       kind: "tracking",
       config: {},
       secret: null,
@@ -286,10 +290,10 @@ function glsPlan(entry: HaEntry): EntryPlan {
   }
   const extra = postcodes.size > 1 ? ["per-parcel postal_code"] : [];
   return {
-    type: "source",
+    type: "connection",
     plan: {
       ...base(entry, `GLS ${country}`),
-      plugin: "gls",
+      provider: "gls",
       kind: "tracking",
       config: { country, postalCode },
       secret: null,
@@ -303,16 +307,16 @@ function glsPlan(entry: HaEntry): EntryPlan {
 }
 
 function hermesPlan(entry: HaEntry): EntryPlan {
-  const source = text(entry.data["source"]) ?? "account";
+  const kind = text(entry.data["source"]) ?? "account";
   const common = {
-    plugin: "hermes",
+    provider: "hermes",
     config: {},
     parcelTarget: "self" as const,
     notCarriedOver: notCarried(entry.options, ENGINE_OPTIONS),
   };
-  if (source === "tracking") {
+  if (kind === "tracking") {
     return {
-      type: "source",
+      type: "connection",
       plan: {
         ...base(entry, "Hermes"),
         ...common,
@@ -331,12 +335,12 @@ function hermesPlan(entry: HaEntry): EntryPlan {
     accessToken === null || refreshToken === null ? null : { accessToken, refreshToken };
   const usable = username !== null && tokens !== null;
   return {
-    type: "source",
+    type: "connection",
     plan: {
       ...base(entry, "Hermes account"),
       ...common,
       kind: "account",
-      // No password: HA never stored one. The tokens carry the source until Hermes refuses them.
+      // No password: HA never stored one. The tokens carry the connection until Hermes refuses them.
       secret: username === null ? null : { username },
       session: usable ? tokens : null,
       ...(usable

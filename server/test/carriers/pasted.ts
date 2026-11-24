@@ -1,11 +1,11 @@
 import type { Clock } from "../../src/clock.js";
-import type { RegisteredPlugin } from "../../src/engine/registry.js";
-import type { PluginSourceKind } from "../../src/plugin/api.js";
-import { HostLimiter, PluginHttp } from "../../src/plugin/http.js";
+import type { RegisteredProvider } from "../../src/engine/registry.js";
+import type { ProviderConnectionKind } from "../../src/provider/api.js";
+import { HostLimiter, ProviderHttp } from "../../src/provider/http.js";
 
 /** A pasted-link sign-in never touches the network in its first step. */
-function noNetwork(clock: Clock): PluginHttp {
-  return new PluginHttp(
+function noNetwork(clock: Clock): ProviderHttp {
+  return new ProviderHttp(
     { limits: {} },
     new HostLimiter(clock, () => Promise.resolve()),
     clock,
@@ -18,35 +18,38 @@ function noNetwork(clock: Clock): PluginHttp {
 
 export interface PastedDriver {
   start(config: unknown, clock: Clock): Promise<Started>;
-  finish(http: PluginHttp, clock: Clock, state: Started["state"], text: string): Promise<unknown>;
+  finish(http: ProviderHttp, clock: Clock, state: Started["state"], text: string): Promise<unknown>;
 }
 
 interface Started {
   readonly url: string;
   readonly state: {
     readonly config: unknown;
-    readonly kind: PluginSourceKind;
+    readonly kind: ProviderConnectionKind;
     readonly flow: string;
     readonly inner: unknown;
   };
 }
 
-function pick(plugin: RegisteredPlugin, config: unknown): { kind: PluginSourceKind; flow: string } {
-  for (const kind of plugin.info.sourceKinds) {
-    const flow = plugin.signInFlows(kind, config).find((each) => each.type === "interactive");
+function pick(
+  provider: RegisteredProvider,
+  config: unknown,
+): { kind: ProviderConnectionKind; flow: string } {
+  for (const kind of provider.info.connectionKinds) {
+    const flow = provider.signInFlows(kind, config).find((each) => each.type === "interactive");
     if (flow !== undefined) {
       return { kind, flow: flow.id };
     }
   }
-  throw new Error(`${plugin.info.id} has no interactive sign-in for this configuration.`);
+  throw new Error(`${provider.info.id} has no interactive sign-in for this configuration.`);
 }
 
-/** Drives a plug-in's pasted-link flow in two calls, as the compatibility routes do. */
-export function pasted(plugin: RegisteredPlugin): PastedDriver {
+/** Drives a provider's pasted-link flow in two calls, as the compatibility routes do. */
+export function pasted(provider: RegisteredProvider): PastedDriver {
   return {
     async start(config: unknown, clock: Clock): Promise<Started> {
-      const { kind, flow } = pick(plugin, config);
-      const turn = await plugin.signInTurn({
+      const { kind, flow } = pick(provider, config);
+      const turn = await provider.signInTurn({
         action: "start",
         flowId: flow,
         kind,
@@ -60,12 +63,12 @@ export function pasted(plugin: RegisteredPlugin): PastedDriver {
       return { url: turn.step.url, state: { config, kind, flow, inner: turn.state } };
     },
     async finish(
-      http: PluginHttp,
+      http: ProviderHttp,
       clock: Clock,
       state: Started["state"],
       text: string,
     ): Promise<unknown> {
-      const turn = await plugin.signInTurn({
+      const turn = await provider.signInTurn({
         action: "continue",
         flowId: state.flow,
         kind: state.kind,

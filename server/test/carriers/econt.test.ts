@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { econt } from "../../src/carriers/econt/index.js";
 import { register } from "../../src/engine/registry.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up shipment numbers and values only.
@@ -50,10 +50,10 @@ describe("Econt tracking", () => {
     expect(result.snapshots).toHaveLength(1);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "econt",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "in_transit",
-      plannedFrom: "2026-11-19T22:00:00.000Z",
-      plannedTo: "2026-11-20T21:59:59.000Z",
+      expectedFrom: "2026-11-19T22:00:00.000Z",
+      expectedTo: "2026-11-20T21:59:59.000Z",
       weightKg: 1.25,
     });
     expect(result.snapshots[0]?.history.map((event) => event.status)).toEqual([
@@ -81,7 +81,7 @@ describe("Econt tracking", () => {
     expect(found).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T08:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

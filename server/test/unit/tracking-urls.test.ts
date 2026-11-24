@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
-import { rulesTrackingUrl } from "../../src/plugin/api.js";
+import { rulesTrackingUrl } from "../../src/provider/api.js";
 
 /**
- * The public tracking pages the plug-ins link to, as they were built in code before the
+ * The public tracking pages the providers link to, as they were built in code before the
  * templates moved to the shared rules. A rules change that alters one of these fails here.
  */
 const N = "AB12 3/4";

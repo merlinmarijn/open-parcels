@@ -31,7 +31,7 @@ export interface CalendarEntry {
   /** For a return: its carrier, else the first drop-off option's, else the shop. */
   readonly carrier: string;
   /** For a return: the order number. */
-  readonly barcode: string;
+  readonly trackingNumber: string;
   readonly status: ParcelStatus | ReturnStatus;
   /** `return_by`: the last day to hand a return in, all day. */
   readonly kind: "expected" | "delivered" | "return_by";
@@ -69,7 +69,7 @@ export function isWholeDays(start: Date, end: Date, timeZone: string): boolean {
   return startsAtMidnight && (endsAtMidnight || endsAtDayEnd);
 }
 
-/** A time at local midnight carries a date only: the source knew the day, not the hour. */
+/** A time at local midnight carries a date only: the connection knew the day, not the hour. */
 export function isDateOnly(at: Date, timeZone: string): boolean {
   const parts = localParts(at, timeZone);
   return parts.hour === 0 && parts.minute === 0;
@@ -163,7 +163,7 @@ export class CalendarService {
       title: item ?? `${entry.shop} ${entry.order_number}`,
       carrier:
         entry.carrier ?? entry.drop_off.find((o) => o.carrier !== null)?.carrier ?? entry.shop,
-      barcode: entry.order_number,
+      trackingNumber: entry.order_number,
       status: entry.status,
       kind: "return_by",
       details: returnDetails(entry),
@@ -183,14 +183,14 @@ export class CalendarService {
       .select([
         "id",
         "carrier",
-        "barcode",
+        "tracking_number",
         "status",
         "manual_status",
         "manual_at",
         "delivered",
         "delivered_at",
-        "planned_from",
-        "planned_to",
+        "expected_from",
+        "expected_to",
         "label",
         "url",
         "pickup_point",
@@ -205,9 +205,9 @@ export class CalendarService {
       .where((eb) =>
         eb.or([
           eb.and([
-            eb("planned_from", "is not", null),
-            eb("planned_from", "<", toIso),
-            eb(eb.fn.coalesce("planned_to", "planned_from"), ">=", fromIso),
+            eb("expected_from", "is not", null),
+            eb("expected_from", "<", toIso),
+            eb(eb.fn.coalesce("expected_to", "expected_from"), ">=", fromIso),
           ]),
           eb.and([eb("delivered_at", ">=", fromIso), eb("delivered_at", "<", toIso)]),
           // Marked delivered by hand: delivered when the owner said so.
@@ -235,9 +235,9 @@ export class CalendarService {
           orderId: null,
           details: [],
           // The carrier is shown next to the title by each reader, so it is not repeated here.
-          title: parcel?.display_name ?? row.label ?? row.barcode,
+          title: parcel?.display_name ?? row.label ?? row.tracking_number,
           carrier: row.carrier,
-          barcode: row.barcode,
+          trackingNumber: row.tracking_number,
           status: asStatus(row.manual_status ?? row.status),
           imageUrl: parcel?.items[0]?.image_url ?? null,
           url: row.url,
@@ -259,15 +259,15 @@ export class CalendarService {
           return { ...base, kind: "delivered", late: false, ...this.#span(start, end, dateOnly) };
         }
         // Archived parcels stay in the calendar only as past deliveries.
-        if (row.archived_at !== null || row.planned_from === null || row.planned_from >= toIso) {
+        if (row.archived_at !== null || row.expected_from === null || row.expected_from >= toIso) {
           return undefined;
         }
-        const start = new Date(row.planned_from);
+        const start = new Date(row.expected_from);
         // A date without a time is that whole day; another single point estimate is an hour.
-        const pointIsDay = row.planned_to === null && isDateOnly(start, this.timeZone);
+        const pointIsDay = row.expected_to === null && isDateOnly(start, this.timeZone);
         const end =
-          row.planned_to !== null
-            ? new Date(row.planned_to)
+          row.expected_to !== null
+            ? new Date(row.expected_to)
             : pointIsDay
               ? nextLocalMidnight(start, this.timeZone)
               : new Date(start.getTime() + 60 * 60_000);

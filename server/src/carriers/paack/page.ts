@@ -1,4 +1,4 @@
-import { UnexpectedResponseError } from "../../plugin/api.js";
+import { UnexpectedResponseError } from "../../provider/api.js";
 import { asObject, type Json } from "./shared.js";
 
 const MARKER = "window.__remixContext = ";

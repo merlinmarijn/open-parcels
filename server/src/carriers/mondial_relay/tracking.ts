@@ -6,8 +6,8 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { API_URL, PAGE_URL } from "./shared.js";
 
 /** Shipment numbers are digits; anything else is never sent. */
@@ -39,12 +39,12 @@ function checkStatus(response: HttpResponse, what: string): void {
  */
 export class TrackingRun {
   private constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly jar: CookieJar,
     private readonly headers: Readonly<Record<string, string>>,
   ) {}
 
-  static async open(http: PluginHttp): Promise<TrackingRun> {
+  static async open(http: ProviderHttp): Promise<TrackingRun> {
     const jar = new CookieJar();
     const response = await http.request(new URL(PAGE_URL), {
       jar,

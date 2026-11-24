@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   defineCarrier,
@@ -17,10 +17,10 @@ import {
   zonedIso,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "aramex";
 const PLAUSIBLE = carrierPattern("aramex");
@@ -42,7 +42,7 @@ function clean(value: unknown): string | null {
   return printable.replace(/\s+/g, " ").trim().slice(0, 200) || null;
 }
 
-async function lookUp(http: PluginHttp, country: Country, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, country: Country, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${COUNTRIES[country].host}/umbraco/api/TrackingApi/GetTrackingData`);
   url.searchParams.set("LabelNo", barcode);
   url.searchParams.set("dataFormat", "json");
@@ -111,13 +111,13 @@ export function aramexSnapshot(
   const history: SnapshotEvent[] = ordered.filter((event) => event.rawStatus !== "");
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: label,
+    trackingNumber: label,
     status,
     rawStatus: newest?.label ?? newest?.code ?? null,
     delivered,
     deliveredAt: delivered ? (newest?.at ?? null) : null,
-    plannedFrom: window.from,
-    plannedTo: window.to,
+    expectedFrom: window.from,
+    expectedTo: window.to,
     url: rulesTrackingUrl(CARRIER_ID, label, locale),
     history,
     // Only what the mapping needs: the full answer carries names and addresses.
@@ -146,7 +146,7 @@ export const aramex = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Aramex",
   countries: ["AU", "NZ"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
@@ -157,7 +157,7 @@ export const aramex = defineCarrier<Config, null>({
       "*": { intervalMs: 10_000, burst: 1 },
     },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const result = await lookUp(context.http, context.config.country, barcode);
       return result === null

@@ -48,8 +48,8 @@ export function renderIcs(entries: readonly CalendarEntry[], options: IcsOptions
     const title = `${entry.title} (${carrier})`;
     const lines =
       entry.kind === "return_by"
-        ? [`Order: ${entry.barcode}`, ...entry.details]
-        : [`Carrier: ${carrier}`, `Tracking: ${entry.barcode}`];
+        ? [`Order: ${entry.trackingNumber}`, ...entry.details]
+        : [`Carrier: ${carrier}`, `Tracking: ${entry.trackingNumber}`];
     lines.push(`Status: ${entry.status.replaceAll("_", " ")}`);
     if (entry.kind === "return_by" && entry.url !== null) {
       lines.push(`Label: ${entry.url}`);

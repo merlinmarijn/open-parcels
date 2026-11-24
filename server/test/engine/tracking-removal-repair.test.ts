@@ -18,10 +18,10 @@ describe("reviving parcels removed by tracking lookups", () => {
   it("brings the parcel back and tells clients with parcel.registered (OP-130)", async () => {
     const db = context.services.db;
     await db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id: "lookup",
-        plugin: "hermes",
+        provider: "hermes",
         kind: "tracking",
         label: "lookup",
         config: "{}",
@@ -39,17 +39,17 @@ describe("reviving parcels removed by tracking lookups", () => {
       .execute();
     const parcel = await context.services.parcels.create({
       carrier: "hermes",
-      barcode: "H1000000000000000001",
-      direction: "incoming",
+      trackingNumber: "H1000000000000000001",
+      direction: "receiving",
       label: null,
     });
     await db.updateTable("parcels").set({ removed_at: NOW }).where("id", "=", parcel.id).execute();
-    await db.deleteFrom("parcel_sources").where("parcel_id", "=", parcel.id).execute();
+    await db.deleteFrom("parcel_connections").where("parcel_id", "=", parcel.id).execute();
     await db
-      .insertInto("parcel_sources")
+      .insertInto("parcel_connections")
       .values({
         parcel_id: parcel.id,
-        source_id: "lookup",
+        connection_id: "lookup",
         external_ref: null,
         role: "primary",
         last_seen_at: NOW,

@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { carrierKey, defineCarrier } from "../../plugin/api.js";
+import { carrierKey, defineCarrier } from "../../provider/api.js";
 import { fetchDeAccount } from "./account.js";
 import { TRACKING_HOST, trackDe } from "./tracking.js";
 
@@ -26,7 +26,7 @@ export const dpd = defineCarrier({
   id: "dpd",
   name: "DPD",
   countries: ["DE"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

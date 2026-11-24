@@ -12,7 +12,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "shopee_xpress";
 
@@ -92,13 +92,13 @@ export function orderSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode: requested,
+    trackingNumber: requested,
     externalRef: echoRef(echoed, requested),
     status,
     rawStatus: describe(newest),
     deliveredAt: delivered ? epochSeconds(newest["actual_time"]) : null,
-    plannedFrom: delivered ? null : epochSeconds(estimate["edd_min"]),
-    plannedTo: delivered ? null : epochSeconds(estimate["edd_max"]),
+    expectedFrom: delivered ? null : epochSeconds(estimate["edd_min"]),
+    expectedTo: delivered ? null : epochSeconds(estimate["edd_max"]),
     receiver: text(asObject(raw["sls_tracking_info"])["receiver_name"], STRINGS),
     url: rulesTrackingUrl(CARRIER_ID, echoed ?? requested, MARKETS[market].locale),
     history,

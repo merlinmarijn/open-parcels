@@ -5,7 +5,7 @@ import {
   type Json,
   type ParcelSnapshot,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, isoTime, mapCode, publicUrl, text } from "./shared.js";
 
 /**
@@ -48,7 +48,7 @@ function historyEvents(raw: Json): SnapshotEvent[] {
 }
 
 /**
- * One `GET shipments` element as a snapshot, or null without a barcode. The current status is
+ * One `GET shipments` element as a snapshot, or null without a tracking number. The current status is
  * `status.parcelStatus`, never a history entry; a thin element without a status block is
  * reported as unknown (null) and left to the history fallback.
  */
@@ -71,7 +71,7 @@ export function accountSnapshot(raw: Json, report: (code: string) => void): Parc
   const statusText = asObject(block["text"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(statusText["shortText"]) ?? code,
     delivered,

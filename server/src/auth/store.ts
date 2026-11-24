@@ -139,7 +139,7 @@ export class AuthStore {
     return { csrfToken: row.csrf_token, role, expiresAt };
   }
 
-  /** Whether a session is still signed in, without extending it (an open stream is not use). */
+  /** Whether a session is still logged in, without extending it (an open stream is not use). */
   async sessionAlive(cookieValue: string): Promise<boolean> {
     const row = await this.db
       .selectFrom("sessions")

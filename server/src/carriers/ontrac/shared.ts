@@ -5,12 +5,12 @@ import {
   rulesTrackingUrl,
   text as kitText,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "ontrac";
 export const TRACKING_HOST = "webtrack.ontrac.com";
 
-export { asObject, isObject, type Json } from "../../plugin/api.js";
+export { asObject, isObject, type Json } from "../../provider/api.js";
 
 /** OnTrac's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

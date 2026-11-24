@@ -5,14 +5,14 @@ import {
   TransientError,
   UnexpectedResponseError,
   type HttpResponse,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   asObject,
   carrierKey,
   num,
   parseJsonBody,
   text,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const AUTH_HOST = "auth.dao.as";
 export const API_HOST = "apiv2.dao.as";
@@ -58,7 +58,7 @@ interface Tokens {
 }
 
 /** Only an explicit refusal of the grant or client is a sign-in problem; the rest is transient. */
-async function postToken(http: PluginHttp, form: Record<string, string>): Promise<Tokens> {
+async function postToken(http: ProviderHttp, form: Record<string, string>): Promise<Tokens> {
   const response = await http.request(new URL(`${REALM}/token`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -90,7 +90,7 @@ async function postToken(http: PluginHttp, form: Record<string, string>): Promis
 
 /** Step 2: exchange the code from the pasted `daoapp://` address for a refresh token. */
 export async function finishSignIn(
-  http: PluginHttp,
+  http: ProviderHttp,
   rawState: unknown,
   pasted: string,
 ): Promise<{ refreshToken: string }> {
@@ -122,7 +122,7 @@ const storedSchema = z.object({
 });
 type Stored = z.infer<typeof storedSchema>;
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session">;
 
 /**
  * The bearer session of one account. DAO rotates refresh tokens, so the newest one is saved

@@ -13,16 +13,16 @@ import {
   type SignInInput,
   type SignInStep,
   type SignInTurn,
-} from "../plugin/api.js";
-import type { HttpPolicy, PluginHttp } from "../plugin/http.js";
+} from "../provider/api.js";
+import type { HttpPolicy, ProviderHttp } from "../provider/http.js";
 import {
-  InvalidSourceConfigError,
-  type PluginRegistry,
-  type RegisteredPlugin,
+  InvalidConnectionConfigError,
+  type ProviderRegistry,
+  type RegisteredProvider,
   type SignInCall,
   type SignInFlowInfo,
 } from "./registry.js";
-import type { SourceService, SourceView } from "./sources.js";
+import type { ConnectionService, ConnectionView } from "./connections.js";
 
 /** How long a step waits for the user's answer. Approval steps use their own timeout. */
 export const ATTEMPT_TTL_MS = 15 * 60_000;
@@ -41,7 +41,7 @@ export type SignInErrorCode =
   | "sign_in_wrong_step"
   | "sign_in_poll_too_soon"
   | "no_sign_in"
-  | "invalid_source"
+  | "invalid_connection"
   | "not_found";
 
 /** A failure the routes turn into an API error. Messages are safe to show. */
@@ -69,20 +69,20 @@ export type AttemptView =
 
 export interface SignInDeps {
   readonly db: Kysely<Database>;
-  readonly registry: PluginRegistry;
-  readonly sources: SourceService;
+  readonly registry: ProviderRegistry;
+  readonly connections: ConnectionService;
   readonly secrets: SecretBox;
   readonly clock: Clock;
   readonly logger: Logger;
-  readonly httpFor: (policy: HttpPolicy) => PluginHttp;
-  /** The per-source lock shared with runs and live reads (`SourceRunner.exclusive`). */
-  readonly exclusive?: <T>(sourceId: string, work: () => Promise<T>) => Promise<T>;
+  readonly httpFor: (policy: HttpPolicy) => ProviderHttp;
+  /** The per-connection lock shared with runs and live reads (`ConnectionRunner.exclusive`). */
+  readonly exclusive?: <T>(connectionId: string, work: () => Promise<T>) => Promise<T>;
 }
 
 const storedSchema = z.object({ state: z.unknown(), step: z.looseObject({ kind: z.string() }) });
 
-const attemptAad = (attemptId: string, sourceId: string): string =>
-  `sign-in:${attemptId}:${sourceId}`;
+const attemptAad = (attemptId: string, connectionId: string): string =>
+  `sign-in:${attemptId}:${connectionId}`;
 
 /** The keys the step's input must have, or why it cannot take input at all. */
 function checkedInput(step: SignInStep, input: SignInInput): SignInInput {
@@ -117,47 +117,53 @@ function checkedInput(step: SignInStep, input: SignInInput): SignInInput {
 }
 
 /**
- * Interactive sign-ins. The plug-in's state lives encrypted in `sign_in_attempts`, bound to the
- * attempt and its source, and is never logged. One attempt per source; a new start replaces it.
+ * Interactive sign-ins. The provider's state lives encrypted in `sign_in_attempts`, bound to the
+ * attempt and its connection, and is never logged. One attempt per connection; a new start replaces it.
  * A carrier that cannot be reached leaves the attempt as it was, so a network error never sends
  * the user back to the start.
  */
 export class SignInService {
   constructor(private readonly deps: SignInDeps) {}
 
-  async flows(sourceId: string): Promise<SignInFlowInfo[]> {
-    const { source, plugin } = await this.#source(sourceId);
-    return source.kind === "mail" ? [] : plugin.signInFlows(source.kind, source.config);
+  async flows(connectionId: string): Promise<SignInFlowInfo[]> {
+    const { connection, provider } = await this.#connection(connectionId);
+    return connection.kind === "mail"
+      ? []
+      : provider.signInFlows(connection.kind, connection.config);
   }
 
-  /** The source's lock: one carrier conversation per account, shared with runs and live reads. */
-  async #locked<T>(sourceId: string, work: () => Promise<T>): Promise<T> {
-    return this.deps.exclusive === undefined ? work() : this.deps.exclusive(sourceId, work);
+  /** The connection's lock: one carrier conversation per account, shared with runs and live reads. */
+  async #locked<T>(connectionId: string, work: () => Promise<T>): Promise<T> {
+    return this.deps.exclusive === undefined ? work() : this.deps.exclusive(connectionId, work);
   }
 
-  async start(sourceId: string, flowId?: string): Promise<AttemptView> {
-    return this.#locked(sourceId, () => this.#start(sourceId, flowId));
+  async start(connectionId: string, flowId?: string): Promise<AttemptView> {
+    return this.#locked(connectionId, () => this.#start(connectionId, flowId));
   }
 
-  async continue(sourceId: string, attemptId: string, input: SignInInput): Promise<AttemptView> {
+  async continue(
+    connectionId: string,
+    attemptId: string,
+    input: SignInInput,
+  ): Promise<AttemptView> {
     // Read the step outside the lock: a second submit that queued behind the first finds the
     // attempt changed (or gone) and is refused instead of reaching the carrier again.
-    const seen = await this.#version(sourceId, attemptId);
-    return this.#locked(sourceId, () => this.#continue(sourceId, attemptId, input, seen));
+    const seen = await this.#version(connectionId, attemptId);
+    return this.#locked(connectionId, () => this.#continue(connectionId, attemptId, input, seen));
   }
 
-  async poll(sourceId: string, attemptId: string): Promise<AttemptView> {
-    const seen = await this.#version(sourceId, attemptId);
-    return this.#locked(sourceId, () => this.#poll(sourceId, attemptId, seen));
+  async poll(connectionId: string, attemptId: string): Promise<AttemptView> {
+    const seen = await this.#version(connectionId, attemptId);
+    return this.#locked(connectionId, () => this.#poll(connectionId, attemptId, seen));
   }
 
   /** The stored blob is re-encrypted with a fresh IV on every change, so it serves as a version. */
-  async #version(sourceId: string, attemptId: string): Promise<Buffer | undefined> {
+  async #version(connectionId: string, attemptId: string): Promise<Buffer | undefined> {
     const row = await this.deps.db
       .selectFrom("sign_in_attempts")
       .select("blob")
       .where("id", "=", attemptId)
-      .where("source_id", "=", sourceId)
+      .where("connection_id", "=", connectionId)
       .executeTakeFirst();
     return row?.blob;
   }
@@ -171,49 +177,54 @@ export class SignInService {
     }
   }
 
-  async #start(sourceId: string, flowId?: string): Promise<AttemptView> {
-    const { source, plugin } = await this.#source(sourceId);
-    const flows = source.kind === "mail" ? [] : plugin.signInFlows(source.kind, source.config);
+  async #start(connectionId: string, flowId?: string): Promise<AttemptView> {
+    const { connection, provider } = await this.#connection(connectionId);
+    const flows =
+      connection.kind === "mail" ? [] : provider.signInFlows(connection.kind, connection.config);
     const interactive = flows.filter((flow) => flow.type === "interactive");
     const flow =
       flowId === undefined ? interactive[0] : interactive.find((each) => each.id === flowId);
     if (flow === undefined) {
       throw new SignInError(
         "no_sign_in",
-        "This source has no such interactive sign-in; enter its sign-in data directly.",
+        "This connection has no such interactive sign-in; enter its sign-in data directly.",
       );
     }
-    await this.#sweep(sourceId);
+    await this.#sweep(connectionId);
     const turn = await this.#guarded(null, () =>
-      this.#call(plugin, source, { action: "start", flowId: flow.id }),
+      this.#call(provider, connection, { action: "start", flowId: flow.id }),
     );
-    return this.#settle(source, flow.id, null, turn, false);
+    return this.#settle(connection, flow.id, null, turn, false);
   }
 
   async #continue(
-    sourceId: string,
+    connectionId: string,
     attemptId: string,
     input: SignInInput,
     seen: Buffer | undefined,
   ): Promise<AttemptView> {
-    const { source, plugin } = await this.#source(sourceId);
-    const attempt = await this.#load(source.id, attemptId, false);
+    const { connection, provider } = await this.#connection(connectionId);
+    const attempt = await this.#load(connection.id, attemptId, false);
     this.#checkUnchanged(attempt, seen);
     const checked = checkedInput(attempt.step, input);
     const turn = await this.#guarded(attempt, () =>
-      this.#call(plugin, source, {
+      this.#call(provider, connection, {
         action: "continue",
         flowId: attempt.flow,
         state: attempt.state,
         input: checked,
       }),
     );
-    return this.#settle(source, attempt.flow, attempt, turn, false);
+    return this.#settle(connection, attempt.flow, attempt, turn, false);
   }
 
-  async #poll(sourceId: string, attemptId: string, seen: Buffer | undefined): Promise<AttemptView> {
-    const { source, plugin } = await this.#source(sourceId);
-    const attempt = await this.#load(source.id, attemptId, true);
+  async #poll(
+    connectionId: string,
+    attemptId: string,
+    seen: Buffer | undefined,
+  ): Promise<AttemptView> {
+    const { connection, provider } = await this.#connection(connectionId);
+    const attempt = await this.#load(connection.id, attemptId, true);
     // A poll that queued behind another one meets the poll_not_before the first one stored and
     // gets "too soon"; a poll whose step has since moved on is refused like a stale continue.
     if (attempt.step.kind !== "await_approval") {
@@ -232,61 +243,68 @@ export class SignInService {
       );
     }
     const turn = await this.#guarded(attempt, () =>
-      this.#call(plugin, source, { action: "poll", flowId: attempt.flow, state: attempt.state }),
+      this.#call(provider, connection, {
+        action: "poll",
+        flowId: attempt.flow,
+        state: attempt.state,
+      }),
     );
-    return this.#settle(source, attempt.flow, attempt, turn, true);
+    return this.#settle(connection, attempt.flow, attempt, turn, true);
   }
 
-  async cancel(sourceId: string, attemptId: string): Promise<boolean> {
+  async cancel(connectionId: string, attemptId: string): Promise<boolean> {
     const result = await this.deps.db
       .deleteFrom("sign_in_attempts")
       .where("id", "=", attemptId)
-      .where("source_id", "=", sourceId)
+      .where("connection_id", "=", connectionId)
       .executeTakeFirst();
     return result.numDeletedRows > 0n;
   }
 
-  /** The source's current attempt, for the single-step compatibility routes. */
-  async current(sourceId: string): Promise<string | undefined> {
+  /** The connection's current attempt, for the single-step compatibility routes. */
+  async current(connectionId: string): Promise<string | undefined> {
     const row = await this.deps.db
       .selectFrom("sign_in_attempts")
       .select("id")
-      .where("source_id", "=", sourceId)
+      .where("connection_id", "=", connectionId)
       .orderBy("created_at", "desc")
       .executeTakeFirst();
     return row?.id;
   }
 
-  async #source(sourceId: string): Promise<{ source: SourceView; plugin: RegisteredPlugin }> {
-    const source = await this.deps.sources.get(sourceId);
-    const plugin = source === undefined ? undefined : this.deps.registry.get(source.plugin);
-    if (source === undefined || plugin === undefined) {
-      throw new SignInError("not_found", "The source was not found.");
+  async #connection(
+    connectionId: string,
+  ): Promise<{ connection: ConnectionView; provider: RegisteredProvider }> {
+    const connection = await this.deps.connections.get(connectionId);
+    const provider =
+      connection === undefined ? undefined : this.deps.registry.get(connection.provider);
+    if (connection === undefined || provider === undefined) {
+      throw new SignInError("not_found", "The connection was not found.");
     }
-    return { source, plugin };
+    return { connection, provider };
   }
 
   async #call(
-    plugin: RegisteredPlugin,
-    source: SourceView,
+    provider: RegisteredProvider,
+    connection: ConnectionView,
     call: Pick<SignInCall, "action" | "flowId" | "state" | "input">,
   ): Promise<SignInTurn<unknown>> {
-    if (source.kind === "mail") {
-      throw new SignInError("no_sign_in", "Mailboxes sign in with their own form.");
+    if (connection.kind === "mail") {
+      throw new SignInError("no_sign_in", "Inboxes sign in with their own form.");
     }
     try {
-      return await plugin.signInTurn({
+      return await provider.signInTurn({
         ...call,
-        kind: source.kind,
-        rawConfig: source.config,
-        http: this.deps.httpFor(plugin.http),
+        kind: connection.kind,
+        rawConfig: connection.config,
+        http: this.deps.httpFor(provider.http),
         clock: this.deps.clock,
       });
     } catch (error) {
       // Only the error's type is logged: messages and inputs may hold codes or addresses.
       this.deps.logger.warn(
         {
-          plugin: plugin.info.id,
+          provider: provider.info.id,
           flow: call.flowId,
           action: call.action,
           error: error instanceof Error ? error.name : "unknown",
@@ -297,7 +315,7 @@ export class SignInService {
     }
   }
 
-  /** Maps plug-in errors; failures count against the attempt, unreachable carriers do not. */
+  /** Maps provider errors; failures count against the attempt, unreachable carriers do not. */
   async #guarded(
     attempt: LoadedAttempt | null,
     run: () => Promise<SignInTurn<unknown>>,
@@ -320,8 +338,8 @@ export class SignInService {
           CAPTCHA_RETRY_SECONDS,
         );
       }
-      if (error instanceof InvalidSourceConfigError) {
-        throw new SignInError("invalid_source", error.message);
+      if (error instanceof InvalidConnectionConfigError) {
+        throw new SignInError("invalid_connection", error.message);
       }
       if (attempt !== null) {
         await this.#fail(attempt);
@@ -344,13 +362,13 @@ export class SignInService {
       .returning("failures")
       .executeTakeFirst();
     if (row !== undefined && row.failures >= MAX_FAILURES) {
-      await this.cancel(attempt.sourceId, attempt.id);
+      await this.cancel(attempt.connectionId, attempt.id);
     }
   }
 
   /** Stores the next step, or the finished secret. */
   async #settle(
-    source: SourceView,
+    connection: ConnectionView,
     flow: string,
     previous: LoadedAttempt | null,
     turn: SignInTurn<unknown>,
@@ -359,9 +377,9 @@ export class SignInService {
     if ("secret" in turn) {
       await this.deps.db
         .deleteFrom("sign_in_attempts")
-        .where("source_id", "=", source.id)
+        .where("connection_id", "=", connection.id)
         .execute();
-      await this.deps.sources.setSecret(source.id, turn.secret);
+      await this.deps.connections.setSecret(connection.id, turn.secret);
       return { status: "done" };
     }
     const now = this.deps.clock.now().getTime();
@@ -378,14 +396,14 @@ export class SignInService {
     const id = previous?.id ?? randomUUID();
     const blob = this.deps.secrets.encryptJson(
       { state: turn.state, step: turn.step },
-      attemptAad(id, source.id),
+      attemptAad(id, connection.id),
     );
     if (previous === null) {
       await this.deps.db
         .insertInto("sign_in_attempts")
         .values({
           id,
-          source_id: source.id,
+          connection_id: connection.id,
           flow,
           blob,
           created_at: isoNow(this.deps.clock),
@@ -408,12 +426,12 @@ export class SignInService {
     return { status: "step", attemptId: id, flow, expiresAt, step: turn.step };
   }
 
-  async #load(sourceId: string, attemptId: string, polling: boolean): Promise<LoadedAttempt> {
+  async #load(connectionId: string, attemptId: string, polling: boolean): Promise<LoadedAttempt> {
     const row = await this.deps.db
       .selectFrom("sign_in_attempts")
       .selectAll()
       .where("id", "=", attemptId)
-      .where("source_id", "=", sourceId)
+      .where("connection_id", "=", connectionId)
       .executeTakeFirst();
     if (row === undefined) {
       throw new SignInError("sign_in_expired", "Start the sign-in again; this attempt is gone.");
@@ -421,20 +439,23 @@ export class SignInService {
     let stored: z.infer<typeof storedSchema>;
     try {
       stored = storedSchema.parse(
-        this.deps.secrets.decryptJson(row.blob, attemptAad(row.id, row.source_id)),
+        this.deps.secrets.decryptJson(row.blob, attemptAad(row.id, row.connection_id)),
       );
     } catch (error) {
       if (!(error instanceof DecryptionError || error instanceof z.ZodError)) {
         throw error;
       }
-      // Damaged or moved state: drop it rather than hand garbage to the plug-in.
-      this.deps.logger.warn({ source: sourceId }, "A stored sign-in attempt could not be read.");
-      await this.cancel(sourceId, attemptId);
+      // Damaged or moved state: drop it rather than hand garbage to the provider.
+      this.deps.logger.warn(
+        { connection: connectionId },
+        "A stored sign-in attempt could not be read.",
+      );
+      await this.cancel(connectionId, attemptId);
       throw new SignInError("sign_in_expired", "Start the sign-in again; this attempt is gone.");
     }
     const step = stored.step as SignInStep;
     if (Date.parse(row.expires_at) <= this.deps.clock.now().getTime()) {
-      await this.cancel(sourceId, attemptId);
+      await this.cancel(connectionId, attemptId);
       throw polling && step.kind === "await_approval"
         ? new SignInError("sign_in_timeout", "The approval did not arrive in time. Start again.")
         : new SignInError("sign_in_expired", "Start the sign-in again; the attempt expired.");
@@ -442,7 +463,7 @@ export class SignInService {
     return {
       id: row.id,
       blob: row.blob,
-      sourceId,
+      connectionId,
       flow: row.flow,
       state: stored.state,
       step,
@@ -452,12 +473,15 @@ export class SignInService {
     };
   }
 
-  /** Drops this source's attempts and every expired one. */
-  async #sweep(sourceId: string): Promise<void> {
+  /** Drops this connection's attempts and every expired one. */
+  async #sweep(connectionId: string): Promise<void> {
     await this.deps.db
       .deleteFrom("sign_in_attempts")
       .where((eb) =>
-        eb.or([eb("source_id", "=", sourceId), eb("expires_at", "<=", isoNow(this.deps.clock))]),
+        eb.or([
+          eb("connection_id", "=", connectionId),
+          eb("expires_at", "<=", isoNow(this.deps.clock)),
+        ]),
       )
       .execute();
   }
@@ -467,7 +491,7 @@ interface LoadedAttempt {
   readonly id: string;
   /** The encrypted row as read; it changes on every update. */
   readonly blob: Buffer;
-  readonly sourceId: string;
+  readonly connectionId: string;
   readonly flow: string;
   readonly state: unknown;
   readonly step: SignInStep;

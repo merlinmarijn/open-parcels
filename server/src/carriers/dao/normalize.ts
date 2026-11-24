@@ -12,7 +12,7 @@ import {
   type ParcelStatus as Status,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "dao";
 const ZONE = "Europe/Copenhagen";
@@ -102,8 +102,8 @@ export function toSnapshot(raw: Json, extras: Extras, reports: Reports): ParcelS
   const bound = text(raw["bound"])?.toUpperCase();
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
-    direction: bound === "OUT" ? "outgoing" : "incoming",
+    trackingNumber: barcode,
+    direction: bound === "OUT" ? "sending" : "receiving",
     status,
     rawStatus:
       text(asObject(last["status"])["statusText"]) ?? (code === null ? null : String(code)),

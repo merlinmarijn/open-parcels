@@ -11,9 +11,9 @@ import {
   unknownReporter,
   UnexpectedResponseError,
   type Json,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, toSnapshot } from "./parse.js";
 
 const API_HOST = "www.laposte.fr";
@@ -27,7 +27,7 @@ const NOT_FOUND: ReadonlySet<number> = new Set([104, 105, 404]);
  * whose `returnCode` is 200 for a known shipment and one of `NOT_FOUND` for an unknown one; any
  * other code (a server error in the body, say) is a transient failure, never "not found".
  */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${API_HOST}/ssu/sun/back/suivi-unifie/${encodeURIComponent(barcode)}`,
   );
@@ -65,11 +65,11 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, BARCODE_PATTERN, async (barcode) => {
     const raw = await lookUp(context.http, barcode);
-    // The registered code stays the barcode, even when Chronopost names a canonical id.
+    // The registered code stays the tracking number, even when Chronopost names a canonical id.
     return raw === null ? null : toSnapshot(raw, barcode, report);
   });
 }
@@ -78,7 +78,7 @@ export const laposte = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "La Poste (Colissimo, Chronopost)",
   countries: ["FR"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -1,14 +1,14 @@
 import type { Kysely } from "kysely";
 import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
-import { removeOrphanedAutoSources } from "../engine/sources.js";
+import { removeOrphanedAutoConnections } from "../engine/connections.js";
 import { appendEvent } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { ParcelRepository, type Presentation } from "./repository.js";
 
 /**
  * Deletes these parcels with their history, items and links inside the caller's transaction,
- * firing `parcel.deleted` for each, and removes keyless tracking sources left without parcels.
+ * firing `parcel.deleted` for each, and removes keyless tracking connections left without parcels.
  * Returns how many were deleted.
  */
 export async function deleteParcels(
@@ -16,7 +16,7 @@ export async function deleteParcels(
   clock: Clock,
   presentation: Presentation,
   ids: readonly string[],
-  keepSource?: string,
+  keepConnection?: string,
 ): Promise<number> {
   const repository = new ParcelRepository(trx, presentation);
   const linked = new Set<string>();
@@ -24,7 +24,7 @@ export async function deleteParcels(
   for (const id of ids) {
     const parcel = await repository.get(id);
     if (parcel === undefined) continue;
-    for (const link of parcel.sources) linked.add(link.source_id);
+    for (const link of parcel.connections) linked.add(link.connection_id);
     await trx.deleteFrom("parcels").where("id", "=", id).execute();
     await appendEvent(trx, clock, {
       type: "parcel.deleted",
@@ -33,13 +33,13 @@ export async function deleteParcels(
     });
     deleted += 1;
   }
-  if (keepSource !== undefined) linked.delete(keepSource);
-  await removeOrphanedAutoSources(trx, clock, [...linked]);
+  if (keepConnection !== undefined) linked.delete(keepConnection);
+  await removeOrphanedAutoConnections(trx, clock, [...linked]);
   return deleted;
 }
 
 /**
- * Deletes these orders outright (no tombstone, so a source may list them again) with their
+ * Deletes these orders outright (no tombstone, so a connection may list them again) with their
  * items, firing `order.deleted` for each. Their parcels stay, without an order.
  */
 export async function deleteOrders(

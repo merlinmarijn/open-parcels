@@ -1,5 +1,5 @@
-import type { SignInTurn } from "../../src/plugin/api.js";
-import type { PluginSourceKind, SignInInput, SignInStep } from "../../src/plugin/api.js";
+import type { SignInTurn } from "../../src/provider/api.js";
+import type { ProviderConnectionKind, SignInInput, SignInStep } from "../../src/provider/api.js";
 import type { World } from "./harness.js";
 
 /**
@@ -12,9 +12,9 @@ export class SignInDriver {
   secret: unknown = undefined;
 
   constructor(
-    private readonly world: Pick<World, "plugin" | "base" | "clock">,
+    private readonly world: Pick<World, "provider" | "base" | "clock">,
     private readonly flowId: string,
-    private readonly kind: PluginSourceKind,
+    private readonly kind: ProviderConnectionKind,
     private readonly config: unknown = {},
   ) {}
 
@@ -34,7 +34,7 @@ export class SignInDriver {
     action: "start" | "continue" | "poll",
     input?: SignInInput,
   ): Promise<SignInStep | null> {
-    const turn: SignInTurn<unknown> = await this.world.plugin.signInTurn({
+    const turn: SignInTurn<unknown> = await this.world.provider.signInTurn({
       action,
       flowId: this.flowId,
       kind: this.kind,

@@ -1,15 +1,15 @@
 import { z } from "zod";
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   carrierPattern,
   ruleStatus,
   defineCarrier,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   expectStatus,
@@ -19,7 +19,7 @@ import {
   readJson,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 /** Offset-less timestamps are the carrier's local time; numbers are epoch ms. */
 const LOCAL_TIME = { naive: { zone: "Europe/Amsterdam" }, epoch: "ms" } as const;
@@ -43,9 +43,9 @@ export function normalizePostcode(value: string): string {
 
 /**
  * The parcel number and postcode are sent as HTTP Basic credentials; together they name one
- * parcel. A refused pair is "no such parcel" for a tracking source, never a sign-in problem.
+ * parcel. A refused pair is "no such parcel" for a tracking connection, never a sign-in problem.
  */
-async function lookUp(http: PluginHttp, barcode: string, postcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string, postcode: string): Promise<Json | null> {
   const pair = Buffer.from(`${barcode}:${postcode}`).toString("base64");
   const response = await http.request(new URL(`https://${API_HOST}/v2/tracing/details`), {
     headers: { accept: "application/json", authorization: `Basic ${pair}` },
@@ -95,13 +95,13 @@ export function trunkrsSnapshot(
   const slot = asObject(raw["timeSlot"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: state,
     delivered,
     deliveredAt: delivered ? isoTime(current["setAt"], LOCAL_TIME) : null,
-    plannedFrom: delivered ? null : isoTime(slot["from"] ?? slot["low"], LOCAL_TIME),
-    plannedTo: delivered ? null : isoTime(slot["to"] ?? slot["high"], LOCAL_TIME),
+    expectedFrom: delivered ? null : isoTime(slot["from"] ?? slot["low"], LOCAL_TIME),
+    expectedTo: delivered ? null : isoTime(slot["to"] ?? slot["high"], LOCAL_TIME),
     url: rulesTrackingUrl(CARRIER_ID, barcode, undefined, { postcode }),
     sender: text(raw["senderName"]) ?? text(raw["merchantName"]),
     receiver: text(raw["recipientName"]),
@@ -110,7 +110,7 @@ export function trunkrsSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const postcode = normalizePostcode(context.config.postalCode);
   const snapshots: ParcelSnapshot[] = [];
   const report = (state: string): void => {
@@ -132,7 +132,7 @@ export const trunkrs = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Trunkrs",
   countries: ["NL", "BE"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

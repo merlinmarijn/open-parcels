@@ -7,8 +7,8 @@ import {
   UnexpectedResponseError,
   type CookieJar,
   type Json,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import {
   acceptLanguage,
   COOKIE_XSRF,
@@ -21,12 +21,12 @@ import {
   PUBLIC_TRACK_PATH,
 } from "./keys.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "logger">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "logger">;
 
 /**
  * The bot guard in front of the public tracking turned the request away: it hung until the
  * timeout, or answered with a challenge page instead of seeding the session. Transient: the
- * source stands down and tries again later. `hung` is set only when nothing came back at all,
+ * connection stands down and tries again later. `hung` is set only when nothing came back at all,
  * which is the one sign that the address's allowance is spent.
  */
 export class BotGuardError extends TransientError {

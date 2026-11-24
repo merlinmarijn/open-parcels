@@ -15,11 +15,11 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "quickpac";
 const ZONE = "Europe/Zurich";
@@ -49,7 +49,7 @@ type Secret = z.infer<typeof secretSchema>;
  * Quickpac answers a bare 400 for every unknown code, the same as for a wrong route. The
  * code-free start-up call tells the two apart: when it works, the code really is unknown.
  */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`${BASE}/GetPublicTracking/${encodeURIComponent(barcode)}/de/false`);
   const response = await http.request(url, { headers: { accept: "application/json" } });
   if (response.status === 400) {
@@ -93,7 +93,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   const identCode = text(raw["IdentCode"], STRINGS) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: identCode,
+    trackingNumber: identCode,
     status,
     rawStatus: text(raw["LastStatus"], STRINGS) ?? (lastCode === null ? null : String(lastCode)),
     delivered,
@@ -108,7 +108,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = (value: string): void => {
     context.reportUnknown("status_code", value);
   };
@@ -123,7 +123,7 @@ export const quickpac = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Quickpac",
   countries: ["CH"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

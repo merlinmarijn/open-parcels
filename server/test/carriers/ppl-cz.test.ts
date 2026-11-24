@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pplCz } from "../../src/carriers/ppl_cz/index.js";
-import { SignInRejectedError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { InteractiveSignIn } from "../../src/plugin/sign-in.js";
+import { SignInRejectedError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { InteractiveSignIn } from "../../src/provider/sign-in.js";
 import { formOf, json, madeUp, on, onPrefix, World } from "./harness.js";
 
 // Made-up shipment numbers, accounts, PINs and tokens only.
@@ -66,7 +66,7 @@ describe("PPL CZ account", () => {
     expect(formOf(world.calls[0]).get("grant_type")).toBe("password");
     expect(result.snapshots[0]).toMatchObject({
       status: "out_for_delivery",
-      direction: "incoming",
+      direction: "receiving",
       sender: "Example Shop",
       history: [{ status: "in_transit" }],
     });

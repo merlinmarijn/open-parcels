@@ -6,8 +6,8 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 
 export const API_HOST = "moja.posta.si";
 export const AUTH_HOST = "auth.posta.si";
@@ -29,7 +29,7 @@ export interface Answer {
  * run: neither says anything about a parcel. Everything else is the caller's to read.
  */
 export async function getJson(
-  http: PluginHttp,
+  http: ProviderHttp,
   url: URL,
   headers: Readonly<Record<string, string>> = {},
 ): Promise<Answer> {

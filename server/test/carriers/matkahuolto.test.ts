@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { matkahuolto } from "../../src/carriers/matkahuolto/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -46,7 +46,7 @@ describe("matkahuolto tracking", () => {
     expect(parcel?.status).toBe("at_pickup_point");
     expect(parcel?.pickupPoint).toBe("Example Shop");
     expect(parcel?.rawStatus).toBe("Available for pickup");
-    expect(parcel?.plannedFrom).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
     expect(parcel?.url).toContain(CODE);
     // Helsinki is UTC+2 in November.
     expect(parcel?.history.map((entry) => [entry.at, entry.status, entry.rawStatus])).toEqual([

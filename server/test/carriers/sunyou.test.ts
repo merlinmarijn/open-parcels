@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sunyou } from "../../src/carriers/sunyou/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -48,11 +48,11 @@ describe("SunYou tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "sunyou",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "OutForDelivery",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://sypost.net/search?orderNo=${CODE}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([

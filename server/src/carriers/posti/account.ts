@@ -11,8 +11,8 @@ import {
   type FetchResult,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { claims, refreshWithDevice, type Tokens } from "./device.js";
 import type { PostiSecret } from "./login.js";
 import { GRAPHQL_HOST } from "./tracking.js";
@@ -40,7 +40,7 @@ const QUERY = `query GetConsumerShipments($page: Int!, $pageSize: Int!, $locale:
   }
 }`;
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session" | "reportUnknown">;
 export type ToSnapshot = (raw: Json, code: string) => ParcelSnapshot;
 
 /** The tokens currently in use: renewed ones from the session, else those of the sign-in. */
@@ -162,7 +162,7 @@ export async function fetchPostiAccount(
     const parcel = toSnapshot(hit, code);
     snapshots.push({
       ...parcel,
-      direction: outgoing ? "outgoing" : "incoming",
+      direction: outgoing ? "sending" : "receiving",
       // displayName is the other party: the sender of a received shipment, the receiver of a sent one.
       sender: outgoing ? null : other,
       receiver: outgoing ? other : parcel.receiver,

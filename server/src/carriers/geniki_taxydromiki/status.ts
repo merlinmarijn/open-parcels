@@ -1,4 +1,4 @@
-import { isoTime, ruleStatus, type ParcelStatus } from "../../plugin/api.js";
+import { isoTime, ruleStatus, type ParcelStatus } from "../../provider/api.js";
 
 export interface Checkpoint {
   readonly code: string | null;

@@ -9,8 +9,8 @@ import {
   type CookieJar,
   type FetchResult,
   type HttpResponse,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import {
   hasCaptcha,
   hasPager,
@@ -69,7 +69,7 @@ const detailSchema = z.object({
 const sessionSchema = z.object({
   jar: z.unknown(),
   signInBlockedUntil: z.number().nullable(),
-  /** Detail panels by `tab:barcode`, reused while the row's sentence and icon are unchanged. */
+  /** Detail panels by `tab:tracking number`, reused while the row's sentence and icon are unchanged. */
   details: z.record(z.string(), z.object({ fingerprint: z.string(), detail: detailSchema })),
 });
 type SessionState = z.infer<typeof sessionSchema>;
@@ -92,7 +92,7 @@ const PAGE_HEADERS = {
   "accept-language": "de-DE,de;q=0.9",
 };
 
-type Context = PluginContext<unknown, Credentials | null>;
+type Context = ProviderContext<unknown, Credentials | null>;
 
 /** One poll of the myDPD account. Postbacks chain on the previous page and never overlap. */
 class AccountRun {

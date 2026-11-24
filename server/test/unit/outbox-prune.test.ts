@@ -33,7 +33,7 @@ async function types(): Promise<string[]> {
 
 describe("outbox pruning", () => {
   it("drops short-lived events after minutes and the rest after a day", async () => {
-    await add("source.run_finished");
+    await add("connection.run_finished");
     await add("parcel.live_updated");
     await add("parcel.status_changed");
     context.clock.advance(SHORT_LIVED_RETENTION_MS + 1);

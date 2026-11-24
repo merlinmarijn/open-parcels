@@ -14,9 +14,9 @@ import {
   unescapeHtml,
   walkHtml,
   type InteractiveSignIn,
-  type PluginHttp,
+  type ProviderHttp,
   type SignInOption,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { provision, type Device, type Tokens } from "./device.js";
 import { POSTI_APP } from "./keys.js";
 
@@ -85,7 +85,7 @@ function page(html: string): { hidden: Map<string, string>; forms: string[] } {
   return { hidden, forms };
 }
 
-async function browse(http: PluginHttp, jar: CookieJar, url: URL, redirect: "follow" | "manual") {
+async function browse(http: ProviderHttp, jar: CookieJar, url: URL, redirect: "follow" | "manual") {
   const response = await http.request(url, {
     headers: BROWSER_HEADERS,
     jar,
@@ -122,7 +122,7 @@ function options(methods: Map<string, string>): SignInOption[] {
     .map((id) => ({ id, label: METHOD_LABELS[id] ?? id.charAt(0).toUpperCase() + id.slice(1) }));
 }
 
-async function bankAddress(http: PluginHttp, jar: CookieJar, link: string): Promise<string> {
+async function bankAddress(http: ProviderHttp, jar: CookieJar, link: string): Promise<string> {
   const response = await browse(http, jar, new URL(link, `https://${POSTI_APP.uasHost}`), "follow");
   const { hidden, forms } = page(response.body);
   const request = hidden.get("request");
@@ -149,7 +149,7 @@ function returnAddress(pasted: string): URL {
   return url;
 }
 
-async function finish(http: PluginHttp, jar: CookieJar, verifier: string, pasted: string) {
+async function finish(http: ProviderHttp, jar: CookieJar, verifier: string, pasted: string) {
   const landing = page((await browse(http, jar, returnAddress(pasted), "follow")).body).hidden;
   const code = landing.get("code");
   const state = landing.get("state");

@@ -4,8 +4,8 @@ import {
   defineCarrier,
   SignInRejectedError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { fetchPostiAccount } from "./account.js";
 import { deviceSchema } from "./device.js";
 import { POSTI_APP } from "./keys.js";
@@ -32,7 +32,7 @@ const secretSchema = z
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const client = new PostiTracking(context.http);
   const snapshots: ParcelSnapshot[] = [];
   const report = (kind: string, key: string): void => {
@@ -55,7 +55,7 @@ export const posti = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Posti",
   countries: ["FI"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [bankSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

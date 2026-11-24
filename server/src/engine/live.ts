@@ -6,8 +6,8 @@ import type { LiveState } from "../domain/parcel.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { ParcelRepository, type LivePosition, type Presentation } from "../parcels/repository.js";
-import { RateLimitedError, type LiveReading, type LiveTarget } from "../plugin/api.js";
-import type { SourceRunner } from "./runner.js";
+import { RateLimitedError, type LiveReading, type LiveTarget } from "../provider/api.js";
+import type { ConnectionRunner } from "./runner.js";
 
 /** Cadence of the carrier's own tracking page while a map session is open. */
 export const LIVE_FAST_MS = 30_000;
@@ -22,7 +22,7 @@ interface Session {
 }
 
 interface Tracked {
-  readonly sourceId: string;
+  readonly connectionId: string;
   readonly target: LiveTarget;
 }
 
@@ -31,12 +31,12 @@ const onRoad = (session: Session | undefined): boolean =>
 
 export interface LiveDeps {
   readonly db: Kysely<Database>;
-  readonly runner: SourceRunner;
+  readonly runner: ConnectionRunner;
   readonly bus: EventBus;
   readonly clock: Clock;
   readonly logger: Logger;
-  /** Asks for an immediate full poll of a source, so `delivered` follows within a minute. */
-  readonly refreshSource: (sourceId: string) => Promise<void>;
+  /** Asks for an immediate full poll of a connection, so `delivered` follows within a minute. */
+  readonly refreshConnection: (connectionId: string) => Promise<void>;
   readonly presentation: Presentation;
 }
 
@@ -63,37 +63,40 @@ export class LiveTracker {
     return this.#positions.get(parcelId);
   }
 
-  /** Replaces a source's targets after a full poll; a full poll also lifts the failure stop. */
-  setTargets(sourceId: string, targets: readonly { parcelId: string; target: LiveTarget }[]): void {
+  /** Replaces a connection's targets after a full poll; a full poll also lifts the failure stop. */
+  setTargets(
+    connectionId: string,
+    targets: readonly { parcelId: string; target: LiveTarget }[],
+  ): void {
     const kept = new Set(targets.map(({ parcelId }) => parcelId));
     const dropped: string[] = [];
     for (const [parcelId, tracked] of this.#targets) {
-      if (tracked.sourceId === sourceId) {
+      if (tracked.connectionId === connectionId) {
         this.#targets.delete(parcelId);
         if (!kept.has(parcelId)) dropped.push(parcelId);
       }
     }
     for (const { parcelId, target } of targets) {
-      this.#targets.set(parcelId, { sourceId, target });
+      this.#targets.set(parcelId, { connectionId, target });
     }
-    this.#failures.delete(sourceId);
-    void this.#retire(sourceId, dropped).catch((error: unknown) => {
+    this.#failures.delete(connectionId);
+    void this.#retire(connectionId, dropped).catch((error: unknown) => {
       this.deps.logger.error({ err: error }, "Ending dropped live sessions failed.");
     });
     this.wake();
   }
 
   /**
-   * The source no longer offers a courier map for these parcels (just dropped, or left stored
+   * The connection no longer offers a courier map for these parcels (just dropped, or left stored
    * from before a restart): a session still on the road ends with one "ended" transition, and
    * the stored state goes, so no stale "en route" is left behind.
    */
-  async #retire(sourceId: string, dropped: readonly string[]): Promise<void> {
+  async #retire(connectionId: string, dropped: readonly string[]): Promise<void> {
     const stored = await this.deps.db
       .selectFrom("live_state")
-      .innerJoin("parcel_sources", "parcel_sources.parcel_id", "live_state.parcel_id")
+      .innerJoin("parcel_connections", "parcel_connections.parcel_id", "live_state.parcel_id")
       .select(["live_state.parcel_id", "live_state.state", "live_state.stops_away"])
-      .where("parcel_sources.source_id", "=", sourceId)
+      .where("parcel_connections.connection_id", "=", connectionId)
       .execute();
     const states = new Map(stored.map((row) => [row.parcel_id, row]));
     for (const parcelId of new Set([...dropped, ...states.keys()])) {
@@ -186,29 +189,32 @@ export class LiveTracker {
       return null;
     }
     let retryAfterMs = 0;
-    const failedSources = new Set<string>();
+    const failedConnections = new Set<string>();
     for (const [parcelId, tracked] of candidates) {
-      if (failedSources.has(tracked.sourceId)) {
+      if (failedConnections.has(tracked.connectionId)) {
         continue;
       }
       try {
-        const reading = await this.deps.runner.readLive(tracked.sourceId, tracked.target);
-        await this.#apply(parcelId, tracked.sourceId, reading);
+        const reading = await this.deps.runner.readLive(tracked.connectionId, tracked.target);
+        await this.#apply(parcelId, tracked.connectionId, reading);
       } catch (error) {
-        failedSources.add(tracked.sourceId);
+        failedConnections.add(tracked.connectionId);
         if (error instanceof RateLimitedError && error.retryAfterSeconds !== undefined) {
           retryAfterMs = Math.max(retryAfterMs, error.retryAfterSeconds * 1000);
         }
         this.deps.logger.warn(
-          { source: tracked.sourceId, error: error instanceof Error ? error.name : "unknown" },
+          {
+            connection: tracked.connectionId,
+            error: error instanceof Error ? error.name : "unknown",
+          },
           "Reading the courier map failed.",
         );
       }
     }
-    for (const sourceId of new Set(candidates.map(([, tracked]) => tracked.sourceId))) {
+    for (const connectionId of new Set(candidates.map(([, tracked]) => tracked.connectionId))) {
       this.#failures.set(
-        sourceId,
-        failedSources.has(sourceId) ? (this.#failures.get(sourceId) ?? 0) + 1 : 0,
+        connectionId,
+        failedConnections.has(connectionId) ? (this.#failures.get(connectionId) ?? 0) + 1 : 0,
       );
     }
     const fast = candidates.some(
@@ -226,7 +232,7 @@ export class LiveTracker {
       .select(["id", "status", "delivered"])
       .where("id", "in", [...this.#targets.keys()])
       .execute();
-    // A parcel deleted since its source's last poll is no longer followed.
+    // A parcel deleted since its connection's last poll is no longer followed.
     const present = new Set(rows.map((row) => row.id));
     for (const parcelId of [...this.#targets.keys()]) {
       if (!present.has(parcelId)) {
@@ -238,7 +244,7 @@ export class LiveTracker {
       const tracked = this.#targets.get(row.id);
       if (
         tracked === undefined ||
-        (this.#failures.get(tracked.sourceId) ?? 0) >= LIVE_MAX_FAILURES
+        (this.#failures.get(tracked.connectionId) ?? 0) >= LIVE_MAX_FAILURES
       ) {
         continue;
       }
@@ -260,12 +266,12 @@ export class LiveTracker {
     return result;
   }
 
-  async #apply(parcelId: string, sourceId: string, reading: LiveReading | null): Promise<void> {
+  async #apply(parcelId: string, connectionId: string, reading: LiveReading | null): Promise<void> {
     const previous = this.#sessions.get(parcelId);
     if (reading === null) {
       if (onRoad(previous)) {
         await this.#record(parcelId, previous, null);
-        await this.deps.refreshSource(sourceId);
+        await this.deps.refreshConnection(connectionId);
       }
       return;
     }
@@ -304,7 +310,7 @@ export class LiveTracker {
       await this.#record(parcelId, previous, session);
     }
     if (!onRoad(session) && (previous === undefined || onRoad(previous))) {
-      await this.deps.refreshSource(sourceId);
+      await this.deps.refreshConnection(connectionId);
     }
   }
 

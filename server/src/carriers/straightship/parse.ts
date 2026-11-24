@@ -1,4 +1,4 @@
-import type { ParcelStatus } from "../../plugin/api.js";
+import type { ParcelStatus } from "../../provider/api.js";
 import {
   ruleStatus,
   cleanText,
@@ -7,7 +7,7 @@ import {
   type ParcelSnapshot,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { readPage, type Cell } from "./html.js";
 
 export const CARRIER_ID = "straightship";
@@ -126,7 +126,7 @@ export function pageSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: packageStatus === "" ? null : normalise(packageStatus),
     deliveredAt: delivered

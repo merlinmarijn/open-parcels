@@ -2,7 +2,7 @@ import {
   snapshot,
   TransientError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   asArray,
   asObject,
@@ -13,7 +13,7 @@ import {
   text,
   type Json,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { publicTrackingUrl } from "./constants.js";
 
 /** DHL Freight Sweden's public shipment lookup. It accepts ten-character codes only. */
@@ -23,7 +23,7 @@ const CODE_LENGTH = 10;
 
 const HOME_METHODS = new Set(["HOME_DELIVERY", "RETURN_HOME_DELIVERY", "RETURN_SERVICEPOINT"]);
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "reportUnknown">;
 
 export function swedenShaped(code: string): boolean {
   return code.length === CODE_LENGTH && /^[A-Z0-9]+$/.test(code);
@@ -138,7 +138,7 @@ export function normalizeSweden(deps: Deps, code: string, raw: Json): ParcelSnap
   });
   return snapshot({
     carrier: "dhl",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: text(events.at(-1)?.["eventText"]),
     delivered,

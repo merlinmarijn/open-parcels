@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { postnord } from "../../src/carriers/postnord/index.js";
-import { carrierKey } from "../../src/plugin/rules.js";
+import { carrierKey } from "../../src/provider/rules.js";
 import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
-import type { InteractiveSignIn } from "../../src/plugin/sign-in.js";
+} from "../../src/provider/errors.js";
+import type { InteractiveSignIn } from "../../src/provider/sign-in.js";
 import { html, json, madeUp, on, World } from "./harness.js";
 
 // Made-up shipment ids and tokens only.
@@ -46,8 +46,8 @@ describe("PostNord account", () => {
     expect(
       result.snapshots.map((parcel) => [parcel.status, parcel.rawStatus, parcel.direction]),
     ).toEqual([
-      ["in_transit", "On its way", "incoming"],
-      ["delivered", "DELIVERED", "outgoing"],
+      ["in_transit", "On its way", "receiving"],
+      ["delivered", "DELIVERED", "sending"],
     ]);
   });
 

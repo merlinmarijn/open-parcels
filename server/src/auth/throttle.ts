@@ -4,7 +4,7 @@ import type { Clock } from "../clock.js";
 export const MAX_TRACKED_ADDRESSES = 10_000;
 
 /**
- * Limits failed sign-in attempts per client address to slow down password guessing. Addresses are
+ * Limits failed login attempts per client address to slow down password guessing. Addresses are
  * forgotten once their failures expire, so many one-off addresses cannot grow it without bound.
  */
 export class LoginThrottle {

@@ -1,5 +1,5 @@
 import { parseMail, type MailParseResult, type Rules } from "open-parcels-rules";
-import { returnSnapshot, type ReturnSnapshot } from "../plugin/snapshot.js";
+import { returnSnapshot, type ReturnSnapshot } from "../provider/snapshot.js";
 import { carrierFor, orderOf, senderDomain } from "./interpret.js";
 import {
   mailLines,
@@ -20,10 +20,10 @@ function tracking(
   rules: Rules,
   result: MailParseResult,
   domain: string | undefined,
-): { carrier: string; barcode: string } | null {
-  for (const barcode of result.trackingNumbers) {
-    const carrier = carrierFor(rules, result, barcode, domain);
-    if (carrier !== null) return { carrier, barcode };
+): { carrier: string; trackingNumber: string } | null {
+  for (const trackingNumber of result.trackingNumbers) {
+    const carrier = carrierFor(rules, result, trackingNumber, domain);
+    if (carrier !== null) return { carrier, trackingNumber };
   }
   return null;
 }

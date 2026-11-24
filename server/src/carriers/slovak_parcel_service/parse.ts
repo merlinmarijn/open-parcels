@@ -10,7 +10,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "slovak_parcel_service";
 
@@ -72,7 +72,7 @@ export function shipmentSnapshot(raw: Json, report: (code: string) => void): Par
     status === "delivered" ? (history.find((e) => e.status === "delivered")?.at ?? null) : null;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus:
       (current === undefined ? null : (text(current["statusDescr"]) ?? eventKey(current))) ??

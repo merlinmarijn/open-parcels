@@ -1,4 +1,4 @@
-import { isoTime, ruleStatus, type ParcelStatus } from "../../plugin/api.js";
+import { isoTime, ruleStatus, type ParcelStatus } from "../../provider/api.js";
 
 export const CARRIER_ID = "mondial_relay";
 /** The .be and .nl sites answer the same lookup; the .fr site refuses scripted clients. */

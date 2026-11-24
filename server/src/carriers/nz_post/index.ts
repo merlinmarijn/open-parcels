@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCarrier, type ParcelSnapshot, type PluginContext } from "../../plugin/api.js";
+import { defineCarrier, type ParcelSnapshot, type ProviderContext } from "../../provider/api.js";
 import { CARRIER_ID, TRACKING_HOST } from "./shared.js";
 import { isPlausibleBarcode, lookUp, trackingSnapshot } from "./tracking.js";
 
@@ -10,7 +10,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (key: string): void => {
     context.reportUnknown("status_code", key);
@@ -32,7 +32,7 @@ export const nzPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "NZ Post",
   countries: ["NZ"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

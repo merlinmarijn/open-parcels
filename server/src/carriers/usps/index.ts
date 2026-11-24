@@ -8,10 +8,10 @@ import {
   SignInRejectedError,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
-import { isoTime, objects, rulesTrackingUrl, text, type Json } from "../../plugin/api.js";
+} from "../../provider/api.js";
+import { isoTime, objects, rulesTrackingUrl, text, type Json } from "../../provider/api.js";
 import { API_HOST, UspsClient } from "./client.js";
 import { fetchInformed, INFORMED_API_HOST } from "./informed.js";
 import { informedSignIn } from "./journey.js";
@@ -43,7 +43,7 @@ const configSchema = z.looseObject({
 });
 type Config = z.infer<typeof configSchema>;
 /**
- * A tracking source keeps a consumer key pair from the USPS developer portal, with the Tracking
+ * A tracking connection keeps a consumer key pair from the USPS developer portal, with the Tracking
  * API enabled; an Informed Delivery account the sign-in chain and its enrolled addresses.
  */
 const secretSchema = z.object({
@@ -83,7 +83,7 @@ export function uspsSnapshot(
   const code = text(raw["trackingNumber"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: text(raw["status"]) ?? category,
     delivered,
@@ -97,7 +97,7 @@ export function uspsSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const { consumerKey, consumerSecret } = context.secret;
   if (consumerKey === undefined || consumerSecret === undefined) {
     throw new SignInRejectedError("Enter a USPS consumer key pair for tracking.");
@@ -130,7 +130,7 @@ export const usps = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "USPS",
   countries: ["US"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [informedSignIn<Config>(), { type: "api_key", kinds: ["tracking"] }],

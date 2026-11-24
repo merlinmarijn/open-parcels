@@ -118,7 +118,7 @@ export async function scrubStoredRaw(db: Kysely<Database>): Promise<number> {
   return db.transaction().execute(async (trx) => {
     const rows = await trx
       .selectFrom("parcel_raw")
-      .select(["parcel_id", "source_id", "payload"])
+      .select(["parcel_id", "connection_id", "payload"])
       .execute();
     let changed = 0;
     for (const row of rows) {
@@ -134,7 +134,7 @@ export async function scrubStoredRaw(db: Kysely<Database>): Promise<number> {
           .updateTable("parcel_raw")
           .set({ payload })
           .where("parcel_id", "=", row.parcel_id)
-          .where("source_id", "=", row.source_id)
+          .where("connection_id", "=", row.connection_id)
           .execute();
         changed += 1;
       }

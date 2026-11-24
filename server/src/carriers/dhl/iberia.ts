@@ -3,7 +3,7 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   asArray,
   asObject,
@@ -16,7 +16,7 @@ import {
   type Json,
   type MappedStatus,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { publicTrackingUrl } from "./constants.js";
 
 /** DHL eCommerce Iberia's public tracking (Spain and Portugal). */
@@ -28,7 +28,7 @@ const IBERIA_URL = `https://${IBERIA_HOST}/LiveTracking.GTW/api/shipment-detail`
  */
 const ZONE = "Europe/Madrid";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "reportUnknown">;
 
 /** An empty number returns another parcel, so only plain alphanumeric codes are sent. */
 export function iberiaShaped(code: string): boolean {
@@ -131,7 +131,7 @@ export function normalizeIberia(deps: Deps, code: string, raw: Json): ParcelSnap
   const weight = num(raw["Weight"], { decimalComma: true });
   return snapshot({
     carrier: "dhl",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: newest === undefined ? null : wording(newest),
     delivered,

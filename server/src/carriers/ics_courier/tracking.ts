@@ -9,9 +9,9 @@ import {
   zonedIso,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "ics_courier";
 export const TRACKING_HOST = "www1.icscourier.ca";
@@ -80,7 +80,7 @@ function isNotFound(record: IcsRecord): boolean {
 }
 
 /** The records for one code, or null when the carrier reports it as not found. */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<IcsRecord[] | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<IcsRecord[] | null> {
   const response = await http.request(
     new URL(`https://${TRACKING_HOST}/icsapicnswebservice/service.asmx`),
     {
@@ -191,7 +191,7 @@ export function trackingSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: latest === undefined ? null : describe(latest),
     delivered,

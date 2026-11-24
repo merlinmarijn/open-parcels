@@ -1,10 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { evri } from "../../src/carriers/evri/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
-// Made-up barcodes, ids and postcodes only.
+// Made-up tracking numbers, ids and postcodes only.
 const CODE = "EV00000000000001";
 const URN = "urn:test:parcel:1";
 const CONFIG = { postalCode: "zz9 9zz" };
@@ -60,7 +60,7 @@ describe("Evri tracking", () => {
       status: "out_for_delivery",
       rawStatus: "4_COURIER",
       sender: "Example Shop",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(found?.history.map((event) => event.status)).toEqual(["out_for_delivery", "in_transit"]);
     expect(JSON.stringify(found?.raw)).not.toContain("Test Person");

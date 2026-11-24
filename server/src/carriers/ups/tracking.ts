@@ -6,8 +6,8 @@ import {
   type FetchResult,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { charge, exhaust, msUntilToken, spend } from "./budget.js";
 import { BUDGET_REFILL_MS, MIN_CYCLE_GAP_MS, TRACKED_CODE_SOFT_LIMIT } from "./keys.js";
 import { mergeAnswers, type Answer } from "./merge.js";
@@ -17,7 +17,7 @@ import { BotGuardError, lookUpPublic, type Counter } from "./public.js";
 import { normalizePublic } from "./public-normalize.js";
 import { BUDGET_RULES, fetchQueue, loadState, standdownMs, type UpsState } from "./state.js";
 
-type Context = PluginContext<unknown, unknown>;
+type Context = ProviderContext<unknown, unknown>;
 
 /** Pasted codes lose spaces and are upper-cased; anything that cannot be a UPS number is skipped. */
 export function normalizeCode(code: string): string {

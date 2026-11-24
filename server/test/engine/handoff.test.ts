@@ -11,7 +11,7 @@ let shop: FakeWorld;
 beforeEach(async () => {
   post = new FakeWorld();
   shop = new FakeWorld();
-  context = await createTestContext({ plugins: [fakePost(post), fakeShop(shop)] });
+  context = await createTestContext({ providers: [fakePost(post), fakeShop(shop)] });
 });
 afterEach(async () => {
   await context.close();
@@ -19,10 +19,10 @@ afterEach(async () => {
 
 const CODE = "SHARED00000001";
 
-async function shopSource(): Promise<string> {
+async function shopConnection(): Promise<string> {
   return (
-    await context.services.sources.create({
-      plugin: "fakeshop",
+    await context.services.connections.create({
+      provider: "fakeshop",
       kind: "shop",
       label: "shop",
       config: {},
@@ -34,12 +34,12 @@ async function shopSource(): Promise<string> {
 describe("an inferred hand-off", () => {
   it("never targets a parcel stored under another shop", async () => {
     const now = context.clock.now().toISOString();
-    // A second shop, known only by its source row and the parcel it stored.
+    // A second shop, known only by its connection row and the parcel it stored.
     await context.services.db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id: crypto.randomUUID(),
-        plugin: "othershop",
+        provider: "othershop",
         kind: "shop",
         label: "Other shop",
         config: "{}",
@@ -57,8 +57,8 @@ describe("an inferred hand-off", () => {
       .values({
         id: crypto.randomUUID(),
         carrier: "othershop",
-        barcode: CODE,
-        direction: "incoming",
+        tracking_number: CODE,
+        direction: "receiving",
         status: "registered",
         raw_status: null,
         delivered: 0,
@@ -70,9 +70,9 @@ describe("an inferred hand-off", () => {
       })
       .execute();
     shop.listing = [
-      snapshot({ carrier: "fakeshop", barcode: CODE, status: null, rawStatus: null }),
+      snapshot({ carrier: "fakeshop", trackingNumber: CODE, status: null, rawStatus: null }),
     ];
-    await context.services.runner.run(await shopSource());
+    await context.services.runner.run(await shopConnection());
     const rows = await context.services.db
       .selectFrom("parcels")
       .select("carrier")
@@ -85,13 +85,13 @@ describe("an inferred hand-off", () => {
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: CODE,
+        trackingNumber: CODE,
         status: null,
         rawStatus: null,
         raw: { order: "made-up" },
       }),
     ];
-    const fromShop = await shopSource();
+    const fromShop = await shopConnection();
     await context.services.runner.run(fromShop);
     const shopParcel = await context.services.db
       .selectFrom("parcels")
@@ -109,8 +109,8 @@ describe("an inferred hand-off", () => {
       .values({
         id: crypto.randomUUID(),
         carrier: "fakepost",
-        barcode: CODE,
-        direction: "incoming",
+        tracking_number: CODE,
+        direction: "receiving",
         status: "in_transit",
         raw_status: "Moving",
         delivered: 0,

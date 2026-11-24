@@ -10,8 +10,8 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { awbOf, B2C_HOST, CargusAccount } from "./account.js";
 import { API_HOST, CARRIER_ID, shortTrace, traceSnapshot } from "./shared.js";
 
@@ -35,7 +35,7 @@ const secretSchema = z
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_text");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code) => {
     const trace = await shortTrace(context.http, code);
@@ -52,8 +52,8 @@ function outgoing(row: Json): boolean {
 function window(
   row: Json,
   parcel: ParcelSnapshot,
-): { plannedFrom: string | null; plannedTo: string | null } {
-  const none = { plannedFrom: null, plannedTo: null };
+): { expectedFrom: string | null; expectedTo: string | null } {
+  const none = { expectedFrom: null, expectedTo: null };
   const day =
     text(row["date1"])?.slice(0, 10) ??
     (parcel.status === "out_for_delivery" ? parcel.history[0]?.at.slice(0, 10) : undefined);
@@ -66,22 +66,24 @@ function window(
       ? null
       : isoTime(`${day}T${clock}`, { naive: { zone: ZONE } });
   };
-  const plannedFrom = at(row["arrivingTimeFrom"]);
-  const plannedTo = at(row["arrivingTimeTo"]);
+  const expectedFrom = at(row["arrivingTimeFrom"]);
+  const expectedTo = at(row["arrivingTimeTo"]);
   return {
-    plannedFrom,
-    plannedTo:
-      plannedTo !== null && (plannedFrom === null || plannedTo > plannedFrom) ? plannedTo : null,
+    expectedFrom,
+    expectedTo:
+      expectedTo !== null && (expectedFrom === null || expectedTo > expectedFrom)
+        ? expectedTo
+        : null,
   };
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("The MyCargus account needs an e-mail address and password.");
   }
   const phone = context.config.phone;
   if (phone === undefined) {
-    // A missing setting, not a refused sign-in: the user fixes the source's settings.
+    // A missing setting, not a refused sign-in: the user fixes the connection's settings.
     throw new InvalidConfigError("The MyCargus account needs the account's phone number.");
   }
   const report = unknownReporter(context, "status_text");
@@ -107,7 +109,7 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
         events: [],
       };
       const parcel = traceSnapshot(trace, report, {
-        direction: outgoing(row) ? "outgoing" : "incoming",
+        direction: outgoing(row) ? "sending" : "receiving",
       });
       snapshots.push({ ...parcel, ...window(row, parcel), raw: { inbox: row, trace } });
     }
@@ -122,7 +124,7 @@ export const cargus = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Cargus",
   countries: ["RO"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { speeDee } from "../../src/carriers/speedee/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -49,11 +49,11 @@ describe("Spee-Dee tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "speedee",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "OUT FOR DELIVERY",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.url).toContain(CODE);
     // November is CST, six hours behind UTC.

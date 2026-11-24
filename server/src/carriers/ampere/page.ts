@@ -8,7 +8,7 @@ import {
   type ParcelSnapshot,
   type SnapshotEvent,
   unescapeHtml,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "ampere";
 const ZONE = "Europe/Amsterdam";
@@ -87,13 +87,13 @@ export function ampereSnapshot(input: PageInput, report: (text: string) => void)
   const barcode = firstById(input.html, "barcode-value") ?? input.parcelToken;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: current,
     delivered,
     deliveredAt: delivered ? historyTime(times[0] ?? "", input.now) : null,
-    plannedFrom: delivered ? null : isoTime(input.window["from"], { naive: { zone: ZONE } }),
-    plannedTo: delivered ? null : isoTime(input.window["to"], { naive: { zone: ZONE } }),
+    expectedFrom: delivered ? null : isoTime(input.window["from"], { naive: { zone: ZONE } }),
+    expectedTo: delivered ? null : isoTime(input.window["to"], { naive: { zone: ZONE } }),
     sender: firstById(input.html, "company-name-value") ?? "bol.com",
     receiver: firstById(input.html, "receiver-name"),
     history: newestFirst(history),

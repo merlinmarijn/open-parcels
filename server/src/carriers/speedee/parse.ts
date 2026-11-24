@@ -10,7 +10,7 @@ import {
   type ParcelSnapshot,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "speedee";
 
@@ -147,7 +147,7 @@ export function pageSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: stem(summaryStatus),
     deliveredAt: delivered ? centralTime(facts.get("delivered on") ?? "") : null,

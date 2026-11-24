@@ -15,11 +15,11 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { codeStatus } from "./status.js";
 
 export const CARRIER_ID = "poczta_polska";
@@ -42,7 +42,7 @@ type Secret = z.infer<typeof secretSchema>;
  * The public portal page carries the key its own tracking widget uses, on the element with id
  * `widgetTracking`. It is read from there, never stored in the code.
  */
-async function readKey(http: PluginHttp): Promise<string> {
+async function readKey(http: ProviderHttp): Promise<string> {
   const response = await http.request(PORTAL, { redirect: "manual" });
   if (response.status !== 200) {
     throw new TransientError(`Poczta Polska portal answered HTTP ${response.status}.`);
@@ -62,7 +62,7 @@ async function readKey(http: PluginHttp): Promise<string> {
 }
 
 /** Returns the payload, or null when the key was refused (HTTP 401). */
-async function post(http: PluginHttp, barcode: string, key: string): Promise<Json | null> {
+async function post(http: ProviderHttp, barcode: string, key: string): Promise<Json | null> {
   const response = await http.request(new URL(`${API_BASE}/checkmailex`), {
     method: "POST",
     redirect: "manual",
@@ -124,7 +124,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   const office = asObject(latestEvent?.["postOffice"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["number"]), barcode),
     status,
     rawStatus: latest?.rawStatus ?? null,
@@ -144,7 +144,11 @@ interface KeyHolder {
 }
 
 /** Looks one code up, re-reading the widget key once when the endpoint refuses it. */
-async function lookUp(http: PluginHttp, holder: KeyHolder, barcode: string): Promise<Json | null> {
+async function lookUp(
+  http: ProviderHttp,
+  holder: KeyHolder,
+  barcode: string,
+): Promise<Json | null> {
   holder.key ??= await readKey(http);
   let payload = await post(http, barcode, holder.key);
   if (payload === null) {
@@ -157,7 +161,7 @@ async function lookUp(http: PluginHttp, holder: KeyHolder, barcode: string): Pro
   return found(payload);
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const holder: KeyHolder = { key: null };
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
@@ -180,7 +184,7 @@ export const pocztaPolska = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Poczta Polska",
   countries: ["PL"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

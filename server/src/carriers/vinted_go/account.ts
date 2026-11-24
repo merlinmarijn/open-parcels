@@ -14,18 +14,19 @@ import {
   type InteractiveSignIn,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+  type Direction,
+} from "../../provider/api.js";
 
 export const MEMBERS = "https://carrier.vintedgo.com/members";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
 
-/** The parts of the tracking source the account reuses, passed in to keep the modules acyclic. */
+/** The parts of the tracking connection the account reuses, passed in to keep the modules acyclic. */
 export interface Timeline {
-  lookUp(http: PluginHttp, code: string): Promise<Json[] | null>;
+  lookUp(http: ProviderHttp, code: string): Promise<Json[] | null>;
   toSnapshot(
     events: readonly Json[],
     code: string,
@@ -45,7 +46,7 @@ function maskEmail(email: string): string {
   return `${name.slice(0, 1)}***@${domain}`;
 }
 
-async function post(http: PluginHttp, path: string, body: Json) {
+async function post(http: ProviderHttp, path: string, body: Json) {
   return http.request(new URL(`${MEMBERS}/${path}`), {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -187,9 +188,9 @@ async function shipments(deps: Deps, session: Session): Promise<Json[]> {
   return [];
 }
 
-const DIRECTION: Readonly<Record<string, "incoming" | "outgoing">> = {
-  recipient: "incoming",
-  sender: "outgoing",
+const DIRECTION: Readonly<Record<string, Direction>> = {
+  recipient: "receiving",
+  sender: "sending",
 };
 
 /** Everything the account lists, sent and received. Finished shipments skip the timeline call. */
@@ -222,7 +223,7 @@ export async function fetchVintedAccount(
       events === null
         ? snapshot({
             carrier: "vinted_go",
-            barcode: code,
+            trackingNumber: code,
             // The finished shipment's resolution, in the shared table as `resolution:<value>`.
             status: ruleStatus("vinted_go", `resolution:${text(shipment["resolution"]) ?? ""}`),
             rawStatus: text(shipment["shipment_state"]),

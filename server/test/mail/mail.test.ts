@@ -2,9 +2,9 @@ import { randomBytes } from "node:crypto";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import type { App } from "../../src/api/app.js";
 import { SecretBox } from "../../src/crypto/secrets.js";
-import { secretAad } from "../../src/engine/sources.js";
+import { secretAad } from "../../src/engine/connections.js";
 import type { FetchedMessage, MailboxClient, MailInput } from "../../src/mail/types.js";
-import { snapshot } from "../../src/plugin/api.js";
+import { snapshot } from "../../src/provider/api.js";
 import { FakeWorld, fakePost } from "../fakes/carriers.js";
 import { createTestContext, signIn, type TestContext } from "../helpers.js";
 
@@ -106,7 +106,7 @@ function interpret(mail: MailInput) {
     : [
         snapshot({
           carrier: "fakepost",
-          barcode: match[0],
+          trackingNumber: match[0],
           status: "registered",
           rawStatus: "Shipping notice",
         }),
@@ -129,7 +129,7 @@ afterEach(async () => {
 
 async function createTestContextWithMail(): Promise<TestContext> {
   return createTestContext({
-    plugins: [fakePost(new FakeWorld())],
+    providers: [fakePost(new FakeWorld())],
     mailClientFactory: () => mailbox,
     mailInterpreter: interpret,
   });
@@ -140,10 +140,10 @@ const mailSecret = { username: "someone@example.invalid", password: ["made", "up
 async function addMailbox(): Promise<string> {
   const response = await app.inject({
     method: "POST",
-    url: "/api/v1/sources",
+    url: "/api/v1/connections",
     headers,
     payload: {
-      plugin: "imap",
+      provider: "imap",
       kind: "mail",
       label: "Inbox",
       config: { host: "imap.example.invalid" },
@@ -166,12 +166,15 @@ describe("mail watcher", () => {
 
     expect(seen.map((mail) => mail.subject)).toEqual(["Recent FP0002", "Newsletter"]);
     const parcels = await context.services.parcels.repository.list({}, false);
-    expect(parcels.map((parcel) => parcel.barcode)).toEqual(["FP0002"]);
-    expect(parcels[0]?.sources.map((source) => source.role).sort()).toEqual(["mail", "primary"]);
-    const source = await context.services.sources.get(id);
-    expect(source).toMatchObject({ state: "ok" });
+    expect(parcels.map((parcel) => parcel.tracking_number)).toEqual(["FP0002"]);
+    expect(parcels[0]?.connections.map((connection) => connection.role).sort()).toEqual([
+      "mail",
+      "primary",
+    ]);
+    const connection = await context.services.connections.get(id);
+    expect(connection).toMatchObject({ state: "ok" });
     const row = await context.services.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .select("session_blob")
       .where("id", "=", id)
       .executeTakeFirstOrThrow();
@@ -188,7 +191,7 @@ describe("mail watcher", () => {
     expect(mailbox.fetched).toEqual([2]);
     expect(
       (await context.services.parcels.repository.list({}, false))
-        .map((parcel) => parcel.barcode)
+        .map((parcel) => parcel.tracking_number)
         .sort(),
     ).toEqual(["FP0001", "FP0002"]);
   });
@@ -208,7 +211,7 @@ describe("mail watcher", () => {
     expect(ingest).toHaveBeenCalledTimes(2);
     expect(
       (await context.services.parcels.repository.list({}, false))
-        .map((parcel) => parcel.barcode)
+        .map((parcel) => parcel.tracking_number)
         .sort(),
     ).toEqual(["FP0001", "FP0002", "FP0003"]);
   });
@@ -229,21 +232,23 @@ describe("mail watcher", () => {
     mailbox.add(2, "2026-11-17T11:00:00Z", "Fine FP0009");
     await addMailbox();
     expect(
-      (await context.services.parcels.repository.list({}, false)).map((parcel) => parcel.barcode),
+      (await context.services.parcels.repository.list({}, false)).map(
+        (parcel) => parcel.tracking_number,
+      ),
     ).toEqual(["FP0009"]);
   });
 
   it("asks for a new password when the server rejects the sign-in, and retries on network errors", async () => {
     mailbox.connectError = Object.assign(new Error("auth"), { authenticationFailed: true });
     const id = await addMailbox();
-    expect((await context.services.sources.get(id))?.state).toBe("needs_sign_in");
+    expect((await context.services.connections.get(id))?.state).toBe("needs_sign_in");
 
     mailbox.connectError = undefined;
     await context.services.mail.connect(id);
     await context.services.mail.settled(id);
     mailbox.closed?.(new Error("connection reset"));
     await new Promise((resolve) => setImmediate(resolve));
-    expect((await context.services.sources.get(id))?.state).toBe("error");
+    expect((await context.services.connections.get(id))?.state).toBe("error");
   });
 
   it("starts with an unreadable mailbox and marks it instead of failing (OP-016)", async () => {
@@ -251,46 +256,48 @@ describe("mail watcher", () => {
     const badConfig = await addMailbox();
     await context.services.mail.stop();
     await context.services.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({
         secret_blob: new SecretBox(randomBytes(32)).encryptJson(mailSecret, secretAad(lostKey)),
       })
       .where("id", "=", lostKey)
       .execute();
     await context.services.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({ config: "{}" })
       .where("id", "=", badConfig)
       .execute();
 
     await expect(context.services.mail.start()).resolves.toBeUndefined();
-    expect(await context.services.sources.get(lostKey)).toMatchObject({ state: "needs_sign_in" });
-    expect(await context.services.sources.get(badConfig)).toMatchObject({
+    expect(await context.services.connections.get(lostKey)).toMatchObject({
+      state: "needs_sign_in",
+    });
+    expect(await context.services.connections.get(badConfig)).toMatchObject({
       state: "error",
-      stateDetail: "The mailbox settings are invalid.",
+      stateDetail: "The inbox settings are invalid.",
     });
   });
 
   it("refuses invalid mailbox settings on change and stores valid ones with defaults (OP-017)", async () => {
     const id = await addMailbox();
-    const before = await context.services.sources.get(id);
+    const before = await context.services.connections.get(id);
     const refused = await app.inject({
       method: "PATCH",
-      url: `/api/v1/sources/${id}`,
+      url: `/api/v1/connections/${id}`,
       headers,
       payload: { config: {} },
     });
     expect(refused.statusCode).toBe(400);
-    expect((await context.services.sources.get(id))?.config).toEqual(before?.config);
+    expect((await context.services.connections.get(id))?.config).toEqual(before?.config);
 
     const changed = await app.inject({
       method: "PATCH",
-      url: `/api/v1/sources/${id}`,
+      url: `/api/v1/connections/${id}`,
       headers,
       payload: { config: { host: "mail.example.invalid" } },
     });
     expect(changed.statusCode).toBe(200);
-    expect((await context.services.sources.get(id))?.config).toEqual({
+    expect((await context.services.connections.get(id))?.config).toEqual({
       host: "mail.example.invalid",
       port: 993,
       secure: true,
@@ -300,13 +307,13 @@ describe("mail watcher", () => {
     });
   });
 
-  it("refuses sign-in data that does not fit the plug-in when a source is added (OP-032)", async () => {
+  it("refuses sign-in data that does not fit the provider when a connection is added (OP-032)", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
       payload: {
-        plugin: "fakepost",
+        provider: "fakepost",
         kind: "account",
         label: "Post",
         config: {},
@@ -314,7 +321,7 @@ describe("mail watcher", () => {
       },
     });
     expect(response.statusCode).toBe(400);
-    expect(await context.services.sources.list()).toEqual([]);
+    expect(await context.services.connections.list()).toEqual([]);
   });
 
   it("does not read the newest mail again when the server returns it for n:* (OP-023)", async () => {
@@ -335,10 +342,10 @@ describe("mail watcher", () => {
     });
     const response = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
       payload: {
-        plugin: "imap",
+        provider: "imap",
         kind: "mail",
         label: "Inbox",
         config: { host: "imap.example.invalid" },
@@ -355,7 +362,7 @@ describe("mail watcher", () => {
   it("schedules one reconnect however often a mailbox fails before it runs (OP-040)", async () => {
     mailbox.connectError = new Error("connection refused");
     const id = await addMailbox();
-    const setState = vi.spyOn(context.services.sources, "setState");
+    const setState = vi.spyOn(context.services.connections, "setState");
     await context.services.mail.connect(id);
     await context.services.mail.connect(id);
     expect(setState).not.toHaveBeenCalled();
@@ -364,9 +371,9 @@ describe("mail watcher", () => {
   it("rejects mailboxes without a host or sign-in", async () => {
     const response = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
-      payload: { plugin: "imap", kind: "mail", label: "x", config: {} },
+      payload: { provider: "imap", kind: "mail", label: "x", config: {} },
     });
     expect(response.statusCode).toBe(400);
   });

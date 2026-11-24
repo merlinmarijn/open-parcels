@@ -1,7 +1,7 @@
 import {
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   objects,
   num,
@@ -11,11 +11,11 @@ import {
   localDay,
   epoch,
   rulesStatus,
-} from "../../../plugin/api.js";
+} from "../../../provider/api.js";
 import { BERLIN, germanTrackingUrl } from "../constants.js";
 import { asObject, asString, type Json } from "../util.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "reportUnknown">;
 
 const INCOMING = new Set(["ANKOMMEND", "EINGEHEND"]);
 const OUTGOING = new Set(["ABGEHEND", "AUSGEHEND"]);
@@ -152,16 +152,16 @@ export function normalizeDe(deps: Deps, element: Json): ParcelSnapshot | null {
 
   return snapshot({
     carrier: "dhl",
-    barcode,
-    direction: outgoing ? "outgoing" : "incoming",
+    trackingNumber: barcode,
+    direction: outgoing ? "sending" : "receiving",
     status,
     rawStatus: rawStatus === null ? null : textOf(rawStatus),
     delivered,
     deliveredAt: delivered
       ? isoTime(verlauf["datumAktuellerStatus"], { naive: { zone: BERLIN } })
       : null,
-    plannedFrom: planned.from,
-    plannedTo: planned.to,
+    expectedFrom: planned.from,
+    expectedTo: planned.to,
     pickup: status === "at_pickup_point",
     pickupPoint,
     url: germanTrackingUrl(barcode),

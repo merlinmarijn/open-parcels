@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { postaSrbije } from "../../src/carriers/posta_srbije/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up item numbers and places only.

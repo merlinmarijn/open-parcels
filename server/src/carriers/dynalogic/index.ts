@@ -4,9 +4,9 @@ import {
   defineCarrier,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   num,
   objects,
@@ -20,7 +20,7 @@ import {
   trackEach,
   unknownReporter,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "dynalogic";
 const HOST = "api.dynagroup.nl";
@@ -92,7 +92,7 @@ function timestamp(value: unknown): string | null {
   );
 }
 
-async function lookUp(http: PluginHttp, code: string, postalCode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string, postalCode: string): Promise<Json | null> {
   const url = new URL(
     `https://${HOST}/track-middleware/v1/transportorder/full/ordernumber/${encodeURIComponent(code)}/zipcode/${encodeURIComponent(postalCode.toLowerCase())}`,
   );
@@ -151,7 +151,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: parts.every((part) => part === "?") ? null : parts.join("/"),
     deliveredAt: delivered ? (events[0]?.at ?? null) : null,
@@ -162,7 +162,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<Config, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const raw = await lookUp(context.http, code, context.config.postalCode);
@@ -175,7 +175,7 @@ export const dynalogic = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
   name: "Dynalogic",
   countries: ["NL", "BE"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

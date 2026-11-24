@@ -1,4 +1,4 @@
-import { ruleStatus, type ParcelStatus } from "../../plugin/api.js";
+import { ruleStatus, type ParcelStatus } from "../../provider/api.js";
 
 /*
  * Poczta Polska scan codes, from the shared table. Keyed on the scan code, never on the coarser

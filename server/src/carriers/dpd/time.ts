@@ -1,5 +1,5 @@
 /** Date helpers for DPD Germany, whose pages show local German days and times without offsets. */
-import { UnexpectedResponseError, wallTimeAt, zonedIso } from "../../plugin/api.js";
+import { UnexpectedResponseError, wallTimeAt, zonedIso } from "../../provider/api.js";
 
 const ZONE = "Europe/Berlin";
 const DAY_MS = 24 * 3_600_000;

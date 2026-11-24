@@ -3,7 +3,7 @@ import type { Database } from "../db/schema.js";
 import { fingerprint } from "./reconciler.js";
 import { toUtc } from "./utc.js";
 
-const PARCEL_TIMES = ["status_at", "delivered_at", "planned_from", "planned_to"] as const;
+const PARCEL_TIMES = ["status_at", "delivered_at", "expected_from", "expected_to"] as const;
 
 /**
  * Rewrites times stored with an offset (`2026-11-18T14:30:00+01:00`) or in a shorter UTC form
@@ -41,7 +41,7 @@ export async function rewriteOffsetTimes(db: Kysely<Database>): Promise<number> 
         continue;
       }
       const old = { at: event.at, rawStatus: event.raw_status, location: event.location_text };
-      // Only an entry keyed on its time changes key; one keyed on the source's own id keeps it.
+      // Only an entry keyed on its time changes key; one keyed on the connection's own id keeps it.
       const key =
         fingerprint(old) === event.fingerprint ? fingerprint({ ...old, at }) : event.fingerprint;
       const clash = await trx

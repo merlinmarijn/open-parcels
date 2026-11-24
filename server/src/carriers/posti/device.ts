@@ -19,8 +19,8 @@ import {
   type Clock,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { DEVICE_MODEL, POSTI_APP } from "./keys.js";
 
 /*
@@ -132,7 +132,7 @@ export function errorCode(body: Json): string | null {
   return text(error) ?? text(body["message"]) ?? text(body["code"]);
 }
 
-async function postJson(http: PluginHttp, url: string, idToken: string, body: Json, extra = {}) {
+async function postJson(http: ProviderHttp, url: string, idToken: string, body: Json, extra = {}) {
   return http.request(new URL(url), {
     method: "POST",
     headers: {
@@ -150,7 +150,7 @@ async function postJson(http: PluginHttp, url: string, idToken: string, body: Js
  * Renews the tokens with a trust token. The form is sent as is: the base64 keys contain
  * characters percent-encoding would change, and Posti compares them literally.
  */
-async function renew(http: PluginHttp, form: string): Promise<Tokens> {
+async function renew(http: ProviderHttp, form: string): Promise<Tokens> {
   const response = await http.request(new URL(`${POSTI_APP.authService}/device_refresh`), {
     method: "POST",
     headers: FORM_HEADERS,
@@ -177,7 +177,7 @@ function pkce(): { verifier: string; challenge: string } {
 
 /** Registers a device on the account that just logged in; returns it with renewed tokens. */
 export async function provision(
-  http: PluginHttp,
+  http: ProviderHttp,
   clock: Clock,
   login: { idToken: string; refreshToken: string },
 ): Promise<{ device: Device; tokens: Tokens }> {
@@ -246,7 +246,7 @@ export async function provision(
 
 /** Renews the tokens with the device alone. Only a dropped device or a refusal means "sign in". */
 export async function refreshWithDevice(
-  http: PluginHttp,
+  http: ProviderHttp,
   clock: Clock,
   device: Device,
   idToken: string,

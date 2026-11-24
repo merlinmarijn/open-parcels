@@ -19,10 +19,10 @@ import {
   unknownReporter,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "canpar";
 const HOST = "canship.canpar.com";
@@ -56,7 +56,7 @@ function safeRaw(raw: Json): Json {
   };
 }
 
-export async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const body = await requestJson(
     http,
     new URL(`https://${HOST}/api/CanparAddons/trackByBarcodeV2`),
@@ -114,15 +114,15 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
       : dayWindow(text(raw["estimated_delivery_date"]), ZONE);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     externalRef: echoRef(text(raw["barcode"]), code),
     status,
     rawStatus:
       text(newest["code_description_en"]) ?? eventCode ?? text(raw["status_description_en"]),
     delivered,
     deliveredAt: delivered ? parseLocal(newest["local_date_time"], ZONE) : null,
-    plannedFrom: window?.from ?? null,
-    plannedTo: window?.to ?? null,
+    expectedFrom: window?.from ?? null,
+    expectedTo: window?.to ?? null,
     pickup: status === "at_pickup_point",
     pickupPoint:
       status === "at_pickup_point"
@@ -140,7 +140,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, PLAUSIBLE, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -152,7 +152,7 @@ export const canpar = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Canpar Express",
   countries: ["CA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -5,7 +5,7 @@ import {
   TransientError,
   UnexpectedResponseError,
   type HttpResponse,
-  type PluginContext,
+  type ProviderContext,
   asObject,
   isObject,
   num,
@@ -13,7 +13,7 @@ import {
   readJson,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const HOST = "apis.fedex.com";
 /** Tokens are renewed this long before FedEx says they expire. */
@@ -32,7 +32,7 @@ const storedSchema = z.object({
 });
 type Stored = z.infer<typeof storedSchema>;
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session">;
 
 const fingerprint = (credentials: Credentials): string =>
   createHash("sha256").update(credentials.clientId).digest("hex").slice(0, 16);
@@ -72,7 +72,7 @@ async function requestToken(deps: Deps, credentials: Credentials): Promise<Store
   return stored;
 }
 
-/** The access token of one source: reused while valid, renewed when expired or refused once. */
+/** The access token of one connection: reused while valid, renewed when expired or refused once. */
 export class FedExSession {
   #stored: Stored | null;
   /** One renewal per run (a session lives for one run), never one per tracked code. */

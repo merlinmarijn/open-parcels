@@ -1,4 +1,4 @@
-import { cleanText as collapse, unescapeHtml } from "../../plugin/api.js";
+import { cleanText as collapse, unescapeHtml } from "../../provider/api.js";
 
 /** Small text helpers for reading Amazon's HTML without a DOM. */
 

@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   defineCarrier,
@@ -17,10 +17,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "better_trucks";
 const HOST = "tracking.bettertrucks.com";
@@ -32,7 +32,7 @@ const DEFAULT_ZONE = "UTC";
 const stage = (code: string | null): ParcelStatus | null => ruleStatus(CARRIER_ID, code);
 
 /** The endpoint answers 200 for everything; an unknown number says UNKNOWN with no history. */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${HOST}/api/tracking/${encodeURIComponent(barcode)}`);
   url.searchParams.set("isFromExternalTracking", "true");
   const response = await http.request(url, { headers: { accept: "application/json" } });
@@ -74,13 +74,13 @@ export function betterTrucksSnapshot(
   const resolved = text(raw["tracking_number"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: resolved,
+    trackingNumber: resolved,
     status,
     rawStatus: code,
     delivered,
     deliveredAt: delivered ? isoTime(current["object_created"], { naive: { zone } }) : null,
     // A point estimate; once delivered it is rewritten to the delivery time, so it is dropped.
-    plannedFrom: delivered ? null : isoTime(raw["eta"], { naive: { zone } }),
+    expectedFrom: delivered ? null : isoTime(raw["eta"], { naive: { zone } }),
     url: rulesTrackingUrl(CARRIER_ID, resolved),
     history: newestFirst(history),
     raw,
@@ -101,14 +101,14 @@ export const betterTrucks = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Better Trucks",
   countries: ["US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
   http: {
     limits: { [HOST]: { intervalMs: 5_000, burst: 2 }, "*": { intervalMs: 10_000, burst: 1 } },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const raw = await lookUp(context.http, barcode);
       return raw === null

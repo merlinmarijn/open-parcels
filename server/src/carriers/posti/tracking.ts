@@ -15,10 +15,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "posti";
 export const AUTH_HOST = "auth-service.posti.fi";
@@ -29,7 +29,7 @@ const DECIMAL = { decimalComma: true } as const;
 const INSTANT = { naive: "utc", epoch: "ms" } as const;
 
 /**
- * Only what the plug-in reads. Pickup PINs, locker ids and sending codes are never requested,
+ * Only what the provider reads. Pickup PINs, locker ids and sending codes are never requested,
  * so they can never end up in the stored raw payload.
  */
 const QUERY = `query ConsumerSearchShipments($code: String!) {
@@ -68,7 +68,7 @@ interface Tokens {
 }
 
 /** A throwaway anonymous token pair, minted per run and kept in memory only. */
-async function mint(http: PluginHttp): Promise<Tokens> {
+async function mint(http: ProviderHttp): Promise<Tokens> {
   const response = await http.request(new URL(`https://${AUTH_HOST}/api/v1/anonymous_token`), {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -89,7 +89,7 @@ async function mint(http: PluginHttp): Promise<Tokens> {
 
 /** One search. Null when Posti has no hit; "expired" when it refused the token pair. */
 async function search(
-  http: PluginHttp,
+  http: ProviderHttp,
   tokens: Tokens,
   code: string,
 ): Promise<Json | null | "expired"> {
@@ -147,7 +147,7 @@ export class PostiTracking {
   #tokens: Tokens | null = null;
   #reminted = false;
 
-  constructor(private readonly http: PluginHttp) {}
+  constructor(private readonly http: ProviderHttp) {}
 
   async lookUp(code: string): Promise<Json | null> {
     this.#tokens ??= await mint(this.http);
@@ -227,16 +227,16 @@ export function trackingSnapshot(
   const status = mainStatus ?? history.find((event) => event.status !== null)?.status ?? null;
   const delivered = status === "delivered";
   const time = asObject(asObject(raw["delivery"])["time"]);
-  const plannedFrom = delivered ? null : isoTime(time["timestamp"], INSTANT);
+  const expectedFrom = delivered ? null : isoTime(time["timestamp"], INSTANT);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: main ?? history[0]?.rawStatus ?? null,
     delivered,
     deliveredAt: delivered ? (history[0]?.at ?? null) : null,
-    plannedFrom,
-    plannedTo: plannedFrom === null ? null : isoTime(time["timestampLatest"], INSTANT),
+    expectedFrom,
+    expectedTo: expectedFrom === null ? null : isoTime(time["timestampLatest"], INSTANT),
     pickup: status === "at_pickup_point",
     pickupPoint: pickupPoint(events, asObject(raw["pickupPoint"])),
     url: rulesTrackingUrl(CARRIER_ID, code),

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { quickpac } from "../../src/carriers/quickpac/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -30,7 +30,7 @@ describe("Quickpac tracking", () => {
     const [parcel] = (await world.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "quickpac",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Neuester Status",
       delivered: false,

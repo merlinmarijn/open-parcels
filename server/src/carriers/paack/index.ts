@@ -4,8 +4,8 @@ import {
   InvalidConfigError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { CARRIER_ID, TRACKING_HOST } from "./shared.js";
 import { isPlausible, lookUp, trackingSnapshot } from "./tracking.js";
 
@@ -22,7 +22,7 @@ const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
 async function track(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   barcodes: readonly string[],
 ): Promise<FetchResult> {
   const snapshots: ParcelSnapshot[] = [];
@@ -42,7 +42,7 @@ async function track(
     }
   }
   if (barcodes.length > 0 && asked.length === 0) {
-    // Nothing could be asked: a settings problem the source shows, not "not found" for all.
+    // Nothing could be asked: a settings problem the connection shows, not "not found" for all.
     throw new InvalidConfigError(
       "Paack needs the delivery postcode: set one for the source, or per tracking code.",
     );
@@ -55,7 +55,7 @@ export const paack = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Paack",
   countries: ["ES", "PT", "FR", "IT"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

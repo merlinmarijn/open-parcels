@@ -5,9 +5,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   CARRIER_ID,
   isObject,
@@ -30,7 +30,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
  * Looks one code up. Returns null when NZ Post does not know it yet (status_code 2, no results,
  * or a result carrying errors); an unscanned parcel looks the same, which is normal.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${TRACKING_HOST}/tracking/api/parceltrack/parcels`);
   url.searchParams.set("tracking_reference", barcode);
   const response = await http.request(url, { headers: { accept: "application/json" } });
@@ -114,7 +114,7 @@ export function trackingSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(code, barcode),
     status,
     rawStatus: latest?.rawStatus ?? null,

@@ -1,9 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { SnapshotItem } from "../../src/plugin/api.js";
+import type { SnapshotItem } from "../../src/provider/api.js";
 import { FakeWorld, fakePost, fakeShop, snapshot } from "../fakes/carriers.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
-/* Items of a parcel two sources report. Every title and code is made up. */
+/* Items of a parcel two connections report. Every title and code is made up. */
 
 let context: TestContext;
 let post: FakeWorld;
@@ -12,7 +12,7 @@ let shop: FakeWorld;
 beforeEach(async () => {
   post = new FakeWorld();
   shop = new FakeWorld();
-  context = await createTestContext({ plugins: [fakePost(post), fakeShop(shop)] });
+  context = await createTestContext({ providers: [fakePost(post), fakeShop(shop)] });
 });
 afterEach(async () => {
   await context.close();
@@ -28,9 +28,14 @@ const item = (title: string, imageUrl: string | null, price: number | null): Sna
   currency: price === null ? null : "EUR",
 });
 
-describe("items reported by two sources", () => {
-  it("stay the shop's, without flip-flopping when a plainer source reports the parcel", async () => {
-    const parcel = { carrier: "fakeshop", barcode: "SHOP0001", status: null, rawStatus: null };
+describe("items reported by two connections", () => {
+  it("stay the shop's, without flip-flopping when a plainer connection reports the parcel", async () => {
+    const parcel = {
+      carrier: "fakeshop",
+      trackingNumber: "SHOP0001",
+      status: null,
+      rawStatus: null,
+    };
     shop.listing = [
       snapshot({
         ...parcel,
@@ -38,15 +43,15 @@ describe("items reported by two sources", () => {
       }),
     ];
     post.listing = [snapshot({ ...parcel, items: [item("Kettle", null, null)] })];
-    const shopSource = await context.services.sources.create({
-      plugin: "fakeshop",
+    const shopConnection = await context.services.connections.create({
+      provider: "fakeshop",
       kind: "shop",
       label: "shop",
       config: {},
       secret: { refreshToken: ["r", "t"].join("-") },
     });
-    const other = await context.services.sources.create({
-      plugin: "fakepost",
+    const other = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},
@@ -57,25 +62,25 @@ describe("items reported by two sources", () => {
         (row) => [row.title, row.price],
       );
     for (let round = 0; round < 2; round += 1) {
-      await context.services.runner.run(shopSource.id);
+      await context.services.runner.run(shopConnection.id);
       expect(await titles()).toEqual([["Example kettle", 19.99]]);
       await context.services.runner.run(other.id);
       expect(await titles()).toEqual([["Example kettle", 19.99]]);
     }
   });
 
-  it("are filled by any source while the parcel has none", async () => {
+  it("are filled by any connection while the parcel has none", async () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0000000001",
+        trackingNumber: "FP0000000001",
         status: null,
         rawStatus: null,
         items: [item("Kettle", null, null)],
       }),
     ];
-    const other = await context.services.sources.create({
-      plugin: "fakepost",
+    const other = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},

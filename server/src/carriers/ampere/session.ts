@@ -1,5 +1,5 @@
 import {
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   CookieJar,
   isObject,
@@ -10,7 +10,7 @@ import {
   TransientError,
   UnexpectedResponseError,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const HOST = "bol.prd.amperebezorgt.nl";
 const BASE = `https://${HOST}`;
@@ -19,13 +19,13 @@ const PARCEL_PATH = /\/nl\/parcel\/([^/?#]+)/;
 /** The error page's own markers. Its Dutch text is bundled on every page, so text proves nothing. */
 const ERROR_MARKERS = ['data-test-id="error-title"', 'data-test-id="error-message"'];
 
-/** A guest session for one parcel, minted by following the e-mail link once. */
+/** A guest session for one parcel, minted by following the email link once. */
 export interface GuestSession {
   readonly cookie: string;
   readonly parcelToken: string;
 }
 
-/** The e-mail link was refused: used up, malformed or expired. Only a new link helps. */
+/** The email link was refused: used up, malformed or expired. Only a new link helps. */
 export class DeadLinkError extends SignInRejectedError {}
 
 /** The link starts at the shop's redirector and lands on the Ampère tracker. */
@@ -38,16 +38,16 @@ function allowedHop(target: URL): boolean {
   );
 }
 
-/** A dead session still answers 200, with the "open the link from your e-mail again" page. */
+/** A dead session still answers 200, with the "open the link from your email again" page. */
 const isErrorPage = (body: string): boolean =>
   ERROR_MARKERS.some((marker) => body.includes(marker));
 
 /**
- * Follows the e-mail link and keeps the session cookie and the parcel token it lands on. The
+ * Follows the email link and keeps the session cookie and the parcel token it lands on. The
  * page it lands on is the parcel page, so it is returned too (null if it is the error page).
  */
 export async function exchange(
-  http: PluginHttp,
+  http: ProviderHttp,
   link: string,
 ): Promise<{ session: GuestSession; html: string | null }> {
   let start: URL;
@@ -83,7 +83,10 @@ export async function exchange(
 }
 
 /** The server-rendered parcel page, or null when the session is no longer accepted. */
-export async function parcelPage(http: PluginHttp, session: GuestSession): Promise<string | null> {
+export async function parcelPage(
+  http: ProviderHttp,
+  session: GuestSession,
+): Promise<string | null> {
   const response = await http.request(new URL(`${BASE}/nl/parcel/${session.parcelToken}`), {
     headers: { cookie: `${COOKIE}=${session.cookie}`, accept: "text/html" },
     redirect: "manual",
@@ -101,7 +104,7 @@ export async function parcelPage(http: PluginHttp, session: GuestSession): Promi
  * The delivery window, best effort: the page alone carries everything the status needs, so a
  * failure here never fails the run. A rate limit is still passed on.
  */
-export async function deliveryWindow(http: PluginHttp, session: GuestSession): Promise<Json> {
+export async function deliveryWindow(http: ProviderHttp, session: GuestSession): Promise<Json> {
   try {
     const url = new URL(`${BASE}/api/progress`);
     url.searchParams.set("sid", session.parcelToken);

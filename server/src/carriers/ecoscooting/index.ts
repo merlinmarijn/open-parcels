@@ -6,9 +6,9 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   num,
   objects,
@@ -24,7 +24,7 @@ import {
   unknownReporter,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "ecoscooting";
 /** Ecoscooting's own tracking page reads from its parent network's public link gateway. */
@@ -41,7 +41,7 @@ function statusOf(code: string | null): ParcelStatus | null {
   return ruleStatus(CARRIER_ID, key);
 }
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const body = new URLSearchParams({
     logistics_interface: JSON.stringify({ mailNo: code, locale: "en_US", role: "endUser" }),
     msg_type: "CN_OVERSEA_LOGISTICS_INQUIRY_TRACKING",
@@ -131,12 +131,12 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const signed = status === "delivered" ? first("delivered") : undefined;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(newest["statusName"]) ?? text(newest["description"]) ?? code,
     deliveredAt: signed === undefined ? null : eventTime(signed),
-    plannedFrom: departed === undefined ? null : eventTime(departed),
-    plannedTo: departed === undefined ? null : endOfDeliveryDay(departed),
+    expectedFrom: departed === undefined ? null : eventTime(departed),
+    expectedTo: departed === undefined ? null : endOfDeliveryDay(departed),
     pickup: status === "at_pickup_point",
     pickupPoint: pickupPoint(raw),
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -146,7 +146,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<unknown, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const raw = await lookUp(context.http, code);
@@ -159,7 +159,7 @@ export const ecoscooting = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "Ecoscooting",
   countries: ["ES"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

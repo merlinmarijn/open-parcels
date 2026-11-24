@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { eltaCourier } from "../../src/carriers/elta_courier/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
@@ -47,7 +47,7 @@ describe("ELTA Courier tracking", () => {
       carrier: "elta_courier",
       status: "out_for_delivery",
       rawStatus: "Σε διανομέα προς παράδοση",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(found?.history[0]).toEqual({
       at: "2026-11-18T06:30:00.000Z",

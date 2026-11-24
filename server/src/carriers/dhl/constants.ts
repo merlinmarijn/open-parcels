@@ -1,6 +1,6 @@
-/** Endpoints and fixed values of the DHL back ends this plug-in talks to. */
+/** Endpoints and fixed values of the DHL back ends this provider talks to. */
 
-import { carrierKey, rulesTrackingUrl } from "../../plugin/api.js";
+import { carrierKey, rulesTrackingUrl } from "../../provider/api.js";
 
 export const GATEWAY_URL = "https://api-gw.dhlparcel.nl/track-trace";
 /** Codes per gateway request; a long list is split rather than sent as one huge query. */

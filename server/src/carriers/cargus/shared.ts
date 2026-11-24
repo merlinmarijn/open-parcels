@@ -14,10 +14,10 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "cargus";
 export const API_HOST = "cmacwabackend.azurewebsites.net";
@@ -91,7 +91,7 @@ export function readBody(response: HttpResponse, what: string): unknown {
  * The anonymous short trace of one AWB. An empty answer means Cargus has nothing (unknown, not
  * yet scanned or expired). A refusal is the same for every number and stops the run.
  */
-export async function shortTrace(http: PluginHttp, code: string): Promise<Json | null> {
+export async function shortTrace(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`${API_BASE}/Awbs/ShortTrace`);
   url.searchParams.set("BarCode", code);
   url.searchParams.set("lang", "EN");
@@ -173,7 +173,7 @@ export function traceSnapshot(
   const code = text(trace["awbBarcode"]) ?? "";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: history[0]?.rawStatus ?? summary,
     delivered,

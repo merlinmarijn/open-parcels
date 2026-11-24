@@ -5,8 +5,8 @@ import {
   SignInRejectedError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { ampereSnapshot, CARRIER_ID } from "./page.js";
 import {
   DeadLinkError,
@@ -20,8 +20,8 @@ import {
 
 /**
  * Ampère delivers for bol.com. There is no account: each parcel has a tracking link in the
- * shipping e-mail, which mints a guest session for that one parcel. The links are the secret;
- * the sessions they mint are kept in the source's session store, keyed by link.
+ * shipping email, which mints a guest session for that one parcel. The links are the secret;
+ * the sessions they mint are kept in the connection's session store, keyed by link.
  */
 const configSchema = z.looseObject({});
 const secretSchema = z.object({
@@ -32,7 +32,7 @@ const secretSchema = z.object({
 });
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
-type Context = PluginContext<Config, Secret>;
+type Context = ProviderContext<Config, Secret>;
 
 /** Reads one parcel; a refused session is replaced once by following its link again. */
 async function readParcel(
@@ -110,7 +110,7 @@ export const ampere = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Ampère",
   countries: ["NL"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "api_key" },

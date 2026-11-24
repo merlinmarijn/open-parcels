@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dhl } from "../../src/carriers/dhl/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { html, json, onFragment as on, World, type Route } from "./harness.js";
 
 // Made-up codes and values only.

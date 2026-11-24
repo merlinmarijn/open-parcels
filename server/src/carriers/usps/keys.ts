@@ -1,4 +1,4 @@
-import { carrierKey } from "../../plugin/api.js";
+import { carrierKey } from "../../provider/api.js";
 
 /** USPS's public Informed Delivery web client; its client id comes from the shared rules. */
 export const INFORMED = {

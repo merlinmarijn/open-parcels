@@ -15,11 +15,11 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 /** Offset-less times are UTC; numbers are epoch milliseconds. */
 const isoTime = (value: unknown): string | null =>
   kitIsoTime(value, { naive: "utc", epoch: "ms", keepFraction: true });
@@ -38,7 +38,7 @@ const MILESTONES: readonly (readonly [string, ParcelStatus | null])[] = [
   "deliveredDate",
 ].map((field) => [field, ruleStatus(CARRIER_ID, `milestone:${field}`)] as const);
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const body = await requestJson(http, new URL(`https://${HOST}/api/search`), "Colisweb tracking", {
     method: "POST",
     headers: { "content-type": "application/json" },
@@ -78,13 +78,13 @@ function toSnapshot(raw: Json, code: string, report: (c: string) => void): Parce
   );
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: step,
     delivered,
     deliveredAt: delivered ? isoTime(raw["deliveredDate"]) : null,
-    plannedFrom: from,
-    plannedTo: to === from ? null : to,
+    expectedFrom: from,
+    expectedTo: to === from ? null : to,
     url: rulesTrackingUrl(CARRIER_ID, code),
     sender: text(raw["clientName"]),
     history: newestFirst(history),
@@ -97,7 +97,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, PLAUSIBLE, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -109,7 +109,7 @@ export const colisweb = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Colisweb",
   countries: ["FR"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

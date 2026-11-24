@@ -8,8 +8,8 @@ import {
   trackEach,
   unknownReporter,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { CanadaPostAccount, LIST_HOST, TOKEN_HOST } from "./account.js";
 import {
   CARRIER_ID,
@@ -36,7 +36,7 @@ function options(config: Config): Options {
   return { zone: config.timeZone ?? "America/Toronto", lang: config.language ?? "en" };
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   const opts = options(context.config);
   return trackEach(barcodes, PLAUSIBLE, async (pin) => {
@@ -46,7 +46,7 @@ async function track(context: PluginContext<Config, Secret>, barcodes: readonly 
 }
 
 /** The account lists PINs only; each one's detail comes from the public tracking. */
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("The Canada Post account needs a username and password.");
   }
@@ -70,7 +70,7 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
       detail === null
         ? snapshot({
             carrier: CARRIER_ID,
-            barcode: pin,
+            trackingNumber: pin,
             status: null,
             rawStatus: null,
             raw: { account: item },
@@ -85,7 +85,7 @@ export const canadapost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Canada Post",
   countries: ["CA"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

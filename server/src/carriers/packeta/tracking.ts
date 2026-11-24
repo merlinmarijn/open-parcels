@@ -4,9 +4,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -29,7 +29,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
 const NOT_FOUND_ERRORS = new Set(["notfound", "packetnotfound", "not found"]);
 
 /** Looks one code up. 404, or a 200 carrying a not-found error instead of an item, means not found. */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/api/getPacketById/${encodeURIComponent(barcode)}/en`,
   );
@@ -107,7 +107,7 @@ export function trackingSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code as tracked; Packeta's own spelling is only a reference.
-    barcode,
+    trackingNumber: barcode,
     externalRef: ownCode !== null && ownCode !== barcode ? ownCode : null,
     status,
     rawStatus: text(raw["packetStatus"]) ?? code,

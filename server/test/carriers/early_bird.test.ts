@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { earlyBird } from "../../src/carriers/early_bird/index.js";
 import { register } from "../../src/engine/registry.js";
-import { CaptchaError } from "../../src/plugin/errors.js";
+import { CaptchaError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
@@ -45,7 +45,7 @@ describe("Early Bird tracking", () => {
       status: "at_pickup_point",
       pickup: true,
       rawStatus: "We have scheduled a new attempt for tomorrow.",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(found?.history.map((entry) => [entry.at, entry.status])).toEqual([
       ["2026-11-18T06:00:00.000Z", null],

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ampere } from "../../src/carriers/ampere/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { html, json, on, World, type Route } from "./harness.js";
 
 // Made-up links, codes and names only.
@@ -17,7 +17,7 @@ function redirect(location: string, cookie?: string): Response {
   return new Response(null, { status: 302, headers });
 }
 
-/** The e-mail link: shop redirector → key page → parcel page, setting the session cookie. */
+/** The email link: shop redirector → key page → parcel page, setting the session cookie. */
 function exchangeRoutes(token: string, cookie: string): Route[] {
   return [
     on("GET link.bol.com/t/mailtoken-1", redirect(`https://${HOST}/nl/key/k-${token}`)),
@@ -64,11 +64,11 @@ describe("Ampère via e-mail tracking links", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "ampere",
-      barcode: BARCODE,
+      trackingNumber: BARCODE,
       status: "out_for_delivery",
       rawStatus: "Bezorger is onderweg",
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       sender: "Example Shop",
       url: null,
     });
@@ -94,7 +94,7 @@ describe("Ampère via e-mail tracking links", () => {
     expect(parcel).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T11:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(w.requests().some((r) => r.startsWith("GET link.bol.com"))).toBe(false);
   });

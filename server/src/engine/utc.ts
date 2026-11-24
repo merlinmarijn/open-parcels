@@ -1,4 +1,4 @@
-import type { ParcelSnapshot } from "../plugin/snapshot.js";
+import type { ParcelSnapshot } from "../provider/snapshot.js";
 
 /** A date-time that carries its own offset or `Z`, so it names one instant. */
 const ZONED_DATE_TIME =
@@ -19,13 +19,13 @@ export function toUtc(value: string | null): string | null {
   return Number.isNaN(at) ? value : new Date(at).toISOString();
 }
 
-/** Every time in a snapshot as UTC, so plug-ins that send offsets cannot break the ordering. */
+/** Every time in a snapshot as UTC, so providers that send offsets cannot break the ordering. */
 export function utcSnapshot(snapshot: ParcelSnapshot): ParcelSnapshot {
   return {
     ...snapshot,
     deliveredAt: toUtc(snapshot.deliveredAt),
-    plannedFrom: toUtc(snapshot.plannedFrom),
-    plannedTo: toUtc(snapshot.plannedTo),
+    expectedFrom: toUtc(snapshot.expectedFrom),
+    expectedTo: toUtc(snapshot.expectedTo),
     history: snapshot.history.map((event) => ({ ...event, at: toUtc(event.at) })),
     order:
       snapshot.order === null

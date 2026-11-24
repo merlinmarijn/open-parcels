@@ -43,7 +43,7 @@ describe("a stored raw payload", () => {
 
     beforeEach(async () => {
       post = new FakeWorld();
-      context = await createTestContext({ plugins: [fakePost(post)] });
+      context = await createTestContext({ providers: [fakePost(post)] });
     });
     afterEach(async () => {
       await context.close();
@@ -53,20 +53,20 @@ describe("a stored raw payload", () => {
       post.listing = [
         snapshot({
           carrier: "fakepost",
-          barcode: "FP0000000077",
+          trackingNumber: "FP0000000077",
           status: "delivered",
           rawStatus: "x",
           raw: PERSONAL,
         }),
       ];
-      const source = await context.services.sources.create({
-        plugin: "fakepost",
+      const connection = await context.services.connections.create({
+        provider: "fakepost",
         kind: "account",
         label: "account",
         config: {},
         secret: { username: "user@example.invalid", password: ["p", "q"].join("-") },
       });
-      await context.services.runner.run(source.id);
+      await context.services.runner.run(connection.id);
       const read = async () =>
         JSON.parse(
           (

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { seur } from "../../src/carriers/seur/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -57,11 +57,11 @@ describe("SEUR account", () => {
     expect(result.complete).toBe(true);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "seur",
-      barcode: "TEST0001",
-      direction: "incoming",
+      trackingNumber: "TEST0001",
+      direction: "receiving",
       status: "out_for_delivery",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       sender: "Tienda de Prueba",
       receiver: "Persona Prueba",
       weightKg: 1.5,
@@ -72,7 +72,7 @@ describe("SEUR account", () => {
       "registered",
     ]);
     expect(result.snapshots[1]).toMatchObject({
-      direction: "outgoing",
+      direction: "sending",
       delivered: true,
       deliveredAt: "2026-11-15T08:00:00.000Z",
     });

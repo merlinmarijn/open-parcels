@@ -1,4 +1,4 @@
-import { isoTime, zonedIso, type WallTime } from "../../plugin/api.js";
+import { isoTime, zonedIso, type WallTime } from "../../provider/api.js";
 
 /**
  * A tracker time. `sortKey` orders events within one parcel (local times are compared as they

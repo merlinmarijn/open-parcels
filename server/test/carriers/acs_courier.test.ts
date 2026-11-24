@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { acsCourier } from "../../src/carriers/acs_courier/index.js";
-import { RateLimitedError, TransientError } from "../../src/plugin/errors.js";
+import { RateLimitedError, TransientError } from "../../src/provider/errors.js";
 import { html, json, on, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -40,11 +40,11 @@ describe("ACS Courier tracking", () => {
     const [parcel] = (await w.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "acs_courier",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "On the way to the hub",
-      plannedFrom: "2026-11-19T22:00:00.000Z",
-      plannedTo: "2026-11-20T21:59:59.000Z",
+      expectedFrom: "2026-11-19T22:00:00.000Z",
+      expectedTo: "2026-11-20T21:59:59.000Z",
       sender: "Example Shop",
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -65,7 +65,7 @@ describe("ACS Courier tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T10:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(w.requests()).toEqual([SEARCH]);
   });

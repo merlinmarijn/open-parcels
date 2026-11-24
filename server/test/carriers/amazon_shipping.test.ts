@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { amazonShipping } from "../../src/carriers/amazon_shipping/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -50,10 +50,10 @@ describe("Amazon Shipping tracking", () => {
     const [parcel] = (await w.track([UK])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "amazon",
-      barcode: UK,
+      trackingNumber: UK,
       status: "in_transit",
       rawStatus: "InTransit",
-      plannedFrom: "2026-11-20T00:00:00.000Z",
+      expectedFrom: "2026-11-20T00:00:00.000Z",
       sender: "Example Brand",
       url: `https://track.amazon.co.uk/tracking/${UK}`,
     });
@@ -92,7 +92,7 @@ describe("Amazon Shipping tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T11:45:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

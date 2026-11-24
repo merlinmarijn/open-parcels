@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { slovakParcelService } from "../../src/carriers/slovak_parcel_service/index.js";
 import { slovakTime } from "../../src/carriers/slovak_parcel_service/parse.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -43,11 +43,11 @@ describe("Slovak Parcel Service tracking", () => {
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "slovak_parcel_service",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Na ceste",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://mysps.sk/sk/tracking/${CODE}`,
     });
     // November is CET, one hour ahead of UTC.

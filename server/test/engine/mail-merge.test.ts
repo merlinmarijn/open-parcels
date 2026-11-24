@@ -4,12 +4,12 @@ import { healState, mergeParcel, type ParcelState } from "../../src/engine/merge
 import { maskIdentifiers } from "../../src/engine/vocab.js";
 import { createMailInterpreter } from "../../src/mail/interpret.js";
 import type { MailInput } from "../../src/mail/types.js";
-import { snapshot, type ParcelSnapshot, type SnapshotEvent } from "../../src/plugin/snapshot.js";
+import { snapshot, type ParcelSnapshot, type SnapshotEvent } from "../../src/provider/snapshot.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
 // A made-up version of a Hermes parcel seen live: the carrier says delivered, and a few seconds
 // later its delivery mail arrives twice with wording the old rules did not map.
-const BARCODE = "H1000012000000109999";
+const TRACKING_NUMBER = "H1000012000000109999";
 const OUT_FOR_DELIVERY: SnapshotEvent = {
   at: "2026-11-18T07:30:00.000Z",
   status: "out_for_delivery",
@@ -27,7 +27,7 @@ const SUBJECT = "Erfolgreiche Haustürzustellung";
 function hermesSnapshot(): ParcelSnapshot {
   return snapshot({
     carrier: "hermes",
-    barcode: BARCODE,
+    trackingNumber: TRACKING_NUMBER,
     status: "delivered",
     rawStatus: "DELIVERED_HOMEDELIVERY",
     delivered: true,
@@ -49,7 +49,7 @@ function mailEntry(at: string, id?: string): SnapshotEvent {
 function statuslessMail(at: string, id?: string): ParcelSnapshot {
   return snapshot({
     carrier: "hermes",
-    barcode: BARCODE,
+    trackingNumber: TRACKING_NUMBER,
     status: null,
     rawStatus: SUBJECT,
     history: [mailEntry(at, id)],
@@ -61,7 +61,7 @@ function mail(date: string): MailInput {
     messageId: "<made-up-1@example.invalid>",
     from: "Hermes <noreply@paketankuendigung.myhermes.de>",
     subject: SUBJECT,
-    text: `Ihre Sendung ${BARCODE} haben wir heute an Ihrer Haustür übergeben.`,
+    text: `Ihre Sendung ${TRACKING_NUMBER} haben wir heute an Ihrer Haustür übergeben.`,
     html: null,
     date: new Date(date),
   };
@@ -148,12 +148,12 @@ describe("the Hermes delivery mail", () => {
 
 describe("masking identifiers in recorded mail subjects", () => {
   it("keeps the wording and drops numbers", () => {
-    expect(maskIdentifiers(`Ihre Sendung ${BARCODE} kommt`)).toBe("Ihre Sendung # kommt");
+    expect(maskIdentifiers(`Ihre Sendung ${TRACKING_NUMBER} kommt`)).toBe("Ihre Sendung # kommt");
     expect(maskIdentifiers(SUBJECT)).toBe(SUBJECT);
   });
 });
 
-describe("the reconciler with a carrier and a mail source", () => {
+describe("the reconciler with a carrier and a mail connection", () => {
   let context: TestContext;
 
   beforeEach(async () => {
@@ -163,13 +163,13 @@ describe("the reconciler with a carrier and a mail source", () => {
     await context.close();
   });
 
-  async function addSource(id: string, kind: "tracking" | "mail"): Promise<void> {
+  async function addConnection(id: string, kind: "tracking" | "mail"): Promise<void> {
     const now = "2026-11-18T00:00:00.000Z";
     await context.services.db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id,
-        plugin: kind === "mail" ? "imap" : "hermes",
+        provider: kind === "mail" ? "imap" : "hermes",
         kind,
         label: id,
         config: "{}",
@@ -191,13 +191,13 @@ describe("the reconciler with a carrier and a mail source", () => {
     return context.services.db
       .selectFrom("parcels")
       .selectAll()
-      .where("barcode", "=", BARCODE)
+      .where("tracking_number", "=", TRACKING_NUMBER)
       .executeTakeFirstOrThrow();
   }
 
   it("keeps the parcel delivered, stores one entry per mail and records unmapped wording", async () => {
-    await addSource("carrier", "tracking");
-    await addSource("mailbox", "mail");
+    await addConnection("carrier", "tracking");
+    await addConnection("mailbox", "mail");
     const { reconciler, db } = context.services;
     await reconciler.ingest("carrier", { snapshots: [hermesSnapshot()], complete: false });
     const duplicate = (at: string): ParcelSnapshot =>
@@ -217,12 +217,12 @@ describe("the reconciler with a carrier and a mail source", () => {
       .execute();
     expect(events.filter((event) => event.raw_status === SUBJECT)).toHaveLength(1);
     const vocab = await db.selectFrom("unknown_vocab").selectAll().execute();
-    expect(vocab).toMatchObject([{ plugin: "hermes", kind: "mail_subject", key: SUBJECT }]);
+    expect(vocab).toMatchObject([{ provider: "hermes", kind: "mail_subject", key: SUBJECT }]);
   });
 
   it("repairs a parcel already stored as unknown, idempotently", async () => {
-    await addSource("carrier", "tracking");
-    await addSource("mailbox", "mail");
+    await addConnection("carrier", "tracking");
+    await addConnection("mailbox", "mail");
     const { reconciler, db } = context.services;
     await reconciler.ingest("carrier", { snapshots: [hermesSnapshot()], complete: false });
     const stored = await parcelRow();
@@ -244,8 +244,8 @@ describe("the reconciler with a carrier and a mail source", () => {
   });
 
   it("heals an unknown parcel on its next reconcile", async () => {
-    await addSource("carrier", "tracking");
-    await addSource("mailbox", "mail");
+    await addConnection("carrier", "tracking");
+    await addConnection("mailbox", "mail");
     const { reconciler, db } = context.services;
     await reconciler.ingest("carrier", { snapshots: [hermesSnapshot()], complete: false });
     const stored = await parcelRow();
@@ -268,11 +268,11 @@ describe("an expected delivery the carrier withdrew", () => {
       null,
       snapshot({
         carrier: "hermes",
-        barcode: BARCODE,
+        trackingNumber: TRACKING_NUMBER,
         status: "out_for_delivery",
         rawStatus: "Out",
-        plannedFrom: "2026-11-18T09:00:00.000Z",
-        plannedTo: "2026-11-18T11:00:00.000Z",
+        expectedFrom: "2026-11-18T09:00:00.000Z",
+        expectedTo: "2026-11-18T11:00:00.000Z",
         history: [OUT_FOR_DELIVERY],
       }),
       "carrier",
@@ -282,7 +282,7 @@ describe("an expected delivery the carrier withdrew", () => {
         planned,
         snapshot({
           carrier: "hermes",
-          barcode: BARCODE,
+          trackingNumber: TRACKING_NUMBER,
           status: "in_transit",
           rawStatus: "Missed",
           historyComplete,
@@ -290,7 +290,7 @@ describe("an expected delivery the carrier withdrew", () => {
         }),
         "carrier",
       );
-    expect(missed(true)).toMatchObject({ plannedFrom: null, plannedTo: null });
-    expect(missed(false)).toMatchObject({ plannedFrom: "2026-11-18T09:00:00.000Z" });
+    expect(missed(true)).toMatchObject({ expectedFrom: null, expectedTo: null });
+    expect(missed(false)).toMatchObject({ expectedFrom: "2026-11-18T09:00:00.000Z" });
   });
 });

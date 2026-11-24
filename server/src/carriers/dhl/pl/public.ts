@@ -13,8 +13,8 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
-} from "../../../plugin/api.js";
+  type ProviderHttp,
+} from "../../../provider/api.js";
 import { solveAltcha } from "./altcha.js";
 
 export const PL_HOST = "mojdhl.pl";
@@ -31,7 +31,7 @@ export interface PlRequest {
 }
 
 export async function plCall(
-  http: PluginHttp,
+  http: ProviderHttp,
   path: string,
   request: PlRequest = {},
 ): Promise<{ status: number; body: unknown }> {
@@ -52,7 +52,7 @@ export async function plCall(
 }
 
 /** A fresh, solved challenge: each one is single-use. */
-export async function captcha(http: PluginHttp, jar?: CookieJar): Promise<string> {
+export async function captcha(http: ProviderHttp, jar?: CookieJar): Promise<string> {
   const { status, body } = await plCall(
     http,
     "/auth/captcha/challenge",
@@ -64,7 +64,7 @@ export async function captcha(http: PluginHttp, jar?: CookieJar): Promise<string
   return await solveAltcha(body);
 }
 
-async function postStatus(http: PluginHttp, codes: readonly string[]) {
+async function postStatus(http: ProviderHttp, codes: readonly string[]) {
   const body: Record<string, string> = Object.fromEntries(
     codes.map((code, index) => [`number${String(index + 1)}`, code]),
   );
@@ -87,7 +87,7 @@ function rejected(codes: readonly string[], body: unknown): Set<string> {
  * validator refuses fails the batch with a 422 naming it; the batch is sent once more without it.
  */
 export async function lookUpPublic(
-  http: PluginHttp,
+  http: ProviderHttp,
   keys: readonly string[],
 ): Promise<Map<string, Json>> {
   let codes = keys.filter((code) => code.length >= MIN_CODE_LENGTH);
@@ -150,14 +150,14 @@ export function publicSnapshot(
   const shipmentNumber = text(raw["shipmentNumber"]);
   return snapshot({
     carrier: "dhl",
-    barcode: code,
+    trackingNumber: code,
     externalRef: shipmentNumber !== null && shipmentNumber !== code ? shipmentNumber : null,
     status,
     rawStatus: text(raw["step"]) ?? text(raw["status"]),
     delivered,
     deliveredAt: delivered ? (utc(raw["receiptDateUtc"]) ?? utc(raw["deliveryDateUtc"])) : null,
-    plannedFrom: delivered ? null : utc(raw["planOfDeliveryFromUtc"]),
-    plannedTo: delivered ? null : utc(raw["planOfDeliveryToUtc"]),
+    expectedFrom: delivered ? null : utc(raw["planOfDeliveryFromUtc"]),
+    expectedTo: delivered ? null : utc(raw["planOfDeliveryToUtc"]),
     pickup: status === "at_pickup_point",
     sender: text(raw["sender"]),
     raw: Object.fromEntries(Object.entries(raw).filter(([key]) => key !== "shipmentPin")),

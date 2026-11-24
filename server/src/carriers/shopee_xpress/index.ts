@@ -10,9 +10,9 @@ import {
   type HostLimit,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, MARKET_IDS, MARKETS, orderSnapshot, type Market } from "./parse.js";
 
 const CODE_PATTERN = carrierPattern("shopee_xpress");
@@ -29,7 +29,7 @@ const secretSchema = z.null();
  * looks the same for an unknown code and a broken backend, so null means "no answer", not
  * "does not exist".
  */
-async function lookUp(http: PluginHttp, code: string, market: Market): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string, market: Market): Promise<Json | null> {
   const { host, language } = MARKETS[market];
   const url = new URL(`https://${host}/shipment/order/open/order/get_order_info`);
   url.searchParams.set("spx_tn", code);
@@ -52,7 +52,7 @@ async function lookUp(http: PluginHttp, code: string, market: Market): Promise<J
   return data;
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const market = context.config.market;
   const snapshots: ParcelSnapshot[] = [];
   let complete = true;
@@ -79,7 +79,7 @@ export const shopeeXpress = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Shopee Xpress",
   countries: ["BR", "ID", "MY", "PH", "TH", "VN"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { straightship } from "../../src/carriers/straightship/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -43,11 +43,11 @@ describe("Straightship tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "straightship",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Package will be delivered before 9:00pm",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T08:00:00.000Z", "out_for_delivery"],

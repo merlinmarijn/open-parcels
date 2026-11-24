@@ -1,4 +1,4 @@
-import type { FetchResult, Json, ParcelSnapshot, PluginContext } from "../../plugin/api.js";
+import type { FetchResult, Json, ParcelSnapshot, ProviderContext } from "../../provider/api.js";
 import { fetchGateway, normalizeGateway } from "./gateway.js";
 import { fetchIberia, iberiaShaped, normalizeIberia } from "./iberia.js";
 import { mergeAnswers, type Answer } from "./merge.js";
@@ -6,9 +6,9 @@ import { lookUpPublic, publicSnapshot } from "./pl/public.js";
 import { fetchSweden, normalizeSweden } from "./sweden.js";
 import { fetchUnified, normalizeUnified } from "./unified.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "reportUnknown">;
 
-/** Regional back ends asked in addition to the gateway; off unless the source turns them on. */
+/** Regional back ends asked in addition to the gateway; off unless the connection turns them on. */
 export interface Regional {
   /** DHL eCommerce Iberia (Spain and Portugal): one request per code. */
   readonly iberia: boolean;
@@ -27,7 +27,7 @@ export function normalizeCode(code: string): string {
 
 /**
  * Looks codes up on every back end that can answer them: the keyless gateway in one batch, the
- * regional back ends the source turned on, then DHL's official API when the user gave a key. A
+ * regional back ends the connection turned on, then DHL's official API when the user gave a key. A
  * failing back end fails the run (it is retried with backoff), so a missing code always means
  * "not found", never "not asked".
  */

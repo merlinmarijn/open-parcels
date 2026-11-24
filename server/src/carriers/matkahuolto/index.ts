@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCarrier, trackEach, type PluginContext } from "../../plugin/api.js";
+import { defineCarrier, trackEach, type ProviderContext } from "../../provider/api.js";
 import {
   CARRIER_ID,
   BARCODE_PATTERN,
@@ -14,7 +14,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = (kind: string, key: string): void => {
     context.reportUnknown(kind, key);
   };
@@ -29,7 +29,7 @@ export const matkahuolto = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Matkahuolto",
   countries: ["FI"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -1,4 +1,4 @@
-import { epoch, type ParcelSnapshot, type SnapshotEvent } from "../../plugin/api.js";
+import { epoch, type ParcelSnapshot, type SnapshotEvent } from "../../provider/api.js";
 
 export interface Answer {
   readonly backend: "public" | "official";
@@ -36,13 +36,13 @@ export function mergeAnswers(answers: readonly Answer[]): ParcelSnapshot | null 
   }
   history.sort((a, b) => epoch(a.at) - epoch(b.at));
   const base = primary;
-  const fill = <K extends "weightKg" | "plannedFrom" | "plannedTo">(key: K): ParcelSnapshot[K] =>
+  const fill = <K extends "weightKg" | "expectedFrom" | "expectedTo">(key: K): ParcelSnapshot[K] =>
     base[key] ?? parcels.find((p) => p[key] !== null)?.[key] ?? null;
   const windowed = base.delivered
-    ? { plannedFrom: null, plannedTo: null }
+    ? { expectedFrom: null, expectedTo: null }
     : {
-        plannedFrom: fill("plannedFrom"),
-        plannedTo: fill("plannedTo"),
+        expectedFrom: fill("expectedFrom"),
+        expectedTo: fill("expectedTo"),
       };
   return {
     ...base,

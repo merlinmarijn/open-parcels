@@ -13,7 +13,7 @@ import {
   type ParcelSnapshot,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "gofo";
 /** Transport A answers in this zone's wall-clock time but always stamps a fixed -07:00. */
@@ -96,7 +96,7 @@ export function toSnapshot(
     (isObject(raw["lastTrackEvent"]) ? raw["lastTrackEvent"] : {});
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus,
     delivered,

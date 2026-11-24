@@ -8,8 +8,8 @@ import {
   type CookieJar,
   type HttpResponse,
   type SessionStore,
-} from "../../plugin/api.js";
-import type { PluginHttp } from "../../plugin/api.js";
+} from "../../provider/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 
 export const LABEL = "Swiss Post";
 
@@ -26,11 +26,11 @@ export class TrackerSession {
   #csrf: string | null = null;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly jar: CookieJar,
   ) {}
 
-  static restore(http: PluginHttp, store: SessionStore): TrackerSession {
+  static restore(http: ProviderHttp, store: SessionStore): TrackerSession {
     const saved = asObject(store.load());
     const session = new TrackerSession(http, restoreJar(saved["jar"]));
     session.#user = typeof saved["user"] === "string" ? saved["user"] : null;

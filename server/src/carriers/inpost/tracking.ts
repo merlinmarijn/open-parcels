@@ -9,9 +9,9 @@ import {
   TransientError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   CARRIER_ID,
   isoTime,
@@ -30,7 +30,7 @@ export const BARCODE_PATTERN = carrierPattern("inpost");
  * or an answer without a tracking number that reports 404 itself. A body reporting status 500
  * is an outage behind an HTTP 200, not a parcel state.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${TRACKING_HOST}/api/tracking/${encodeURIComponent(barcode)}`);
   url.searchParams.set("language", "en");
   const response = await http.request(url, { headers: { accept: "application/json" } });
@@ -78,7 +78,7 @@ export function trackingSnapshot(
   const number = text(raw["trackingNumber"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: number,
+    trackingNumber: number,
     status,
     rawStatus: text(raw["statusTitle"]) ?? code,
     delivered,

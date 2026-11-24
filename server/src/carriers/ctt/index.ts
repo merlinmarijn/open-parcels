@@ -16,10 +16,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { EXPRESS_HOST, expressSnapshot, isExpressCode, lookUpExpress } from "./express.js";
 import { lookUpPortal, PORTAL_HOST } from "./portal.js";
 
@@ -67,7 +67,7 @@ function portalSnapshot(raw: Json, code: string, report: (c: string) => void): P
   const barcode = text(raw["ObjectCode"]) ?? code;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: newest === undefined ? null : text(newest["State"]),
     delivered: status === "delivered",
@@ -87,7 +87,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, PLAUSIBLE, async (barcode) => {
     const code = barcode.toUpperCase();
@@ -108,7 +108,7 @@ export const ctt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "CTT",
   countries: ["PT", "ES"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

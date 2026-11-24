@@ -5,7 +5,7 @@ import {
   wallTimeAt,
   zonedIso,
   type Rules,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { foldText } from "./text.js";
 
 /** A calendar day in the page's zone. */

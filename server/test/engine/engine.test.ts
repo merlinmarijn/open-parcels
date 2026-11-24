@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { SignInRejectedError, RateLimitedError, TransientError } from "../../src/plugin/api.js";
+import { SignInRejectedError, RateLimitedError, TransientError } from "../../src/provider/api.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 import { FakeWorld, fakePost, fakeShop, scan, snapshot } from "../fakes/carriers.js";
 
@@ -13,58 +13,58 @@ let shop: FakeWorld;
 beforeEach(async () => {
   post = new FakeWorld();
   shop = new FakeWorld();
-  context = await createTestContext({ plugins: [fakePost(post), fakeShop(shop)] });
+  context = await createTestContext({ providers: [fakePost(post), fakeShop(shop)] });
 });
 afterEach(async () => {
   await context.close();
 });
 
 async function addAccount(): Promise<string> {
-  const source = await context.services.sources.create({
-    plugin: "fakepost",
+  const connection = await context.services.connections.create({
+    provider: "fakepost",
     kind: "account",
     label: "Fake account",
     config: {},
     secret: { username: "user@example.invalid", password: ["made", "up"].join("-") },
   });
-  return source.id;
+  return connection.id;
 }
 
 async function addShop(): Promise<string> {
-  const source = await context.services.sources.create({
-    plugin: "fakeshop",
+  const connection = await context.services.connections.create({
+    provider: "fakeshop",
     kind: "shop",
     label: "Shop",
     config: {},
     secret: null,
   });
-  return source.id;
+  return connection.id;
 }
 
 /**
- * Events in order, without the `source.run_finished` every run ends with and the `source.added`
- * every new source fires (see source-events.test.ts).
+ * Events in order, without the `connection.run_finished` every run ends with and the `connection.added`
+ * every new connection fires (see connection-events.test.ts).
  */
 async function eventTypes(): Promise<string[]> {
   const rows = await context.services.db
     .selectFrom("outbox")
     .select("type")
-    .where("type", "not in", ["source.run_finished", "source.added"])
+    .where("type", "not in", ["connection.run_finished", "connection.added"])
     .orderBy("seq")
     .execute();
   return rows.map((row) => row.type);
 }
 
-async function sourceRow(id: string) {
+async function connectionRow(id: string) {
   return context.services.db
-    .selectFrom("sources")
+    .selectFrom("connections")
     .selectAll()
     .where("id", "=", id)
     .executeTakeFirstOrThrow();
 }
 
 async function runNow(id: string): Promise<void> {
-  await context.services.sources.requestRun(id);
+  await context.services.connections.requestRun(id);
   await context.services.scheduler.runDue();
 }
 
@@ -73,7 +73,7 @@ describe("first sync", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
         history: [
@@ -83,7 +83,7 @@ describe("first sync", () => {
       }),
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0002",
+        trackingNumber: "FP0002",
         status: "delivered",
         rawStatus: "Delivered",
         deliveredAt: "2026-11-10T12:00:00Z",
@@ -94,9 +94,9 @@ describe("first sync", () => {
 
     const parcels = await context.services.parcels.repository.list({}, true);
     expect(parcels).toHaveLength(2);
-    const active = parcels.find((parcel) => parcel.barcode === "FP0001");
+    const active = parcels.find((parcel) => parcel.tracking_number === "FP0001");
     expect(active?.history.map((entry) => entry.raw_status)).toEqual(["Accepted", "On its way"]);
-    expect(active?.sources[0]).toMatchObject({ plugin: "fakepost", role: "primary" });
+    expect(active?.connections[0]).toMatchObject({ provider: "fakepost", role: "primary" });
     expect(await eventTypes()).toEqual(["parcel.registered"]);
 
     // Re-running with the same data writes no duplicate history and no new events.
@@ -113,7 +113,7 @@ describe("event rules", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -123,18 +123,18 @@ describe("event rules", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "out_for_delivery",
         rawStatus: "Out for delivery",
-        plannedFrom: "2026-11-18T15:00:00Z",
-        plannedTo: "2026-11-18T18:00:00Z",
+        expectedFrom: "2026-11-18T15:00:00Z",
+        expectedTo: "2026-11-18T18:00:00Z",
       }),
     ];
     await runNow(id);
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "delivered",
         rawStatus: "Delivered",
         deliveredAt: "2026-11-18T16:05:00Z",
@@ -151,8 +151,8 @@ describe("event rules", () => {
     const parcel = (await context.services.parcels.repository.list({}, false))[0];
     expect(parcel).toMatchObject({
       delivered: true,
-      planned_from: null,
-      planned_to: null,
+      expected_from: null,
+      expected_to: null,
       delivered_at: "2026-11-18T16:05:00.000Z",
     });
   });
@@ -162,7 +162,7 @@ describe("event rules", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -173,7 +173,7 @@ describe("event rules", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "out_for_delivery",
         rawStatus: "Out for delivery",
       }),
@@ -198,7 +198,7 @@ describe("event rules", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: null,
         rawStatus: "Mystery code X42",
         history: [
@@ -214,7 +214,7 @@ describe("event rules", () => {
     expect((await eventTypes()).filter((type) => type === "vocab.unknown")).toHaveLength(1);
     const vocab = await context.services.db.selectFrom("unknown_vocab").selectAll().execute();
     expect(vocab).toEqual([
-      expect.objectContaining({ plugin: "fakepost", kind: "status_code", key: "X42", count: 2 }),
+      expect.objectContaining({ provider: "fakepost", kind: "status_code", key: "X42", count: 2 }),
     ]);
   });
 });
@@ -239,7 +239,7 @@ describe("hand-off between a shop and a carrier", () => {
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: "SHOP-1",
+        trackingNumber: "SHOP-1",
         status: "registered",
         rawStatus: "Ordered",
         order,
@@ -252,12 +252,12 @@ describe("hand-off between a shop and a carrier", () => {
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: "SHOP-1",
+        trackingNumber: "SHOP-1",
         status: "in_transit",
         rawStatus: "Shipped",
         order,
         items: [item],
-        handoff: { carrier: "fakepost", barcode: "FP0009" },
+        handoff: { carrier: "fakepost", trackingNumber: "FP0009" },
       }),
     ];
     await runNow(shopId);
@@ -265,7 +265,7 @@ describe("hand-off between a shop and a carrier", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0009",
+        trackingNumber: "FP0009",
         status: "out_for_delivery",
         rawStatus: "Out for delivery",
         history: [scan("2026-11-18T09:00:00Z", "Out for delivery", "out_for_delivery")],
@@ -277,7 +277,7 @@ describe("hand-off between a shop and a carrier", () => {
     expect(parcels).toHaveLength(1);
     expect(parcels[0]).toMatchObject({
       carrier: "fakepost",
-      barcode: "FP0009",
+      tracking_number: "FP0009",
       status: "out_for_delivery",
       order: { shop: "fakeshop" },
       items: [{ title: "Example widget" }],
@@ -286,7 +286,10 @@ describe("hand-off between a shop and a carrier", () => {
     expect(parcels[0]?.items[0]?.image_url).toMatch(/^\/img\/[\w-]+\.[\w-]{32}$/);
     const outbox = await context.services.db.selectFrom("outbox").select("payload").execute();
     expect(JSON.stringify(outbox)).not.toContain("images.example.invalid");
-    expect(parcels[0]?.sources.map((source) => source.role).sort()).toEqual(["handoff", "primary"]);
+    expect(parcels[0]?.connections.map((connection) => connection.role).sort()).toEqual([
+      "handoff",
+      "primary",
+    ]);
   });
 
   it("does not let the shop's older view overwrite the carrier's newer scan", async () => {
@@ -294,7 +297,7 @@ describe("hand-off between a shop and a carrier", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0009",
+        trackingNumber: "FP0009",
         status: "out_for_delivery",
         rawStatus: "Out for delivery",
         history: [scan("2026-11-18T09:00:00Z", "Out for delivery", "out_for_delivery")],
@@ -305,11 +308,11 @@ describe("hand-off between a shop and a carrier", () => {
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: "SHOP-1",
+        trackingNumber: "SHOP-1",
         status: "in_transit",
         rawStatus: "Shipped",
         history: [scan("2026-11-17T09:00:00Z", "Shipped", "in_transit")],
-        handoff: { carrier: "fakepost", barcode: "FP0009" },
+        handoff: { carrier: "fakepost", trackingNumber: "FP0009" },
       }),
     ];
     await runNow(shopId);
@@ -325,7 +328,7 @@ describe("parcel.removed", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -341,12 +344,12 @@ describe("parcel.removed", () => {
     expect((await eventTypes()).filter((type) => type === "parcel.removed")).toHaveLength(1);
   });
 
-  it("judges nothing while the source is failing, and forgets the absence when the parcel returns", async () => {
+  it("judges nothing while the connection is failing, and forgets the absence when the parcel returns", async () => {
     const id = await addAccount();
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -363,7 +366,7 @@ describe("parcel.removed", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -378,7 +381,7 @@ describe("parcel.removed", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
@@ -398,14 +401,14 @@ describe("scheduler", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
       }),
     ];
     const ran = await context.services.scheduler.runDue();
     expect(ran).toBe(1);
-    const row = await sourceRow(id);
+    const row = await connectionRow(id);
     const delay = Date.parse(row.next_run_at ?? "") - context.clock.now().getTime();
     expect(delay).toBeGreaterThanOrEqual(45 * MINUTE);
     expect(delay).toBeLessThanOrEqual(51 * MINUTE);
@@ -416,33 +419,35 @@ describe("scheduler", () => {
     const id = await addAccount();
     post.failWith = new TransientError("timeout");
     await context.services.scheduler.runDue();
-    let row = await sourceRow(id);
+    let row = await connectionRow(id);
     expect(row).toMatchObject({ state: "error", consecutive_failures: 1 });
     expect(Date.parse(row.next_run_at ?? "") - context.clock.now().getTime()).toBe(5 * MINUTE);
 
     post.failWith = new RateLimitedError("slow down", 900);
     await runNow(id);
-    row = await sourceRow(id);
+    row = await connectionRow(id);
     expect(Date.parse(row.next_run_at ?? "") - context.clock.now().getTime()).toBe(900_000);
 
     // A manual run does not jump the carrier's wait: it stays deferred to the Retry-After.
     post.failWith = undefined;
-    expect(await context.services.sources.requestRun(id)).toEqual({
+    expect(await context.services.connections.requestRun(id)).toEqual({
       deferredUntil: row.next_run_at,
     });
     expect(await context.services.scheduler.runDue()).toBe(0);
     context.clock.advance(900_000);
     await runNow(id);
-    row = await sourceRow(id);
+    row = await connectionRow(id);
     expect(row).toMatchObject({ state: "ok", consecutive_failures: 0 });
-    expect((await eventTypes()).filter((type) => type === "source.state_changed")).toHaveLength(2);
+    expect((await eventTypes()).filter((type) => type === "connection.state_changed")).toHaveLength(
+      2,
+    );
   });
 
   it("stops and asks for a new sign-in when the carrier rejects it, without retrying", async () => {
     const id = await addAccount();
     post.failWith = new SignInRejectedError("bad credentials");
     await context.services.scheduler.runDue();
-    const row = await sourceRow(id);
+    const row = await connectionRow(id);
     expect(row).toMatchObject({ state: "needs_sign_in", next_run_at: null });
     context.clock.advance(24 * HOUR);
     expect(await context.services.scheduler.runDue()).toBe(0);
@@ -454,24 +459,24 @@ describe("scheduler", () => {
     await runNow(id);
     await runNow(id);
     expect(post.sessions).toEqual([undefined, { token: "renewed-1" }]);
-    const row = await sourceRow(id);
+    const row = await connectionRow(id);
     expect(row.session_blob?.toString("utf8") ?? "").not.toContain("renewed");
     expect(row.secret_blob?.toString("utf8") ?? "").not.toContain("example.invalid");
   });
 
-  it("tracks codes added by hand through the carrier's tracking source", async () => {
+  it("tracks codes added by hand through the carrier's tracking connection", async () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0777",
+        trackingNumber: "FP0777",
         status: "in_transit",
         rawStatus: "On its way",
       }),
     ];
     const parcel = await context.services.parcels.create({
       carrier: "fakepost",
-      barcode: "FP0777",
-      direction: "incoming",
+      trackingNumber: "FP0777",
+      direction: "receiving",
       label: null,
     });
     await context.services.scheduler.runDue();
@@ -479,29 +484,29 @@ describe("scheduler", () => {
     expect((await context.services.parcels.repository.get(parcel.id))?.status).toBe("in_transit");
   });
 
-  it("stops polling a tracking source when nothing is active", async () => {
+  it("stops polling a tracking connection when nothing is active", async () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0777",
+        trackingNumber: "FP0777",
         status: "delivered",
         rawStatus: "Delivered",
       }),
     ];
     await context.services.parcels.create({
       carrier: "fakepost",
-      barcode: "FP0777",
-      direction: "incoming",
+      trackingNumber: "FP0777",
+      direction: "receiving",
       label: null,
     });
     await context.services.scheduler.runDue();
-    const tracking = (await context.services.sources.list()).find(
-      (source) => source.kind === "tracking",
+    const tracking = (await context.services.connections.list()).find(
+      (connection) => connection.kind === "tracking",
     );
     expect(tracking?.nextRunAt).toBeNull();
   });
 
-  it("keeps an order's date when another source names the order without one (OP-021)", async () => {
+  it("keeps an order's date when another connection names the order without one (OP-021)", async () => {
     const order = (placedAt: string | null) => ({
       shop: "example-shop.de",
       orderNumber: "100002",
@@ -511,7 +516,7 @@ describe("scheduler", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0901",
+        trackingNumber: "FP0901",
         status: "in_transit",
         rawStatus: "Moving",
         order: order("2026-11-10T10:00:00.000Z"),
@@ -521,7 +526,7 @@ describe("scheduler", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0901",
+        trackingNumber: "FP0901",
         status: "in_transit",
         rawStatus: "Moving",
         order: order(null),

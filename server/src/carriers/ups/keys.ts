@@ -1,11 +1,11 @@
 /*
- * Fixed values for the UPS plug-in: hosts, request headers, User-Agent strings and the measured
+ * Fixed values for the UPS provider: hosts, request headers, User-Agent strings and the measured
  * request budget of the public tracking.
  *
  * The browser identity (User-Agent and its client hint) is read from the shared rules.
  */
 
-import { carrierKey } from "../../plugin/api.js";
+import { carrierKey } from "../../provider/api.js";
 
 export const PUBLIC_HOST = "webapis.ups.com";
 export const OFFICIAL_HOST = "onlinetools.ups.com";
@@ -43,7 +43,7 @@ export function publicTrackingUrl(code: string, locale: string): string {
  */
 export const BROWSER_USER_AGENT = carrierKey("ups", "browser_user_agent");
 
-/** Why the plug-in sends browser headers; shown in diagnostics. */
+/** Why the provider sends browser headers; shown in diagnostics. */
 export const BROWSER_HEADERS_REASON =
   "UPS's public tracking sits behind a bot guard that never answers (the request hangs until it " +
   "times out) unless the request carries a Chrome User-Agent with matching client-hint headers.";

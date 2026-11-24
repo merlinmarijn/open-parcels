@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ups } from "../../src/carriers/ups/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { html, json, madeUp, on, World, type Answer, type Route } from "./harness.js";
 
 // Made-up tracking numbers, cookies and keys only.
@@ -78,11 +78,11 @@ describe("UPS public tracking", () => {
     expect(result.complete).toBe(true);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "ups",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "cms.stapp.inTransit",
-      plannedFrom: "2026-11-20T08:00:00.000Z",
-      plannedTo: "2026-11-20T12:00:00.000Z",
+      expectedFrom: "2026-11-20T08:00:00.000Z",
+      expectedTo: "2026-11-20T12:00:00.000Z",
       weightKg: 0.907,
       url: `https://www.ups.com/track?loc=en_US&tracknum=${CODE}`,
     });
@@ -108,7 +108,7 @@ describe("UPS public tracking", () => {
     const pasted = "1z999aa1 0000000001";
     const w = world([on(BOOT, seeded()), on(LOOKUP, json(detail()))]);
     const [parcel] = (await w.track([pasted])).snapshots;
-    expect(parcel).toMatchObject({ barcode: pasted, externalRef: CODE });
+    expect(parcel).toMatchObject({ trackingNumber: pasted, externalRef: CODE });
   });
 
   it("treats error code 504 as not found", async () => {
@@ -253,7 +253,7 @@ describe("UPS official Tracking API", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T10:30:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
       weightKg: 1.5,
     });
     expect(merged?.history.map((e) => e.rawStatus)).toEqual([

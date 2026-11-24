@@ -8,7 +8,7 @@ import {
   type ParcelSnapshot,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 /** Offset-less timestamps are the carrier's local time; numbers are epoch ms. */
 const LOCAL_TIME = { naive: { zone: "Europe/Zurich" }, epoch: "ms" } as const;
@@ -99,13 +99,13 @@ export function shipmentSnapshot(
   const barcode = text(raw["shipmentNumber"]) ?? "";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(raw["status"]) ?? code,
     delivered,
     deliveredAt: delivered ? isoTime(raw["deliveryDate"], LOCAL_TIME) : null,
-    plannedFrom: delivered ? null : from,
-    plannedTo: delivered ? null : to,
+    expectedFrom: delivered ? null : from,
+    expectedTo: delivered ? null : to,
     pickup,
     pickupPoint: pickup ? officeZip : null,
     url: rulesTrackingUrl(CARRIER_ID, barcode),

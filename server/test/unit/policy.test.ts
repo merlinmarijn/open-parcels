@@ -51,7 +51,7 @@ describe("time-zone helpers", () => {
   });
 });
 
-describe("a plug-in's fixed interval", () => {
+describe("a provider's fixed interval", () => {
   it("replaces the adaptive one, the stagger and the night-time pause", () => {
     // 01:30 local time, in the quiet window, with nothing in flight.
     const night = context("2026-11-18T00:30:00Z", { fixedIntervalMs: 30_000, staggerMinutes: 5 });
@@ -62,7 +62,7 @@ describe("a plug-in's fixed interval", () => {
 describe("poll scheduling", () => {
   it("uses the mid tier for parcels in flight", () => {
     const next = nextRunAfterSuccess(
-      context("2026-11-18T10:00:00Z", { active: [{ status: "in_transit", plannedFrom: null }] }),
+      context("2026-11-18T10:00:00Z", { active: [{ status: "in_transit", expectedFrom: null }] }),
     );
     expect(next?.getTime()).toBe(new Date("2026-11-18T10:00:00Z").getTime() + POLL_MID_MS);
   });
@@ -70,7 +70,7 @@ describe("poll scheduling", () => {
   it("uses the hot tier for a parcel out for delivery without a window", () => {
     const next = nextRunAfterSuccess(
       context("2026-11-18T10:00:00Z", {
-        active: [{ status: "out_for_delivery", plannedFrom: null }],
+        active: [{ status: "out_for_delivery", expectedFrom: null }],
       }),
     );
     expect(next?.getTime()).toBe(new Date("2026-11-18T10:00:00Z").getTime() + POLL_HOT_MS);
@@ -78,20 +78,20 @@ describe("poll scheduling", () => {
 
   it("waits with the hot tier until an hour before the window opens", () => {
     const early = context("2026-11-18T09:00:00Z", {
-      active: [{ status: "out_for_delivery", plannedFrom: "2026-11-18T16:00:00Z" }],
+      active: [{ status: "out_for_delivery", expectedFrom: "2026-11-18T16:00:00Z" }],
     });
     expect(nextRunAfterSuccess(early)?.getTime()).toBe(
       new Date("2026-11-18T09:00:00Z").getTime() + POLL_MID_MS,
     );
     const close = context("2026-11-18T15:10:00Z", {
-      active: [{ status: "out_for_delivery", plannedFrom: "2026-11-18T16:00:00Z" }],
+      active: [{ status: "out_for_delivery", expectedFrom: "2026-11-18T16:00:00Z" }],
     });
     expect(nextRunAfterSuccess(close)?.getTime()).toBe(
       new Date("2026-11-18T15:10:00Z").getTime() + POLL_HOT_MS,
     );
   });
 
-  it("keeps idle accounts polling slowly and stops idle tracking sources", () => {
+  it("keeps idle accounts polling slowly and stops idle tracking connections", () => {
     expect(nextRunAfterSuccess(context("2026-11-18T10:00:00Z"))?.getTime()).toBe(
       new Date("2026-11-18T10:00:00Z").getTime() + POLL_IDLE_MS,
     );
@@ -102,7 +102,7 @@ describe("poll scheduling", () => {
     const next = nextRunAfterSuccess(
       context("2026-11-18T10:00:00Z", {
         staggerMinutes: 4,
-        active: [{ status: "in_transit", plannedFrom: null }],
+        active: [{ status: "in_transit", expectedFrom: null }],
       }),
     );
     expect(next?.getTime()).toBe(
@@ -113,12 +113,12 @@ describe("poll scheduling", () => {
   it("moves runs that land in the night to a midnight catch-up, then to 06:00", () => {
     // 23:30 Berlin (22:30Z) + 45 min = 00:15 local: catch up at midnight instead.
     const late = nextRunAfterSuccess(
-      context("2026-11-18T22:30:00Z", { active: [{ status: "in_transit", plannedFrom: null }] }),
+      context("2026-11-18T22:30:00Z", { active: [{ status: "in_transit", expectedFrom: null }] }),
     );
     expect(late?.toISOString()).toBe("2026-11-18T23:00:00.000Z");
     // At midnight the next run goes to 06:00 local.
     const night = nextRunAfterSuccess(
-      context("2026-11-18T23:00:00Z", { active: [{ status: "in_transit", plannedFrom: null }] }),
+      context("2026-11-18T23:00:00Z", { active: [{ status: "in_transit", expectedFrom: null }] }),
     );
     expect(night?.toISOString()).toBe("2026-11-19T05:00:00.000Z");
   });
@@ -127,15 +127,15 @@ describe("poll scheduling", () => {
     const night = nextRunAfterSuccess(
       context("2026-11-18T23:00:00Z", {
         quietWindow: false,
-        active: [{ status: "in_transit", plannedFrom: null }],
+        active: [{ status: "in_transit", expectedFrom: null }],
       }),
     );
     expect(night?.getTime()).toBe(new Date("2026-11-18T23:00:00Z").getTime() + POLL_MID_MS);
   });
 
   it("gives every seed a stable stagger between 0 and 6 minutes", () => {
-    expect(staggerMinutes("install-a:source-1")).toBe(staggerMinutes("install-a:source-1"));
-    for (const seed of ["a", "b", "c", "install:source", "x".repeat(100)]) {
+    expect(staggerMinutes("install-a:connection-1")).toBe(staggerMinutes("install-a:connection-1"));
+    for (const seed of ["a", "b", "c", "install:connection", "x".repeat(100)]) {
       expect(staggerMinutes(seed)).toBeGreaterThanOrEqual(0);
       expect(staggerMinutes(seed)).toBeLessThanOrEqual(6);
     }

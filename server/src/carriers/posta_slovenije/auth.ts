@@ -7,9 +7,9 @@ import {
   isObject,
   num,
   type Clock,
-  type PluginHttp,
+  type ProviderHttp,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { AUTH_HOST, text } from "./shared.js";
 
 /**
@@ -39,7 +39,7 @@ interface TokenAnswer {
   readonly payload: Readonly<Record<string, unknown>>;
 }
 
-async function postToken(http: PluginHttp, form: Record<string, string>): Promise<TokenAnswer> {
+async function postToken(http: ProviderHttp, form: Record<string, string>): Promise<TokenAnswer> {
   const response = await http.request(TOKEN_URL, {
     method: "POST",
     redirect: "manual",
@@ -74,7 +74,7 @@ const errorOf = (answer: TokenAnswer): string | null => text(answer.payload["err
 
 /** Signs in with the password. A rejected password is the only SignInRejectedError here. */
 export async function passwordGrant(
-  http: PluginHttp,
+  http: ProviderHttp,
   clock: Clock,
   credentials: Credentials,
 ): Promise<Tokens> {
@@ -111,7 +111,7 @@ export async function passwordGrant(
 
 /** Renews with the refresh token; null when MojaPošta no longer accepts it. */
 async function refreshGrant(
-  http: PluginHttp,
+  http: ProviderHttp,
   clock: Clock,
   refreshToken: string,
 ): Promise<Tokens | null> {
@@ -134,7 +134,7 @@ export class TokenKeeper {
   #tokens: Tokens | null;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly clock: Clock,
     private readonly session: SessionStore,
     private readonly credentials: Credentials,

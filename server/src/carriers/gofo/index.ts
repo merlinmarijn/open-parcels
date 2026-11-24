@@ -11,9 +11,9 @@ import {
   unknownReporter,
   UnexpectedResponseError,
   type Json,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, toSnapshot, WALL_CLOCK_ZONE } from "./parse.js";
 
 const API_HOST = "www.gofo.com";
@@ -32,7 +32,7 @@ export function countryOf(barcode: string): string | null {
 }
 
 async function post(
-  http: PluginHttp,
+  http: ProviderHttp,
   path: string,
   barcode: string,
   headers: Record<string, string>,
@@ -51,7 +51,7 @@ function pick(items: unknown, barcode: string): Json | null {
 }
 
 /** US and CA. A failure envelope with an `error` block means not found. */
-async function transportA(http: PluginHttp, barcode: string, country: string) {
+async function transportA(http: ProviderHttp, barcode: string, country: string) {
   const payload = await post(
     http,
     `/${country.toLowerCase()}/cnee-api/consignee/track/query`,
@@ -71,7 +71,7 @@ async function transportA(http: PluginHttp, barcode: string, country: string) {
 }
 
 /** IT, FR, ES and NL. An empty list means not found. */
-async function transportB(http: PluginHttp, barcode: string, country: string) {
+async function transportB(http: ProviderHttp, barcode: string, country: string) {
   const payload = await post(
     http,
     `/${country.toLowerCase()}/open-api/official/track/queryTrackV2`,
@@ -91,7 +91,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, BARCODE_PATTERN, async (barcode) => {
     const country = countryOf(barcode) ?? "";
@@ -110,7 +110,7 @@ export const gofo = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "GOFO Express",
   countries: ["US", "CA", "IT", "FR", "ES", "NL"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

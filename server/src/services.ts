@@ -10,17 +10,17 @@ import type { AppConfig } from "./config.js";
 import type { SecretBox } from "./crypto/secrets.js";
 import type { Database } from "./db/schema.js";
 import { LiveTracker } from "./engine/live.js";
-import { repairBarcodes } from "./engine/barcode-repair.js";
+import { repairTrackingNumbers } from "./engine/tracking-number-repair.js";
 import { scrubStoredRaw } from "./engine/raw-scrub.js";
-import { trackingSourceIn } from "./engine/linking.js";
+import { trackingConnectionIn } from "./engine/linking.js";
 import { Reconciler } from "./engine/reconciler.js";
-import { PluginRegistry, type RegisteredPlugin } from "./engine/registry.js";
-import { SourceRunner } from "./engine/runner.js";
+import { ProviderRegistry, type RegisteredProvider } from "./engine/registry.js";
+import { ConnectionRunner } from "./engine/runner.js";
 import { SignInService } from "./engine/sign-in.js";
 import { Scheduler } from "./engine/scheduler.js";
 import { repairOrderShops } from "./engine/order-repair.js";
-import { mergeDuplicateTrackingSources } from "./engine/source-dedup.js";
-import { SourceService } from "./engine/sources.js";
+import { mergeDuplicateTrackingConnections } from "./engine/connection-dedup.js";
+import { ConnectionService } from "./engine/connections.js";
 import { reviveTrackingRemovals } from "./engine/tracking-removal-repair.js";
 import { rewriteOffsetTimes } from "./engine/utc-repair.js";
 import { EventBus } from "./events/bus.js";
@@ -35,7 +35,7 @@ import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
 import { ParcelService } from "./parcels/service.js";
 import { OrderService } from "./orders/service.js";
-import { HostLimiter, realSleep, type FetchLike, type Sleep } from "./plugin/http.js";
+import { HostLimiter, realSleep, type FetchLike, type Sleep } from "./provider/http.js";
 import { availableLayers } from "./tiles/layers.js";
 import { TileProxy } from "./tiles/proxy.js";
 import { Geocoder } from "./geo/geocoder.js";
@@ -57,8 +57,8 @@ export interface Services {
   readonly installId: string;
   readonly auth: AuthStore;
   readonly bus: EventBus;
-  readonly registry: PluginRegistry;
-  readonly sources: SourceService;
+  readonly registry: ProviderRegistry;
+  readonly connections: ConnectionService;
   readonly images: ImageProxy;
   readonly tiles: TileProxy;
   readonly geocoder: Geocoder;
@@ -69,7 +69,7 @@ export interface Services {
   readonly collages: CollageMaker;
   readonly mail: MailWatcher;
   readonly reconciler: Reconciler;
-  readonly runner: SourceRunner;
+  readonly runner: ConnectionRunner;
   readonly scheduler: Scheduler;
   readonly live: LiveTracker;
   readonly calendar: CalendarService;
@@ -86,8 +86,8 @@ export interface ServiceDeps {
   readonly logger: Logger;
   readonly clock: Clock;
   readonly secrets: SecretBox;
-  /** Overrides for tests: plug-ins, the network and waiting. */
-  readonly plugins?: readonly RegisteredPlugin[];
+  /** Overrides for tests: providers, the network and waiting. */
+  readonly providers?: readonly RegisteredProvider[];
   readonly fetchImpl?: FetchLike;
   readonly sleep?: Sleep;
   readonly mailClientFactory?: MailboxClientFactory;
@@ -95,19 +95,21 @@ export interface ServiceDeps {
 }
 
 /**
- * Links active parcels that no carrier source follows (found in mail, imported, or left over from
- * an older version) to their carrier's tracking source and makes those sources due. Returns true
+ * Links active parcels that no carrier connection follows (found in mail, imported, or left over from
+ * an older version) to their carrier's tracking connection and makes those connections due. Returns true
  * when anything was linked.
  */
 async function followUntracked(
-  sources: SourceService,
-  registry: PluginRegistry,
+  connections: ConnectionService,
+  registry: ProviderRegistry,
   logger: Logger,
-  viaSource?: string,
+  viaConnection?: string,
 ): Promise<boolean> {
-  const linked = await sources.linkUntracked(viaSource === undefined ? {} : { viaSource });
-  for (const sourceId of linked.sources) {
-    await sources.requestRun(sourceId);
+  const linked = await connections.linkUntracked(
+    viaConnection === undefined ? {} : { viaConnection },
+  );
+  for (const connectionId of linked.connections) {
+    await connections.requestRun(connectionId);
   }
   const needSettings = [...linked.unlinkedCarriers].filter(
     (carrier) => registry.get(carrier)?.canTrack === true,
@@ -115,7 +117,7 @@ async function followUntracked(
   if (needSettings.length > 0) {
     logger.warn(
       { carriers: needSettings },
-      "Parcels wait for a tracking source: these carriers need settings, add the source by hand.",
+      "Parcels wait for a tracking connection: these carriers need settings, add the connection by hand.",
     );
   }
   return linked.parcels > 0;
@@ -150,14 +152,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   const auth = new AuthStore(db, clock);
   const bus = new EventBus(db, clock, logger);
   await bus.start();
-  const registry = new PluginRegistry(deps.plugins ?? BUILTIN_CARRIERS);
-  const sources = new SourceService(db, registry, deps.secrets, bus, clock);
-  // Repairs on every start. Duplicate keyless tracking sources are merged first, so parcels
+  const registry = new ProviderRegistry(deps.providers ?? BUILTIN_CARRIERS);
+  const connections = new ConnectionService(db, registry, deps.secrets, bus, clock);
+  // Repairs on every start. Duplicate keyless tracking connections are merged first, so parcels
   // imported or added before they could be linked are then followed by the surviving one.
-  const mergedSources = await mergeDuplicateTrackingSources(db, clock);
-  if (mergedSources > 0) {
+  const mergedConnections = await mergeDuplicateTrackingConnections(db, clock);
+  if (mergedConnections > 0) {
     await bus.notify();
-    logger.info({ merged: mergedSources }, "Merged duplicate tracking sources.");
+    logger.info({ merged: mergedConnections }, "Merged duplicate tracking connections.");
   }
   const repairedOrders = await repairOrderShops(db, clock);
   if (repairedOrders > 0) {
@@ -168,11 +170,11 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   if (rewrittenTimes > 0) {
     logger.info({ rewritten: rewrittenTimes }, "Rewrote stored times with an offset as UTC.");
   }
-  const barcodes = await repairBarcodes(db, clock);
-  if (barcodes.respelled > 0 || barcodes.folded > 0) {
+  const trackingNumbers = await repairTrackingNumbers(db, clock);
+  if (trackingNumbers.respelled > 0 || trackingNumbers.folded > 0) {
     await bus.notify();
     logger.info(
-      barcodes,
+      trackingNumbers,
       "Stored codes in their carrier's spelling and merged case or space twins.",
     );
   }
@@ -185,14 +187,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     await bus.notify();
     logger.info({ revived }, "Revived parcels removed only because a lookup did not find them.");
   }
-  if (await followUntracked(sources, registry, logger)) {
-    logger.info("Linked parcels without a tracking source to their carrier.");
+  if (await followUntracked(connections, registry, logger)) {
+    logger.info("Linked parcels without a tracking connection to their carrier.");
   }
   const images = new ImageProxy({
     secretKey: deps.secrets.derive("image proxy"),
     cacheDir: path.join(deps.config.dataDir, "images"),
     logger,
-    allowedHosts: () => registry.list().flatMap((plugin) => plugin.info.imageHosts),
+    allowedHosts: () => registry.list().flatMap((provider) => provider.info.imageHosts),
   });
   const tiles = new TileProxy({
     cacheDir: path.join(deps.config.dataDir, "tiles"),
@@ -212,12 +214,11 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     position: (parcelId) => live.position(parcelId),
     imagePath: (remote) => images.pathFor(remote),
     labelMode: () => settings.labelMode,
-  };
-  const reconciler = new Reconciler(db, bus, clock, logger, {
-    presentation,
     timeZone: deps.config.timeZone,
-  });
-  const runner = new SourceRunner({
+  };
+  const { timeZone } = presentation;
+  const reconciler = new Reconciler(db, bus, clock, logger, { presentation, timeZone });
+  const runner = new ConnectionRunner({
     db,
     registry,
     secrets: deps.secrets,
@@ -233,7 +234,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   const scheduler: Scheduler = new Scheduler({
     db,
     runner,
-    sources,
+    connections,
     reconciler,
     clock,
     logger,
@@ -243,9 +244,9 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
       return deps.config.quietWindow;
     },
     installId,
-    pollIntervalOf: (plugin) => registry.get(plugin)?.info.pollIntervalMs ?? null,
-    onRunSucceeded: (sourceId, liveTargets) => {
-      live.setTargets(sourceId, liveTargets);
+    pollIntervalOf: (provider) => registry.get(provider)?.info.pollIntervalMs ?? null,
+    onRunSucceeded: (connectionId, liveTargets) => {
+      live.setTargets(connectionId, liveTargets);
     },
   });
   const live: LiveTracker = new LiveTracker({
@@ -254,8 +255,8 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     bus,
     clock,
     logger,
-    refreshSource: async (sourceId) => {
-      await sources.requestRun(sourceId);
+    refreshConnection: async (connectionId) => {
+      await connections.requestRun(connectionId);
       scheduler.wake();
     },
     presentation,
@@ -265,14 +266,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     bus,
     clock,
     async (carrier) => {
-      // Undefined when no plug-in tracks the carrier, or its plug-in needs settings first.
-      const sourceId = await trackingSourceIn(db, registry, clock)(carrier);
-      if (sourceId === undefined) {
+      // Undefined when no provider tracks the carrier, or its provider needs settings first.
+      const connectionId = await trackingConnectionIn(db, registry, clock)(carrier);
+      if (connectionId === undefined) {
         return undefined;
       }
-      await sources.requestRun(sourceId);
+      await connections.requestRun(connectionId);
       scheduler.wake();
-      return sourceId;
+      return connectionId;
     },
     presentation,
   );
@@ -288,15 +289,15 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   const mail = new MailWatcher({
     db,
     secrets: deps.secrets,
-    sources,
+    connections,
     reconciler,
     clock,
     logger,
     clientFactory: deps.mailClientFactory ?? imapClientFactory,
     interpret: deps.mailInterpreter ?? createMailInterpreter(loadRules(), deps.config.timeZone),
     interpretReturns: createReturnInterpreter(loadRules(), deps.config.timeZone),
-    followUp: async (sourceId) => {
-      if (await followUntracked(sources, registry, logger, sourceId)) {
+    followUp: async (connectionId) => {
+      if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();
       }
     },
@@ -309,7 +310,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     auth,
     bus,
     registry,
-    sources,
+    connections,
     images,
     tiles,
     geocoder,
@@ -326,12 +327,12 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     signIn: new SignInService({
       db,
       registry,
-      sources,
+      connections,
       secrets: deps.secrets,
       clock,
       logger,
       httpFor: (policy) => runner.httpFor(policy),
-      exclusive: (sourceId, work) => runner.exclusive(sourceId, work),
+      exclusive: (connectionId, work) => runner.exclusive(connectionId, work),
     }),
     parcels,
     orders: new OrderService(db, bus, clock, presentation, returns),

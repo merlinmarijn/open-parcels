@@ -9,9 +9,9 @@ import {
   readJson,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginLogger,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderLogger,
+} from "../../provider/api.js";
 import { accountSignIn, APP_HOST, fetchSwissPostAccount, LOGIN_HOST } from "./account.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parse.js";
 import { HOST, LABEL, TrackerSession } from "./session.js";
@@ -36,7 +36,7 @@ let textCache: { readonly at: number; readonly texts: ReadonlyMap<string, string
 async function wordingTable(
   session: TrackerSession,
   now: number,
-  logger: PluginLogger,
+  logger: ProviderLogger,
 ): Promise<ReadonlyMap<string, string>> {
   if (textCache !== null && now - textCache.at < TEXTS_TTL_MS) {
     return textCache.texts;
@@ -70,7 +70,7 @@ async function wordingTable(
 async function events(
   session: TrackerSession,
   identity: string,
-  logger: PluginLogger,
+  logger: ProviderLogger,
 ): Promise<Json[]> {
   try {
     const response = await session.get(`/api/shipment/id/${encodeURIComponent(identity)}/events`);
@@ -88,7 +88,7 @@ async function events(
   }
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const session = TrackerSession.restore(context.http, context.session);
   const withHistory = context.config.eventHistory !== false;
   const snapshots: ParcelSnapshot[] = [];
@@ -133,7 +133,7 @@ export const swissPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Swiss Post",
   countries: ["CH", "LI"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [accountSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

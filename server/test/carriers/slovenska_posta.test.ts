@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { slovenskaPosta } from "../../src/carriers/slovenska_posta/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -50,13 +50,13 @@ describe("Slovenská pošta tracking", () => {
     expect(result.snapshots).toHaveLength(1);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "slovenska_posta",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       rawStatus: "notified: Ulozene na poste",
       pickup: true,
       pickupPoint: "Testovacia posta 1",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(result.snapshots[0]?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T07:00:00.000Z", "at_pickup_point"],

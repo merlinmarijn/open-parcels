@@ -4,7 +4,7 @@ import {
   defineCarrier,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   asObject,
   num,
@@ -18,7 +18,7 @@ import {
   trackEach,
   unknownReporter,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { FedExSession, HOST } from "./api.js";
 
 const CARRIER_ID = "fedex";
@@ -87,12 +87,12 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const to = isoTime(window["ends"], { naive: "reject", epoch: "auto", epochStrings: true });
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(latest["statusByLocale"]) ?? text(latest["description"]) ?? code,
     deliveredAt: delivered ? deliveredAt(raw) : null,
-    plannedFrom: delivered ? null : from,
-    plannedTo: delivered || epoch(to) === epoch(from) ? null : to,
+    expectedFrom: delivered ? null : from,
+    expectedTo: delivered || epoch(to) === epoch(from) ? null : to,
     pickup: status === "at_pickup_point",
     pickupPoint: status === "at_pickup_point" ? place(latest["scanLocation"]) : null,
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -102,7 +102,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<unknown, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, Secret>, barcodes: readonly string[]) {
   const session = new FedExSession(context, context.secret);
   const report = unknownReporter(context, "status_code");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
@@ -116,7 +116,7 @@ export const fedex = defineCarrier<unknown, Secret>({
   id: CARRIER_ID,
   name: "FedEx",
   countries: ["*"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema,
   signIn: { type: "api_key" },

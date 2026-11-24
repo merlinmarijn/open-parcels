@@ -8,7 +8,7 @@ import {
   type ParcelSnapshot,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   CARRIER_ID,
   CARRIER_TZ,
@@ -155,13 +155,13 @@ export function trackingSnapshot(
   const window = plannedWindow(expedition);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: reached[0]?.key ?? null,
     delivered,
     deliveredAt: delivered ? isoAt(current?.at ?? null) : null,
-    plannedFrom: delivered ? null : window.from,
-    plannedTo: delivered ? null : window.to,
+    expectedFrom: delivered ? null : window.from,
+    expectedTo: delivered ? null : window.to,
     pickup,
     pickupPoint: pickup ? pickupPoint(expedition, reached) : null,
     url: publicUrl(expedition),

@@ -8,9 +8,9 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, isoTime, latestHistory, mapGls, text } from "./shared.js";
 
 export const PL_HOST = "mygls.gls-poland.com.pl";
@@ -19,7 +19,7 @@ const UNKNOWN_PARCEL = "mygls-tracking-400(111)";
 const PL_ZONE = "Europe/Warsaw";
 
 /** The keyless national lookup, by number alone; it carries the full event history. */
-export async function lookUpPl(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUpPl(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${PL_HOST}/api/v1/mygls-tracking/public/tracking/shipment/track/${encodeURIComponent(barcode)}`,
   );
@@ -68,7 +68,7 @@ export function plSnapshot(
   const number = text(raw["parcelNumber"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(number, barcode),
     status,
     rawStatus: events[0]?.rawStatus ?? text(raw["progressBar"]) ?? ident,

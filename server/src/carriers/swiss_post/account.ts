@@ -23,10 +23,10 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID } from "./parse.js";
 
 export const LOGIN_HOST = "login.swissid.ch";
@@ -43,7 +43,7 @@ export interface AccountSecret {
 /** The Post app's public OAuth client (in the shared rules); it has no secret. */
 const clientId = (): string => carrierKey(CARRIER_ID, "app_client_id");
 
-async function postToken(http: PluginHttp, form: Record<string, string>) {
+async function postToken(http: ProviderHttp, form: Record<string, string>) {
   const response = await http.request(new URL(`https://${LOGIN_HOST}/idp/oauth2/access_token`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -142,7 +142,7 @@ const fingerprint = (value: string): string =>
  * are saved before the inbox is called; a refused refresh means signing in again.
  */
 async function overview(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   secret: AccountSecret,
 ): Promise<Json> {
   const parsed = storedSchema.safeParse(context.session.load());
@@ -213,14 +213,14 @@ export function accountSnapshot(raw: Json, report: (key: string) => void): Parce
   const to = epochTime(range["to"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
-    direction: raw["userIsSender"] === true ? "outgoing" : "incoming",
+    trackingNumber: barcode,
+    direction: raw["userIsSender"] === true ? "sending" : "receiving",
     status,
     rawStatus: code,
     delivered,
     deliveredAt: delivered ? epochTime(raw["statusTimestamp"]) : null,
-    plannedFrom: delivered || pickup ? null : from,
-    plannedTo: delivered || pickup || to === from ? null : to,
+    expectedFrom: delivered || pickup ? null : from,
+    expectedTo: delivered || pickup || to === from ? null : to,
     pickup,
     pickupPoint: pickup ? text(asObject(address["pickupOffice"])["name"]) : null,
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -230,7 +230,7 @@ export function accountSnapshot(raw: Json, report: (key: string) => void): Parce
 }
 
 export async function fetchSwissPostAccount(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   secret: AccountSecret,
 ): Promise<FetchResult> {
   const payload = await overview(context, secret);

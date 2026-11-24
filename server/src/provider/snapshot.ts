@@ -12,7 +12,7 @@ export interface SnapshotEvent {
   readonly latitude?: number;
   readonly longitude?: number;
   /**
-   * The source's own identity for this entry (a mail's Message-ID), when it has one. The stored
+   * The connection's own identity for this entry (a mail's Message-ID), when it has one. The stored
    * entry is then deduplicated on it instead of on time and text, so one mail is one entry.
    */
   readonly id?: string;
@@ -30,21 +30,21 @@ export interface SnapshotItem {
 }
 
 /**
- * What a source knows about one parcel at one moment. Plug-ins return these; only the reconciler
+ * What a connection knows about one parcel at one moment. Providers return these; only the reconciler
  * turns them into stored parcels and events. Unknown values are null, never guessed.
  */
 export interface ParcelSnapshot {
   /** Carrier id of the company physically carrying the parcel (`dhl`, `amazon`, …). */
   readonly carrier: string;
-  readonly barcode: string;
+  readonly trackingNumber: string;
   readonly direction: Direction;
   /** Mapped status, or null when the carrier's latest value is unknown to us. */
   readonly status: ParcelStatus | null;
   readonly rawStatus: string | null;
   readonly delivered: boolean;
   readonly deliveredAt: string | null;
-  readonly plannedFrom: string | null;
-  readonly plannedTo: string | null;
+  readonly expectedFrom: string | null;
+  readonly expectedTo: string | null;
   readonly pickup: boolean;
   readonly pickupPoint: string | null;
   readonly url: string | null;
@@ -53,15 +53,15 @@ export interface ParcelSnapshot {
   readonly weightKg: number | null;
   readonly history: readonly SnapshotEvent[];
   /**
-   * The history is everything this source has for the parcel: entries it stored earlier and no
-   * longer reports are dropped (only its own, never another source's). For sources whose history
-   * starts over, like the demo plug-ins' loop.
+   * The history is everything this connection has for the parcel: entries it stored earlier and no
+   * longer reports are dropped (only its own, never another connection's). For connections whose history
+   * starts over, like the demo providers' loop.
    */
   readonly historyComplete?: boolean;
   /** Items known to be in this parcel. */
   readonly items: readonly SnapshotItem[];
   /**
-   * Everything in the order, when the source knows the order but not (for every item) which
+   * Everything in the order, when the connection knows the order but not (for every item) which
    * parcel carries it, like a shop. Items also listed in `items` are linked to this parcel; the
    * rest belong to the order only. Unset: the order's items are left as they are.
    */
@@ -73,13 +73,13 @@ export interface ParcelSnapshot {
     /** Last day of the shop's return window (`YYYY-MM-DD`), when it lists one. */
     readonly returnUntil?: string | null;
   } | null;
-  /** The source's own reference for this parcel (order line, shipment id), if different from the barcode. */
+  /** The connection's own reference for this parcel (order line, shipment id), if different from the tracking number. */
   readonly externalRef: string | null;
   /**
    * Set by shops when another carrier delivers the parcel. The reconciler then files this snapshot
    * under that carrier's parcel, so the shop and the carrier never produce two entries.
    */
-  readonly handoff: { readonly carrier: string; readonly barcode: string } | null;
+  readonly handoff: { readonly carrier: string; readonly trackingNumber: string } | null;
   /** The raw payload, stored separately. Must not contain codes that open or sign in to anything. */
   readonly raw: unknown;
   /** Set when the carrier can show the courier on a map for this parcel. Kept in memory only. */
@@ -87,7 +87,7 @@ export interface ParcelSnapshot {
 }
 
 /**
- * What a source knows about one return of an order. Unknown values are null and never erase what
+ * What a connection knows about one return of an order. Unknown values are null and never erase what
  * another report said; `dropOff` replaces the stored options only when it lists some.
  */
 export interface ReturnSnapshot {
@@ -111,7 +111,7 @@ export interface ReturnSnapshot {
   /** Label or QR-code page; only http(s) is kept. */
   readonly labelUrl: string | null;
   /** The return's own parcel, when the shop or carrier gives its tracking number. */
-  readonly tracking: { readonly carrier: string; readonly barcode: string } | null;
+  readonly tracking: { readonly carrier: string; readonly trackingNumber: string } | null;
   readonly refund: {
     readonly amount: number | null;
     readonly currency: string | null;
@@ -126,7 +126,7 @@ export interface ReturnSnapshot {
   readonly mayCreate: boolean;
 }
 
-/** Fills the optional parts of a return report, so sources only spell out what they know. */
+/** Fills the optional parts of a return report, so connections only spell out what they know. */
 export function returnSnapshot(
   required: Pick<ReturnSnapshot, "order" | "status"> & Partial<ReturnSnapshot>,
 ): ReturnSnapshot {
@@ -145,17 +145,17 @@ export function returnSnapshot(
   };
 }
 
-/** Fills the optional parts of a snapshot with nulls, so plug-ins only spell out what they know. */
+/** Fills the optional parts of a snapshot with nulls, so providers only spell out what they know. */
 export function snapshot(
-  required: Pick<ParcelSnapshot, "carrier" | "barcode" | "status" | "rawStatus"> &
+  required: Pick<ParcelSnapshot, "carrier" | "trackingNumber" | "status" | "rawStatus"> &
     Partial<ParcelSnapshot>,
 ): ParcelSnapshot {
   return {
-    direction: "incoming",
+    direction: "receiving",
     delivered: required.status === "delivered",
     deliveredAt: null,
-    plannedFrom: null,
-    plannedTo: null,
+    expectedFrom: null,
+    expectedTo: null,
     pickup: false,
     pickupPoint: null,
     url: null,

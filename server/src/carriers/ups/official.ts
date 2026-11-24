@@ -11,8 +11,8 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { HONEST_USER_AGENT, OFFICIAL_HOST, TOKEN_MARGIN_MS } from "./keys.js";
 
 /*
@@ -33,7 +33,7 @@ export const tokenSchema = z.object({
 });
 export type StoredToken = z.infer<typeof tokenSchema>;
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "clock">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "clock">;
 
 const fingerprint = (credentials: Credentials): string =>
   createHash("sha256").update(credentials.clientId).digest("hex").slice(0, 16);
@@ -76,7 +76,7 @@ async function requestToken(deps: Deps, credentials: Credentials): Promise<Store
 }
 
 /**
- * The access token of one source for one run: reused while valid, renewed when expired, and
+ * The access token of one connection for one run: reused while valid, renewed when expired, and
  * renewed after a refusal at most once per run (not once per code).
  */
 export class OfficialSession {

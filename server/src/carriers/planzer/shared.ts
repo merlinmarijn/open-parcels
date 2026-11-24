@@ -5,13 +5,13 @@ import {
   text as kitText,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "planzer";
 export const TRACKING_HOST = "api.tracking.app.planzer.ch";
 const CARRIER_TIME_ZONE = "Europe/Zurich";
 
-export { asObject, isObject, type Json } from "../../plugin/api.js";
+export { asObject, isObject, type Json } from "../../provider/api.js";
 
 /** Planzer's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { requestStamp, signRequest } from "../../src/carriers/gls/es.js";
 import { gls } from "../../src/carriers/gls/index.js";
-import { CaptchaError, TransientError } from "../../src/plugin/errors.js";
+import { CaptchaError, TransientError } from "../../src/provider/errors.js";
 import { json, on, raw, World } from "./harness.js";
 
 // Made-up parcel numbers, postcodes and names only.
@@ -42,7 +42,7 @@ describe("GLS Spain and Portugal", () => {
       find: { reference: CODE, destination: { address: { postalCode: "28001" } } },
     });
     expect(found).toMatchObject({
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       sender: "Example Shop",
       weightKg: 1.5,
@@ -93,7 +93,7 @@ describe("GLS Poland, US and Canada", () => {
     const [found] = (await world.track([CODE], config)).snapshots;
     expect(found).toMatchObject({
       // The code as tracked stays the key; GLS's own number (with its check digit) is a reference.
-      barcode: CODE,
+      trackingNumber: CODE,
       externalRef: `${CODE}5`,
       status: "delivered",
       deliveredAt: "2026-11-18T08:00:00.000Z",
@@ -176,7 +176,7 @@ describe("GLS Germany", () => {
       on("GET gls-pakete-de-backend-app.ooh.glsnxt.com/api/v1/trackings/99999999999", json(detail)),
     ]);
     const [found] = (await world.track([CODE], config)).snapshots;
-    expect(found).toMatchObject({ status: "out_for_delivery", barcode: CODE });
+    expect(found).toMatchObject({ status: "out_for_delivery", trackingNumber: CODE });
     expect(world.calls[0]?.headers.get("authorization")).toBeNull();
     expect(world.calls[1]?.headers.get("authorization")).toBe("Bearer t1");
     expect(world.stored).toMatchObject({ de: { token: "t1", parcels: { [CODE]: "99999999999" } } });

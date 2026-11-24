@@ -4,10 +4,10 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -51,7 +51,7 @@ function parseBody(body: unknown): Json {
  * Looks one code up; the endpoint reads several codes as one string, so it is always one per
  * request. Null for an unknown code, an inconclusive notice or an answer for another code.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${TRACKING_HOST}/api/track`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -123,7 +123,7 @@ export function trackingSnapshot(
     status === "at_pickup_point" || (site.seen && status !== "delivered" && status !== "returning");
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["orderNo"]), barcode),
     status,
     rawStatus:

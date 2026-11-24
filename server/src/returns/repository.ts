@@ -35,7 +35,7 @@ export function parseDropOff(value: string): DropOffOption[] {
 
 /**
  * Returns as the API shows them, newest first, only those that show (their order shows and not
- * every source they came from is disabled). `today` decides which ones read `expired`.
+ * every connection they came from is disabled). `today` decides which ones read `expired`.
  */
 export async function loadReturns(db: Db, query: ReturnQuery, today: string): Promise<Return[]> {
   if (query.ids?.length === 0 || query.orderIds?.length === 0) return [];

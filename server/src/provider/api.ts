@@ -1,6 +1,6 @@
 import type { z } from "zod";
 import type { Clock } from "../clock.js";
-import type { HttpPolicy, PluginHttp } from "./http.js";
+import type { HttpPolicy, ProviderHttp } from "./http.js";
 import type { LiveReading, LiveTarget } from "./live.js";
 import type { SignInFlow } from "./sign-in.js";
 import type { ParcelSnapshot, ReturnSnapshot } from "./snapshot.js";
@@ -18,35 +18,35 @@ export type { DropOffKind, DropOffOption, ReturnStatus } from "../domain/return.
 export type { LiveReading, LiveTarget } from "./live.js";
 export { CookieJar, restoreJar, serializeJar } from "./cookies.js";
 export { sameSite } from "./http.js";
-export type { HostLimit, HttpPolicy, HttpResponse, PluginHttp, RequestOptions } from "./http.js";
+export type { HostLimit, HttpPolicy, HttpResponse, ProviderHttp, RequestOptions } from "./http.js";
 
-/** Source kinds a carrier can offer. Mailboxes are handled by the core, not by carrier plug-ins. */
-export const SOURCE_KINDS = ["account", "tracking", "shop"] as const;
-export type PluginSourceKind = (typeof SOURCE_KINDS)[number];
+/** Connection kinds a carrier can offer. Inboxes are handled by the core, not by carrier providers. */
+export const CONNECTION_KINDS = ["account", "tracking", "shop"] as const;
+export type ProviderConnectionKind = (typeof CONNECTION_KINDS)[number];
 
-/** Minimal structured logger handed to plug-ins. Messages are redacted before they are written. */
-export interface PluginLogger {
+/** Minimal structured logger handed to providers. Messages are redacted before they are written. */
+export interface ProviderLogger {
   debug(context: Record<string, unknown>, message: string): void;
   info(context: Record<string, unknown>, message: string): void;
   warn(context: Record<string, unknown>, message: string): void;
 }
 
-/** Encrypted per-source storage for whatever the carrier renews: cookies, refresh tokens, device ids. */
+/** Encrypted per-connection storage for whatever the carrier renews: cookies, refresh tokens, device ids. */
 export interface SessionStore {
   load(): unknown;
   save(value: unknown): Promise<void>;
 }
 
-export interface PluginContext<Config, Secret> {
-  readonly sourceId: string;
+export interface ProviderContext<Config, Secret> {
+  readonly connectionId: string;
   readonly config: Config;
   readonly secret: Secret;
-  readonly http: PluginHttp;
+  readonly http: ProviderHttp;
   readonly clock: Clock;
-  readonly logger: PluginLogger;
+  readonly logger: ProviderLogger;
   readonly session: SessionStore;
   /**
-   * Reports a status code, text or response key the plug-in could not map. The core warns once
+   * Reports a status code, text or response key the provider could not map. The core warns once
    * per new value and records it for the "please report this" list. Pass keys or codes, never
    * values that may carry personal data.
    */
@@ -55,23 +55,23 @@ export interface PluginContext<Config, Secret> {
 
 export interface FetchResult {
   readonly snapshots: readonly ParcelSnapshot[];
-  /** Returns the source reported. They never count towards `complete`: a return is never "gone". */
+  /** Returns the connection reported. They never count towards `complete`: a return is never "gone". */
   readonly returns?: readonly ReturnSnapshot[];
   /**
-   * True when the list is everything the source currently has. Only complete results let the
-   * reconciler conclude that a missing parcel is gone. Ignored for tracking sources: a lookup
+   * True when the list is everything the connection currently has. Only complete results let the
+   * reconciler conclude that a missing parcel is gone. Ignored for tracking connections: a lookup
    * never lists everything, and a code the carrier does not know goes through the not-found
    * lookup state instead.
    */
   readonly complete: boolean;
   /**
-   * Set when the plug-in deliberately did nothing, saying why (for example "Public tracking off:
-   * nothing to look up."). The run then claims no success: the source keeps this as its detail,
+   * Set when the provider deliberately did nothing, saying why (for example "Public tracking off:
+   * nothing to look up."). The run then claims no success: the connection keeps this as its detail,
    * its last successful run stays as it was, and nothing is reconciled.
    */
   readonly idle?: string;
   /**
-   * Tracking sources only: the codes really looked up this run, when the plug-in could not ask
+   * Tracking connections only: the codes really looked up this run, when the provider could not ask
    * for all of them (a request budget, a pause). Codes outside it keep their lookup state instead
    * of reading "not found". Unset: every code passed to `track` was asked.
    */
@@ -93,12 +93,12 @@ export type {
   StaticSignIn,
 } from "./sign-in.js";
 
-export interface CarrierPlugin<Config = unknown, Secret = unknown> {
+export interface CarrierProvider<Config = unknown, Secret = unknown> {
   readonly id: string;
   readonly name: string;
   /** ISO 3166-1 alpha-2 codes, or `*` for worldwide. */
   readonly countries: readonly string[];
-  readonly sourceKinds: readonly PluginSourceKind[];
+  readonly connectionKinds: readonly ProviderConnectionKind[];
   /**
    * Hosts the image proxy may fetch this carrier's item pictures and delivery photos from; a
    * leading dot also allows subdomains (`.media-example.com`). Unset: the proxy fetches nothing.
@@ -106,7 +106,7 @@ export interface CarrierPlugin<Config = unknown, Secret = unknown> {
   readonly imageHosts?: readonly string[];
   /**
    * A fixed time between runs instead of the adaptive schedule (and its night-time pause). Only
-   * for sources that cost nothing to ask, like the demo plug-ins.
+   * for connections that cost nothing to ask, like the demo providers.
    */
   readonly pollIntervalMs?: number;
   readonly configSchema: z.ZodType<Config>;
@@ -118,26 +118,29 @@ export interface CarrierPlugin<Config = unknown, Secret = unknown> {
    */
   readonly signIn: SignInFlow<Config, Secret> | readonly SignInFlow<Config, Secret>[];
   readonly http: HttpPolicy;
-  /** Account and shop sources: return everything the account lists. */
-  fetchAccount?(context: PluginContext<Config, Secret>): Promise<FetchResult>;
+  /** Account and shop connections: return everything the account lists. */
+  fetchAccount?(context: ProviderContext<Config, Secret>): Promise<FetchResult>;
   /**
-   * Tracking sources: look up these codes. A missing code in the result means "not found", unless
+   * Tracking connections: look up these codes. A missing code in the result means "not found", unless
    * the result's `asked` leaves it out.
    */
-  track?(context: PluginContext<Config, Secret>, barcodes: readonly string[]): Promise<FetchResult>;
+  track?(
+    context: ProviderContext<Config, Secret>,
+    trackingNumbers: readonly string[],
+  ): Promise<FetchResult>;
   /**
    * Reads the courier map for one parcel. Returns null when there is no session. Must not sign
    * in again on a network error; renewing a token the carrier explicitly refused, once, is fine.
    */
   readLive?(
-    context: PluginContext<Config, Secret>,
+    context: ProviderContext<Config, Secret>,
     target: LiveTarget,
   ): Promise<LiveReading | null>;
 }
 
 /** Identity helper that keeps the generic parameters inferred from the schemas. */
 export function defineCarrier<Config, Secret>(
-  plugin: CarrierPlugin<Config, Secret>,
-): CarrierPlugin<Config, Secret> {
-  return plugin;
+  provider: CarrierProvider<Config, Secret>,
+): CarrierProvider<Config, Secret> {
+  return provider;
 }

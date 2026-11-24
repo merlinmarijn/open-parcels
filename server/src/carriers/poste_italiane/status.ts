@@ -1,4 +1,4 @@
-import { cleanText, rulesStatus, type ParcelSnapshot } from "../../plugin/api.js";
+import { cleanText, rulesStatus, type ParcelSnapshot } from "../../provider/api.js";
 
 /** Lower-cased, whitespace-collapsed text for matching the carrier's wording. */
 const fold = (value: string): string => cleanText(value).toLowerCase();

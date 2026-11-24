@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { postaSlovenije } from "../../src/carriers/posta_slovenije/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 
 /** Made up, built from parts so the pre-commit secret check stays quiet. */
@@ -139,9 +139,11 @@ describe("Pošta Slovenije account", () => {
     ]);
     const result = await world.fetchAccount({}, secret);
     expect(result.complete).toBe(true);
-    expect(result.snapshots.map((p) => [p.barcode, p.status, p.direction, p.sender])).toEqual([
-      [CODE, "out_for_delivery", "incoming", "Testna trgovina"],
-      [OTHER, null, "outgoing", "Testna trgovina"],
+    expect(
+      result.snapshots.map((p) => [p.trackingNumber, p.status, p.direction, p.sender]),
+    ).toEqual([
+      [CODE, "out_for_delivery", "receiving", "Testna trgovina"],
+      [OTHER, null, "sending", "Testna trgovina"],
     ]);
     expect(world.stored).toMatchObject({ accessToken: "at-1", refreshToken: "rt-1" });
     expect(world.calls[1]?.headers.get("authorization")).toBe("Bearer at-1");

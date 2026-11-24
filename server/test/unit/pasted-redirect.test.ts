@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { extractAddress, pastedRedirect, type SignInContext } from "../../src/plugin/sign-in.js";
+import { extractAddress, pastedRedirect, type SignInContext } from "../../src/provider/sign-in.js";
 
 /* Every address here is made up. */
 const FINAL = "app.example://sign-in/done?code=c1&state=s1";

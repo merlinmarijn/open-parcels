@@ -63,6 +63,6 @@ export async function withImportTarget<T>(
   }
 }
 
-/** Printed after a real import: the server reads sources and mailboxes when it starts. */
+/** Printed after a real import: the server reads connections and inboxes when it starts. */
 export const RESTART_NOTICE =
-  "Imported. Restart open-parcels if it is running, so it picks up the new sources and mailboxes.\n";
+  "Imported. Restart open-parcels if it is running, so it picks up the new connections and inboxes.\n";

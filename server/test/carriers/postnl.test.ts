@@ -4,7 +4,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
+} from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 import { pasted } from "./pasted.js";
 
@@ -58,11 +58,11 @@ const tnt = (barcode: string, codes: [string, string][]) =>
 describe("PostNL sign-in", () => {
   it("builds a PKCE login address and trades the pasted code for a refresh token", async () => {
     const world = new World(postnl, [onPrefix(TOKEN, tokens(1))]);
-    const { url, state } = await pasted(world.plugin).start({}, world.clock);
+    const { url, state } = await pasted(world.provider).start({}, world.clock);
     const login = new URL(url);
     expect(login.searchParams.get("code_challenge_method")).toBe("S256");
     const sent = login.searchParams.get("state") ?? "";
-    const secretOut = await pasted(world.plugin).finish(
+    const secretOut = await pasted(world.provider).finish(
       world.base().http,
       world.clock,
       state,
@@ -71,7 +71,7 @@ describe("PostNL sign-in", () => {
     expect(secretOut).toEqual({ refreshToken: "rt-1" });
     expect(world.calls[0]?.body).toContain("code_verifier=");
     await expect(
-      pasted(world.plugin).finish(
+      pasted(world.provider).finish(
         world.base().http,
         world.clock,
         state,
@@ -106,10 +106,10 @@ describe("PostNL account", () => {
     const [live, done] = result.snapshots;
     expect(live).toMatchObject({
       carrier: "postnl",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T12:40:00.000Z",
-      plannedTo: "2026-11-18T14:00:00.000Z",
+      expectedFrom: "2026-11-18T12:40:00.000Z",
+      expectedTo: "2026-11-18T14:00:00.000Z",
       weightKg: 1.5,
       sender: "Testwinkel",
       receiver: "T. Persoon",

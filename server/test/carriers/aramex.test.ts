@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { aramex } from "../../src/carriers/aramex/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up labels and values only.
@@ -41,11 +41,11 @@ describe("Aramex tracking", () => {
     const [parcel] = (await w.track([LABEL])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "aramex",
-      barcode: LABEL,
+      trackingNumber: LABEL,
       status: "out_for_delivery",
       rawStatus: "On board for delivery",
-      plannedFrom: "2026-11-19T13:00:00.000Z",
-      plannedTo: "2026-11-20T12:59:59.000Z",
+      expectedFrom: "2026-11-19T13:00:00.000Z",
+      expectedTo: "2026-11-20T12:59:59.000Z",
       url: `https://www.aramex.com.au/tools/track?l=${LABEL}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -64,7 +64,7 @@ describe("Aramex tracking", () => {
     expect(parcel).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T00:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

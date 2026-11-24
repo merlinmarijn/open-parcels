@@ -1,9 +1,9 @@
-import { rulesStatus, text as kitText, zonedIso, type ParcelStatus } from "../../plugin/api.js";
+import { rulesStatus, text as kitText, zonedIso, type ParcelStatus } from "../../provider/api.js";
 
 export const CARRIER_ID = "orlen_paczka";
 export const TRACKING_HOST = "nadaj.orlenpaczka.pl";
 
-export { asObject, isObject, type Json } from "../../plugin/api.js";
+export { asObject, isObject, type Json } from "../../provider/api.js";
 
 /** ORLEN's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

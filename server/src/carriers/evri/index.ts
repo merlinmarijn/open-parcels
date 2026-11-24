@@ -4,7 +4,7 @@ import {
   defineCarrier,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   asObject,
   objects,
@@ -17,7 +17,7 @@ import {
   unknownReporter,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { EvriTracking, HOST } from "./api.js";
 
 const CARRIER_ID = "evri";
@@ -98,7 +98,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: entries[0]?.rawStatus ?? stage,
     deliveredAt: delivered
@@ -115,7 +115,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<Config, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status");
   const client = new EvriTracking(context.http, context.logger, context.session);
   try {
@@ -128,12 +128,12 @@ async function track(context: PluginContext<Config, unknown>, barcodes: readonly
   }
 }
 
-/** Evri (United Kingdom): the public tracking website's API, by barcode and postcode. */
+/** Evri (United Kingdom): the public tracking website's API, by tracking number and postcode. */
 export const evri = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
   name: "Evri",
   countries: ["GB"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

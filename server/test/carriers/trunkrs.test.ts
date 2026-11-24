@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { trunkrs } from "../../src/carriers/trunkrs/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -45,11 +45,11 @@ describe("Trunkrs tracking", () => {
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "trunkrs",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       sender: "Voorbeeldwinkel",
       url: "https://parcel.trunkrs.nl/TR0000000001/9999ZZ",
     });
@@ -78,14 +78,14 @@ describe("Trunkrs tracking", () => {
     });
     const { base } = fakeContext(trunkrs.http, fetchImpl);
     const first = await plugin.track(base, config, null, [CODE]);
-    expect(first.snapshots[0]).toMatchObject({ plannedFrom: "2026-11-19T08:00:00.000Z" });
+    expect(first.snapshots[0]).toMatchObject({ expectedFrom: "2026-11-19T08:00:00.000Z" });
     const second = await plugin.track(base, config, null, [CODE]);
     expect(second.snapshots[0]).toMatchObject({
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T14:05:00.000Z",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
   });
 

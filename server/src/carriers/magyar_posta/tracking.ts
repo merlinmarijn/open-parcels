@@ -12,8 +12,8 @@ import {
   zonedIso,
   type Json,
   type ParcelStatus,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "magyar_posta";
 export const TRACKING_HOST = "posta.hu";
@@ -28,7 +28,7 @@ export const BARCODE_PATTERN = carrierPattern("magyar_posta");
 export type Report = (kind: string, key: string) => void;
 
 /** Returns the scan rows, newest first, or null when the code is unknown or not scanned yet. */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json[] | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json[] | null> {
   const url = new URL(`https://${TRACKING_HOST}/szolgaltatasok/PostaWeb/TrackingInfo`);
   url.searchParams.set("ragszam", barcode);
   url.searchParams.set("language", "1");
@@ -158,7 +158,7 @@ export function trackingSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus:
       newest === undefined

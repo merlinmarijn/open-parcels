@@ -10,10 +10,10 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, isoTime, mapCode, publicUrl, text, TRACKING_HOST } from "./shared.js";
 
 /** Hermes parcel numbers are digits (sometimes letters for international ones); anything else is never sent. */
@@ -27,7 +27,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
  * Looks one code up on the public tracking endpoint. Returns null when Hermes does not know it
  * (404), considers it malformed (400) or answers with an empty list; all of these are normal.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/tnt/v2/shipments/search/${encodeURIComponent(barcode)}`,
   );
@@ -61,8 +61,8 @@ export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | 
 }
 
 export interface Forecast {
-  readonly plannedFrom: string | null;
-  readonly plannedTo: string | null;
+  readonly expectedFrom: string | null;
+  readonly expectedTo: string | null;
 }
 
 /**
@@ -74,9 +74,9 @@ export function readForecast(raw: Json): Forecast {
   const from = isoTime(forecast["deliveryTimeFromUTC"]);
   const to = isoTime(forecast["deliveryTimeToUTC"]);
   if (from !== null && to !== null) {
-    return { plannedFrom: from, plannedTo: to };
+    return { expectedFrom: from, expectedTo: to };
   }
-  return { plannedFrom: from ?? isoTime(forecast["pickupReadyFromUTC"]), plannedTo: null };
+  return { expectedFrom: from ?? isoTime(forecast["pickupReadyFromUTC"]), expectedTo: null };
 }
 
 function progressEvents(raw: Json): SnapshotEvent[] {
@@ -119,7 +119,7 @@ export function trackingSnapshot(
   const forecast = readForecast(raw);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["barcode"]), barcode),
     status,
     rawStatus: text(latest["historyText"]) ?? code,
@@ -129,8 +129,8 @@ export function trackingSnapshot(
         ? isoTime(latest["timestamp"])
         : isoTime(attributes["deliveredTimestamp"])
       : null,
-    plannedFrom: delivered ? null : forecast.plannedFrom,
-    plannedTo: delivered ? null : forecast.plannedTo,
+    expectedFrom: delivered ? null : forecast.expectedFrom,
+    expectedTo: delivered ? null : forecast.expectedTo,
     pickup: mapped?.pickup === true || status === "at_pickup_point",
     url: publicUrl(barcode),
     sender: text(asObject(raw["atg"])["companyName"]),

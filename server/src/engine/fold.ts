@@ -13,7 +13,7 @@ export interface FoldOptions {
 }
 
 /**
- * Folds `duplicate` into `target`: history, links, the latest raw payload per source and, where
+ * Folds `duplicate` into `target`: history, links, the latest raw payload per connection and, where
  * the target has none, items move over, skipping what the target already has. What the user or a
  * shop knew about the duplicate (label, order, manual status and how long it holds) is kept where
  * the target has nothing. The duplicate is then deleted, with `parcel.deleted` naming the target.
@@ -29,7 +29,7 @@ export async function foldParcel(
     .insertInto("parcel_events")
     .columns([
       "parcel_id",
-      "source_id",
+      "connection_id",
       "at",
       "status",
       "raw_status",
@@ -44,7 +44,7 @@ export async function foldParcel(
         .selectFrom("parcel_events")
         .select([
           eb.val(target.id).as("parcel_id"),
-          "source_id",
+          "connection_id",
           "at",
           "status",
           "raw_status",
@@ -59,14 +59,21 @@ export async function foldParcel(
     .onConflict((oc) => oc.doNothing())
     .execute();
   await trx
-    .insertInto("parcel_sources")
-    .columns(["parcel_id", "source_id", "external_ref", "role", "last_seen_at", "missing_since"])
+    .insertInto("parcel_connections")
+    .columns([
+      "parcel_id",
+      "connection_id",
+      "external_ref",
+      "role",
+      "last_seen_at",
+      "missing_since",
+    ])
     .expression((eb) =>
       eb
-        .selectFrom("parcel_sources")
+        .selectFrom("parcel_connections")
         .select([
           eb.val(target.id).as("parcel_id"),
-          "source_id",
+          "connection_id",
           "external_ref",
           options.linkRole === undefined ? "role" : eb.val(options.linkRole).as("role"),
           "last_seen_at",
@@ -78,11 +85,11 @@ export async function foldParcel(
     .execute();
   await trx
     .insertInto("parcel_raw")
-    .columns(["parcel_id", "source_id", "fetched_at", "payload"])
+    .columns(["parcel_id", "connection_id", "fetched_at", "payload"])
     .expression((eb) =>
       eb
         .selectFrom("parcel_raw")
-        .select([eb.val(target.id).as("parcel_id"), "source_id", "fetched_at", "payload"])
+        .select([eb.val(target.id).as("parcel_id"), "connection_id", "fetched_at", "payload"])
         .where("parcel_id", "=", duplicate.id),
     )
     .onConflict((oc) => oc.doNothing())

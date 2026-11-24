@@ -4,8 +4,8 @@ import {
   mayHaveMorePages,
   requiredList,
   UnexpectedResponseError,
-} from "../../src/plugin/api.js";
-import type { HttpResponse } from "../../src/plugin/http.js";
+} from "../../src/provider/api.js";
+import type { HttpResponse } from "../../src/provider/http.js";
 
 const response = (status: number, body: unknown): HttpResponse =>
   ({ status, body: JSON.stringify(body), headers: new Headers(), url: "" }) as HttpResponse;

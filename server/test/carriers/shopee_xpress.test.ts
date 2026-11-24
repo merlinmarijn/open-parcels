@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { shopeeXpress } from "../../src/carriers/shopee_xpress/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -57,11 +57,11 @@ describe("Shopee Xpress tracking", () => {
     expect(result.complete).toBe(true);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "shopee_xpress",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Out for delivery",
-      plannedFrom: new Date(1_795_010_000_000).toISOString(),
-      plannedTo: new Date(1_795_020_000_000).toISOString(),
+      expectedFrom: new Date(1_795_010_000_000).toISOString(),
+      expectedTo: new Date(1_795_020_000_000).toISOString(),
       url: `https://spx.com.my/track?${CODE}`,
     });
     expect(result.snapshots[0]?.history.map((e) => e.status)).toEqual([
@@ -82,7 +82,7 @@ describe("Shopee Xpress tracking", () => {
     });
     const { base } = fakeContext(shopeeXpress.http, fetchImpl);
     const [parcel] = (await plugin.track(base, config, null, [CODE])).snapshots;
-    expect(parcel).toMatchObject({ delivered: true, plannedFrom: null, plannedTo: null });
+    expect(parcel).toMatchObject({ delivered: true, expectedFrom: null, expectedTo: null });
   });
 
   it("skips an error envelope without calling the result complete", async () => {

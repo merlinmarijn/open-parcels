@@ -6,7 +6,7 @@ import {
   UnexpectedResponseError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   asObject,
   isObject,
   mayHaveMorePages,
@@ -14,7 +14,7 @@ import {
   text,
   unknownReporter,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, toSnapshot } from "./normalize.js";
 import { API_HOST, AUTH_HOST, DaoSession, finishSignIn, startSignIn } from "./session.js";
 
@@ -79,7 +79,7 @@ const isActive = (raw: Json): boolean => {
  * parcel without them; a rate limit, an odd answer or a refused session stops the run.
  */
 async function enrich(
-  context: PluginContext<Config, Secret>,
+  context: ProviderContext<Config, Secret>,
   session: DaoSession,
   parcels: Json[],
 ) {
@@ -124,7 +124,7 @@ async function enrich(
   return extras;
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>): Promise<FetchResult> {
+async function fetchAccount(context: ProviderContext<Config, Secret>): Promise<FetchResult> {
   const session = new DaoSession(context, context.secret.refreshToken);
   const { parcels, complete } = await list(session, context.config.language);
   const extras = await enrich(context, session, parcels);
@@ -146,7 +146,7 @@ export const dao = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "DAO",
   countries: ["DK"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

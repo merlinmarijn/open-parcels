@@ -1,13 +1,13 @@
 import { z } from "zod";
 import {
   defineCarrier,
-  type PluginHttp,
+  type ProviderHttp,
   RateLimitedError,
   SignInRejectedError,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginLogger,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderLogger,
+} from "../../provider/api.js";
 import { accountSnapshot } from "./account-parcels.js";
 import { HermesAccount, readInbox } from "./account.js";
 import { ACCOUNT_HOST, CARRIER_ID, TRACKING_HOST } from "./shared.js";
@@ -25,7 +25,7 @@ const configSchema = z.looseObject({
 type Config = z.infer<typeof configSchema>;
 
 /**
- * Tracking sources need nothing; account sources store the username and password, encrypted. An
+ * Tracking connections need nothing; account connections store the username and password, encrypted. An
  * account imported with only a token pair has no password: it runs on the tokens in its session
  * store until Hermes refuses them, then needs a sign-in.
  */
@@ -40,20 +40,20 @@ type Secret = z.infer<typeof secretSchema>;
  * rest. A forecast never fails the account run.
  */
 async function addForecasts(
-  http: PluginHttp,
-  logger: PluginLogger,
+  http: ProviderHttp,
+  logger: ProviderLogger,
   snapshots: ParcelSnapshot[],
 ): Promise<ParcelSnapshot[]> {
   const result = [...snapshots];
   const todo = result
     .map((parcel, index) => ({ parcel, index }))
-    .filter(({ parcel }) => !parcel.delivered && isPlausibleBarcode(parcel.barcode))
+    .filter(({ parcel }) => !parcel.delivered && isPlausibleBarcode(parcel.trackingNumber))
     .slice(0, FORECAST_LIMIT);
   let stopped = false;
   const worker = async (): Promise<void> => {
     for (let next = todo.shift(); next !== undefined && !stopped; next = todo.shift()) {
       try {
-        const raw = await lookUp(http, next.parcel.barcode);
+        const raw = await lookUp(http, next.parcel.trackingNumber);
         if (raw !== null) {
           result[next.index] = { ...next.parcel, ...readForecast(raw) };
         }
@@ -70,7 +70,7 @@ async function addForecasts(
   return result;
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("The Hermes account needs a username and password.");
   }
@@ -89,7 +89,7 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
   return { snapshots: withForecast, complete: true };
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
@@ -111,7 +111,7 @@ export const hermes = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Hermes",
   countries: ["DE"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

@@ -1,4 +1,4 @@
-import type { ParcelSnapshot } from "../plugin/snapshot.js";
+import type { ParcelSnapshot } from "../provider/snapshot.js";
 
 /**
  * A link as stored: only absolute `http` and `https` addresses. Anything else (`javascript:`,

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { delhivery } from "../../src/carriers/delhivery/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up waybills and values only.
@@ -52,10 +52,10 @@ describe("Delhivery tracking", () => {
     expect(calls[0]?.url.searchParams.get("wbn")).toBe(CODE);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "delhivery",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "In Transit",
-      plannedFrom: "2026-11-19T18:30:00.000Z",
+      expectedFrom: "2026-11-19T18:30:00.000Z",
       sender: "Example Shop",
       delivered: false,
     });
@@ -91,7 +91,7 @@ describe("Delhivery tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T05:30:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

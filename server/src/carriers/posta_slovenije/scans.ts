@@ -8,7 +8,7 @@ import {
   type ParcelSnapshot,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { text } from "./shared.js";
 
 export const CARRIER_ID = "posta_slovenije";
@@ -113,7 +113,7 @@ export function scanSnapshot(input: ScanInput, report: (code: string) => void): 
   }
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: input.barcode,
+    trackingNumber: input.barcode,
     direction: input.direction,
     status,
     rawStatus: newest === undefined ? null : rawStatus(newest.row),

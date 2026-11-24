@@ -12,17 +12,17 @@ let post: FakeWorld;
 
 beforeEach(async () => {
   post = new FakeWorld();
-  context = await createTestContext({ plugins: [fakePost(post)] });
+  context = await createTestContext({ providers: [fakePost(post)] });
 });
 afterEach(async () => {
   await context.close();
 });
 
-async function track(barcode: string): Promise<string> {
+async function track(trackingNumber: string): Promise<string> {
   const parcel = await context.services.parcels.create({
     carrier: "fakepost",
-    barcode,
-    direction: "incoming",
+    trackingNumber,
+    direction: "receiving",
     label: null,
   });
   return parcel.id;
@@ -39,7 +39,7 @@ describe("carrier lookups", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP1001",
+        trackingNumber: "FP1001",
         status: "in_transit",
         rawStatus: "Moving",
       }),
@@ -59,8 +59,8 @@ describe("carrier lookups", () => {
 
     // Asked again later: `since` stays, `checked_at` moves.
     context.clock.advance(DAY);
-    const [source] = await context.services.sources.list();
-    await context.services.sources.requestRun(source?.id ?? "");
+    const [connection] = await context.services.connections.list();
+    await context.services.connections.requestRun(connection?.id ?? "");
     await context.services.scheduler.runDue();
     expect(await lookupOf(unknown)).toMatchObject({
       state: "not_found",
@@ -86,7 +86,12 @@ describe("carrier lookups", () => {
     post.complete = false;
     post.asked = ["FP3001"];
     post.listing = [
-      snapshot({ carrier: "fakepost", barcode: "FP3001", status: "in_transit", rawStatus: "x" }),
+      snapshot({
+        carrier: "fakepost",
+        trackingNumber: "FP3001",
+        status: "in_transit",
+        rawStatus: "x",
+      }),
     ];
     const asked = await track("FP3001");
     const waiting = await track("FP3002");
@@ -98,8 +103,8 @@ describe("carrier lookups", () => {
     post.asked = [];
     post.listing = [];
     context.clock.advance(DAY);
-    const [source] = await context.services.sources.list();
-    await context.services.sources.requestRun(source?.id ?? "");
+    const [connection] = await context.services.connections.list();
+    await context.services.connections.requestRun(connection?.id ?? "");
     await context.services.scheduler.runDue();
     expect(await lookupOf(asked)).toMatchObject({ state: "found" });
     expect(await lookupOf(waiting)).toMatchObject({ state: "pending" });
@@ -135,15 +140,15 @@ describe("carrier lookups", () => {
   });
 });
 
-describe("tracking sources never remove parcels", () => {
-  it("keeps a code the carrier does not know yet, even when the plug-in claims completeness", async () => {
+describe("tracking connections never remove parcels", () => {
+  it("keeps a code the carrier does not know yet, even when the provider claims completeness", async () => {
     post.complete = true;
     const id = await track("FP4001");
     await context.services.scheduler.runDue();
     for (let pass = 0; pass < 3; pass += 1) {
       context.clock.advance(7 * 60 * 60 * 1000);
-      const [source] = await context.services.sources.list();
-      await context.services.sources.requestRun(source?.id ?? "");
+      const [connection] = await context.services.connections.list();
+      await context.services.connections.requestRun(connection?.id ?? "");
       await context.services.scheduler.runDue();
     }
     const parcel = await context.services.parcels.repository.get(id);
@@ -155,7 +160,7 @@ describe("tracking sources never remove parcels", () => {
       .executeTakeFirstOrThrow();
     expect(removed.removed_at).toBeNull();
     const links = await context.services.db
-      .selectFrom("parcel_sources")
+      .selectFrom("parcel_connections")
       .select("missing_since")
       .execute();
     expect(links.map((link) => link.missing_since)).toEqual([null]);
@@ -167,12 +172,12 @@ describe("tracking sources never remove parcels", () => {
     const trackedOnly = await track("FP4002");
     const withAccount = await track("FP4003");
     const tracking = await context.services.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .select("id")
       .where("kind", "=", "tracking")
       .executeTakeFirstOrThrow();
-    const account = await context.services.sources.create({
-      plugin: "fakepost",
+    const account = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},
@@ -180,10 +185,10 @@ describe("tracking sources never remove parcels", () => {
     });
     const marked = "2026-11-10T00:00:00.000Z";
     await context.services.db
-      .insertInto("parcel_sources")
+      .insertInto("parcel_connections")
       .values({
         parcel_id: withAccount,
-        source_id: account.id,
+        connection_id: account.id,
         external_ref: null,
         role: "primary",
         last_seen_at: marked,
@@ -192,7 +197,7 @@ describe("tracking sources never remove parcels", () => {
       .execute();
     // As an older version left them: marked missing on every link, then removed.
     await context.services.db
-      .updateTable("parcel_sources")
+      .updateTable("parcel_connections")
       .set({ missing_since: marked })
       .execute();
     await context.services.db
@@ -207,7 +212,7 @@ describe("tracking sources never remove parcels", () => {
         logger: context.services.logger,
         clock: context.clock,
         secrets: context.services.secrets,
-        plugins: [fakePost(post)],
+        providers: [fakePost(post)],
       });
     await restart();
     await restart();
@@ -215,7 +220,7 @@ describe("tracking sources never remove parcels", () => {
     const rows = await context.services.db
       .selectFrom("parcels")
       .select(["id", "removed_at"])
-      .orderBy("barcode")
+      .orderBy("tracking_number")
       .execute();
     expect(rows).toEqual([
       { id: trackedOnly, removed_at: null },
@@ -223,22 +228,22 @@ describe("tracking sources never remove parcels", () => {
       { id: withAccount, removed_at: "2026-11-10T06:00:00.000Z" },
     ]);
     const trackingLinks = await context.services.db
-      .selectFrom("parcel_sources")
+      .selectFrom("parcel_connections")
       .select("missing_since")
-      .where("source_id", "=", tracking.id)
+      .where("connection_id", "=", tracking.id)
       .execute();
     expect(trackingLinks.map((link) => link.missing_since)).toEqual([null, null]);
   });
 });
 
 describe("startup repair", () => {
-  it("links active parcels without a tracking source to their carrier, once", async () => {
+  it("links active parcels without a tracking connection to their carrier, once", async () => {
     const now = context.clock.now().toISOString();
-    const row = (id: string, barcode: string, delivered: 0 | 1) => ({
+    const row = (id: string, trackingNumber: string, delivered: 0 | 1) => ({
       id,
       carrier: "fakepost",
-      barcode,
-      direction: "incoming" as const,
+      tracking_number: trackingNumber,
+      direction: "receiving" as const,
       status: delivered === 1 ? "delivered" : "registered",
       raw_status: null,
       delivered,
@@ -263,15 +268,15 @@ describe("startup repair", () => {
         logger: context.services.logger,
         clock: context.clock,
         secrets: context.services.secrets,
-        plugins: [fakePost(post)],
+        providers: [fakePost(post)],
       });
     await restart();
     await restart();
 
     const links = await context.services.db
-      .selectFrom("parcel_sources")
-      .innerJoin("sources", "sources.id", "parcel_sources.source_id")
-      .select(["parcel_sources.parcel_id", "sources.kind", "parcel_sources.role"])
+      .selectFrom("parcel_connections")
+      .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+      .select(["parcel_connections.parcel_id", "connections.kind", "parcel_connections.role"])
       .execute();
     expect(links).toEqual([
       { parcel_id: "00000000-0000-4000-8000-000000000001", kind: "tracking", role: "primary" },

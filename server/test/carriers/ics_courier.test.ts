@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { icsCourier } from "../../src/carriers/ics_courier/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -61,7 +61,7 @@ describe("ics_courier tracking", () => {
     expect(parcel?.rawStatus).toBe("Delivered");
     // Toronto is UTC-5 in November.
     expect(parcel?.deliveredAt).toBe("2026-11-18T19:05:00.000Z");
-    expect(parcel?.plannedFrom).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
     expect(parcel?.history.map((event) => [event.at, event.status, event.rawStatus])).toEqual([
       ["2026-11-18T19:05:00.000Z", "delivered", "Delivered"],
       ["2026-11-17T14:00:00.000Z", null, "PUP"],

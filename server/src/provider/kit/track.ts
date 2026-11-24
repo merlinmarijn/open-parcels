@@ -1,7 +1,7 @@
 import type { ParcelStatus } from "../../domain/parcel.js";
-import type { FetchResult, PluginContext } from "../api.js";
+import type { FetchResult, ProviderContext } from "../api.js";
 import { TransientError } from "../errors.js";
-import type { HttpResponse, PluginHttp, RequestOptions } from "../http.js";
+import type { HttpResponse, ProviderHttp, RequestOptions } from "../http.js";
 import type { ParcelSnapshot } from "../snapshot.js";
 import { readJson } from "./json.js";
 
@@ -37,7 +37,7 @@ export interface ReporterOptions {
 
 /** A function that reports unmapped keys under one kind. */
 export function unknownReporter(
-  context: Pick<PluginContext<unknown, unknown>, "reportUnknown">,
+  context: Pick<ProviderContext<unknown, unknown>, "reportUnknown">,
   kind: string,
   options: ReporterOptions = {},
 ): (key: string) => void {
@@ -65,18 +65,22 @@ const asGiven = (code: string): string => code;
 /**
  * A lookup's answer filed under the code as tracked. Carriers often echo their own number (a
  * parcel number, a token, a reformatted code); that one is kept as the external reference, never
- * as the barcode, so the answer can never become a second parcel. A hand-off keeps its own key.
+ * as the tracking number, so the answer can never become a second parcel. A hand-off keeps its own key.
  */
 export function asTracked(found: ParcelSnapshot, tracked: string): ParcelSnapshot {
-  if (found.barcode === tracked) {
+  if (found.trackingNumber === tracked) {
     return found;
   }
-  return { ...found, barcode: tracked, externalRef: found.externalRef ?? found.barcode };
+  return {
+    ...found,
+    trackingNumber: tracked,
+    externalRef: found.externalRef ?? found.trackingNumber,
+  };
 }
 
 /**
  * The carrier's own number for a tracked parcel, as the external reference: null when it is
- * missing or the same as the code tracked. The barcode stays the code tracked.
+ * missing or the same as the code tracked. The tracking number stays the code tracked.
  */
 export function echoRef(echo: string | null, tracked: string): string | null {
   return echo === null || echo === tracked ? null : echo;
@@ -90,7 +94,7 @@ export function echoRef(echo: string | null, tracked: string): string | null {
  * Passing just a pattern checks and sends codes exactly as given, without de-duplication.
  */
 export async function trackEach(
-  barcodes: readonly string[],
+  trackingNumbers: readonly string[],
   options: RegExp | TrackOptions,
   lookUp: (code: string, tracked: string) => Promise<ParcelSnapshot | null>,
 ): Promise<FetchResult> {
@@ -99,15 +103,15 @@ export async function trackEach(
   const normalize = settings.normalize ?? defaultNormalize;
   const snapshots: ParcelSnapshot[] = [];
   const done = new Set<string>();
-  for (const barcode of barcodes) {
-    const code = normalize(barcode);
+  for (const trackingNumber of trackingNumbers) {
+    const code = normalize(trackingNumber);
     if ((settings.dedupe !== false && done.has(code)) || !settings.plausible.test(code)) {
       continue;
     }
     done.add(code);
-    const found = await lookUp(code, barcode);
+    const found = await lookUp(code, trackingNumber);
     if (found !== null) {
-      snapshots.push(asTracked(found, barcode));
+      snapshots.push(asTracked(found, trackingNumber));
     }
   }
   // A lookup answers only for the codes asked; whether a missing one is gone is the not-found
@@ -120,7 +124,7 @@ export async function trackEach(
  * null; every other status is a transient failure (rate limits are raised by the HTTP layer).
  */
 export async function requestJson(
-  http: PluginHttp,
+  http: ProviderHttp,
   url: URL,
   carrier: string,
   options: RequestOptions & { readonly notFound?: readonly number[] } = {},

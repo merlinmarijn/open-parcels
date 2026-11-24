@@ -6,9 +6,9 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   isObject,
   objects,
@@ -22,7 +22,7 @@ import {
   unknownReporter,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "early_bird";
 const HOST = "earlybird.se";
@@ -50,7 +50,7 @@ function classify(sentence: string): { known: boolean; status: ParcelStatus | nu
 const mentionsLocker = (lowered: string): boolean =>
   rulesStatus(CARRIER_ID, { text: lowered, fields: { use: "locker" } }) !== null;
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${HOST}/api/tracking`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -121,7 +121,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const headline = text(asObject(raw["status"])["text"]) ?? text(events[0]?.["text"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: headline,
     deliveredAt:
@@ -139,7 +139,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<unknown, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_text");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const raw = await lookUp(context.http, code);
@@ -152,7 +152,7 @@ export const earlyBird = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "Early Bird",
   countries: ["SE"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

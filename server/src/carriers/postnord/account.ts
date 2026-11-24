@@ -19,9 +19,9 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parcel.js";
 
 export const ACCOUNT_HOST = "account.postnord.com";
@@ -49,7 +49,7 @@ const clientId = (): string => carrierKey(CARRIER_ID, "receiver_app_client_id");
  * Only an OAuth refusal of the grant (a 400 or 401 naming one) is a sign-in problem. A WAF's 403,
  * a 404, a 5xx or a network error is not, and never asks the user to sign in again.
  */
-async function postToken(http: PluginHttp, form: Record<string, string>) {
+async function postToken(http: ProviderHttp, form: Record<string, string>) {
   const response = await http.request(new URL(`https://${ACCOUNT_HOST}/oauth2/token`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -144,7 +144,7 @@ const fingerprint = (value: string): string =>
   createHash("sha256").update(value).digest("hex").slice(0, 16);
 
 async function readInbox(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   secret: AccountSecret,
 ): Promise<Json> {
   const parsed = storedSchema.safeParse(context.session.load());
@@ -205,7 +205,7 @@ async function readInbox(
 
 /** Active and archived shipments; a missing bucket is a changed answer, never an empty inbox. */
 export async function fetchPostnordAccount(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   secret: AccountSecret,
 ): Promise<FetchResult> {
   const payload = await readInbox(context, secret);
@@ -229,7 +229,7 @@ export async function fetchPostnordAccount(
       };
       const parcel = shipmentSnapshot(shaped, code, report);
       const outgoing = asObject(raw["userData"])["direction"] === "OUTGOING";
-      snapshots.push({ ...parcel, direction: outgoing ? "outgoing" : "incoming" });
+      snapshots.push({ ...parcel, direction: outgoing ? "sending" : "receiving" });
     }
   }
   return { snapshots, complete: true };

@@ -5,9 +5,9 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   isObject,
   num,
@@ -25,7 +25,7 @@ import {
   unknownReporter,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "fan_courier";
 const HOST = "www.fancourier.ro";
@@ -38,7 +38,7 @@ const mentionsLocker = (name: string): boolean =>
 
 const PLAUSIBLE = carrierPattern("fan_courier");
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${HOST}/limit-tracking.php`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -110,7 +110,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const weight = num(raw["weight"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(newestRaw["name"]) ?? code,
     deliveredAt:
@@ -131,7 +131,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<unknown, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const raw = await lookUp(context.http, code);
@@ -144,7 +144,7 @@ export const fanCourier = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "FAN Courier",
   countries: ["RO"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

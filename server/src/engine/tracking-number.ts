@@ -32,7 +32,7 @@ function matches(pattern: RegExp, code: string): boolean {
  * digits). Anything else (a shop's own key, an opaque link token, text the pattern rejects) is
  * only trimmed.
  */
-export function normaliseBarcode(carrier: string, code: string): string {
+export function normaliseTrackingNumber(carrier: string, code: string): string {
   const trimmed = code.trim();
   if (TOKEN_CARRIERS.has(carrier)) {
     return trimmed;

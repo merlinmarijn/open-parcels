@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { LIVE_FAST_MS, LIVE_PROBE_MS } from "../../src/engine/live.js";
 import type { EphemeralMessage } from "../../src/events/bus.js";
-import { RateLimitedError, TransientError } from "../../src/plugin/api.js";
+import { RateLimitedError, TransientError } from "../../src/provider/api.js";
 import { FakeWorld, fakeShop, reading, snapshot } from "../fakes/carriers.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -10,15 +10,15 @@ const COURIER = { latitude: 10.5, longitude: 20.25 };
 
 let context: TestContext;
 let shop: FakeWorld;
-let sourceId: string;
+let connectionId: string;
 let positions: EphemeralMessage[];
 
 beforeEach(async () => {
   shop = new FakeWorld();
-  context = await createTestContext({ plugins: [fakeShop(shop)] });
-  sourceId = (
-    await context.services.sources.create({
-      plugin: "fakeshop",
+  context = await createTestContext({ providers: [fakeShop(shop)] });
+  connectionId = (
+    await context.services.connections.create({
+      provider: "fakeshop",
       kind: "shop",
       label: "Shop",
       config: {},
@@ -39,13 +39,13 @@ async function poll(
   shop.listing = [
     snapshot({
       carrier: "fakeshop",
-      barcode: "SHOP-1",
+      trackingNumber: "SHOP-1",
       status,
       rawStatus: status,
       live: { ref: { trackingId: "made-up-1" }, mapShown },
     }),
   ];
-  await context.services.sources.requestRun(sourceId);
+  await context.services.connections.requestRun(connectionId);
   await context.services.scheduler.runDue();
   return (
     (await context.services.parcels.repository.list({ includeArchived: true }, false))[0]?.id ?? ""
@@ -73,7 +73,7 @@ async function liveState(parcelId: string): Promise<string | undefined> {
 }
 
 describe("live courier tracking", () => {
-  it("ends a session and clears its state when the source stops offering the map", async () => {
+  it("ends a session and clears its state when the connection stops offering the map", async () => {
     const parcelId = await poll("out_for_delivery", true);
     shop.liveScript = [reading("en_route", 4, COURIER)];
     await context.services.live.pass();
@@ -83,13 +83,13 @@ describe("live courier tracking", () => {
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: "SHOP-1",
+        trackingNumber: "SHOP-1",
         status: "in_transit",
         rawStatus: "in_transit",
         live: null,
       }),
     ];
-    await context.services.sources.requestRun(sourceId);
+    await context.services.connections.requestRun(connectionId);
     await context.services.scheduler.runDue();
     await vi.waitFor(async () => {
       expect(await liveState(parcelId)).toBeUndefined();
@@ -178,13 +178,15 @@ describe("live courier tracking", () => {
     await context.services.live.pass();
     context.clock.advance(30_000);
     await context.services.live.pass();
-    const source = await context.services.sources.get(sourceId);
-    expect(Date.parse(source?.nextRunAt ?? "")).toBeLessThanOrEqual(context.clock.now().getTime());
+    const connection = await context.services.connections.get(connectionId);
+    expect(Date.parse(connection?.nextRunAt ?? "")).toBeLessThanOrEqual(
+      context.clock.now().getTime(),
+    );
 
     shop.listing = [
       snapshot({
         carrier: "fakeshop",
-        barcode: "SHOP-1",
+        trackingNumber: "SHOP-1",
         status: "delivered",
         rawStatus: "Delivered",
       }),
@@ -259,7 +261,7 @@ describe("the live tracking loop", () => {
     // Wakes while the pass runs, as setTargets after every poll does.
     live.wake();
     live.wake();
-    live.setTargets(sourceId, []);
+    live.setTargets(connectionId, []);
     await vi.advanceTimersByTimeAsync(LIVE_FAST_MS);
     expect(pass).toHaveBeenCalledTimes(1);
     release(LIVE_FAST_MS);

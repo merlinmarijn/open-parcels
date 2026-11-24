@@ -5,7 +5,7 @@ import {
   text,
   TransientError,
   UnexpectedResponseError,
-} from "../../../plugin/api.js";
+} from "../../../provider/api.js";
 
 /**
  * Mój DHL guards its public calls with an Altcha challenge: a proof of work any client is meant
@@ -19,7 +19,7 @@ const CHECK_EVERY = 2_048;
 
 export interface SolveOptions {
   readonly budgetMs?: number;
-  /** Elapsed-time source; tests replace it. */
+  /** Elapsed-time connection; tests replace it. */
   readonly elapsed?: () => number;
 }
 

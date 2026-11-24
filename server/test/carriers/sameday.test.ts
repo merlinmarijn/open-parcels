@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { sameday } from "../../src/carriers/sameday/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -45,12 +45,12 @@ describe("Sameday tracking", () => {
     expect(result.complete).toBe(false);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "sameday",
-      barcode: AWB,
+      trackingNumber: AWB,
       status: "out_for_delivery",
       rawStatus: "In livrare",
       delivered: false,
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://sameday.ro/status-colet/?awb=${AWB}`,
     });
     expect(result.snapshots[0]?.history.map((e) => e.status)).toEqual([

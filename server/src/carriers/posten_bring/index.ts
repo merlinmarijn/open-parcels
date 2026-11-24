@@ -22,11 +22,11 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "posten_bring";
 export const API_HOST = "api.posten.no";
@@ -60,7 +60,7 @@ interface Tokens {
 }
 
 /** Only an explicit refusal of the grant or the app client means the user must sign in again. */
-async function postToken(http: PluginHttp, brand: Brand, form: Record<string, string>) {
+async function postToken(http: ProviderHttp, brand: Brand, form: Record<string, string>) {
   const response = await http.request(
     new URL(`https://${BRANDS[brand].host}/api/oauth/accesstoken`),
     {
@@ -157,7 +157,7 @@ const fingerprint = (value: string): string =>
 class Session {
   #stored: Stored;
 
-  constructor(private readonly context: PluginContext<Config, Secret>) {
+  constructor(private readonly context: ProviderContext<Config, Secret>) {
     const signedInWith = context.secret.refreshToken;
     const parsed = storedSchema.safeParse(context.session.load());
     const base = fingerprint(signedInWith);
@@ -243,15 +243,15 @@ function statusOf(raw: Json, events: readonly Json[], report: (key: string) => v
   return DELIVERED_EVENTS.has(type) ? "delivered" : RETURNED_EVENTS.has(type) ? "returning" : null;
 }
 
-function window(raw: Json): { plannedFrom: string | null; plannedTo: string | null } {
+function window(raw: Json): { expectedFrom: string | null; expectedTo: string | null } {
   const time = asObject(asObject(raw["delivery"])["deliveryTime"]);
   const range = asObject(time["deliveryWindow"]);
   const start = when(range["start"]);
   const end = when(range["end"]);
   // The bare date can be local midnight sent as UTC; it is only used without a window.
   return start !== null || end !== null
-    ? { plannedFrom: start, plannedTo: end }
-    : { plannedFrom: when(time["date"]), plannedTo: null };
+    ? { expectedFrom: start, expectedTo: end }
+    : { expectedFrom: when(time["date"]), expectedTo: null };
 }
 
 export function toSnapshot(raw: Json, report: (key: string) => void): ParcelSnapshot | null {
@@ -275,8 +275,8 @@ export function toSnapshot(raw: Json, report: (key: string) => void): ParcelSnap
   ).slice(0, HISTORY_LIMIT);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: number,
-    direction: text(raw["direction"])?.toLowerCase() === "send" ? "outgoing" : "incoming",
+    trackingNumber: number,
+    direction: text(raw["direction"])?.toLowerCase() === "send" ? "sending" : "receiving",
     status,
     rawStatus: text(raw["status"]),
     delivered,
@@ -298,7 +298,7 @@ export function toSnapshot(raw: Json, report: (key: string) => void): ParcelSnap
  * `remainingCount` stays positive, up to a page cap; a cursor that stops advancing ends it. The
  * read is never complete: a parcel outside the window is not gone.
  */
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   const session = new Session(context);
   const since = new Date(context.clock.now().getTime() - LOOKBACK_DAYS * 86_400_000)
     .toISOString()
@@ -336,7 +336,7 @@ export const postenBring = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Posten / Bring",
   countries: ["NO"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn,

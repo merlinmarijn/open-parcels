@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { gofo } from "../../src/carriers/gofo/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty body. */
@@ -45,8 +45,8 @@ describe("gofo", () => {
     const [parcel] = result.snapshots;
     expect(parcel?.status).toBe("out_for_delivery");
     expect(parcel?.weightKg).toBe(0.5);
-    expect(parcel?.plannedFrom).toBeNull();
-    expect(parcel?.plannedTo).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
+    expect(parcel?.expectedTo).toBeNull();
     // January: PST is UTC-8, not the stamped -07:00.
     expect(parcel?.history.map((e) => e.at)).toEqual([
       "2026-01-15T17:00:00.000Z",

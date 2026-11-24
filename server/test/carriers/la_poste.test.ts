@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { laposte } from "../../src/carriers/la_poste/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty body. */
@@ -38,10 +38,10 @@ describe("la_poste", () => {
     expect(calls[0]?.url.pathname).toBe(`/ssu/sun/back/suivi-unifie/${CODE}`);
     expect(calls[0]?.headers.get("user-agent")).toBe("PostmanRuntime/7.49.1");
     const [parcel] = result.snapshots;
-    expect(parcel?.barcode).toBe(CODE);
+    expect(parcel?.trackingNumber).toBe(CODE);
     expect(parcel?.status).toBe("out_for_delivery");
-    expect(parcel?.plannedFrom).toBeNull();
-    expect(parcel?.plannedTo).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
+    expect(parcel?.expectedTo).toBeNull();
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-05-02T08:00:00.000Z", "out_for_delivery"],
       ["2026-05-01T08:00:00.000Z", "in_transit"],

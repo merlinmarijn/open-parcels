@@ -1,5 +1,5 @@
 import {
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   isObject,
@@ -9,11 +9,11 @@ import {
   TransientError,
   UnexpectedResponseError,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 /** The parcel exists but its history has been purged. */
 export const HISTORY_EXPIRED = "SHIPMENT_OLDER_THAN_SUPPORTED_AGE";
-/** Tracker sources the by-number tracker serves: Amazon Shipping and multi-channel fulfilment. */
+/** Tracker connections the by-number tracker serves: Amazon Shipping and multi-channel fulfilment. */
 const SERVED_SOURCES = new Set(["SWA", "MCF"]);
 /** Answers that only mean "this tracker does not serve that number". */
 const NOT_SERVED = new Set([
@@ -85,7 +85,7 @@ function decodeNested(payload: Json): Json {
  * a served parcel (or one whose history expired) comes back, anything it does not serve is null.
  */
 export async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   barcode: string,
   report: (kind: string, key: string) => void,
 ): Promise<Json | null> {

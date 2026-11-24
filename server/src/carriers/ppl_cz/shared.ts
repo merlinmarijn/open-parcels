@@ -1,4 +1,4 @@
-import { rulesStatus, type MappedStatus, rulesTrackingUrl } from "../../plugin/api.js";
+import { rulesStatus, type MappedStatus, rulesTrackingUrl } from "../../provider/api.js";
 
 export const CARRIER_ID = "ppl_cz";
 export const API_HOST = "api.dhl.com";

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { postenBring } from "../../src/carriers/posten_bring/index.js";
-import type { InteractiveSignIn } from "../../src/plugin/sign-in.js";
-import { SignInRejectedError } from "../../src/plugin/errors.js";
+import type { InteractiveSignIn } from "../../src/provider/sign-in.js";
+import { SignInRejectedError } from "../../src/provider/errors.js";
 import { formOf, json, madeUp, on, World } from "./harness.js";
 
 // Made-up parcel numbers and tokens only.

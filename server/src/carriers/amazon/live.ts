@@ -6,7 +6,7 @@ import {
   type HttpResponse,
   type LiveReading,
   type LiveTarget,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import type { AmazonContext } from "./account.js";
 import { loadSession } from "./session.js";
 import { storefrontOrigin, STOREFRONTS } from "./storefronts.js";

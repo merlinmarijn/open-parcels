@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { canadapost } from "../../src/carriers/canadapost/index.js";
-import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
 import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
+} from "../../src/provider/errors.js";
 import { json, onFragment, World, type Route } from "./harness.js";
 
 // Made-up codes and values only.
@@ -68,8 +68,8 @@ describe("Canada Post tracking", () => {
       status: "out_for_delivery",
       rawStatus: "FullProgress",
       sender: "Example Shop",
-      plannedFrom: "2026-11-19T05:00:00.000Z",
-      plannedTo: null,
+      expectedFrom: "2026-11-19T05:00:00.000Z",
+      expectedTo: null,
     });
     expect(parcel?.history.map((e) => [e.at, e.status, e.location])).toEqual([
       ["2026-11-18T13:15:00.000Z", "out_for_delivery", "Testville, ON"],
@@ -108,7 +108,7 @@ describe("Canada Post settings", () => {
     const plugin = register(canadapost);
     expect(() => {
       plugin.validateConfig({ timeZone: "America/Nowhere" });
-    }).toThrow(InvalidSourceConfigError);
+    }).toThrow(InvalidConnectionConfigError);
     expect(() => {
       plugin.validateConfig({ timeZone: "America/Vancouver" });
     }).not.toThrow();
@@ -124,7 +124,7 @@ describe("Canada Post account", () => {
       detailRoute(PIN, detail(PIN, "Delivered", { delivered: true })),
     ];
     const result = await world.fetchAccount({}, credentials);
-    expect(result.snapshots.map((p) => [p.barcode, p.status, p.delivered])).toEqual([
+    expect(result.snapshots.map((p) => [p.trackingNumber, p.status, p.delivered])).toEqual([
       [PIN, "delivered", true],
     ]);
     expect(world.calls[0]?.body ?? "").toContain("grant_type=password");

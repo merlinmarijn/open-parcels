@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { oesterreichischePost } from "../../src/carriers/oesterreichische_post/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
-import type { CarrierPlugin } from "../../src/plugin/api.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import type { CarrierProvider } from "../../src/provider/api.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, inOrder, json, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty JSON object. */
 const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () => json({}, 500));
 
-function harness<C, S>(plugin: CarrierPlugin<C, S>, fetchImpl: FetchLike) {
+function harness<C, S>(plugin: CarrierProvider<C, S>, fetchImpl: FetchLike) {
   const { base, unknownKeys } = fakeContext(plugin.http, fetchImpl);
   return { registered: register(plugin), base, unknown: unknownKeys };
 }
@@ -64,14 +64,14 @@ describe("Austrian Post tracking", () => {
     const out = await registered.track(base, { language: "en" }, null, [CODE]);
     expect(out.snapshots[0]).toMatchObject({
       carrier: "oesterreichische_post",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Anzeigetext",
       sender: "Beispielshop",
       weightKg: 1.5,
       // Vienna is UTC+1 in November.
-      plannedFrom: "2026-11-18T12:00:00.000Z",
-      plannedTo: "2026-11-18T14:00:00.000Z",
+      expectedFrom: "2026-11-18T12:00:00.000Z",
+      expectedTo: "2026-11-18T14:00:00.000Z",
     });
     expect(out.snapshots[0]?.history.map((e) => [e.status, e.at])).toEqual([
       ["out_for_delivery", "2026-11-18T06:00:00.000Z"],
@@ -92,7 +92,7 @@ describe("Austrian Post tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T09:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 
@@ -116,7 +116,7 @@ describe("Austrian Post tracking", () => {
     ]);
     const { registered, base } = harness(oesterreichischePost, fetchImpl);
     const { snapshots } = await registered.track(base, {}, null, [CODE, OTHER]);
-    expect(snapshots.map((parcel) => [parcel.barcode, parcel.externalRef])).toEqual([
+    expect(snapshots.map((parcel) => [parcel.trackingNumber, parcel.externalRef])).toEqual([
       [CODE, RELABEL],
       [OTHER, null],
     ]);

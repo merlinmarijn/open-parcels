@@ -6,9 +6,9 @@ import {
   UnexpectedResponseError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   isObject,
   ruleStatus,
   num,
@@ -21,7 +21,7 @@ import {
   expectStatus,
   unknownReporter,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "econt";
 const HOST = "ee.econt.com";
@@ -35,7 +35,10 @@ const PLAUSIBLE = carrierPattern("econt");
  * One batch lookup. Every answer must name a requested code exactly once; an error element
  * stands for the single code no other element named. Anything else stops the run.
  */
-async function lookUpBatch(http: PluginHttp, codes: readonly string[]): Promise<Map<string, Json>> {
+async function lookUpBatch(
+  http: ProviderHttp,
+  codes: readonly string[],
+): Promise<Map<string, Json>> {
   const response = await http.request(
     new URL(`https://${HOST}/services/Shipments/ShipmentService.getShipmentStatuses.json`),
     {
@@ -116,13 +119,13 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const weight = num(raw["weight"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status: mapped,
     rawStatus,
     delivered,
     deliveredAt,
-    plannedFrom: day?.from ?? null,
-    plannedTo: day?.to ?? null,
+    expectedFrom: day?.from ?? null,
+    expectedTo: day?.to ?? null,
     url: rulesTrackingUrl(CARRIER_ID, barcode),
     weightKg: weight !== null && weight > 0 ? weight : null,
     history: history(raw, report),
@@ -131,7 +134,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
 }
 
 async function track(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   barcodes: readonly string[],
 ): Promise<FetchResult> {
   const report = unknownReporter(context, "status");
@@ -158,7 +161,7 @@ export const econt = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "Econt",
   countries: ["BG"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { colisPrive } from "../../src/carriers/colis_prive/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { html, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -43,8 +43,8 @@ describe("Colis Privé tracking", () => {
       carrier: "colis_prive",
       status: "out_for_delivery",
       sender: "Example Shop",
-      plannedFrom: "2026-11-17T23:00:00.000Z",
-      plannedTo: "2026-11-18T22:59:59.000Z",
+      expectedFrom: "2026-11-17T23:00:00.000Z",
+      expectedTo: "2026-11-18T22:59:59.000Z",
     });
     expect(parcel?.history.map((e) => e.status)).toEqual([
       "out_for_delivery",

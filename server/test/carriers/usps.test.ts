@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { usps } from "../../src/carriers/usps/index.js";
 import { register } from "../../src/engine/registry.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -47,12 +47,12 @@ describe("USPS tracking", () => {
     const first = await plugin.track(base, {}, keys, [CODE]);
     expect(first.snapshots[0]).toMatchObject({
       carrier: "usps",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
       // The Tracking API answer has no delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: expect.stringContaining(CODE) as unknown,
     });
     expect(first.snapshots[0]?.history.map((event) => event.status)).toEqual([

@@ -1,4 +1,4 @@
-import { rulesStatus, type ParcelStatus } from "../../plugin/api.js";
+import { rulesStatus, type ParcelStatus } from "../../provider/api.js";
 
 /*
  * PostNL track & trace observation codes and status-phase wording, from the shared table. Notice

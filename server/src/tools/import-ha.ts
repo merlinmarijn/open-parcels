@@ -1,5 +1,5 @@
 /**
- * Imports the Home Assistant parcel suite's config entries as signed-in sources.
+ * Imports the Home Assistant parcel suite's config entries as signed-in connections.
  *
  * Usage: node dist/tools/import-ha.js <path to .storage/core.config_entries | -> [--dry-run]
  *

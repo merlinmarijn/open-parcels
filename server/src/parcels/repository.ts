@@ -4,6 +4,7 @@ import { parcelVisible } from "../db/visibility.js";
 import {
   effectiveDelivered,
   effectiveStatus,
+  legacyDirection,
   PARCEL_STATUSES,
   type HistoryEntry,
   type Item,
@@ -13,6 +14,7 @@ import {
   type Parcel,
   type ParcelStatus,
 } from "../domain/parcel.js";
+import { expectedDays } from "./expected-days.js";
 
 export interface ParcelFilter {
   readonly active?: boolean;
@@ -58,7 +60,7 @@ interface Related {
   history: Map<string, HistoryEntry[]>;
   items: Map<string, Item[]>;
   live: Map<string, Live>;
-  sources: Map<string, Parcel["sources"]>;
+  connections: Map<string, Parcel["connections"]>;
   orders: Map<string, OrderInfo>;
   listedBy: Map<string, Set<string>>;
   places: Map<string, Parcel["location"]>;
@@ -81,12 +83,15 @@ export interface Presentation {
   imagePath(remote: string | null): string | null;
   /** The "Default parcel label" setting: how a parcel without a label is named. */
   labelMode(): ParcelLabelMode;
+  /** The server's time zone, in which `expected_days` are local days. */
+  readonly timeZone: string;
 }
 
 export const RAW_PRESENTATION: Presentation = {
   position: () => undefined,
   imagePath: (remote) => remote,
   labelMode: () => "tracking_number",
+  timeZone: "UTC",
 };
 
 /** Item names joined, for the "Item names" label mode: at most this many characters. */
@@ -95,7 +100,7 @@ export const ITEM_LABEL_MAX = 100;
 /** A parcel's name: its label, else its item names (in that mode), else the tracking code. */
 export function displayName(
   label: string | null,
-  barcode: string,
+  trackingNumber: string,
   items: readonly { readonly title: string }[],
   mode: ParcelLabelMode,
 ): string {
@@ -109,7 +114,7 @@ export function displayName(
         : `${joined.slice(0, ITEM_LABEL_MAX - 1).trimEnd()}…`;
     }
   }
-  return barcode;
+  return trackingNumber;
 }
 
 type OrderItemRow = Selectable<OrderItemTable>;
@@ -261,7 +266,7 @@ export class ParcelRepository {
     return this.#toParcel(row, related);
   }
 
-  /** A parcel the owner may see: undefined while every source it came from is disabled. */
+  /** A parcel the owner may see: undefined while every connection it came from is disabled. */
   async getVisible(id: string): Promise<Parcel | undefined> {
     const row = await this.db
       .selectFrom("parcels")
@@ -329,12 +334,15 @@ export class ParcelRepository {
     return byOrder;
   }
 
-  async findIdByBarcode(carrier: string, barcode: string): Promise<string | undefined> {
+  async findIdByTrackingNumber(
+    carrier: string,
+    trackingNumber: string,
+  ): Promise<string | undefined> {
     const row = await this.db
       .selectFrom("parcels")
       .select("id")
       .where("carrier", "=", carrier)
-      .where("barcode", "=", barcode)
+      .where("tracking_number", "=", trackingNumber)
       .executeTakeFirst();
     return row?.id;
   }
@@ -347,13 +355,13 @@ export class ParcelRepository {
         history: new Map(),
         items: new Map(),
         live: new Map(),
-        sources: new Map(),
+        connections: new Map(),
         orders: new Map(),
         listedBy: new Map(),
         places: new Map(),
       };
     }
-    const [events, placed, items, live, sources, orders, orderItems, orderSizes] =
+    const [events, placed, items, live, connections, orders, orderItems, orderSizes] =
       await Promise.all([
         withHistory
           ? this.db
@@ -380,20 +388,20 @@ export class ParcelRepository {
           .execute(),
         this.db.selectFrom("live_state").selectAll().where("parcel_id", "in", ids).execute(),
         this.db
-          .selectFrom("parcel_sources")
-          .innerJoin("sources", "sources.id", "parcel_sources.source_id")
+          .selectFrom("parcel_connections")
+          .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
           .select([
-            "parcel_sources.parcel_id",
-            "parcel_sources.source_id",
-            "parcel_sources.role",
-            "parcel_sources.last_seen_at",
-            "parcel_sources.missing_since",
-            "sources.plugin",
-            "sources.label",
-            "sources.kind",
+            "parcel_connections.parcel_id",
+            "parcel_connections.connection_id",
+            "parcel_connections.role",
+            "parcel_connections.last_seen_at",
+            "parcel_connections.missing_since",
+            "connections.provider",
+            "connections.label",
+            "connections.kind",
           ])
-          .orderBy("sources.created_at")
-          .where("parcel_sources.parcel_id", "in", ids)
+          .orderBy("connections.created_at")
+          .where("parcel_connections.parcel_id", "in", ids)
           .execute(),
         orderIds.length === 0
           ? Promise.resolve([])
@@ -483,33 +491,35 @@ export class ParcelRepository {
         ];
       }),
     );
-    const sourceMap = new Map<string, Parcel["sources"]>();
+    const connectionMap = new Map<string, Parcel["connections"]>();
     const listedBy = new Map<string, Set<string>>();
-    for (const [parcelId, list] of groupBy(sources, (source) => source.parcel_id)) {
-      sourceMap.set(
+    for (const [parcelId, list] of groupBy(connections, (connection) => connection.parcel_id)) {
+      connectionMap.set(
         parcelId,
-        list.map((source) => ({
-          source_id: source.source_id,
-          plugin: source.plugin,
-          label: source.label,
-          kind: source.kind,
-          role: source.role,
-          last_seen_at: source.last_seen_at,
+        list.map((connection) => ({
+          connection_id: connection.connection_id,
+          provider: connection.provider,
+          source_id: connection.connection_id,
+          plugin: connection.provider,
+          label: connection.label,
+          kind: connection.kind,
+          role: connection.role,
+          last_seen_at: connection.last_seen_at,
         })),
       );
-      // Account and shop sources that currently list the parcel, by plug-in: proof that the
+      // Account and shop connections that currently list the parcel, by provider: proof that the
       // carrier knows the code even when its public tracking does not return it.
       listedBy.set(
         parcelId,
         new Set(
           list
             .filter(
-              (source) =>
-                (source.kind === "account" || source.kind === "shop") &&
-                source.role !== "mail" &&
-                source.missing_since === null,
+              (connection) =>
+                (connection.kind === "account" || connection.kind === "shop") &&
+                connection.role !== "mail" &&
+                connection.missing_since === null,
             )
-            .map((source) => source.plugin),
+            .map((connection) => connection.provider),
         ),
       );
     }
@@ -521,7 +531,7 @@ export class ParcelRepository {
       history,
       items: itemMap,
       live: liveMap,
-      sources: sourceMap,
+      connections: connectionMap,
       orders: orderMap,
       listedBy,
       places,
@@ -537,23 +547,33 @@ export class ParcelRepository {
     const listed = related.listedBy.get(row.id)?.has(row.carrier) === true;
     return {
       carrier: row.carrier,
-      barcode: row.barcode,
+      tracking_number: row.tracking_number,
+      barcode: row.tracking_number,
       sender: row.sender,
       receiver: row.receiver,
       status: effectiveStatus({ status: carrierStatus, manual_status: manual }),
       raw_status: row.raw_status,
       delivered: effectiveDelivered(carrierDelivered, manual),
       delivered_at: row.delivered_at,
-      planned_from: row.planned_from,
-      planned_to: row.planned_to,
+      expected_from: row.expected_from,
+      expected_to: row.expected_to,
+      expected_days: expectedDays(row.expected_from, row.expected_to, this.presentation.timeZone),
+      planned_from: row.expected_from,
+      planned_to: row.expected_to,
       pickup: row.pickup === 1,
       pickup_point: row.pickup_point,
       history: related.history.get(row.id) ?? [],
       url: row.url,
       id: row.id,
       direction: row.direction,
+      legacy_direction: legacyDirection(row.direction),
       label: row.label,
-      display_name: displayName(row.label, row.barcode, items, this.presentation.labelMode()),
+      display_name: displayName(
+        row.label,
+        row.tracking_number,
+        items,
+        this.presentation.labelMode(),
+      ),
       manual_status: manual,
       carrier_status: carrierStatus,
       carrier_delivered: carrierDelivered,
@@ -574,10 +594,11 @@ export class ParcelRepository {
               items: order.items,
               id: order.id,
             },
-      sources: related.sources.get(row.id) ?? [],
-      // Another source of the same carrier (an account) listing the parcel means the carrier
+      connections: related.connections.get(row.id) ?? [],
+      sources: related.connections.get(row.id) ?? [],
+      // Another connection of the same carrier (an account) listing the parcel means the carrier
       // found it, whatever its public tracking answered. It has been found since the app first
-      // saw it, which is when a source first listed it.
+      // saw it, which is when a connection first listed it.
       lookup:
         row.lookup_state === "not_found" && listed
           ? { state: "found", since: row.first_seen_at, checked_at: row.lookup_checked_at }

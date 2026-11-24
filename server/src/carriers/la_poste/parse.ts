@@ -10,7 +10,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "la_poste";
 
@@ -79,7 +79,7 @@ export function toSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus:
       text(asObject(raw["currentState"])["shortLabel"]) ?? text(events[0]?.["label"]) ?? code,

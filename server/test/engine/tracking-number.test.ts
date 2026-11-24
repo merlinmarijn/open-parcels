@@ -1,8 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { NewParcelRow } from "../../src/db/schema.js";
-import { normaliseBarcode } from "../../src/engine/barcode.js";
-import { repairBarcodes } from "../../src/engine/barcode-repair.js";
-import { trackEach } from "../../src/plugin/api.js";
+import { normaliseTrackingNumber } from "../../src/engine/tracking-number.js";
+import { repairTrackingNumbers } from "../../src/engine/tracking-number-repair.js";
+import { trackEach } from "../../src/provider/api.js";
 import { FakeWorld, fakePost, scan, snapshot } from "../fakes/carriers.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -13,13 +13,13 @@ const UPS_CODE = "1Z0000A00000000001";
 
 describe("the stored spelling of a code", () => {
   it("drops spaces and upper-cases a code the carrier's pattern accepts", () => {
-    expect(normaliseBarcode("ups", UPS_TYPED)).toBe(UPS_CODE);
-    expect(normaliseBarcode("gls", " 0000 0000 001 ")).toBe("00000000001");
+    expect(normaliseTrackingNumber("ups", UPS_TYPED)).toBe(UPS_CODE);
+    expect(normaliseTrackingNumber("gls", " 0000 0000 001 ")).toBe("00000000001");
   });
 
   it("keeps opaque tokens and texts the pattern rejects as given, trimmed", () => {
-    expect(normaliseBarcode("budbee", " AbCdEf123 ")).toBe("AbCdEf123");
-    expect(normaliseBarcode("ups", "order #12")).toBe("order #12");
+    expect(normaliseTrackingNumber("budbee", " AbCdEf123 ")).toBe("AbCdEf123");
+    expect(normaliseTrackingNumber("ups", "order #12")).toBe("order #12");
   });
 });
 
@@ -27,11 +27,11 @@ describe("a lookup's answer", () => {
   it("is filed under the code as tracked, the carrier's own number kept as a reference", async () => {
     const result = await trackEach(["TRACKED0001"], /^\w+$/, () =>
       Promise.resolve(
-        snapshot({ carrier: "x", barcode: "CARRIER-ID-9", status: null, rawStatus: null }),
+        snapshot({ carrier: "x", trackingNumber: "CARRIER-ID-9", status: null, rawStatus: null }),
       ),
     );
     expect(result.snapshots[0]).toMatchObject({
-      barcode: "TRACKED0001",
+      trackingNumber: "TRACKED0001",
       externalRef: "CARRIER-ID-9",
     });
   });
@@ -43,7 +43,7 @@ describe("codes in another spelling", () => {
 
   beforeEach(async () => {
     post = new FakeWorld();
-    context = await createTestContext({ plugins: [fakePost(post)] });
+    context = await createTestContext({ providers: [fakePost(post)] });
   });
   afterEach(async () => {
     await context.close();
@@ -52,41 +52,46 @@ describe("codes in another spelling", () => {
   it("are one parcel: typed by hand with spaces, echoed compact by the carrier", async () => {
     const typed = await context.services.parcels.create({
       carrier: "ups",
-      barcode: UPS_TYPED,
-      direction: "incoming",
+      trackingNumber: UPS_TYPED,
+      direction: "receiving",
       label: null,
     });
-    expect(typed.barcode).toBe(UPS_CODE);
+    expect(typed.tracking_number).toBe(UPS_CODE);
     post.listing = [
       snapshot({
         carrier: "ups",
-        barcode: UPS_CODE.toLowerCase(),
+        trackingNumber: UPS_CODE.toLowerCase(),
         status: "in_transit",
         rawStatus: "On the way",
       }),
     ];
-    const source = await context.services.sources.create({
-      plugin: "fakepost",
+    const connection = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},
       secret: { username: "user@example.invalid", password: ["p", "q"].join("-") },
     });
-    await context.services.runner.run(source.id);
+    await context.services.runner.run(connection.id);
     const rows = await context.services.db.selectFrom("parcels").select(["id", "status"]).execute();
     expect(rows).toEqual([{ id: typed.id, status: "in_transit" }]);
   });
 
   it("stored twice by an older version are merged at startup into the oldest", async () => {
     const db = context.services.db;
-    const insert = async (id: string, barcode: string, firstSeen: string, label: string | null) => {
+    const insert = async (
+      id: string,
+      trackingNumber: string,
+      firstSeen: string,
+      label: string | null,
+    ) => {
       await db
         .insertInto("parcels")
         .values({
           id,
           carrier: "ups",
-          barcode,
-          direction: "incoming",
+          tracking_number: trackingNumber,
+          direction: "receiving",
           status: "in_transit",
           raw_status: null,
           delivered: 0,
@@ -102,7 +107,7 @@ describe("codes in another spelling", () => {
         .insertInto("parcel_events")
         .values({
           parcel_id: id,
-          source_id: null,
+          connection_id: null,
           at: event.at,
           status: event.status,
           raw_status: event.rawStatus,
@@ -116,11 +121,14 @@ describe("codes in another spelling", () => {
     await insert(older, UPS_TYPED, "2026-11-01T00:00:00.000Z", null);
     await insert(newer, UPS_CODE, "2026-11-02T00:00:00.000Z", "Kettle");
 
-    expect(await repairBarcodes(db, context.clock)).toEqual({ respelled: 1, folded: 1 });
-    expect(await repairBarcodes(db, context.clock)).toEqual({ respelled: 0, folded: 0 });
+    expect(await repairTrackingNumbers(db, context.clock)).toEqual({ respelled: 1, folded: 1 });
+    expect(await repairTrackingNumbers(db, context.clock)).toEqual({ respelled: 0, folded: 0 });
 
-    const parcels = await db.selectFrom("parcels").select(["id", "barcode", "label"]).execute();
-    expect(parcels).toEqual([{ id: older, barcode: UPS_CODE, label: "Kettle" }]);
+    const parcels = await db
+      .selectFrom("parcels")
+      .select(["id", "tracking_number", "label"])
+      .execute();
+    expect(parcels).toEqual([{ id: older, tracking_number: UPS_CODE, label: "Kettle" }]);
     const events = await db.selectFrom("parcel_events").select("parcel_id").execute();
     expect(events.map((row) => row.parcel_id)).toEqual([older, older]);
     const deleted = await db
@@ -135,14 +143,14 @@ describe("codes in another spelling", () => {
     const db = context.services.db;
     const row = (
       id: string,
-      barcode: string,
+      trackingNumber: string,
       firstSeen: string,
       removed: string | null,
     ): NewParcelRow => ({
       id,
       carrier: "ups",
-      barcode,
-      direction: "incoming",
+      tracking_number: trackingNumber,
+      direction: "receiving",
       status: "in_transit",
       raw_status: null,
       delivered: 0,
@@ -162,7 +170,7 @@ describe("codes in another spelling", () => {
         row(newer, UPS_TYPED, "2026-11-02T00:00:00.000Z", null),
       ])
       .execute();
-    await repairBarcodes(db, context.clock);
+    await repairTrackingNumbers(db, context.clock);
     const registered = await db
       .selectFrom("outbox")
       .select("parcel_id")

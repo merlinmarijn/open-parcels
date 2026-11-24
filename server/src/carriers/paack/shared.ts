@@ -3,12 +3,12 @@ import {
   ruleStatus,
   text as kitText,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "paack";
 export const TRACKING_HOST = "paack.co";
 
-export { asObject, newestFirst, type Json } from "../../plugin/api.js";
+export { asObject, newestFirst, type Json } from "../../provider/api.js";
 
 /** Paack's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

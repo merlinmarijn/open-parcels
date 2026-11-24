@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { helthjem } from "../../src/carriers/helthjem/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty body. */
@@ -55,8 +55,8 @@ describe("helthjem", () => {
     expect(snap?.pickup).toBe(true);
     expect(snap?.pickupPoint).toBe("Test Point");
     // A date-only estimate is that day in Norway: local midnight, not UTC midnight.
-    expect(snap?.plannedFrom).toBe("2026-04-09T22:00:00.000Z");
-    expect(snap?.plannedTo).toBeNull();
+    expect(snap?.expectedFrom).toBe("2026-04-09T22:00:00.000Z");
+    expect(snap?.expectedTo).toBeNull();
     expect(snap?.history[0]).toEqual({
       at: "2026-04-09T08:00:00.000Z",
       rawStatus: "Latest step",
@@ -69,7 +69,7 @@ describe("helthjem", () => {
   it("takes the delivery time from the delivered event", async () => {
     const { result } = await run([parcel("DELIVERED")]);
     expect(result.snapshots[0]?.deliveredAt).toBe("2026-04-09T08:00:00.000Z");
-    expect(result.snapshots[0]?.plannedFrom).toBeNull();
+    expect(result.snapshots[0]?.expectedFrom).toBeNull();
   });
 
   it("returns nothing for an unknown reference", async () => {

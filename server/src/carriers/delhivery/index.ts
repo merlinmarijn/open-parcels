@@ -5,7 +5,7 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   asObject,
   expectStatus,
@@ -20,9 +20,9 @@ import {
   unknownReporter,
   type Json,
   type ParcelStatus as Status,
-  type PluginHttp,
+  type ProviderHttp,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "delhivery";
 const HOST = "dlv-api.delhivery.com";
@@ -41,7 +41,7 @@ const SITE_HEADERS = {
 /** Delhivery waybills are digits; anything else is never sent. */
 const PLAUSIBLE = carrierPattern("delhivery");
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`https://${HOST}/v3/unified-tracking-new`);
   url.searchParams.set("wbn", code);
   const response = await http.request(url, { headers: SITE_HEADERS });
@@ -108,13 +108,13 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus,
     deliveredAt: delivered
       ? (isoTime(asObject(raw["status"])["statusDateTime"], ZONE) ?? events[0]?.at ?? null)
       : null,
-    plannedFrom: delivered ? null : isoTime(raw["PromiseDeliveryDate"], ZONE),
+    expectedFrom: delivered ? null : isoTime(raw["PromiseDeliveryDate"], ZONE),
     url: rulesTrackingUrl(CARRIER_ID, barcode),
     sender: text(raw["clientName"]),
     receiver: text(raw["consignee"]),
@@ -123,7 +123,7 @@ function toSnapshot(raw: Json, barcode: string, report: (key: string) => void): 
   });
 }
 
-async function track(context: PluginContext<unknown, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const raw = await lookUp(context.http, code);
@@ -136,7 +136,7 @@ export const delhivery = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "Delhivery",
   countries: ["IN"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

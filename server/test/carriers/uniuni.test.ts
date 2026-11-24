@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { uniuni } from "../../src/carriers/uniuni/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -52,12 +52,12 @@ describe("UniUni tracking", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "uniuni",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
       // UniUni's estimate endpoint has no confirmed shape, so no window is reported.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((event) => [event.at, event.status])).toEqual([
       ["2026-11-18T14:30:00.000Z", "out_for_delivery"],

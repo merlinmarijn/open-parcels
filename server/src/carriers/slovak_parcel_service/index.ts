@@ -10,9 +10,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type Json,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parse.js";
 
 const HOST = "rest.mysps.sk";
@@ -28,7 +28,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 
 /** Returns the shipment, or null when SPS reports no result for the code. */
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(
     new URL(`https://${HOST}/tracking/getShipmentTrackAndTrace`),
     {
@@ -65,7 +65,7 @@ async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
   throw new UnexpectedResponseError("SPS answered with an unexpected envelope.");
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
   };
@@ -79,7 +79,7 @@ export const slovakParcelService = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Slovak Parcel Service",
   countries: ["SK"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

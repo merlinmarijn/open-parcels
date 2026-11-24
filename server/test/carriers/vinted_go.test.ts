@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { vintedGo } from "../../src/carriers/vinted_go/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -45,13 +45,13 @@ describe("Vinted Go tracking", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "vinted_go",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       rawStatus: "Ready at the locker",
       pickup: true,
       // The public timeline has no delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((entry) => entry.status)).toEqual([
       "at_pickup_point",

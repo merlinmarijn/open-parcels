@@ -3,18 +3,18 @@ import { BUILTIN_CARRIERS } from "../../src/engine/builtin-carriers.js";
 import { acceptsEmptyConfig } from "../../src/engine/linking.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
-/* Linking parcels to their carrier's tracking source. Every code is made up. */
+/* Linking parcels to their carrier's tracking connection. Every code is made up. */
 
 let context: TestContext;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: BUILTIN_CARRIERS });
+  context = await createTestContext({ providers: BUILTIN_CARRIERS });
 });
 afterEach(async () => {
   await context.close();
 });
 
-async function insertParcel(carrier: string, barcode: string): Promise<string> {
+async function insertParcel(carrier: string, trackingNumber: string): Promise<string> {
   const id = crypto.randomUUID();
   const now = context.clock.now().toISOString();
   await context.services.db
@@ -22,8 +22,8 @@ async function insertParcel(carrier: string, barcode: string): Promise<string> {
     .values({
       id,
       carrier,
-      barcode,
-      direction: "incoming",
+      tracking_number: trackingNumber,
+      direction: "receiving",
       status: "registered",
       raw_status: null,
       delivered: 0,
@@ -40,53 +40,53 @@ async function insertParcel(carrier: string, barcode: string): Promise<string> {
 describe("linking untracked parcels", () => {
   it("links a parcel of every built-in carrier without throwing", async () => {
     const carriers = context.services.registry.list();
-    for (const [index, plugin] of carriers.entries()) {
-      await insertParcel(plugin.info.id, `TEST${String(index).padStart(6, "0")}`);
+    for (const [index, provider] of carriers.entries()) {
+      await insertParcel(provider.info.id, `TEST${String(index).padStart(6, "0")}`);
     }
-    const result = await context.services.sources.linkUntracked();
+    const result = await context.services.connections.linkUntracked();
 
-    for (const plugin of carriers) {
-      const source = await context.services.db
-        .selectFrom("sources")
+    for (const provider of carriers) {
+      const connection = await context.services.db
+        .selectFrom("connections")
         .select("id")
-        .where("plugin", "=", plugin.info.id)
+        .where("provider", "=", provider.info.id)
         .where("kind", "=", "tracking")
         .executeTakeFirst();
-      const creatable = plugin.canTrack && acceptsEmptyConfig(plugin);
-      expect(source !== undefined, plugin.info.id).toBe(creatable);
-      expect(result.unlinkedCarriers.has(plugin.info.id), plugin.info.id).toBe(!creatable);
+      const creatable = provider.canTrack && acceptsEmptyConfig(provider);
+      expect(connection !== undefined, provider.info.id).toBe(creatable);
+      expect(result.unlinkedCarriers.has(provider.info.id), provider.info.id).toBe(!creatable);
     }
     // The carriers whose settings need a postcode or a country are among those left waiting.
     expect(result.unlinkedCarriers.has("gls")).toBe(true);
     expect(result.unlinkedCarriers.has("evri")).toBe(true);
   });
 
-  it("links a waiting parcel once the user adds the carrier's source", async () => {
+  it("links a waiting parcel once the user adds the carrier's connection", async () => {
     const parcelId = await insertParcel("gls", "TESTGLS000001");
-    expect((await context.services.sources.linkUntracked()).parcels).toBe(0);
-    const source = await context.services.sources.create({
-      plugin: "gls",
+    expect((await context.services.connections.linkUntracked()).parcels).toBe(0);
+    const connection = await context.services.connections.create({
+      provider: "gls",
       kind: "tracking",
       label: "GLS",
       config: { country: "NL", postalCode: "1234 AB" },
       secret: null,
     });
-    expect((await context.services.sources.linkUntracked()).parcels).toBe(1);
+    expect((await context.services.connections.linkUntracked()).parcels).toBe(1);
     const link = await context.services.db
-      .selectFrom("parcel_sources")
-      .select("source_id")
+      .selectFrom("parcel_connections")
+      .select("connection_id")
       .where("parcel_id", "=", parcelId)
       .executeTakeFirst();
-    expect(link?.source_id).toBe(source.id);
+    expect(link?.connection_id).toBe(connection.id);
   });
 
   it("stores a code added by hand for a carrier that needs settings, unlinked", async () => {
     const parcel = await context.services.parcels.create({
       carrier: "gls",
-      barcode: "TESTGLS000002",
-      direction: "incoming",
+      trackingNumber: "TESTGLS000002",
+      direction: "receiving",
       label: null,
     });
-    expect(parcel.sources).toEqual([]);
+    expect(parcel.connections).toEqual([]);
   });
 });

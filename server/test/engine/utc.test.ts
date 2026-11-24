@@ -9,14 +9,14 @@ import { createTestContext, type TestContext } from "../helpers.js";
 /* Times with an offset against UTC times. Every code is made up. */
 
 const STORED: ParcelState = {
-  direction: "incoming",
+  direction: "receiving",
   status: "out_for_delivery",
   rawStatus: "Out for delivery",
   statusAt: "2026-11-18T14:00:00.000Z",
   delivered: false,
   deliveredAt: null,
-  plannedFrom: null,
-  plannedTo: null,
+  expectedFrom: null,
+  expectedTo: null,
   pickup: false,
   pickupPoint: null,
   url: null,
@@ -36,7 +36,7 @@ describe("times with an offset", () => {
   it("never let an older scan with an offset take a newer UTC status back", () => {
     const older = snapshot({
       carrier: "fakepost",
-      barcode: "FP9001",
+      trackingNumber: "FP9001",
       status: "in_transit",
       rawStatus: "Moving",
       // 13:30 UTC, half an hour before the stored scan, though it sorts after it as text.
@@ -53,31 +53,31 @@ describe("stored times", () => {
 
   beforeEach(async () => {
     post = new FakeWorld();
-    context = await createTestContext({ plugins: [fakePost(post)] });
+    context = await createTestContext({ providers: [fakePost(post)] });
   });
   afterEach(async () => {
     await context.close();
   });
 
-  it("are written as UTC whatever offset the plug-in sent", async () => {
+  it("are written as UTC whatever offset the provider sent", async () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP9002",
+        trackingNumber: "FP9002",
         status: "delivered",
         rawStatus: "Delivered",
         deliveredAt: "2026-11-18T10:30:00+01:00",
         history: [scan("2026-11-18T10:30:00+01:00", "Delivered", "delivered")],
       }),
     ];
-    const source = await context.services.sources.create({
-      plugin: "fakepost",
+    const connection = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},
       secret: { username: "user@example.invalid", password: ["p", "q"].join("-") },
     });
-    await context.services.runner.run(source.id);
+    await context.services.runner.run(connection.id);
     const parcel = await context.services.db
       .selectFrom("parcels")
       .select(["status_at", "delivered_at"])
@@ -98,14 +98,14 @@ describe("stored times", () => {
       .values({
         id,
         carrier: "fakepost",
-        barcode: "FP9003",
-        direction: "incoming",
+        tracking_number: "FP9003",
+        direction: "receiving",
         status: "in_transit",
         raw_status: "Moving",
         status_at: "2026-11-18T14:30:00+01:00",
         delivered: 0,
-        planned_from: "2026-11-19T08:00:00+01:00",
-        planned_to: "2026-11-19T12:00:00Z",
+        expected_from: "2026-11-19T08:00:00+01:00",
+        expected_to: "2026-11-19T12:00:00Z",
         pickup: 0,
         label: null,
         first_seen_at: now,
@@ -115,7 +115,7 @@ describe("stored times", () => {
       .execute();
     const entry = (at: string) => ({
       parcel_id: id,
-      source_id: null,
+      connection_id: null,
       at,
       status: "in_transit",
       raw_status: "Moving",
@@ -133,12 +133,12 @@ describe("stored times", () => {
 
     const parcel = await context.services.db
       .selectFrom("parcels")
-      .select(["status_at", "planned_from", "planned_to"])
+      .select(["status_at", "expected_from", "expected_to"])
       .executeTakeFirstOrThrow();
     expect(parcel).toEqual({
       status_at: "2026-11-18T13:30:00.000Z",
-      planned_from: "2026-11-19T07:00:00.000Z",
-      planned_to: "2026-11-19T12:00:00.000Z",
+      expected_from: "2026-11-19T07:00:00.000Z",
+      expected_to: "2026-11-19T12:00:00.000Z",
     });
     const events = await context.services.db
       .selectFrom("parcel_events")

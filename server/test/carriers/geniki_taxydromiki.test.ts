@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { genikiTaxydromiki } from "../../src/carriers/geniki_taxydromiki/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty body. */
@@ -48,8 +48,8 @@ describe("geniki taxydromiki", () => {
     const [parcel] = result.snapshots;
     expect(parcel?.status).toBe("out_for_delivery");
     expect(parcel?.rawStatus).toBe("On delivery");
-    expect(parcel?.plannedFrom).toBeNull();
-    expect(parcel?.plannedTo).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
+    expect(parcel?.expectedTo).toBeNull();
     expect(parcel?.history.map((e) => e.at)).toEqual([
       "2026-07-02T05:30:00.000Z",
       "2026-07-01T15:00:00.000Z",

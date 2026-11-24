@@ -16,9 +16,9 @@ import {
   type FetchResult,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { stepStatus } from "./status.js";
 
 export const ACCOUNT_HOST = "mybpost.bpost.cloud";
@@ -60,7 +60,7 @@ class Account {
   /** One renewal per run (an Account lives for one run): a second refusal means sign in again. */
   #renewed = false;
 
-  constructor(private readonly context: PluginContext<unknown, Credentials>) {
+  constructor(private readonly context: ProviderContext<unknown, Credentials>) {
     const stored = tokensSchema.safeParse(context.session.load());
     this.#tokens = stored.success ? stored.data : null;
   }
@@ -216,19 +216,19 @@ export function accountSnapshot(raw: Json, report: (key: string) => void): Parce
   const day = text(eta["day"]);
   return snapshot({
     carrier: "bpost",
-    barcode,
+    trackingNumber: barcode,
     direction: ["SENDER", "SHIPPER", "OUTGOING"].includes(
       (text(raw["userType"]) ?? "").toUpperCase(),
     )
-      ? "outgoing"
-      : "incoming",
+      ? "sending"
+      : "receiving",
     status,
     rawStatus,
     delivered,
     deliveredAt,
-    plannedFrom:
+    expectedFrom:
       delivered || day === null ? null : localTime({ day, time: text(eta["time1"]) ?? "00:00" }),
-    plannedTo:
+    expectedTo:
       delivered || day === null ? null : localTime({ day, time: text(eta["time2"]) ?? "23:59:59" }),
     pickup: isObject(point) || status === "at_pickup_point",
     pickupPoint: isObject(point) ? text(point["name"]) : null,
@@ -254,7 +254,7 @@ export function accountSnapshot(raw: Json, report: (key: string) => void): Parce
 
 /** The inbox: summaries first (`Err_1005` is an empty inbox), then their details in one call. */
 export async function fetchBpostAccount(
-  context: PluginContext<unknown, Credentials>,
+  context: ProviderContext<unknown, Credentials>,
 ): Promise<FetchResult> {
   const account = new Account(context);
   const list = asObject(await account.call("parcel/getparcelslist", { appLang: "en" }));

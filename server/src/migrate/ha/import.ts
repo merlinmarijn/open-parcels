@@ -4,26 +4,26 @@ import { z } from "zod";
 import { isoNow, type Clock } from "../../clock.js";
 import type { SecretBox } from "../../crypto/secrets.js";
 import type { Database } from "../../db/schema.js";
-import { normaliseBarcode } from "../../engine/barcode.js";
+import { normaliseTrackingNumber } from "../../engine/tracking-number.js";
 import { BUILTIN_CARRIERS } from "../../engine/builtin-carriers.js";
-import { trackingSourceIn } from "../../engine/linking.js";
-import { InvalidSourceConfigError, PluginRegistry } from "../../engine/registry.js";
-import { configKey } from "../../engine/source-dedup.js";
-import { NOT_RUN_YET, secretAad, sessionAad } from "../../engine/sources.js";
+import { trackingConnectionIn } from "../../engine/linking.js";
+import { InvalidConnectionConfigError, ProviderRegistry } from "../../engine/registry.js";
+import { configKey } from "../../engine/connection-dedup.js";
+import { NOT_RUN_YET, secretAad, sessionAad } from "../../engine/connections.js";
 import { appendEvent } from "../../events/bus.js";
-import { parseConfigEntries, planEntry, type SourcePlan } from "./entries.js";
+import { parseConfigEntries, planEntry, type ConnectionPlan } from "./entries.js";
 
 /**
- * Imports the Home Assistant parcel suite's config entries as sources, signed in where the stored
+ * Imports the Home Assistant parcel suite's config entries as connections, signed in where the stored
  * tokens allow. Idempotent: each HA entry leaves a marker in `settings`, so a re-run updates the
- * source it created instead of adding another. The report holds labels and counts, never secrets.
+ * connection it created instead of adding another. The report holds labels and counts, never secrets.
  */
 
-export interface HaSourceReport {
+export interface HaConnectionReport {
   readonly entryId: string;
   readonly domain: string;
   readonly label: string;
-  readonly plugin: string;
+  readonly provider: string;
   readonly kind: string;
   readonly action: "created" | "updated";
   readonly state: "ok" | "needs_sign_in";
@@ -45,7 +45,7 @@ export interface HaEntryNote {
 
 export interface HaImportReport {
   readonly dryRun: boolean;
-  readonly sources: readonly HaSourceReport[];
+  readonly connections: readonly HaConnectionReport[];
   readonly parcels: { readonly created: number; readonly existing: number };
   readonly covered: readonly HaEntryNote[];
   readonly skipped: readonly HaEntryNote[];
@@ -68,15 +68,27 @@ class DryRunRollback extends Error {
 
 export const markerKey = (entryId: string): string => `ha_import:${entryId}`;
 
-/** `adopted`: the entry was mapped onto a source that existed before; it is never rewritten. */
-const markerSchema = z.object({
-  sourceId: z.string(),
-  credentials: z.string(),
-  adopted: z.boolean().optional(),
-});
+/** `adopted`: the entry was mapped onto a connection that existed before; it is never rewritten. */
+/** Markers written before 2.0.0-dev name the connection `sourceId`; read them unchanged. */
+function legacyMarker(value: unknown): unknown {
+  if (typeof value !== "object" || value === null || "connectionId" in value) {
+    return value;
+  }
+  const { sourceId, ...rest } = value as Record<string, unknown>;
+  return { ...rest, connectionId: sourceId };
+}
+
+const markerSchema = z.preprocess(
+  legacyMarker,
+  z.object({
+    connectionId: z.string(),
+    credentials: z.string(),
+    adopted: z.boolean().optional(),
+  }),
+);
 type Marker = z.infer<typeof markerSchema>;
 
-const credentialsJson = (plan: SourcePlan): string =>
+const credentialsJson = (plan: ConnectionPlan): string =>
   JSON.stringify({ secret: plan.secret, session: plan.session });
 
 /**
@@ -84,7 +96,7 @@ const credentialsJson = (plan: SourcePlan): string =>
  * Keyed with the instance's secret, so the stored value cannot be used to test guesses of a
  * password or token offline.
  */
-function credentialsFingerprint(secrets: SecretBox, plan: SourcePlan): string {
+function credentialsFingerprint(secrets: SecretBox, plan: ConnectionPlan): string {
   return createHmac("sha256", secrets.derive("ha-import"))
     .update(credentialsJson(plan))
     .digest("hex")
@@ -92,7 +104,7 @@ function credentialsFingerprint(secrets: SecretBox, plan: SourcePlan): string {
 }
 
 /** The unkeyed fingerprint earlier versions stored; still recognised so a re-run keeps tokens. */
-function legacyFingerprint(plan: SourcePlan): string {
+function legacyFingerprint(plan: ConnectionPlan): string {
   return createHash("sha256").update(credentialsJson(plan)).digest("hex").slice(0, 16);
 }
 
@@ -138,7 +150,7 @@ interface Written {
   readonly credentialsWritten: boolean;
 }
 
-function blobs(ctx: Context, id: string, plan: SourcePlan) {
+function blobs(ctx: Context, id: string, plan: ConnectionPlan) {
   return {
     secret_blob: plan.secret === null ? null : ctx.secrets.encryptJson(plan.secret, secretAad(id)),
     session_blob:
@@ -148,8 +160,8 @@ function blobs(ctx: Context, id: string, plan: SourcePlan) {
   };
 }
 
-/** Creates the plan's source, or updates the one an earlier run created for the same HA entry. */
-async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
+/** Creates the plan's connection, or updates the one an earlier run created for the same HA entry. */
+async function writeConnection(ctx: Context, plan: ConnectionPlan): Promise<Written> {
   const fingerprint = credentialsFingerprint(ctx.secrets, plan);
   const marker = await readMarker(ctx.trx, plan.entryId);
   const wanted = configKey(plan.config);
@@ -157,49 +169,49 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
     marker === null
       ? undefined
       : await ctx.trx
-          .selectFrom("sources")
-          .select(["id", "plugin", "config"])
-          .where("id", "=", marker.sourceId)
+          .selectFrom("connections")
+          .select(["id", "provider", "config"])
+          .where("id", "=", marker.connectionId)
           .executeTakeFirst();
-  // An adoption by an older version may have matched on the plug-in alone; one whose settings
-  // differ from the entry's is dropped, so the entry gets a source of its own.
+  // An adoption by an older version may have matched on the provider alone; one whose settings
+  // differ from the entry's is dropped, so the entry gets a connection of its own.
   const existing =
     marker?.adopted === true && found !== undefined && configKey(found.config) !== wanted
       ? undefined
       : found;
-  if (marker?.adopted === true && existing?.plugin === plan.plugin) {
+  if (marker?.adopted === true && existing?.provider === plan.provider) {
     return { id: existing.id, action: "updated", credentialsWritten: false };
   }
-  // A keyless tracking source holds nothing of its own beyond its settings: adopt the plug-in's
+  // A keyless tracking connection holds nothing of its own beyond its settings: adopt the provider's
   // existing one with the same settings (created on first use, say) instead of adding a second,
-  // keeping that source's id and label.
+  // keeping that connection's id and label.
   const adopted =
     existing === undefined && plan.kind === "tracking" && plan.secret === null
       ? (
           await ctx.trx
-            .selectFrom("sources")
-            .select(["id", "plugin", "config"])
-            .where("plugin", "=", plan.plugin)
+            .selectFrom("connections")
+            .select(["id", "provider", "config"])
+            .where("provider", "=", plan.provider)
             .where("kind", "=", "tracking")
             .where("secret_blob", "is", null)
             .orderBy("created_at")
             .execute()
-        ).find((source) => configKey(source.config) === wanted)
+        ).find((connection) => configKey(connection.config) === wanted)
       : undefined;
   if (adopted !== undefined) {
     await writeMarker(ctx, plan.entryId, {
-      sourceId: adopted.id,
+      connectionId: adopted.id,
       credentials: fingerprint,
       adopted: true,
     });
     return { id: adopted.id, action: "updated", credentialsWritten: false };
   }
-  if (marker !== null && existing?.plugin === plan.plugin) {
-    // Same HA sign-in as last time: the source may have rotated its tokens since, so keep them.
+  if (marker !== null && existing?.provider === plan.provider) {
+    // Same HA sign-in as last time: the connection may have rotated its tokens since, so keep them.
     const fresh =
       marker.credentials !== fingerprint && marker.credentials !== legacyFingerprint(plan);
     await ctx.trx
-      .updateTable("sources")
+      .updateTable("connections")
       .set({
         label: plan.label,
         config: JSON.stringify(plan.config),
@@ -208,19 +220,19 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
       })
       .where("id", "=", existing.id)
       .execute();
-    await writeMarker(ctx, plan.entryId, { sourceId: existing.id, credentials: fingerprint });
+    await writeMarker(ctx, plan.entryId, { connectionId: existing.id, credentials: fingerprint });
     return { id: existing.id, action: "updated", credentialsWritten: fresh };
   }
   const id = crypto.randomUUID();
   const written = blobs(ctx, id, plan);
-  // As SourceService.create: nothing has run yet, and that is what the source says.
+  // As ConnectionService.create: nothing has run yet, and that is what the connection says.
   const detail =
     written.state === "ok" ? (written.state_detail ?? NOT_RUN_YET) : written.state_detail;
   await ctx.trx
-    .insertInto("sources")
+    .insertInto("connections")
     .values({
       id,
-      plugin: plan.plugin,
+      provider: plan.provider,
       kind: plan.kind,
       label: plan.label,
       config: JSON.stringify(plan.config),
@@ -231,17 +243,17 @@ async function writeSource(ctx: Context, plan: SourcePlan): Promise<Written> {
       updated_at: ctx.now,
     })
     .execute();
-  // Clients add the source's device when the running server next delivers events.
+  // Clients add the connection's device when the running server next delivers events.
   await appendEvent(ctx.trx, ctx.clock, {
-    type: "source.added",
+    type: "connection.added",
     parcelId: null,
     payload: {
-      source: { id, plugin: plan.plugin, label: plan.label, kind: plan.kind },
+      connection: { id, provider: plan.provider, label: plan.label, kind: plan.kind },
       state: plan.state,
       detail,
     },
   });
-  await writeMarker(ctx, plan.entryId, { sourceId: id, credentials: fingerprint });
+  await writeMarker(ctx, plan.entryId, { connectionId: id, credentials: fingerprint });
   return { id, action: "created", credentialsWritten: true };
 }
 
@@ -250,22 +262,25 @@ interface ParcelCounts {
   existing: number;
 }
 
-/** Adds the codes as parcels (once per carrier and code) and links them to `sourceId`. */
+/** Adds the codes as parcels (once per carrier and code) and links them to `connectionId`. */
 async function writeParcels(
   ctx: Context,
-  plan: SourcePlan,
-  sourceId: string,
+  plan: ConnectionPlan,
+  connectionId: string,
   counts: ParcelCounts,
 ): Promise<void> {
   for (const given of plan.parcels) {
-    const parcel = { ...given, barcode: normaliseBarcode(plan.plugin, given.barcode) };
+    const parcel = {
+      ...given,
+      trackingNumber: normaliseTrackingNumber(plan.provider, given.trackingNumber),
+    };
     // Removed parcels count too: the table holds one row per carrier and code, and HA still
     // tracking the code means it is not gone, so a removed one is revived.
     const found = await ctx.trx
       .selectFrom("parcels")
       .select(["id", "removed_at"])
-      .where("carrier", "=", plan.plugin)
-      .where("barcode", "=", parcel.barcode)
+      .where("carrier", "=", plan.provider)
+      .where("tracking_number", "=", parcel.trackingNumber)
       .executeTakeFirst();
     if (found !== undefined && found.removed_at !== null) {
       await ctx.trx
@@ -280,15 +295,15 @@ async function writeParcels(
         .insertInto("parcels")
         .values({
           id,
-          carrier: plan.plugin,
-          barcode: parcel.barcode,
+          carrier: plan.provider,
+          tracking_number: parcel.trackingNumber,
           direction: parcel.direction,
           status: "unknown",
           raw_status: null,
           delivered: 0,
           delivered_at: null,
-          planned_from: null,
-          planned_to: null,
+          expected_from: null,
+          expected_to: null,
           pickup: 0,
           label: null,
           order_id: null,
@@ -303,10 +318,10 @@ async function writeParcels(
       counts.existing += 1;
     }
     await ctx.trx
-      .insertInto("parcel_sources")
+      .insertInto("parcel_connections")
       .values({
         parcel_id: id,
-        source_id: sourceId,
+        connection_id: connectionId,
         external_ref: null,
         role: "primary",
         last_seen_at: ctx.now,
@@ -320,55 +335,55 @@ function note(entry: { entryId: string; domain: string; title: string }, reason:
   return { entryId: entry.entryId, domain: entry.domain, title: entry.title, reason };
 }
 
-const REGISTRY = new PluginRegistry(BUILTIN_CARRIERS);
+const REGISTRY = new ProviderRegistry(BUILTIN_CARRIERS);
 
 /**
- * Why a planned source would not work, checked against its plug-in's own schemas as
- * SourceService.create does; null when it fits. Reported as skipped instead of an import that
+ * Why a planned connection would not work, checked against its provider's own schemas as
+ * ConnectionService.create does; null when it fits. Reported as skipped instead of an import that
  * says "ok" and fails on its first run.
  */
-function planProblem(plan: SourcePlan): string | null {
-  const plugin = REGISTRY.get(plan.plugin);
-  if (plugin === undefined) {
-    return `There is no carrier plug-in called ${plan.plugin}.`;
+function planProblem(plan: ConnectionPlan): string | null {
+  const provider = REGISTRY.get(plan.provider);
+  if (provider === undefined) {
+    return `There is no carrier provider called ${plan.provider}.`;
   }
   try {
-    plugin.validateConfig(plan.config);
+    provider.validateConfig(plan.config);
   } catch (error) {
-    if (error instanceof InvalidSourceConfigError) {
+    if (error instanceof InvalidConnectionConfigError) {
       return error.message;
     }
     throw error;
   }
-  if (plan.secret !== null && !plugin.info.secretSchema.safeParse(plan.secret).success) {
-    return `The sign-in data does not fit ${plugin.info.name}.`;
+  if (plan.secret !== null && !provider.info.secretSchema.safeParse(plan.secret).success) {
+    return `The sign-in data does not fit ${provider.info.name}.`;
   }
   return null;
 }
 
-/** Tracking entries first, so DHL account codes go to the imported "DHL tracking" source. */
-function order(plans: readonly SourcePlan[]): SourcePlan[] {
+/** Tracking entries first, so DHL account codes go to the imported "DHL tracking" connection. */
+function order(plans: readonly ConnectionPlan[]): ConnectionPlan[] {
   return [...plans].sort((a, b) => Number(b.kind === "tracking") - Number(a.kind === "tracking"));
 }
 
 async function importPlans(
   trx: Transaction<Database>,
   options: HaImportOptions,
-  plans: readonly SourcePlan[],
+  plans: readonly ConnectionPlan[],
   counts: ParcelCounts,
-): Promise<HaSourceReport[]> {
+): Promise<HaConnectionReport[]> {
   const ctx: Context = {
     trx,
     secrets: options.secrets,
     clock: options.clock,
     now: isoNow(options.clock),
   };
-  const trackingFor = trackingSourceIn(trx, REGISTRY, options.clock);
+  const trackingFor = trackingConnectionIn(trx, REGISTRY, options.clock);
   let dhlTracking: string | undefined;
-  const reports: HaSourceReport[] = [];
+  const reports: HaConnectionReport[] = [];
   for (const plan of order(plans)) {
-    const written = await writeSource(ctx, plan);
-    if (plan.plugin === "dhl" && plan.kind === "tracking") {
+    const written = await writeConnection(ctx, plan);
+    if (plan.provider === "dhl" && plan.kind === "tracking") {
       dhlTracking ??= written.id;
     }
     if (plan.parcels.length > 0) {
@@ -382,7 +397,7 @@ async function importPlans(
       entryId: plan.entryId,
       domain: plan.domain,
       label: plan.label,
-      plugin: plan.plugin,
+      provider: plan.provider,
       kind: plan.kind,
       action: written.action,
       state: plan.state,
@@ -401,13 +416,13 @@ async function importPlans(
  * checks everything it would write.
  */
 export async function importHaEntries(options: HaImportOptions): Promise<HaImportReport> {
-  const plans: SourcePlan[] = [];
+  const plans: ConnectionPlan[] = [];
   const covered: HaEntryNote[] = [];
   const skipped: HaEntryNote[] = [];
   const unrecognised: Record<string, number> = {};
   for (const entry of parseConfigEntries(options.configEntries)) {
     const plan = planEntry(entry);
-    if (plan.type === "source") {
+    if (plan.type === "connection") {
       const problem = planProblem(plan.plan);
       if (problem === null) {
         plans.push(plan.plan);
@@ -423,10 +438,10 @@ export async function importHaEntries(options: HaImportOptions): Promise<HaImpor
     }
   }
   const counts: ParcelCounts = { created: 0, existing: 0 };
-  let sources: HaSourceReport[] = [];
+  let connections: HaConnectionReport[] = [];
   try {
     await options.db.transaction().execute(async (trx) => {
-      sources = await importPlans(trx, options, plans, counts);
+      connections = await importPlans(trx, options, plans, counts);
       if (options.dryRun) {
         throw new DryRunRollback("Dry run: rolling back.");
       }
@@ -438,7 +453,7 @@ export async function importHaEntries(options: HaImportOptions): Promise<HaImpor
   }
   return {
     dryRun: options.dryRun,
-    sources,
+    connections,
     parcels: counts,
     covered,
     skipped,

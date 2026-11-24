@@ -1,20 +1,20 @@
 /**
- * Errors a carrier plug-in throws to tell the scheduler what happened. Anything else counts as a
+ * Errors a carrier provider throws to tell the scheduler what happened. Anything else counts as a
  * transient failure. The distinction matters: only `SignInRejectedError` may lead to a new
  * sign-in, and only once; a network error never does.
  */
 
-export class PluginError extends Error {
-  override readonly name: string = "PluginError";
+export class ProviderError extends Error {
+  override readonly name: string = "ProviderError";
 }
 
-/** The carrier refused the stored credentials or session. The source needs the user to sign in again. */
-export class SignInRejectedError extends PluginError {
+/** The carrier refused the stored credentials or session. The connection needs the user to sign in again. */
+export class SignInRejectedError extends ProviderError {
   override readonly name = "SignInRejectedError";
 }
 
 /** The carrier asked us to slow down (HTTP 429, or 503 with Retry-After). */
-export class RateLimitedError extends PluginError {
+export class RateLimitedError extends ProviderError {
   override readonly name = "RateLimitedError";
 
   constructor(
@@ -26,21 +26,21 @@ export class RateLimitedError extends PluginError {
   }
 }
 
-/** The carrier put a captcha in front of us. We never try to solve it; we pause the source instead. */
-export class CaptchaError extends PluginError {
+/** The carrier put a captcha in front of us. We never try to solve it; we pause the connection instead. */
+export class CaptchaError extends ProviderError {
   override readonly name = "CaptchaError";
 }
 
 /**
- * The source's settings cannot work (a required postcode is missing, say). Nothing is retried
- * until the user changes them; the source shows the message.
+ * The connection's settings cannot work (a required postcode is missing, say). Nothing is retried
+ * until the user changes them; the connection shows the message.
  */
-export class InvalidConfigError extends PluginError {
+export class InvalidConfigError extends ProviderError {
   override readonly name = "InvalidConfigError";
 }
 
 /** A temporary failure: network error, timeout, 5xx, unexpected page. Retried with backoff. */
-export class TransientError extends PluginError {
+export class TransientError extends ProviderError {
   override readonly name: string = "TransientError";
 }
 

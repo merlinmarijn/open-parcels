@@ -17,7 +17,7 @@ const GENERIC_COURIERS: ReadonlySet<string> = new Set([
   "aliexpress",
 ]);
 
-/** Carriers the shared rules know but no plug-in tracks, mapped to the plug-in that does. */
+/** Carriers the shared rules know but no provider tracks, mapped to the provider that does. */
 const TRACKED_THROUGH: Readonly<Record<string, string>> = {
   // Cainiao's global tracker covers China Post's S10 codes, which is how the old app tracked them.
   china_post: "cainiao",
@@ -36,7 +36,7 @@ function text(value: unknown): string | null {
   return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
 
-/** Lower-case, accent-free, words joined by `_`: the shape of every plug-in id. */
+/** Lower-case, accent-free, words joined by `_`: the shape of every provider id. */
 export function snakeCase(value: string): string {
   return value
     .normalize("NFD")
@@ -46,31 +46,31 @@ export function snakeCase(value: string): string {
     .replace(/^_|_$/g, "");
 }
 
-let pluginIds: ReadonlySet<string> | undefined;
-let pluginsByName: ReadonlyMap<string, string> | undefined;
+let providerIds: ReadonlySet<string> | undefined;
+let providersByName: ReadonlyMap<string, string> | undefined;
 
-function isPlugin(id: string): boolean {
-  pluginIds ??= new Set(BUILTIN_CARRIERS.map(({ info }) => info.id));
-  return pluginIds.has(id);
+function isProvider(id: string): boolean {
+  providerIds ??= new Set(BUILTIN_CARRIERS.map(({ info }) => info.id));
+  return providerIds.has(id);
 }
 
-/** Built-in plug-in ids by the snake_case of their display name, e.g. `box_now` for "BOX NOW". */
-function pluginIdByName(name: string): string | undefined {
-  pluginsByName ??= new Map(
+/** Built-in provider ids by the snake_case of their display name, e.g. `box_now` for "BOX NOW". */
+function providerIdByName(name: string): string | undefined {
+  providersByName ??= new Map(
     BUILTIN_CARRIERS.map(({ info }) => [snakeCase(info.name), info.id] as const),
   );
-  return pluginsByName.get(snakeCase(name));
+  return providersByName.get(snakeCase(name));
 }
 
-/** A plug-in id for a carrier id, following carriers that are tracked through another plug-in. */
+/** A provider id for a carrier id, following carriers that are tracked through another provider. */
 function trackable(id: string): string | undefined {
   const target = TRACKED_THROUGH[id] ?? id;
-  return isPlugin(target) ? target : undefined;
+  return isProvider(target) ? target : undefined;
 }
 
 /**
- * The plug-in id for an old courier name such as "DHL", "Canada Post" or "Swiss Post": the
- * shared rules' name or alias first, then a built-in plug-in's display name, else snake_case.
+ * The provider id for an old courier name such as "DHL", "Canada Post" or "Swiss Post": the
+ * shared rules' name or alias first, then a built-in provider's display name, else snake_case.
  * Names that identify no carrier ("china", "17track") give "unknown".
  */
 export function carrierId(courier: unknown): string {
@@ -78,13 +78,13 @@ export function carrierId(courier: unknown): string {
   if (name === null || GENERIC_COURIERS.has(snakeCase(name))) {
     return UNKNOWN;
   }
-  const id = findCarrier(loadRules(), name)?.id ?? pluginIdByName(name) ?? snakeCase(name);
+  const id = findCarrier(loadRules(), name)?.id ?? providerIdByName(name) ?? snakeCase(name);
   return id === "" || GENERIC_COURIERS.has(id) ? UNKNOWN : id;
 }
 
-/** The best plug-in for a code by the shared tracking-number detection, as the mail watcher does. */
-export function detectCarrier(barcode: string, hint: string | null): string | undefined {
-  const normalised = barcode.replace(/\s+/g, "").toUpperCase();
+/** The best provider for a code by the shared tracking-number detection, as the mail watcher does. */
+export function detectCarrier(trackingNumber: string, hint: string | null): string | undefined {
+  const normalised = trackingNumber.replace(/\s+/g, "").toUpperCase();
   const candidates = detectTrackingNumbers(
     loadRules(),
     normalised,
@@ -101,32 +101,35 @@ export function detectCarrier(barcode: string, hint: string | null): string | un
   return undefined;
 }
 
-/** True when `next` is a plug-in id that should replace a stored id no plug-in serves. */
+/** True when `next` is a provider id that should replace a stored id no provider serves. */
 export function fixesCarrier(stored: string, next: string): boolean {
-  return stored !== next && !isPlugin(stored) && isPlugin(next);
+  return stored !== next && !isProvider(stored) && isProvider(next);
 }
 
 export interface LegacyCarrierInput {
   /** The old `courier` column, possibly empty or generic. */
   readonly courier: unknown;
-  readonly barcode: string;
-  /** The old order's `source` (shop), when the parcel belonged to one. */
+  readonly trackingNumber: string;
+  /** The old order's `connection` (shop), when the parcel belonged to one. */
   readonly shop: string | null;
 }
 
 /**
- * Resolves an old parcel to a plug-in id, in order: the named courier when a plug-in tracks it;
+ * Resolves an old parcel to a provider id, in order: the named courier when a provider tracks it;
  * the code's format by the shared detection (with the named courier as a hint); the shop's own
- * network (AliExpress → Cainiao, Amazon → Amazon); a named carrier no plug-in tracks yet, kept so a
- * later plug-in picks it up; otherwise "unknown".
+ * network (AliExpress → Cainiao, Amazon → Amazon); a named carrier no provider tracks yet, kept so a
+ * later provider picks it up; otherwise "unknown".
  */
 export function resolveLegacyCarrier(input: LegacyCarrierInput): string {
   const named = carrierId(input.courier);
-  const namedPlugin = named === UNKNOWN ? undefined : trackable(named);
-  if (namedPlugin !== undefined) {
-    return namedPlugin;
+  const namedProvider = named === UNKNOWN ? undefined : trackable(named);
+  if (namedProvider !== undefined) {
+    return namedProvider;
   }
-  const detected = detectCarrier(input.barcode, named === UNKNOWN ? null : text(input.courier));
+  const detected = detectCarrier(
+    input.trackingNumber,
+    named === UNKNOWN ? null : text(input.courier),
+  );
   if (detected !== undefined) {
     return detected;
   }

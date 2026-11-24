@@ -73,14 +73,19 @@ function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Da
     parcels: parcels.map((parcel) => ({
       id: parcel.id,
       carrier: parcel.carrier,
-      barcode: parcel.barcode,
+      tracking_number: parcel.tracking_number,
+      barcode: parcel.tracking_number,
       direction: parcel.direction,
+      legacy_direction: parcel.legacy_direction,
       display_name: parcel.display_name,
       status: parcel.status,
       delivered: parcel.delivered,
       delivered_at: parcel.delivered_at,
-      planned_from: parcel.planned_from,
-      planned_to: parcel.planned_to,
+      expected_from: parcel.expected_from,
+      expected_to: parcel.expected_to,
+      expected_days: parcel.expected_days,
+      planned_from: parcel.expected_from,
+      planned_to: parcel.expected_to,
       archived_at: parcel.archived_at,
       location: parcel.location,
       url: parcel.url,
@@ -187,7 +192,7 @@ export class OrderService {
 
   /**
    * Deletes the order but keeps its parcels, which lose the link. The row stays as a tombstone
-   * (`deleted_at`), so a shop source listing the order again does not bring it back: its parcels
+   * (`deleted_at`), so a shop connection listing the order again does not bring it back: its parcels
    * are then tracked without an order.
    */
   async delete(id: string): Promise<boolean> {

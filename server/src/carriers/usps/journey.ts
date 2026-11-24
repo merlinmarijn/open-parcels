@@ -12,11 +12,11 @@ import {
   parseJsonBody,
   text,
   type InteractiveSignIn,
-  type PluginHttp,
+  type ProviderHttp,
   type SignInContext,
   type SignInStep,
   type SignInTurn,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import type { InformedSecret } from "./informed.js";
 import { INFORMED } from "./keys.js";
 
@@ -200,7 +200,7 @@ function waitSeconds(callbacks: readonly Node[]): number | null {
   return null;
 }
 
-async function postRound(http: PluginHttp, state: Pick<JourneyState, "endpoint">, payload: Node) {
+async function postRound(http: ProviderHttp, state: Pick<JourneyState, "endpoint">, payload: Node) {
   const response = await http.request(new URL(state.endpoint), {
     method: "POST",
     headers: AUTH_HEADERS,
@@ -224,7 +224,7 @@ async function postRound(http: PluginHttp, state: Pick<JourneyState, "endpoint">
  * continue from; a finished journey yields its token id.
  */
 async function advance(
-  http: PluginHttp,
+  http: ProviderHttp,
   state: JourneyState,
   credentials: { username: string; password: string } | null,
 ): Promise<{ step: SignInStep; state: JourneyState } | { tokenId: string }> {
@@ -263,7 +263,7 @@ async function advance(
 
 /** Trades the journey's token id for the token chain and the enrolled addresses. */
 async function finish(
-  http: PluginHttp,
+  http: ProviderHttp,
   state: Pick<JourneyState, "cookieName">,
   tokenId: string,
 ): Promise<InformedSecret> {

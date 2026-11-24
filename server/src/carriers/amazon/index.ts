@@ -5,8 +5,8 @@ import {
   defineCarrier,
   pastedRedirect,
   SignInRejectedError,
-  type CarrierPlugin,
-} from "../../plugin/api.js";
+  type CarrierProvider,
+} from "../../provider/api.js";
 import { z } from "zod";
 import { readAccount, type AmazonConfig } from "./account.js";
 import {
@@ -33,15 +33,15 @@ const configSchema = z.object({
  */
 const AMAZON_LIMIT = { intervalMs: 5_000, burst: 1 } as const;
 
-/** The Amazon shop plug-in. `rules` is loaded on first use unless a test passes its own. */
-export function amazonCarrier(rules?: Rules): CarrierPlugin<AmazonConfig, AmazonSecret | null> {
+/** The Amazon shop provider. `rules` is loaded on first use unless a test passes its own. */
+export function amazonCarrier(rules?: Rules): CarrierProvider<AmazonConfig, AmazonSecret | null> {
   let cached = rules;
   const getRules = (): Rules => (cached ??= loadRules());
   return defineCarrier<AmazonConfig, AmazonSecret | null>({
     id: AMAZON_ID,
     name: "Amazon",
     countries: STOREFRONT_COUNTRIES,
-    sourceKinds: ["shop"],
+    connectionKinds: ["shop"],
     // Product thumbnails: the current CDN and the older image hosts still linked on some pages.
     imageHosts: ["m.media-amazon.com", ".ssl-images-amazon.com", ".images-amazon.com"],
     configSchema,

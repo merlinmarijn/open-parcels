@@ -9,7 +9,7 @@ import {
   type ParcelSnapshot,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "seur";
 
@@ -27,7 +27,7 @@ function partyName(party: unknown): string | null {
   return text(object["razon_social"], STRINGS) ?? text(object["nombre_contacto"], STRINGS);
 }
 
-/** One account shipment as a snapshot, or null when it has no barcode. History is newest first. */
+/** One account shipment as a snapshot, or null when it has no tracking number. History is newest first. */
 export function shipmentSnapshot(
   raw: Json,
   direction: Direction,
@@ -58,7 +58,7 @@ export function shipmentSnapshot(
   const weight = raw["peso"];
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     direction,
     status,
     rawStatus: code,

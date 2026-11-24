@@ -4,12 +4,12 @@ import type { Logger } from "pino";
 import { ZodError } from "zod";
 import { isoNow, type Clock } from "../clock.js";
 import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
-import type { Database, SourceRow } from "../db/schema.js";
+import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
-import { secretAad, sessionAad, type SourceService } from "../engine/sources.js";
-import type { ParcelSnapshot, ReturnSnapshot } from "../plugin/snapshot.js";
+import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
+import type { ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 import {
-  MAIL_PLUGIN,
+  MAIL_PROVIDER,
   mailConfigSchema,
   mailProgressSchema,
   mailSecretSchema,
@@ -22,8 +22,8 @@ import {
   type MailReturnInterpreter,
   type MailProgress,
   type MailSecret,
-  isGenericMailboxLabel,
-  mailboxLabel,
+  isGenericInboxLabel,
+  inboxLabel,
 } from "./types.js";
 
 const DAY = 24 * 60 * 60 * 1000;
@@ -34,7 +34,7 @@ const RECONNECT_MAX_MS = 15 * 60_000;
 export interface MailWatcherDeps {
   readonly db: Kysely<Database>;
   readonly secrets: SecretBox;
-  readonly sources: SourceService;
+  readonly connections: ConnectionService;
   readonly reconciler: Reconciler;
   readonly clock: Clock;
   readonly logger: Logger;
@@ -42,8 +42,8 @@ export interface MailWatcherDeps {
   readonly interpret: MailInterpreter;
   /** Return and refund mails; unset in tests that only look at parcels. */
   readonly interpretReturns?: MailReturnInterpreter;
-  /** Links parcels found in mail to their carrier's tracking source, so they get polled. */
-  readonly followUp: (sourceId: string) => Promise<void>;
+  /** Links parcels found in mail to their carrier's tracking connection, so they get polled. */
+  readonly followUp: (connectionId: string) => Promise<void>;
 }
 
 interface Connection {
@@ -106,7 +106,7 @@ export async function toMailInput(
   };
 }
 
-/** Watches every mailbox source over IMAP IDLE and feeds what it finds to the reconciler. */
+/** Watches every inbox connection over IMAP IDLE and feeds what it finds to the reconciler. */
 export class MailWatcher {
   readonly #connections = new Map<string, Connection>();
   readonly #retries = new Map<string, number>();
@@ -118,7 +118,7 @@ export class MailWatcher {
   async start(): Promise<void> {
     this.#stopped = false;
     const rows = await this.deps.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
       .where("kind", "=", "mail")
       .where("state", "in", ["ok", "error"])
@@ -126,10 +126,10 @@ export class MailWatcher {
     const results = await Promise.allSettled(rows.map((row) => this.connect(row.id)));
     results.forEach((result, index) => {
       if (result.status === "rejected") {
-        // One mailbox must never keep the server from starting.
+        // One inbox must never keep the server from starting.
         this.deps.logger.error(
-          { err: result.reason, source: rows[index]?.id },
-          "Starting a mailbox failed.",
+          { err: result.reason, connection: rows[index]?.id },
+          "Starting an inbox failed.",
         );
       }
     });
@@ -144,17 +144,17 @@ export class MailWatcher {
     await Promise.all([...this.#connections.keys()].map((id) => this.disconnect(id)));
   }
 
-  /** (Re)connects one mailbox source; safe to call after its settings or sign-in changed. */
-  async connect(sourceId: string): Promise<void> {
-    await this.disconnect(sourceId);
+  /** (Re)connects one inbox connection; safe to call after its settings or sign-in changed. */
+  async connect(connectionId: string): Promise<void> {
+    await this.disconnect(connectionId);
     const row = await this.deps.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
-      .where("id", "=", sourceId)
+      .where("id", "=", connectionId)
       .executeTakeFirst();
     if (
       row?.kind !== "mail" ||
-      row.plugin !== MAIL_PLUGIN ||
+      row.provider !== MAIL_PROVIDER ||
       row.secret_blob === null ||
       this.#stopped
     ) {
@@ -165,10 +165,10 @@ export class MailWatcher {
       return;
     }
     const { config, secret, progress } = opened;
-    if (isGenericMailboxLabel(row.label, config.host)) {
+    if (isGenericInboxLabel(row.label, config.host)) {
       await this.deps.db
-        .updateTable("sources")
-        .set({ label: mailboxLabel(secret.username, config.host) })
+        .updateTable("connections")
+        .set({ label: inboxLabel(secret.username, config.host) })
         .where("id", "=", row.id)
         .execute();
     }
@@ -183,44 +183,45 @@ export class MailWatcher {
     try {
       await client.connect();
     } catch (error) {
-      await this.#failed(sourceId, error);
+      await this.#failed(connectionId, error);
       return;
     }
-    this.#connections.set(sourceId, connection);
-    this.#retries.delete(sourceId);
+    this.#connections.set(connectionId, connection);
+    this.#retries.delete(connectionId);
     client.onClose((error) => {
-      if (this.#connections.get(sourceId) === connection) {
-        this.#connections.delete(sourceId);
-        this.#failed(sourceId, error ?? new Error("The mail server closed the connection.")).catch(
-          (failure: unknown) => {
-            this.deps.logger.error(
-              { err: failure, source: sourceId },
-              "Handling a closed mailbox failed.",
-            );
-          },
-        );
+      if (this.#connections.get(connectionId) === connection) {
+        this.#connections.delete(connectionId);
+        this.#failed(
+          connectionId,
+          error ?? new Error("The mail server closed the connection."),
+        ).catch((failure: unknown) => {
+          this.deps.logger.error(
+            { err: failure, connection: connectionId },
+            "Handling a closed inbox failed.",
+          );
+        });
       }
     });
     client.onNewMail(() => {
-      this.#queueSync(sourceId, connection, [config.folders[0] ?? "INBOX"]);
+      this.#queueSync(connectionId, connection, [config.folders[0] ?? "INBOX"]);
     });
     connection.resync = setInterval(() => {
-      this.#queueSync(sourceId, connection, config.folders);
+      this.#queueSync(connectionId, connection, config.folders);
     }, RESYNC_MS);
     connection.resync.unref();
-    // The first sync (up to `initialDays` of mail) runs on in the background: adding a mailbox or
+    // The first sync (up to `initialDays` of mail) runs on in the background: adding an inbox or
     // starting the server does not wait for it. Its failures go to #failed like any other.
-    this.#queueSync(sourceId, connection, config.folders);
+    this.#queueSync(connectionId, connection, config.folders);
   }
 
-  /** Resolves once the syncs queued so far on this mailbox have run. */
-  async settled(sourceId: string): Promise<void> {
-    await this.#connections.get(sourceId)?.syncing;
+  /** Resolves once the syncs queued so far on this inbox have run. */
+  async settled(connectionId: string): Promise<void> {
+    await this.#connections.get(connectionId)?.syncing;
   }
 
-  async disconnect(sourceId: string): Promise<void> {
-    const connection = this.#connections.get(sourceId);
-    this.#connections.delete(sourceId);
+  async disconnect(connectionId: string): Promise<void> {
+    const connection = this.#connections.get(connectionId);
+    this.#connections.delete(connectionId);
     if (connection === undefined) {
       return;
     }
@@ -231,19 +232,19 @@ export class MailWatcher {
     await connection.syncing;
     await connection.client.close().catch((error: unknown) => {
       this.deps.logger.debug(
-        { err: error, source: sourceId },
+        { err: error, connection: connectionId },
         "Closing the mail connection failed.",
       );
     });
   }
 
   /**
-   * Reads a mailbox's stored settings and sign-in. A source that cannot be read (a changed
+   * Reads an inbox's stored settings and sign-in. A connection that cannot be read (a changed
    * encryption key, settings in a bad shape) is marked and skipped, never allowed to stop the
-   * other mailboxes or the server's start.
+   * other inboxes or the server's start.
    */
   async #open(
-    row: SourceRow,
+    row: ConnectionRow,
     secretBlob: Buffer,
   ): Promise<{ config: MailConfig; secret: MailSecret; progress: MailProgress } | undefined> {
     try {
@@ -254,25 +255,25 @@ export class MailWatcher {
       return { config, secret, progress: this.#progress(row) };
     } catch (error) {
       if (error instanceof DecryptionError) {
-        await this.deps.sources.setState(
+        await this.deps.connections.setState(
           row.id,
           "needs_sign_in",
           "The stored sign-in could not be read. Enter the password again.",
         );
       } else if (error instanceof ZodError || error instanceof SyntaxError) {
-        await this.deps.sources.setState(row.id, "error", "The mailbox settings are invalid.");
+        await this.deps.connections.setState(row.id, "error", "The inbox settings are invalid.");
       } else {
         throw error;
       }
       this.deps.logger.warn(
-        { source: row.id, error: error.name },
-        "A mailbox source could not be read.",
+        { connection: row.id, error: error.name },
+        "An inbox connection could not be read.",
       );
       return undefined;
     }
   }
 
-  #progress(row: SourceRow): MailProgress {
+  #progress(row: ConnectionRow): MailProgress {
     if (row.session_blob === null) {
       return {};
     }
@@ -283,20 +284,24 @@ export class MailWatcher {
       if (!(error instanceof DecryptionError)) {
         throw error;
       }
-      // Only the read position is lost: the mailbox is read again from its first-sync window.
+      // Only the read position is lost: the inbox is read again from its first-sync window.
       return {};
     }
     const parsed = mailProgressSchema.safeParse(stored);
     return parsed.success ? parsed.data : {};
   }
 
-  #queueSync(sourceId: string, connection: Connection, folders: readonly string[]): void {
+  #queueSync(connectionId: string, connection: Connection, folders: readonly string[]): void {
     connection.syncing = connection.syncing
-      .then(() => this.#sync(sourceId, connection, folders))
-      .catch((error: unknown) => this.#failed(sourceId, error));
+      .then(() => this.#sync(connectionId, connection, folders))
+      .catch((error: unknown) => this.#failed(connectionId, error));
   }
 
-  async #sync(sourceId: string, connection: Connection, folders: readonly string[]): Promise<void> {
+  async #sync(
+    connectionId: string,
+    connection: Connection,
+    folders: readonly string[],
+  ): Promise<void> {
     const snapshots: ParcelSnapshot[] = [];
     const returns: ReturnSnapshot[] = [];
     // Built on a copy and committed only once the mails are stored: a failed batch is read again
@@ -326,93 +331,93 @@ export class MailWatcher {
           message.receivedAt ?? null,
           this.deps.clock.now(),
         );
-        snapshots.push(...this.#interpret(sourceId, mail, this.deps.interpret));
-        returns.push(...this.#interpret(sourceId, mail, this.deps.interpretReturns));
+        snapshots.push(...this.#interpret(connectionId, mail, this.deps.interpret));
+        returns.push(...this.#interpret(connectionId, mail, this.deps.interpretReturns));
       }
       progress = { ...progress, [folder]: { uidValidity, lastUid } };
     }
     if (snapshots.length > 0 || returns.length > 0) {
-      await this.deps.reconciler.ingest(sourceId, { snapshots, returns, complete: false });
-      await this.deps.followUp(sourceId);
+      await this.deps.reconciler.ingest(connectionId, { snapshots, returns, complete: false });
+      await this.deps.followUp(connectionId);
     }
     connection.progress = progress;
     await this.deps.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({
-        session_blob: this.deps.secrets.encryptJson(progress, sessionAad(sourceId)),
+        session_blob: this.deps.secrets.encryptJson(progress, sessionAad(connectionId)),
         last_run_at: isoNow(this.deps.clock),
         last_ok_at: isoNow(this.deps.clock),
       })
-      .where("id", "=", sourceId)
+      .where("id", "=", connectionId)
       .execute();
-    await this.deps.sources.setState(sourceId, "ok", null);
+    await this.deps.connections.setState(connectionId, "ok", null);
   }
 
   #interpret<T>(
-    sourceId: string,
+    connectionId: string,
     mail: MailInput,
     interpret: ((mail: MailInput) => readonly T[]) | undefined,
   ): readonly T[] {
     try {
       return interpret?.(mail) ?? [];
     } catch (error) {
-      // One odd mail must not stop the mailbox; the content is never logged.
+      // One odd mail must not stop the inbox; the content is never logged.
       this.deps.logger.warn(
-        { source: sourceId, error: error instanceof Error ? error.name : "unknown" },
+        { connection: connectionId, error: error instanceof Error ? error.name : "unknown" },
         "A mail could not be interpreted.",
       );
       return [];
     }
   }
 
-  async #failed(sourceId: string, error: unknown): Promise<void> {
+  async #failed(connectionId: string, error: unknown): Promise<void> {
     if (this.#stopped) {
       // Shutting down: connections closing now is expected, and the database may be gone.
       return;
     }
     if (isAuthFailure(error)) {
-      await this.deps.sources.setState(
-        sourceId,
+      await this.deps.connections.setState(
+        connectionId,
         "needs_sign_in",
         "The mail server rejected the sign-in. Enter the password again.",
       );
       return;
     }
-    if (this.#timers.has(sourceId)) {
+    if (this.#timers.has(connectionId)) {
       // A reconnect is already on its way: another failure before it runs must not add a second
       // one, or a refusing server gets a burst of reconnects.
       return;
     }
-    const attempt = (this.#retries.get(sourceId) ?? 0) + 1;
-    this.#retries.set(sourceId, attempt);
+    const attempt = (this.#retries.get(connectionId) ?? 0) + 1;
+    this.#retries.set(connectionId, attempt);
     const delay = Math.min(RECONNECT_BASE_MS * 2 ** (attempt - 1), RECONNECT_MAX_MS);
     this.deps.logger.warn(
       {
-        source: sourceId,
+        connection: connectionId,
         attempt,
         retryInMs: delay,
         error: error instanceof Error ? error.message : "unknown",
       },
-      "Mailbox connection failed.",
+      "Inbox connection failed.",
     );
-    await this.deps.sources.setState(
-      sourceId,
+    await this.deps.connections.setState(
+      connectionId,
       "error",
       "The mail server could not be reached; retrying.",
     );
     const timer = setTimeout(() => {
-      this.#timers.delete(sourceId);
+      this.#timers.delete(connectionId);
       if (this.#stopped) {
         return;
       }
-      this.connect(sourceId).catch((failure: unknown) => {
+      this.connect(connectionId).catch((failure: unknown) => {
         this.deps.logger.error(
-          { err: failure, source: sourceId },
-          "Reconnecting the mailbox failed.",
+          { err: failure, connection: connectionId },
+          "Reconnecting the inbox failed.",
         );
       });
     }, delay);
     timer.unref();
-    this.#timers.set(sourceId, timer);
+    this.#timers.set(connectionId, timer);
   }
 }

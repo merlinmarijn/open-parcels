@@ -5,9 +5,9 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   isObject,
   ruleStatus,
@@ -23,7 +23,7 @@ import {
   unknownReporter,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "dragonfly";
 
@@ -69,7 +69,7 @@ function stepStatus(step: unknown): ParcelStatus | null {
   return ruleStatus(CARRIER_ID, `step:${String(step)}`);
 }
 
-async function lookUp(http: PluginHttp, country: Country, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, country: Country, code: string): Promise<Json | null> {
   const url = new URL(`https://${country.host}/cfworker/v3/tracking/${encodeURIComponent(code)}/`);
   const response = await http.request(url, { headers: { accept: "application/json" } });
   expectStatus(response, "Dragonfly tracking");
@@ -162,7 +162,7 @@ function toSnapshot(
   const planned = window(raw, country.zone);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: label(latest, country.languages) ?? stepText,
     delivered,
@@ -173,8 +173,8 @@ function toSnapshot(
           epochStrings: true,
         })
       : null,
-    plannedFrom: delivered ? null : planned.from,
-    plannedTo: delivered ? null : planned.to,
+    expectedFrom: delivered ? null : planned.from,
+    expectedTo: delivered ? null : planned.to,
     pickup: latest["task_type"] === "last_mile_pickup",
     url: rulesTrackingUrl(CARRIER_ID, barcode, country.locale),
     sender: text(raw["client_code"]),
@@ -183,7 +183,7 @@ function toSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, unknown>, barcodes: readonly string[]) {
   const country = COUNTRIES[context.config.country];
   const report = unknownReporter(context, "status");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
@@ -199,7 +199,7 @@ export const dragonfly = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
   name: "Dragonfly",
   countries: ["NL", "AU", "CA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

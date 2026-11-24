@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { packeta } from "../../src/carriers/packeta/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -43,12 +43,12 @@ describe("Packeta public tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "packeta",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       pickup: true,
       pickupPoint: "Example pickup point",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       sender: "Example Shop",
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -91,7 +91,7 @@ describe("Packeta public tracking", () => {
     const { fetchImpl } = scripted([ok(JSON.stringify(echoed))]);
     const { base } = fakeContext(packeta.http, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
-    expect(parcel).toMatchObject({ barcode: CODE, externalRef: "Z 000 000 0001" });
+    expect(parcel).toMatchObject({ trackingNumber: CODE, externalRef: "Z 000 000 0001" });
   });
 
   it("reports unknown status ids and event texts", async () => {

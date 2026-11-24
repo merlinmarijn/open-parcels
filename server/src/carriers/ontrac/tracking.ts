@@ -4,10 +4,10 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -47,7 +47,7 @@ function parseJson(body: string): unknown {
  * Looks one code up. Returns null for the structured "Not Found" 404 or an empty package list;
  * any other 404 or non-200 answer is an error.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/PackageServices/tracking/${encodeURIComponent(barcode)}`,
   );
@@ -127,13 +127,13 @@ export function trackingSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["Tracking"]), barcode),
     status,
     rawStatus: latest?.rawStatus ?? null,
     delivered,
     deliveredAt: delivered ? isoTime(raw["UtcDeliveryDateTime"]) : null,
-    plannedTo: delivered ? null : isoTime(raw["UtcExpectedDeliveryDateTime"]),
+    expectedTo: delivered ? null : isoTime(raw["UtcExpectedDeliveryDateTime"]),
     url: publicUrl(barcode),
     weightKg: weightKg(raw),
     history,
@@ -141,7 +141,7 @@ export function trackingSnapshot(
   });
 }
 
-/** The recipient block and proof of delivery can name a person; they never leave the plug-in. */
+/** The recipient block and proof of delivery can name a person; they never leave the provider. */
 function withoutPersonalData(raw: Json): Json {
   return Object.fromEntries(Object.entries(raw).filter(([key]) => !PERSONAL_KEYS.has(key)));
 }

@@ -19,11 +19,12 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+  type Direction,
+} from "../../provider/api.js";
 
 const CARRIER_ID = "brt";
 /** BRT is DPD's Italian business unit on the shared dpdgroup consumer backend. */
@@ -60,7 +61,7 @@ function tokenFrom(response: { status: number; body: string }, what: string): st
  * The app's sign-in: the user's password at the group login, the app's own client token, and
  * the exchange of the first for a consumer token in the business unit.
  */
-export async function signIn(http: PluginHttp, secret: Secret): Promise<string> {
+export async function signIn(http: ProviderHttp, secret: Secret): Promise<string> {
   const login = await http.request(
     new URL(`https://${LOGIN_HOST}/auth/realms/login/protocol/openid-connect/token`),
     {
@@ -135,18 +136,18 @@ function plannedWindow(shipment: Json, zone: string | null) {
   const from = text(range["from"]) ?? text(shipment["deliveryTimeFrom"]);
   const to = text(range["to"]) ?? text(shipment["deliveryTimeTo"]);
   if (day === null) {
-    return { plannedFrom: null, plannedTo: null };
+    return { expectedFrom: null, expectedTo: null };
   }
   if (from === null || to === null) {
-    return { plannedFrom: zoned(day, zone), plannedTo: zoned(`${day}T23:59:59`, zone) };
+    return { expectedFrom: zoned(day, zone), expectedTo: zoned(`${day}T23:59:59`, zone) };
   }
-  return { plannedFrom: zoned(`${day}T${from}`, zone), plannedTo: zoned(`${day}T${to}`, zone) };
+  return { expectedFrom: zoned(`${day}T${from}`, zone), expectedTo: zoned(`${day}T${to}`, zone) };
 }
 
 export function shipmentSnapshot(
   shipment: Json,
   detail: Json | null,
-  direction: "incoming" | "outgoing",
+  direction: Direction,
   report: (key: string) => void,
 ): ParcelSnapshot {
   const state = asObject(shipment["status"]);
@@ -158,7 +159,7 @@ export function shipmentSnapshot(
   const number = text(shipment["parcelNumber"]) ?? "";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: number,
+    trackingNumber: number,
     direction,
     status: ruleStatus(CARRIER_ID, description, report),
     rawStatus: description,
@@ -184,7 +185,7 @@ class BrtAccount {
   #renewed = false;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly secret: Secret,
     private token: string | null,
   ) {}
@@ -219,7 +220,7 @@ class BrtAccount {
   }
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   const stored = sessionSchema.safeParse(context.session.load());
   const account = new BrtAccount(
     context.http,
@@ -253,9 +254,9 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
     ) {
       throw new UnexpectedResponseError("BRT parcels answered without its shipment lists.");
     }
-    const groups: readonly (readonly ["incoming" | "outgoing", Json[]])[] = [
-      ["incoming", asList(payload["incomingShipments"]).filter(isObject)],
-      ["outgoing", asList(payload["sendingShipments"]).filter(isObject)],
+    const groups: readonly (readonly [Direction, Json[]])[] = [
+      ["receiving", asList(payload["incomingShipments"]).filter(isObject)],
+      ["sending", asList(payload["sendingShipments"]).filter(isObject)],
     ];
     const snapshots: ParcelSnapshot[] = [];
     let details = 0;
@@ -289,7 +290,7 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
 async function readDetail(account: BrtAccount, number: string, shipment: Json, direction: string) {
   const url = new URL(`${API}/v10/parcels/details/${encodeURIComponent(number)}`);
   url.search = new URLSearchParams({
-    parcelType: direction === "outgoing" ? "SENDING" : "INCOMING",
+    parcelType: direction === "sending" ? "SENDING" : "INCOMING",
     businessUnit: BUSINESS_UNIT,
     lang: "en",
     continueWithoutVerification: "false",
@@ -307,7 +308,7 @@ export const brt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "BRT",
   countries: ["IT"],
-  sourceKinds: ["account"],
+  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "credentials" },

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { hermes } from "../../src/carriers/hermes/index.js";
 import { register } from "../../src/engine/registry.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, html, json } from "./harness.js";
 
 // Made-up codes and values only.
@@ -114,12 +114,12 @@ describe("Hermes public tracking", () => {
     expect(result.complete).toBe(true);
     expect(parcel).toMatchObject({
       carrier: "hermes",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "out_for_delivery",
       rawStatus: "Neuester Schritt",
       delivered: false,
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       sender: "Beispielshop",
     });
     expect(parcel?.history.map((e) => e.status)).toEqual([
@@ -216,14 +216,14 @@ describe("Hermes account", () => {
     expect(saved).toEqual([tokens(1)]);
     expect(calls.find((c) => c.key === "GET shipments")?.auth).toBe("Bearer at-1");
     expect(result.complete).toBe(true);
-    expect(result.snapshots.map((p) => [p.barcode, p.status, p.delivered])).toEqual([
+    expect(result.snapshots.map((p) => [p.trackingNumber, p.status, p.delivered])).toEqual([
       [ACTIVE, "out_for_delivery", false],
       [DELIVERED, "delivered", true],
       [SHOP, null, false],
     ]);
     expect(result.snapshots[0]).toMatchObject({
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       receiver: "Testperson",
       sender: "Beispielshop",
     });
@@ -338,7 +338,7 @@ describe("Hermes account", () => {
     const { base } = context(fetchImpl, tokens(1));
     const result = await plugin.fetchAccount(base, {}, credentials);
     expect(result.snapshots).toHaveLength(5);
-    expect(result.snapshots.every((p) => p.plannedFrom === null)).toBe(true);
+    expect(result.snapshots.every((p) => p.expectedFrom === null)).toBe(true);
     const lookups = calls.filter((c) => c.key.startsWith("GET /tnt/"));
     expect(lookups.length).toBeLessThan(many.length);
   });

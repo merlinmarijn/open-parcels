@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { gobolt } from "../../src/carriers/gobolt/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty body. */
@@ -41,8 +41,8 @@ describe("gobolt", () => {
     expect(calls[0]?.url.searchParams.get("tracking_number")).toBe(CODE);
     const [snap] = result.snapshots;
     expect(snap?.status).toBe("out_for_delivery");
-    expect(snap?.plannedFrom).toBe("2026-03-05T00:00:00.000Z");
-    expect(snap?.plannedTo).toBeNull();
+    expect(snap?.expectedFrom).toBe("2026-03-05T00:00:00.000Z");
+    expect(snap?.expectedTo).toBeNull();
     expect(snap?.history.map((e) => e.status)).toEqual([
       "out_for_delivery",
       "in_transit",
@@ -57,7 +57,7 @@ describe("gobolt", () => {
     ]);
     expect(result.snapshots[0]?.delivered).toBe(true);
     expect(result.snapshots[0]?.deliveredAt).toBe("2026-03-04T16:00:00.000Z");
-    expect(result.snapshots[0]?.plannedFrom).toBeNull();
+    expect(result.snapshots[0]?.expectedFrom).toBeNull();
   });
 
   it("returns nothing for an unknown code", async () => {

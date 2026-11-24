@@ -3,15 +3,15 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-  type PluginContext,
+  type ProviderContext,
   objects,
   parseJsonBody,
-} from "../../../plugin/api.js";
+} from "../../../provider/api.js";
 import { DE_COOKIE_NAME, DE_TRACKING_HEADERS, DE_TRACKING_URL } from "../constants.js";
 import { asObject, asString, type Json } from "../util.js";
 import type { DeSession } from "./session.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http">;
 
 async function requestOnce(deps: Deps, idToken: string, pieceCode: string | null) {
   const url = new URL(DE_TRACKING_URL);

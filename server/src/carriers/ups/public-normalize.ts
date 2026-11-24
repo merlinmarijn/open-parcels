@@ -6,13 +6,13 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { publicTrackingUrl } from "./keys.js";
 import { upsStatus, type Vocabulary } from "./status.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "reportUnknown">;
 
 /** Maps a key and reports it when neither the rules nor the local table know it. */
 export function mapAndReport(
@@ -152,13 +152,13 @@ export function normalizePublic(
   const window = delivered ? { from: null, to: null } : plannedWindow(raw);
   return snapshot({
     carrier: "ups",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: milestone ?? text(raw["packageStatus"]),
     delivered,
     deliveredAt,
-    plannedFrom: window.from,
-    plannedTo: window.to,
+    expectedFrom: window.from,
+    expectedTo: window.to,
     pickup: status === "at_pickup_point",
     url: publicTrackingUrl(code, locale),
     weightKg: weightKg(raw),

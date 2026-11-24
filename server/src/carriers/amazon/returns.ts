@@ -5,7 +5,7 @@ import {
   type ReturnSnapshot,
   type ReturnStatus,
   type Rules,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { AMAZON_ID } from "./build.js";
 import { pastDay, type Day } from "./dates.js";
 import type { OrderTile } from "./pages.js";

@@ -9,7 +9,7 @@ import {
   walkHtml,
   zonedIso,
   type HtmlHandler,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 /** Upper-case, accent-free, whitespace-collapsed form of a TIPSA wording, for table lookups. */
 export function foldWording(value: string): string {
@@ -213,7 +213,7 @@ function events(rows: readonly string[][]): PageEvent[] {
   return parsed.sort((a, b) => Date.parse(b.at) - Date.parse(a.at));
 }
 
-/** Parses the shipment page; anything that is not the expected page for `barcode` fails. */
+/** Parses the shipment page; anything that is not the expected page for `tracking number` fails. */
 export function readPage(html: string, barcode: string): TipsaPage {
   const reader = new PageReader();
   walkHtml(html, reader);

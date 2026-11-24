@@ -1,12 +1,17 @@
 /**
- * The one test harness for carrier plug-ins: a scripted fake network, a plug-in context over a
+ * The one test harness for carrier providers: a scripted fake network, a provider context over a
  * fake clock and an in-memory session, and `World`, which wires both to a carrier. Fixtures used
  * with it are always made up.
  */
-import { register, type BaseContext, type RegisteredPlugin } from "../../src/engine/registry.js";
+import { register, type BaseContext, type RegisteredProvider } from "../../src/engine/registry.js";
 import { NOT_FILED_AS_TRACKED } from "../../src/engine/tracked.js";
-import type { CarrierPlugin, FetchResult, PluginContext } from "../../src/plugin/api.js";
-import { HostLimiter, PluginHttp, type FetchLike, type HttpPolicy } from "../../src/plugin/http.js";
+import type { CarrierProvider, FetchResult, ProviderContext } from "../../src/provider/api.js";
+import {
+  HostLimiter,
+  ProviderHttp,
+  type FetchLike,
+  type HttpPolicy,
+} from "../../src/provider/http.js";
 import { FakeClock } from "../helpers.js";
 
 /** One recorded request. `key` is `METHOD host/path` (hostname, no port, no query). */
@@ -152,7 +157,7 @@ export interface ContextOptions {
 export interface FakeContext {
   readonly base: BaseContext;
   readonly clock: FakeClock;
-  /** Every value the plug-in saved to its session, in order. */
+  /** Every value the provider saved to its session, in order. */
   readonly saved: unknown[];
   /** Reported unknowns as `kind:key`. */
   readonly unknown: string[];
@@ -167,7 +172,7 @@ export interface FakeContext {
   restore(value: unknown): void;
 }
 
-/** A plug-in context over a fake clock whose limiter waits by advancing the clock. */
+/** A provider context over a fake clock whose limiter waits by advancing the clock. */
 export function fakeContext(
   policy: HttpPolicy,
   fetchImpl: FetchLike,
@@ -185,8 +190,8 @@ export function fakeContext(
   const warnings: string[] = [];
   let current: unknown = options.session ?? null;
   const base: BaseContext = {
-    sourceId: "source-1",
-    http: new PluginHttp(policy, limiter, clock, fetchImpl),
+    connectionId: "connection-1",
+    http: new ProviderHttp(policy, limiter, clock, fetchImpl),
     clock,
     logger: {
       debug: () => undefined,
@@ -227,22 +232,22 @@ export function fakeContext(
 /**
  * A carrier wired to a fake network and context. `routes` can be set up front or changed between
  * steps. `track` and `fetchAccount` go through the registry, which validates config and secret as
- * the app does; `context` gives a typed context for calling the plug-in directly.
+ * the app does; `context` gives a typed context for calling the provider directly.
  */
 export class World<Config = unknown, Secret = unknown> {
-  readonly plugin: RegisteredPlugin;
-  readonly carrier: CarrierPlugin<Config, Secret>;
+  readonly provider: RegisteredProvider;
+  readonly carrier: CarrierProvider<Config, Secret>;
   routes: Route[];
   readonly #network: FakeNetwork;
   readonly #context: FakeContext;
 
   constructor(
-    carrier: CarrierPlugin<Config, Secret>,
+    carrier: CarrierProvider<Config, Secret>,
     routes: Route[] = [],
     options: ContextOptions = {},
   ) {
     this.carrier = carrier;
-    this.plugin = register(carrier);
+    this.provider = register(carrier);
     this.routes = routes;
     this.#network = fakeNetwork(() => this.routes);
     this.#context = fakeContext(carrier.http, this.#network.fetchImpl, options);
@@ -286,13 +291,13 @@ export class World<Config = unknown, Secret = unknown> {
     return this.#context.base;
   }
 
-  context(config: Config, secret: Secret): PluginContext<Config, Secret> {
+  context(config: Config, secret: Secret): ProviderContext<Config, Secret> {
     return { ...this.#context.base, config, secret };
   }
 
   /**
    * Tracks codes through the registry, and fails when a snapshot is filed under anything but a code
-   * that was asked for: the carrier's echo belongs in `externalRef`, never in `barcode`, or the
+   * that was asked for: the carrier's echo belongs in `externalRef`, never in `tracking number`, or the
    * tracked code reads as not found and a second parcel appears. Every carrier test runs this.
    */
   async track(
@@ -301,7 +306,7 @@ export class World<Config = unknown, Secret = unknown> {
     secret: unknown = null,
   ): Promise<FetchResult> {
     const before = this.warnings.length;
-    const result = await this.plugin.track(this.base(), config, secret, codes);
+    const result = await this.provider.track(this.base(), config, secret, codes);
     if (this.warnings.slice(before).includes(NOT_FILED_AS_TRACKED)) {
       throw new Error(
         `${this.carrier.id}: track() filed an answer under something other than a tracked code (${codes.join(", ")}).`,
@@ -312,7 +317,7 @@ export class World<Config = unknown, Secret = unknown> {
   }
 
   fetchAccount(config: unknown = {}, secret: unknown = null): Promise<FetchResult> {
-    return this.plugin.fetchAccount(this.base(), config, secret);
+    return this.provider.fetchAccount(this.base(), config, secret);
   }
 
   /** "METHOD host/path" of every request, in order. */
@@ -328,7 +333,9 @@ export function assertFiledAsTracked(
   result: FetchResult,
 ): void {
   const asked = new Set(codes);
-  const stray = result.snapshots.map((found) => found.barcode).filter((code) => !asked.has(code));
+  const stray = result.snapshots
+    .map((found) => found.trackingNumber)
+    .filter((code) => !asked.has(code));
   if (stray.length > 0) {
     throw new Error(
       `${carrier}: track() filed ${stray.join(", ")} instead of a tracked code (${codes.join(", ")}).`,

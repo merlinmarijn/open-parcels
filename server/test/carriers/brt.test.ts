@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { brt } from "../../src/carriers/brt/index.js";
-import { SignInRejectedError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, madeUp, on, onPrefix, World } from "./harness.js";
 
 // Made-up parcel numbers, tokens and accounts only.
@@ -45,8 +45,8 @@ describe("BRT account", () => {
     expect(parcel).toMatchObject({
       carrier: "brt",
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T09:00:00.000Z",
-      plannedTo: "2026-11-18T11:00:00.000Z",
+      expectedFrom: "2026-11-18T09:00:00.000Z",
+      expectedTo: "2026-11-18T11:00:00.000Z",
       receiver: "Test Person",
       weightKg: 1.2,
       history: [{ status: "out_for_delivery" }],

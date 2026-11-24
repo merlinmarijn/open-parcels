@@ -18,11 +18,11 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "helthjem";
 const API_HOST = "services.helthjem.no";
@@ -53,7 +53,7 @@ function mapCode(code: string | null): ParcelStatus | null {
   return ruleStatus(CARRIER_ID, code);
 }
 
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${API_HOST}/graphql`), {
     method: "POST",
     body: JSON.stringify({ query: QUERY, variables: { ref: barcode } }),
@@ -114,14 +114,14 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   const servicePoint = asObject(raw["servicePoint"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: code,
     delivered,
     // No top-level delivery time: the newest delivered event carries it.
     deliveredAt: delivered ? (sorted.find((e) => e.status === "delivered")?.at ?? null) : null,
     // A single estimated date: a point, never a window.
-    plannedFrom: delivered ? null : isoTime(asObject(raw["estimatedDelivery"])["date"]),
+    expectedFrom: delivered ? null : isoTime(asObject(raw["estimatedDelivery"])["date"]),
     pickup: status === "at_pickup_point",
     pickupPoint: text(servicePoint["name"]),
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -135,7 +135,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, BARCODE_PATTERN, async (barcode) => {
     const raw = await lookUp(context.http, barcode);
@@ -147,7 +147,7 @@ export const helthjem = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Helthjem",
   countries: ["NO"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

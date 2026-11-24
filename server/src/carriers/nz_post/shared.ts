@@ -4,12 +4,12 @@ import {
   text as kitText,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "nz_post";
 export const TRACKING_HOST = "tools.nzpost.co.nz";
 
-export { isObject, type Json } from "../../plugin/api.js";
+export { isObject, type Json } from "../../provider/api.js";
 
 /** NZ Post's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { colisweb } from "../../src/carriers/colisweb/index.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -29,8 +29,8 @@ describe("Colisweb tracking", () => {
       carrier: "colisweb",
       status: "out_for_delivery",
       sender: "Example Shop",
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
     });
     expect(parcel?.history.map((e) => e.status)).toEqual(["in_transit", "registered"]);
     expect(JSON.stringify(parcel?.raw)).not.toContain("Test Person");

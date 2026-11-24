@@ -62,7 +62,7 @@ export function loadSecretKey(
 
 /**
  * AES-256-GCM with associated data. The associated data binds a ciphertext to its owner (for
- * example `source:<id>:secret`), so a blob copied to another row fails to decrypt instead of
+ * example `connection:<id>:secret`), so a blob copied to another row fails to decrypt instead of
  * leaking into the wrong context.
  */
 export class SecretBox {

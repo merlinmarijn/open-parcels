@@ -25,7 +25,7 @@ export interface MailCleanupResult {
 interface Candidate {
   readonly id: string;
   readonly carrier: string;
-  readonly barcode: string;
+  readonly trackingNumber: string;
   readonly subjects: readonly string[];
 }
 
@@ -38,7 +38,7 @@ function ignoredSubject(rules: Rules, candidate: Candidate): boolean {
 }
 
 export function cleanupReason(rules: Rules, candidate: Candidate): MailCleanupReason | null {
-  if (!plausibleMailTrackingNumber(rules, candidate.carrier, candidate.barcode)) {
+  if (!plausibleMailTrackingNumber(rules, candidate.carrier, candidate.trackingNumber)) {
     return "placeholder_or_pattern";
   }
   return ignoredSubject(rules, candidate) ? "ignored_mail" : null;
@@ -48,32 +48,32 @@ export function cleanupReason(rules: Rules, candidate: Candidate): MailCleanupRe
 async function candidates(db: Kysely<Database>): Promise<Candidate[]> {
   const rows = await db
     .selectFrom("parcels")
-    .select(["id", "carrier", "barcode", "raw_status"])
+    .select(["id", "carrier", "tracking_number", "raw_status"])
     .where("archived_at", "is", null)
     .where("removed_at", "is", null)
     .where("lookup_state", "!=", "found")
     .where("manual_status", "is", null)
-    // A mail made it; no account or shop lists it. The carrier's tracking source, which startup
+    // A mail made it; no account or shop lists it. The carrier's tracking connection, which startup
     // repair links to every parcel, counts only through lookup_state.
     .where((eb) =>
       eb
         .exists(
           eb
-            .selectFrom("parcel_sources")
-            .innerJoin("sources", "sources.id", "parcel_sources.source_id")
-            .select("parcel_sources.parcel_id")
-            .whereRef("parcel_sources.parcel_id", "=", "parcels.id")
-            .where("sources.kind", "=", "mail"),
+            .selectFrom("parcel_connections")
+            .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+            .select("parcel_connections.parcel_id")
+            .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
+            .where("connections.kind", "=", "mail"),
         )
         .and(
           eb.not(
             eb.exists(
               eb
-                .selectFrom("parcel_sources")
-                .innerJoin("sources", "sources.id", "parcel_sources.source_id")
-                .select("parcel_sources.parcel_id")
-                .whereRef("parcel_sources.parcel_id", "=", "parcels.id")
-                .where("sources.kind", "in", ["account", "shop"]),
+                .selectFrom("parcel_connections")
+                .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+                .select("parcel_connections.parcel_id")
+                .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
+                .where("connections.kind", "in", ["account", "shop"]),
             ),
           ),
         ),
@@ -92,7 +92,7 @@ async function candidates(db: Kysely<Database>): Promise<Candidate[]> {
   return rows.map((row) => ({
     id: row.id,
     carrier: row.carrier,
-    barcode: row.barcode,
+    trackingNumber: row.tracking_number,
     subjects: [
       ...(row.raw_status === null ? [] : [row.raw_status]),
       ...events.filter((event) => event.parcel_id === row.id).map((event) => event.raw_status),

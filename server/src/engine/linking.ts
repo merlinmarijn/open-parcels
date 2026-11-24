@@ -3,21 +3,21 @@ import { isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
 import { appendEvent } from "../events/bus.js";
 import {
-  InvalidSourceConfigError,
-  type PluginRegistry,
-  type RegisteredPlugin,
+  InvalidConnectionConfigError,
+  type ProviderRegistry,
+  type RegisteredProvider,
 } from "./registry.js";
 
-/** The tracking source of a carrier, created if missing; undefined when no plug-in can track it. */
-export type TrackingSourceFor = (carrier: string) => Promise<string | undefined>;
+/** The tracking connection of a carrier, created if missing; undefined when no provider can track it. */
+export type TrackingConnectionFor = (carrier: string) => Promise<string | undefined>;
 
-/** True when the plug-in can run with an empty configuration, so a source can be made for it. */
-export function acceptsEmptyConfig(plugin: RegisteredPlugin): boolean {
+/** True when the provider can run with an empty configuration, so a connection can be made for it. */
+export function acceptsEmptyConfig(provider: RegisteredProvider): boolean {
   try {
-    plugin.validateConfig({});
+    provider.validateConfig({});
     return true;
   } catch (error) {
-    if (error instanceof InvalidSourceConfigError) {
+    if (error instanceof InvalidConnectionConfigError) {
       return false;
     }
     throw error;
@@ -25,44 +25,44 @@ export function acceptsEmptyConfig(plugin: RegisteredPlugin): boolean {
 }
 
 /**
- * The tracking source of a plug-in in `db` (which may be a transaction), created on first use and
- * due at once. Undefined when no installed plug-in can track the carrier, or when its plug-in needs
+ * The tracking connection of a provider in `db` (which may be a transaction), created on first use and
+ * due at once. Undefined when no installed provider can track the carrier, or when its provider needs
  * settings (a postcode, a country) that only the user can give; such parcels stay unfollowed until
- * the user adds the source, and are linked to it then.
+ * the user adds the connection, and are linked to it then.
  */
-export function trackingSourceIn(
+export function trackingConnectionIn(
   db: Kysely<Database>,
-  registry: PluginRegistry,
+  registry: ProviderRegistry,
   clock: Clock,
-): TrackingSourceFor {
+): TrackingConnectionFor {
   return async (carrier) => {
-    const plugin = registry.get(carrier);
-    if (plugin?.canTrack !== true) {
+    const provider = registry.get(carrier);
+    if (provider?.canTrack !== true) {
       return undefined;
     }
     const existing = await db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .select("id")
-      .where("plugin", "=", carrier)
+      .where("provider", "=", carrier)
       .where("kind", "=", "tracking")
       .orderBy("created_at")
       .executeTakeFirst();
     if (existing !== undefined) {
       return existing.id;
     }
-    if (!acceptsEmptyConfig(plugin)) {
-      // GLS, Evri and others need a postcode or a country: the user has to add the source.
+    if (!acceptsEmptyConfig(provider)) {
+      // GLS, Evri and others need a postcode or a country: the user has to add the connection.
       return undefined;
     }
     const id = crypto.randomUUID();
     const now = isoNow(clock);
     await db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id,
-        plugin: carrier,
+        provider: carrier,
         kind: "tracking",
-        label: `${plugin.info.name} tracking`,
+        label: `${provider.info.name} tracking`,
         config: "{}",
         secret_blob: null,
         session_blob: null,
@@ -75,12 +75,17 @@ export function trackingSourceIn(
         updated_at: now,
       })
       .execute();
-    // Clients add the source's device at once; the caller's next notify delivers it.
+    // Clients add the connection's device at once; the caller's next notify delivers it.
     await appendEvent(db, clock, {
-      type: "source.added",
+      type: "connection.added",
       parcelId: null,
       payload: {
-        source: { id, plugin: carrier, label: `${plugin.info.name} tracking`, kind: "tracking" },
+        connection: {
+          id,
+          provider: carrier,
+          label: `${provider.info.name} tracking`,
+          kind: "tracking",
+        },
         state: "ok",
         detail: null,
       },
@@ -90,27 +95,27 @@ export function trackingSourceIn(
 }
 
 export interface LinkResult {
-  readonly sources: ReadonlySet<string>;
+  readonly connections: ReadonlySet<string>;
   readonly parcels: number;
-  /** Carriers whose parcels stayed unfollowed: no plug-in tracks them, or it needs settings. */
+  /** Carriers whose parcels stayed unfollowed: no provider tracks them, or it needs settings. */
   readonly unlinkedCarriers: ReadonlySet<string>;
 }
 
 export interface LinkOptions {
-  /** Only parcels linked to this source (a mailbox), as the mail watcher's follow-up does. */
-  readonly viaSource?: string;
+  /** Only parcels linked to this connection (an inbox), as the mail watcher's follow-up does. */
+  readonly viaConnection?: string;
 }
 
 /**
- * Links every active parcel (undelivered, not archived, not removed) that no carrier source
- * follows to its carrier's tracking source, the same link `POST /parcels` makes. Idempotent: a
- * parcel already followed is never touched. Returns the tracking sources that gained parcels and
+ * Links every active parcel (undelivered, not archived, not removed) that no carrier connection
+ * follows to its carrier's tracking connection, the same link `POST /parcels` makes. Idempotent: a
+ * parcel already followed is never touched. Returns the tracking connections that gained parcels and
  * how many parcels were linked.
  */
 export async function linkUntrackedParcels(
   db: Kysely<Database>,
   clock: Clock,
-  sourceFor: TrackingSourceFor,
+  connectionFor: TrackingConnectionFor,
   options: LinkOptions = {},
 ): Promise<LinkResult> {
   let query = db
@@ -123,22 +128,22 @@ export async function linkUntrackedParcels(
       eb.not(
         eb.exists(
           eb
-            .selectFrom("parcel_sources as followed")
+            .selectFrom("parcel_connections as followed")
             .select("followed.parcel_id")
             .whereRef("followed.parcel_id", "=", "parcels.id")
             .where("followed.role", "in", ["primary", "handoff"]),
         ),
       ),
     );
-  if (options.viaSource !== undefined) {
-    const via = options.viaSource;
+  if (options.viaConnection !== undefined) {
+    const via = options.viaConnection;
     query = query.where((eb) =>
       eb.exists(
         eb
-          .selectFrom("parcel_sources as via")
+          .selectFrom("parcel_connections as via")
           .select("via.parcel_id")
           .whereRef("via.parcel_id", "=", "parcels.id")
-          .where("via.source_id", "=", via),
+          .where("via.connection_id", "=", via),
       ),
     );
   }
@@ -149,26 +154,26 @@ export async function linkUntrackedParcels(
   const byCarrier = new Map<string, string | undefined>();
   for (const parcel of unfollowed) {
     if (!byCarrier.has(parcel.carrier)) {
-      byCarrier.set(parcel.carrier, await sourceFor(parcel.carrier));
+      byCarrier.set(parcel.carrier, await connectionFor(parcel.carrier));
     }
-    const sourceId = byCarrier.get(parcel.carrier);
-    if (sourceId === undefined) {
+    const connectionId = byCarrier.get(parcel.carrier);
+    if (connectionId === undefined) {
       unlinked.add(parcel.carrier);
       continue;
     }
     await db
-      .insertInto("parcel_sources")
+      .insertInto("parcel_connections")
       .values({
         parcel_id: parcel.id,
-        source_id: sourceId,
+        connection_id: connectionId,
         external_ref: null,
         role: "primary",
         last_seen_at: isoNow(clock),
       })
       .onConflict((oc) => oc.doNothing())
       .execute();
-    touched.add(sourceId);
+    touched.add(connectionId);
     parcels += 1;
   }
-  return { sources: touched, parcels, unlinkedCarriers: unlinked };
+  return { connections: touched, parcels, unlinkedCarriers: unlinked };
 }

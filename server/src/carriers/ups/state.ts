@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ParcelStatus } from "../../plugin/api.js";
+import type { ParcelStatus } from "../../provider/api.js";
 import { restoreBudget, type Budget, type BudgetRules } from "./budget.js";
 import {
   BACKOFF_BASE_MS,
@@ -12,7 +12,7 @@ import { tokenSchema, type StoredToken } from "./official.js";
 
 export const BUDGET_RULES: BudgetRules = { capacity: BUDGET_CAPACITY, refillMs: BUDGET_REFILL_MS };
 
-/** What one source remembers between runs. Kept in the encrypted session store. */
+/** What one connection remembers between runs. Kept in the encrypted session store. */
 export interface UpsState {
   budget: Budget;
   /** Consecutive failed public lookups, for the stand-down. */

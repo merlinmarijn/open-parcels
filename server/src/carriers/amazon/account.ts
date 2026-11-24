@@ -7,8 +7,8 @@ import {
   UnexpectedResponseError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { mintCookies, type AmazonSecret } from "./auth.js";
 import { AMAZON_ID, buildSnapshot, isSkipped, readsAsStatus } from "./build.js";
 import { pastDay, today, type Day } from "./dates.js";
@@ -43,7 +43,7 @@ import {
 export interface AmazonConfig {
   readonly storefront: StorefrontId;
 }
-export type AmazonContext = PluginContext<AmazonConfig, AmazonSecret | null>;
+export type AmazonContext = ProviderContext<AmazonConfig, AmazonSecret | null>;
 
 /** The orders page, then the older order-history path some accounts are still sent to. */
 const ORDERS_PATHS = ["/your-orders/orders", "/gp/css/order-history"] as const;
@@ -286,7 +286,7 @@ async function collect(
     } else if (isOld(lead)) {
       loaded = { trackPath: null, track: null };
     } else {
-      // Not read yet and over this run's cap: left out, so its barcode never flips later.
+      // Not read yet and over this run's cap: left out, so its tracking number never flips later.
       complete = false;
       continue;
     }

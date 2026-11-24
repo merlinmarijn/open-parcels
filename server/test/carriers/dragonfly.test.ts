@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dragonfly } from "../../src/carriers/dragonfly/index.js";
 import { register } from "../../src/engine/registry.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
@@ -46,8 +46,8 @@ describe("Dragonfly tracking", () => {
       carrier: "dragonfly",
       status: "out_for_delivery",
       rawStatus: "Bij de bezorger in Voorbeeldstad",
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       sender: "EXAMPLESHOP",
       url: `https://dragonflyshipping.nl/nl/volg-je-pakket/?tracking-id=${CODE}`,
     });
@@ -71,7 +71,7 @@ describe("Dragonfly tracking", () => {
     ]);
     const { base } = fakeContext(dragonfly.http, fetchImpl);
     const [found] = (await plugin.track(base, { country: "CA" }, null, [CODE])).snapshots;
-    expect(found).toMatchObject({ status: "delivered", delivered: true, plannedFrom: null });
+    expect(found).toMatchObject({ status: "delivered", delivered: true, expectedFrom: null });
   });
 
   it("treats the not_found envelope as not found", async () => {

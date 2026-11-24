@@ -28,7 +28,7 @@ function moreTile(size: number, more: number): Buffer {
 
 /**
  * One PNG from a parcel's item pictures, as square tiles. Built pictures are kept on disk by
- * their sources, so the same items never cost the work twice. `load` returns a picture's bytes,
+ * their connections, so the same items never cost the work twice. `load` returns a picture's bytes,
  * or null when it cannot be had (it is then left out).
  */
 export class CollageMaker {

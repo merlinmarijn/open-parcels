@@ -1,7 +1,7 @@
 /**
- * The parts of `open-parcels-rules` plug-ins use: the shared status tables, tracking-URL
+ * The parts of `open-parcels-rules` providers use: the shared status tables, tracking-URL
  * templates, tracking-number shapes, fixed public carrier keys, carrier lookup and Amazon's
- * arrival phrases. Plug-ins reach them through the plug-in API rather than importing the
+ * arrival phrases. Providers reach them through the provider API rather than importing the
  * package, so the boundary stays in one place.
  */
 import {
@@ -13,7 +13,7 @@ import {
   type MappedStatus,
   type RawStatus,
 } from "open-parcels-rules";
-import { PluginError } from "./errors.js";
+import { ProviderError } from "./errors.js";
 
 export {
   findCarrier,
@@ -39,10 +39,10 @@ export type {
 type RuleStatus = MappedStatus["status"];
 
 /**
- * The bundled rules lack a value the plug-in cannot work without. This is a packaging error,
+ * The bundled rules lack a value the provider cannot work without. This is a packaging error,
  * never something to fall back from or to ask the user about.
  */
-export class RulesConfigurationError extends PluginError {
+export class RulesConfigurationError extends ProviderError {
   override readonly name = "RulesConfigurationError";
 }
 

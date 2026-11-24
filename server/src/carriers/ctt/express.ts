@@ -14,10 +14,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 /** Offset-less times are UTC; numbers are epoch milliseconds. */
 const isoTime = (value: unknown): string | null =>
   kitIsoTime(value, { naive: "utc", epoch: "ms", keepFraction: true });
@@ -34,7 +34,7 @@ export function isExpressCode(code: string): boolean {
 }
 
 /** The `shipping_history` for a code, or null when the tracker answers an empty body. */
-export async function lookUpExpress(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUpExpress(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`https://${EXPRESS_HOST}/p_track_redis_v2.php`);
   url.searchParams.set("sc", code);
   const response = await http.request(url, { headers: { accept: "application/json" } });
@@ -53,7 +53,7 @@ export async function lookUpExpress(http: PluginHttp, code: string): Promise<Jso
   return history;
 }
 
-/** The barcode is the configured code; the tracker echoes a different, longer one. */
+/** The tracking number is the configured code; the tracker echoes a different, longer one. */
 export function expressSnapshot(
   raw: Json,
   code: string,
@@ -94,12 +94,12 @@ export function expressSnapshot(
   });
   return snapshot({
     carrier: "ctt",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: newest === undefined ? null : text(newest.event["description"]),
     delivered,
     deliveredAt: delivered ? (newest?.at ?? null) : null,
-    plannedFrom: planned,
+    expectedFrom: planned,
     pickup: status === "at_pickup_point",
     pickupPoint:
       status === "at_pickup_point" && newest !== undefined

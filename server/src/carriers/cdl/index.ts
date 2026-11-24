@@ -16,11 +16,11 @@ import {
   unknownReporter,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "cdl";
 const HOST = "apps.cdldelivers.com";
@@ -41,7 +41,7 @@ export function normalizeCode(value: string): string {
   return order === null ? code : `${order[1]}-${order[2]}`;
 }
 
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`https://${HOST}/Tracking-Page-API/Tracking/details`);
   url.searchParams.set("value", code);
   const response = await http.request(url, {
@@ -119,7 +119,7 @@ function toSnapshot(raw: Json, code: string, report: (c: string) => void): Parce
     .reverse();
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: completion?.wording ?? newest?.wording ?? null,
     delivered: completion !== undefined,
@@ -136,7 +136,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   const options = { plausible: PLAUSIBLE, normalize: normalizeCode, dedupe: false };
   return trackEach(barcodes, options, async (code, barcode) => {
@@ -149,7 +149,7 @@ export const cdl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "CDL Last Mile",
   countries: ["US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

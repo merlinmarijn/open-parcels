@@ -2,12 +2,12 @@ import { mkdtempSync, rmSync, utimesSync, writeFileSync, mkdirSync, existsSync }
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
-import { waitText } from "../../src/api/routes/sources.js";
+import { waitText } from "../../src/api/routes/connections.js";
 import { ConfigError, loadConfig } from "../../src/config.js";
 import { KeyedMutex } from "../../src/engine/locks.js";
 import { readCapped, type MinimalResponse } from "../../src/images/proxy.js";
 import { hostAllowed, isNonPublicHostLiteral, isPrivateAddress } from "../../src/net/address.js";
-import { networkCause, sameSite } from "../../src/plugin/http.js";
+import { networkCause, sameSite } from "../../src/provider/http.js";
 import { TileProxy } from "../../src/tiles/proxy.js";
 
 /* Regressions for the security audit. Hosts and addresses are documentation or made-up values. */
@@ -40,7 +40,7 @@ describe("non-public addresses", () => {
     }
   });
 
-  it("refuses inward host literals for plug-in requests and matches the image allow-list", () => {
+  it("refuses inward host literals for provider requests and matches the image allow-list", () => {
     expect(isNonPublicHostLiteral(new URL("https://[::ffff:127.0.0.1]/").hostname)).toBe(true);
     expect(isNonPublicHostLiteral(new URL("https://0x7f.1/").hostname)).toBe(true);
     expect(isNonPublicHostLiteral("api.localhost")).toBe(true);
@@ -113,7 +113,7 @@ describe("same-site redirects", () => {
   });
 });
 
-describe("per-source lock", () => {
+describe("per-connection lock", () => {
   it("runs one holder per key at a time, in order, and other keys in parallel", async () => {
     const mutex = new KeyedMutex();
     const log: string[] = [];

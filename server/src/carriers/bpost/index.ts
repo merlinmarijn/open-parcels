@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   defineCarrier,
@@ -18,9 +18,9 @@ import {
   zonedIso,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { ACCOUNT_HOST, fetchBpostAccount, type Credentials } from "./account.js";
 import { stepStatus } from "./status.js";
 
@@ -31,11 +31,15 @@ const PLAUSIBLE = carrierPattern("bpost");
 const LANGUAGES = ["en", "nl", "fr"] as const;
 type Language = (typeof LANGUAGES)[number];
 
-/** bpost's error values for an unknown barcode and postcode pair. */
+/** bpost's error values for an unknown tracking number and postcode pair. */
 const NOT_FOUND = /^(NO_DATA_FOUND|ITEM_NOT_FOUND|NOT_FOUND)$/i;
 
-/** Looks a barcode up with the recipient's postcode; without it bpost withholds most fields. */
-async function lookUp(http: PluginHttp, barcode: string, postalCode: string): Promise<Json | null> {
+/** Looks a tracking number up with the recipient's postcode; without it bpost withholds most fields. */
+async function lookUp(
+  http: ProviderHttp,
+  barcode: string,
+  postalCode: string,
+): Promise<Json | null> {
   const url = new URL(`https://${HOST}/track/items`);
   url.searchParams.set("itemIdentifier", barcode);
   url.searchParams.set("postalCode", postalCode);
@@ -133,13 +137,13 @@ export function bpostSnapshot(input: BpostInput, report: (key: string) => void):
   url.hash = `/search?lang=${language}&itemCode=${encodeURIComponent(barcode)}&postalCode=${encodeURIComponent(postalCode)}`;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: knownStep ?? text(step["name"]),
     delivered,
     deliveredAt: delivered ? localTime(deliveredTime["day"], deliveredTime["time"]) : null,
-    plannedFrom: window.from,
-    plannedTo: window.to,
+    expectedFrom: window.from,
+    expectedTo: window.to,
     // bpost names the pickup point as soon as the parcel is routed there.
     pickup: isObject(point) || status === "at_pickup_point",
     pickupPoint: isObject(point) ? text(point["name"]) : null,
@@ -171,7 +175,7 @@ export const bpost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "bpost",
   countries: ["BE"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [
@@ -192,7 +196,7 @@ export const bpost = defineCarrier<Config, Secret>({
     }
     return await fetchBpostAccount({ ...context, secret });
   },
-  track: (context: PluginContext<Config, Secret>, barcodes) =>
+  track: (context: ProviderContext<Config, Secret>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const postalCode = context.config.postalCode;
       if (postalCode === undefined) {

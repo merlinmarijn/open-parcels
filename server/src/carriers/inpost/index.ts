@@ -4,8 +4,8 @@ import {
   pastedRedirect,
   SignInRejectedError,
   trackEach,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { itSnapshot, plSnapshot } from "./account-parcels.js";
 import { readInbox } from "./account.js";
 import { finishSignIn, InPostSession, startSignIn } from "./session.js";
@@ -20,22 +20,22 @@ import {
 import { BARCODE_PATTERN, lookUp, trackingSnapshot } from "./tracking.js";
 
 const configSchema = z.looseObject({
-  /** Account sources: the market the account is registered in. Default Poland. */
+  /** Account connections: the market the account is registered in. Default Poland. */
   market: z.enum(MARKETS).optional(),
-  /** Tracking sources: whose tracking page parcels link to. Default Poland. */
+  /** Tracking connections: whose tracking page parcels link to. Default Poland. */
   country: z.enum(TRACKING_COUNTRIES).optional(),
   /** Sign-in page language, e.g. `pl` or `it`; English otherwise. */
   language: z.string().optional(),
 });
 type Config = z.infer<typeof configSchema>;
 
-/** Tracking sources need nothing; account sources store the refresh token from the sign-in. */
+/** Tracking connections need nothing; account connections store the refresh token from the sign-in. */
 const secretSchema = z
   .object({ refreshToken: z.string().min(1), market: z.enum(MARKETS) })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 
-async function fetchAccount(context: PluginContext<Config, Secret>) {
+async function fetchAccount(context: ProviderContext<Config, Secret>) {
   if (context.secret === null) {
     throw new SignInRejectedError("Sign in to your InPost account first.");
   }
@@ -55,7 +55,7 @@ async function fetchAccount(context: PluginContext<Config, Secret>) {
   return { snapshots, complete: inbox.complete };
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const country = context.config.country ?? "PL";
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
@@ -76,7 +76,7 @@ export const inpost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "InPost",
   countries: ["PL", "IT", "PT", "GB", "ES"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

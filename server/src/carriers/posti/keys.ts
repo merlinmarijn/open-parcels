@@ -1,4 +1,4 @@
-import { carrierKey } from "../../plugin/api.js";
+import { carrierKey } from "../../provider/api.js";
 
 /**
  * Posti's own app: its hosts, and the fixed values its login and device service insist on (from

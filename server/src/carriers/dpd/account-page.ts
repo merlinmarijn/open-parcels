@@ -1,4 +1,4 @@
-import { textOf } from "../../plugin/api.js";
+import { textOf } from "../../provider/api.js";
 import { inputValues, Page, type Control } from "./html.js";
 
 /*

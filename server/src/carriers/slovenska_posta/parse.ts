@@ -11,7 +11,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "slovenska_posta";
 
@@ -77,7 +77,7 @@ export function resultSnapshot(
   const atPoint = status === "at_pickup_point";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: latest === undefined ? null : rawStatus(latest.event),
     deliveredAt: status === "delivered" ? (latest?.at ?? null) : null,

@@ -4,7 +4,7 @@
  * Usage: node dist/tools/import-legacy.js <path to old data.db> [--dry-run]
  *
  * Uses the same OPENPARCELS_* environment as the server (data directory, encryption key). The old
- * encryption key, needed only to carry IMAP mailboxes over, is read from OPENPARCELS_LEGACY_KEY,
+ * encryption key, needed only to carry IMAP inboxes over, is read from OPENPARCELS_LEGACY_KEY,
  * never from the command line. Prints counts only; no parcel data is written to the output.
  * A dry run works on a temporary copy of the database and changes nothing.
  */

@@ -12,11 +12,11 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { localIso, mapCode, type Checkpoint, CONTROL_CODES, decidingCode } from "./status.js";
 
 const CARRIER_ID = "geniki_taxydromiki";
@@ -31,7 +31,7 @@ const BARCODE_PATTERN = carrierPattern("geniki_taxydromiki");
 const text = (value: unknown): string | null => anyText(value, { numbers: false });
 
 /** Posts one code. Null when the carrier does not know it or has no scans for it yet. */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   // The endpoint wants a bare JSON string as the body, sent with a form content type.
   const response = await http.request(new URL(API_URL), {
     method: "POST",
@@ -111,7 +111,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   }
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: latest?.label ?? latest?.code ?? text(raw["Status"]),
     delivered,
@@ -128,7 +128,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, BARCODE_PATTERN, async (barcode) => {
     const raw = await lookUp(context.http, barcode);
@@ -140,7 +140,7 @@ export const genikiTaxydromiki = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Geniki Taxydromiki",
   countries: ["GR", "CY"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

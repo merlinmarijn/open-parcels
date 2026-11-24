@@ -65,7 +65,7 @@ export class DataCleaner {
     return { parcels: parcels.parcels, orders: orders.orders, rows: 0 };
   }
 
-  /** Raw carrier payloads, kept only for diagnosing a plug-in. */
+  /** Raw carrier payloads, kept only for diagnosing a provider. */
   async rawPayloads(): Promise<Cleared> {
     const result = await this.deps.db.deleteFrom("parcel_raw").executeTakeFirst();
     return { parcels: 0, orders: 0, rows: Number(result.numDeletedRows) };
@@ -83,8 +83,8 @@ export class DataCleaner {
   }
 
   /**
-   * Every parcel and order, including the tombstones of deleted orders, so every source imports
-   * from scratch. Sources, sign-ins, settings and tokens stay. The caller backs up first.
+   * Every parcel and order, including the tombstones of deleted orders, so every connection imports
+   * from scratch. Connections, sign-ins, settings and tokens stay. The caller backs up first.
    */
   async everything(): Promise<Cleared> {
     const parcels = await this.#parcels((db) => db.selectFrom("parcels").select("id"));

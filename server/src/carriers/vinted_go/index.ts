@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   carrierPattern,
   ruleStatus,
@@ -8,10 +8,10 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   expectStatus,
   isObject,
@@ -20,7 +20,7 @@ import {
   readJson,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 import { emailSignIn, fetchVintedAccount } from "./account.js";
 
@@ -36,12 +36,12 @@ const BARCODE_PATTERN = carrierPattern("vinted_go");
 
 const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
-/** An account source keeps the refresh token from the emailed sign-in link; tracking needs nothing. */
+/** An account connection keeps the refresh token from the emailed sign-in link; tracking needs nothing. */
 const secretSchema = z.object({ refreshToken: z.string().min(1) }).nullable();
 type Secret = z.infer<typeof secretSchema>;
 
 /** The timeline, oldest first; null when Vinted Go does not know the code yet. */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json[] | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json[] | null> {
   const url = new URL(
     `https://${API_HOST}/members/public/v1/tracking_events/${encodeURIComponent(barcode)}`,
   );
@@ -99,7 +99,7 @@ export function vintedSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: current === undefined ? null : (text(current["message"]) ?? group),
     delivered,
@@ -112,7 +112,7 @@ export function vintedSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (group: string): void => {
     context.reportUnknown("group", group);
@@ -133,7 +133,7 @@ export const vintedGo = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Vinted Go",
   countries: ["NL", "BE", "FR"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [emailSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

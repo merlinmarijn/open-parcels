@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   defineCarrier,
   isObject,
@@ -17,10 +17,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "box_now";
 const PLAUSIBLE = carrierPattern("box_now");
@@ -41,7 +41,7 @@ const stateStatus = (state: string): ParcelStatus | null =>
 const eventStatus = (type: string): ParcelStatus | null => ruleStatus(CARRIER_ID, `event:${type}`);
 
 /** One request per code. No matching parcel shows as a missing or empty `data` list. */
-async function lookUp(http: PluginHttp, country: Country, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, country: Country, barcode: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${apiHost(country)}/api/v1/parcels:track`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json" },
@@ -110,7 +110,7 @@ export function boxNowSnapshot(
   const pickup = status === "at_pickup_point";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: state ?? newestType,
     delivered,
@@ -148,7 +148,7 @@ export const boxNow = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "BOX NOW",
   countries: ["GR", "BG", "HR", "CY"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
@@ -161,7 +161,7 @@ export const boxNow = defineCarrier<Config, null>({
       "*": { intervalMs: 10_000, burst: 1 },
     },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const raw = await lookUp(context.http, context.config.country, barcode);
       return raw === null

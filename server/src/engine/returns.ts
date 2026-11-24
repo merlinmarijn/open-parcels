@@ -3,7 +3,7 @@ import { isoNow, type Clock } from "../clock.js";
 import type { Database, ReturnTable } from "../db/schema.js";
 import { asReturnStatus, nextReturnStatus } from "../domain/return.js";
 import { appendEvent } from "../events/bus.js";
-import { snapshot, type ParcelSnapshot, type ReturnSnapshot } from "../plugin/snapshot.js";
+import { snapshot, type ParcelSnapshot, type ReturnSnapshot } from "../provider/snapshot.js";
 import { loadReturns, localDay } from "../returns/repository.js";
 import { safeUrl } from "./links.js";
 
@@ -21,7 +21,7 @@ export interface ReturnEnv {
   readonly trackParcel: (parcel: ParcelSnapshot) => Promise<string>;
 }
 
-/** The order the return belongs to; one is made for an order no source listed yet. */
+/** The order the return belongs to; one is made for an order no connection listed yet. */
 async function orderFor(
   trx: Trx,
   report: ReturnSnapshot,
@@ -152,14 +152,14 @@ async function writeItems(
 
 /**
  * Stores one return report: finds or starts the return, merges what the report says, links the
- * source, the items and (with a tracking number) an outgoing parcel, and fires `return.created`
+ * connection, the items and (with a tracking number) an outgoing parcel, and fires `return.created`
  * or `return.updated` when anything changed. Null when the report belongs to nothing (an unknown
  * order it may not start, or a deleted one).
  */
 async function applyReturn(
   trx: Trx,
   env: ReturnEnv,
-  sourceId: string,
+  connectionId: string,
   report: ReturnSnapshot,
 ): Promise<{ id: string; events: number } | null> {
   const now = isoNow(env.clock);
@@ -168,24 +168,24 @@ async function applyReturn(
   const row = await findReturn(trx, order.id, report);
   if (row === undefined && !report.mayCreate) return null;
   await trx
-    .insertInto("order_sources")
-    .values({ order_id: order.id, source_id: sourceId })
-    .onConflict((oc) => oc.columns(["order_id", "source_id"]).doNothing())
+    .insertInto("order_connections")
+    .values({ order_id: order.id, connection_id: connectionId })
+    .onConflict((oc) => oc.columns(["order_id", "connection_id"]).doNothing())
     .execute();
   const tracking = report.tracking;
   const sameParcel =
     tracking !== null &&
     (row?.parcel_id ?? null) !== null &&
     row?.carrier === tracking.carrier &&
-    row.tracking_number === tracking.barcode;
+    row.tracking_number === tracking.trackingNumber;
   const parcelId =
     tracking === null || sameParcel
       ? (row?.parcel_id ?? null)
       : await env.trackParcel(
           snapshot({
             carrier: tracking.carrier,
-            barcode: tracking.barcode,
-            direction: "outgoing",
+            trackingNumber: tracking.trackingNumber,
+            direction: "sending",
             status: "registered",
             rawStatus: null,
           }),
@@ -193,7 +193,7 @@ async function applyReturn(
   const next: Columns = {
     ...merged(row, report),
     carrier: tracking?.carrier ?? row?.carrier ?? null,
-    tracking_number: tracking?.barcode ?? row?.tracking_number ?? null,
+    tracking_number: tracking?.trackingNumber ?? row?.tracking_number ?? null,
     parcel_id: parcelId,
   };
   const id = row?.id ?? crypto.randomUUID();
@@ -212,9 +212,9 @@ async function applyReturn(
   const itemsBefore = await countItems(trx, id);
   await writeItems(trx, order.id, id, report.items);
   await trx
-    .insertInto("return_sources")
-    .values({ return_id: id, source_id: sourceId })
-    .onConflict((oc) => oc.columns(["return_id", "source_id"]).doNothing())
+    .insertInto("return_connections")
+    .values({ return_id: id, connection_id: connectionId })
+    .onConflict((oc) => oc.columns(["return_id", "connection_id"]).doNothing())
     .execute();
   const itemsChanged = (await countItems(trx, id)) !== itemsBefore;
   if (row !== undefined && !changed(row, next) && !itemsChanged) return { id, events: 0 };
@@ -233,12 +233,12 @@ async function applyReturn(
 export async function applyReturns(
   trx: Trx,
   env: ReturnEnv,
-  sourceId: string,
+  connectionId: string,
   reports: readonly ReturnSnapshot[],
 ): Promise<number> {
   let events = 0;
   for (const report of reports) {
-    events += (await applyReturn(trx, env, sourceId, report))?.events ?? 0;
+    events += (await applyReturn(trx, env, connectionId, report))?.events ?? 0;
   }
   return events;
 }

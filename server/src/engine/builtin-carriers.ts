@@ -86,13 +86,13 @@ import { uniuni } from "../carriers/uniuni/index.js";
 import { ups } from "../carriers/ups/index.js";
 import { usps } from "../carriers/usps/index.js";
 import { vintedGo } from "../carriers/vinted_go/index.js";
-import { register, type RegisteredPlugin } from "./registry.js";
+import { register, type RegisteredProvider } from "./registry.js";
 
 /**
- * Every carrier plug-in shipped with the server. Each carrier lives in its own folder under
- * `src/carriers/` and imports only the plug-in API; it is registered here with `register()`.
+ * Every carrier provider shipped with the server. Each carrier lives in its own folder under
+ * `src/carriers/` and imports only the provider API; it is registered here with `register()`.
  */
-export const BUILTIN_CARRIERS: readonly RegisteredPlugin[] = [
+export const BUILTIN_CARRIERS: readonly RegisteredProvider[] = [
   register(acsCourier),
   register(airmee),
   register(amazonCarrier()),

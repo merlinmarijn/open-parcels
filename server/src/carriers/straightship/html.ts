@@ -1,4 +1,4 @@
-import { cleanText, walkHtml } from "../../plugin/api.js";
+import { cleanText, walkHtml } from "../../provider/api.js";
 
 /** A table cell with its tag, so header (`th`) and data (`td`) cells can be told apart. */
 export interface Cell {

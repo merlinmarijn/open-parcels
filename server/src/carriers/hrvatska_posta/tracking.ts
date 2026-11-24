@@ -8,9 +8,9 @@ import {
   zonedIso,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { BOT_WALL_MARKERS, parsePage, type Page, type ScanRow } from "./page.js";
 
 export const CARRIER_ID = "hrvatska_posta";
@@ -67,7 +67,7 @@ export function publicUrl(barcode: string): string {
 }
 
 /** The parsed page, or null when the carrier has no data for the code. */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Page | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Page | null> {
   const code = barcode.toUpperCase();
   const response = await http.request(new URL(publicUrl(code)), {
     headers: { accept: "text/html" },
@@ -191,7 +191,7 @@ export function trackingSnapshot(page: Page, report: Report): ParcelSnapshot {
     .reverse();
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: page.number,
+    trackingNumber: page.number,
     status,
     rawStatus: walked.at(-1)?.wording ?? null,
     delivered,

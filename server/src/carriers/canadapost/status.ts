@@ -1,4 +1,4 @@
-import { ruleStatus, text, type Json, type ParcelStatus } from "../../plugin/api.js";
+import { ruleStatus, text, type Json, type ParcelStatus } from "../../provider/api.js";
 
 const CARRIER_ID = "canadapost";
 

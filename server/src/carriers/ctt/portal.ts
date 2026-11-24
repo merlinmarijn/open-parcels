@@ -8,8 +8,8 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 
 /**
  * The CTT Portugal tracker is a low-code web app. There is no credential, but there is an
@@ -35,7 +35,7 @@ interface PortalState {
   csrf: string | null;
 }
 
-/** Shared by every source; it holds nothing personal, only the anonymous session and versions. */
+/** Shared by every connection; it holds nothing personal, only the anonymous session and versions. */
 const state: PortalState = {
   moduleVersion: null,
   script: null,
@@ -57,7 +57,7 @@ function ok(response: HttpResponse, what: string): void {
   expectStatus(response, `CTT ${what}`, 200);
 }
 
-async function moduleVersion(http: PluginHttp): Promise<string> {
+async function moduleVersion(http: ProviderHttp): Promise<string> {
   if (state.moduleVersion === null) {
     const response = await http.request(new URL(`${BASE}/moduleservices/moduleversioninfo`));
     ok(response, "version info");
@@ -70,7 +70,7 @@ async function moduleVersion(http: PluginHttp): Promise<string> {
   return state.moduleVersion;
 }
 
-async function screenScript(http: PluginHttp, version: string): Promise<string> {
+async function screenScript(http: ProviderHttp, version: string): Promise<string> {
   if (state.script === null) {
     const manifest = await http.request(new URL(`${BASE}/moduleservices/moduleinfo?${version}`));
     ok(manifest, "manifest");
@@ -90,7 +90,7 @@ async function screenScript(http: PluginHttp, version: string): Promise<string> 
   return state.script;
 }
 
-async function apiVersion(http: PluginHttp, action: string): Promise<string> {
+async function apiVersion(http: ProviderHttp, action: string): Promise<string> {
   const cached = state.apiVersions.get(action);
   if (cached !== undefined) {
     return cached;
@@ -131,7 +131,7 @@ function adoptSession(response: HttpResponse): boolean {
 
 /** One data action. A 403 bootstraps the session once; stale versions are re-read once. */
 async function callAction(
-  http: PluginHttp,
+  http: ProviderHttp,
   action: string,
   variables: Json,
   retries = { session: true, version: true },
@@ -186,7 +186,7 @@ async function callAction(
  * One code's record, or null when CTT does not know it. A not-found during maintenance is an
  * outage, never "unknown code".
  */
-export async function lookUpPortal(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUpPortal(http: ProviderHttp, code: string): Promise<Json | null> {
   const payload = await callAction(http, TRACK_ACTION, {
     ObjectCodeInput: code,
     SearchInput: code,

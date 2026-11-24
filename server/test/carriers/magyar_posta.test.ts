@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { magyarPosta } from "../../src/carriers/magyar_posta/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -51,8 +51,8 @@ describe("magyar_posta tracking", () => {
     expect(parcel?.pickupPoint).toBe("Példa Posta");
     expect(parcel?.weightKg).toBe(1.5);
     // The carrier never gives a delivery window.
-    expect(parcel?.plannedFrom).toBeNull();
-    expect(parcel?.plannedTo).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
+    expect(parcel?.expectedTo).toBeNull();
     // The middle row has no epoch; its local Budapest time (UTC+1 in November) is used.
     expect(parcel?.history.map((event) => [event.at, event.status])).toEqual([
       ["2026-11-18T08:00:00.000Z", "at_pickup_point"],

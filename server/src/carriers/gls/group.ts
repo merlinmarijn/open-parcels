@@ -10,9 +10,9 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   CARRIER_ID,
   compactPostcode,
@@ -36,7 +36,7 @@ interface Reply {
  * One GET against the group service. Its maintenance page is an HTML 200, so a body that is not
  * a JSON object stops the run instead of reading as "not found".
  */
-async function getJson(http: PluginHttp, url: URL): Promise<Reply> {
+async function getJson(http: ProviderHttp, url: URL): Promise<Reply> {
   const response = await http.request(url, { headers: { accept: "application/json" } });
   const payload = parseJsonBody(response.body);
   if (!isObject(payload)) {
@@ -70,7 +70,7 @@ function base(country: GroupCountry, path: string): URL {
  * or an E206, because some non-numeric codes need it.
  */
 async function overview(
-  http: PluginHttp,
+  http: ProviderHttp,
   millis: number,
   country: GroupCountry,
   barcode: string,
@@ -107,7 +107,7 @@ async function overview(
  * postcode), then the overview when the detailed one cannot answer for this code.
  */
 export async function lookUpGroup(
-  http: PluginHttp,
+  http: ProviderHttp,
   millis: number,
   country: GroupCountry,
   barcode: string,
@@ -190,7 +190,7 @@ export function groupSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // The service's own numbers are not always the code on the label; keep the one asked for.
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: unescape(text(newest["evtDscr"]) ?? text(progress["statusText"])) ?? code,
     delivered,

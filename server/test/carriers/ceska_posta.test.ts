@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ceskaPosta } from "../../src/carriers/ceska_posta/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -49,8 +49,8 @@ describe("Česká pošta tracking", () => {
       rawStatus: "Step 53",
       sender: "Example Shop",
       weightKg: 1.5,
-      plannedFrom: "2026-11-17T23:00:00.000Z",
-      plannedTo: "2026-11-18T22:59:59.000Z",
+      expectedFrom: "2026-11-17T23:00:00.000Z",
+      expectedTo: "2026-11-18T22:59:59.000Z",
     });
     expect(result.snapshots[0]?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T06:45:00.000Z", "out_for_delivery"],
@@ -87,7 +87,7 @@ describe("Česká pošta tracking", () => {
       onFragment("/package/", json({}, 404)),
     ];
     const result = await world.track([A, B], {}, null);
-    expect(result.snapshots.map((parcel) => parcel.barcode)).toEqual([B]);
+    expect(result.snapshots.map((parcel) => parcel.trackingNumber)).toEqual([B]);
 
     const anonymous = new World(ceskaPosta);
     const withoutId = { attributes: {}, states: { state: [state("91", "2026-11-18")] } };

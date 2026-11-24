@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCarrier } from "../../plugin/api.js";
+import { defineCarrier } from "../../provider/api.js";
 import {
   BROWSER_HEADERS_REASON,
   BROWSER_USER_AGENT,
@@ -30,7 +30,7 @@ export const ups = defineCarrier({
   id: "ups",
   name: "UPS",
   countries: ["*"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({
     /** The locale sent to UPS. It only changes display texts; the mapped keys do not depend on it. */
     locale: z.enum(LOCALES).optional(),
@@ -39,7 +39,7 @@ export const ups = defineCarrier({
   signIn: { type: "api_key" },
   http: {
     limits: {
-      // The public tracking's real limit is a count, kept by the plug-in's request budget; this
+      // The public tracking's real limit is a count, kept by the provider's request budget; this
       // only keeps the session start and the lookup from going out back to back.
       [PUBLIC_HOST]: { intervalMs: 5_000, burst: 1 },
       [OFFICIAL_HOST]: { intervalMs: 2_000, burst: 2 },

@@ -12,10 +12,10 @@ import {
   text,
   type HttpResponse,
   type InteractiveSignIn,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SignInContext,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { API_HOST, CARRIER_ID } from "./shared.js";
 
 export const B2C_HOST = "pplczmobidentity.b2clogin.com";
@@ -36,7 +36,7 @@ const clientId = (): string => carrierKey(CARRIER_ID, "client_id");
  * refreshes, it runs this grant again. Only `access_denied`/`invalid_grant` (or a 401/403) mean
  * the stored password is dead, which happens when the user signs in to the app again.
  */
-async function passwordGrant(http: PluginHttp, secret: Secret) {
+async function passwordGrant(http: ProviderHttp, secret: Secret) {
   const response = await http.request(new URL(TOKEN_URL), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -72,7 +72,7 @@ const flowState = z.object({
 });
 
 /**
- * The app's passwordless sign-in: an e-mail address, a PIN sent to it, and the PIN traded for a
+ * The app's passwordless sign-in: an email address, a PIN sent to it, and the PIN traded for a
  * password PPL mints for this device. The password is then proven with one token request.
  */
 export function pinSignIn<Config>(): InteractiveSignIn<Config, Secret> {
@@ -146,7 +146,7 @@ export class PplAccount {
   #changed = false;
   #renewedAfterRefusal = false;
 
-  constructor(private readonly context: PluginContext<unknown, Secret>) {
+  constructor(private readonly context: ProviderContext<unknown, Secret>) {
     const stored = storedSchema.safeParse(context.session.load());
     this.#access = stored.success ? stored.data.access : null;
     this.#expiresAt = stored.success ? stored.data.expiresAt : 0;

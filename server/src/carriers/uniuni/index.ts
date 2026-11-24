@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   carrierPattern,
   echoRef,
@@ -8,9 +8,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   carrierKey,
@@ -21,7 +21,7 @@ import {
   readJson,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "uniuni";
 const API_HOST = "delivery-api.uniuni.ca";
@@ -38,7 +38,7 @@ const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
 /** The parcel record, or null when UniUni does not know the code. */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${API_HOST}/cargo/trackinguniuninew`);
   url.searchParams.set("id", barcode);
   url.searchParams.set("key", publicKey());
@@ -112,7 +112,7 @@ export function uniuniSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["tno"]), barcode),
     status,
     rawStatus: code,
@@ -127,7 +127,7 @@ export function uniuniSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("state", code);
@@ -148,7 +148,7 @@ export const uniuni = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "UniUni",
   countries: ["CA", "US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

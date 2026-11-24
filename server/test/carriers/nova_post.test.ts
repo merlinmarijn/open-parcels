@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { novaPost } from "../../src/carriers/nova_post/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, raw, type Answer } from "./harness.js";
 
 // Made-up codes and values only.
@@ -65,13 +65,13 @@ describe("Nova Post tracking", () => {
     expect(result.complete).toBe(true);
     expect(parcel).toMatchObject({
       carrier: "nova_post",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "at_pickup_point",
       rawStatus: "Prybulo",
       pickup: true,
       pickupPoint: "Testviddilennia 1",
-      plannedFrom: "2026-11-19T12:00:00.000Z",
-      plannedTo: "2026-11-19T12:00:00.000Z",
+      expectedFrom: "2026-11-19T12:00:00.000Z",
+      expectedTo: "2026-11-19T12:00:00.000Z",
       sender: "XX",
       receiver: "Testmisto, UA",
       weightKg: 0.5,
@@ -97,7 +97,7 @@ describe("Nova Post tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T09:30:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

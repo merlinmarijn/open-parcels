@@ -16,11 +16,11 @@ import {
   unknownReporter,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderContext,
+  type ProviderHttp,
+  type ProviderLogger,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   buildHistory,
   deriveStatus,
@@ -47,7 +47,10 @@ const sameCode = (a: string, b: string): boolean =>
  * history. An answer without an id is only taken for a single-code request, where it cannot be
  * anyone else's; in a batch it stops the run.
  */
-async function readHistory(http: PluginHttp, codes: readonly string[]): Promise<Map<string, Json>> {
+async function readHistory(
+  http: ProviderHttp,
+  codes: readonly string[],
+): Promise<Map<string, Json>> {
   const url = new URL(`https://${HISTORY_HOST}/services/ParcelHistory/getDataAsJson`);
   url.searchParams.set("idParcel", codes.join(";"));
   url.searchParams.set("language", "en");
@@ -77,8 +80,8 @@ async function readHistory(http: PluginHttp, codes: readonly string[]): Promise<
 
 /** The Balíkovna page adds sender, pickup place and event times. Optional; a failure is logged. */
 async function readPackage(
-  http: PluginHttp,
-  logger: PluginLogger,
+  http: ProviderHttp,
+  logger: ProviderLogger,
   code: string,
 ): Promise<Json | null> {
   try {
@@ -128,13 +131,13 @@ function toSnapshot(
   const weight = num(attributes["weight"], { decimalComma: true });
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: lastStatusText(events) ?? text(extra["statusMessage"]),
     delivered,
     deliveredAt: delivered ? (history.find((e) => e.status === "delivered")?.at ?? null) : null,
-    plannedFrom: delivered ? null : (window?.from ?? null),
-    plannedTo: delivered ? null : (window?.to ?? null),
+    expectedFrom: delivered ? null : (window?.from ?? null),
+    expectedTo: delivered ? null : (window?.to ?? null),
     pickup: status === "at_pickup_point",
     pickupPoint: joinParts(text(place["name"]), text(place["address"])),
     url: rulesTrackingUrl(CARRIER_ID, code),
@@ -150,7 +153,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   // A code listed twice is asked for once.
   const codes = [...new Set(barcodes)].filter((code) => PLAUSIBLE.test(code));
@@ -174,7 +177,7 @@ export const ceskaPosta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Česká pošta",
   countries: ["CZ"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

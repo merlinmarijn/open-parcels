@@ -1,6 +1,6 @@
 /*
  * Made-up myDPD pages and tracking responses. Every number, name and date here is invented; the
- * pages keep only the element ids and structure the plug-in reads.
+ * pages keep only the element ids and structure the provider reads.
  */
 
 export const BARCODE_IN = "01234567890123";

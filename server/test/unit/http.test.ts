@@ -1,14 +1,14 @@
 import { createServer } from "node:http";
 import { describe, expect, it } from "vitest";
-import { RateLimitedError, TransientError } from "../../src/plugin/errors.js";
+import { RateLimitedError, TransientError } from "../../src/provider/errors.js";
 import {
   DEFAULT_USER_AGENT,
   HostLimiter,
   parseRetryAfter,
-  PluginHttp,
+  ProviderHttp,
   type FetchLike,
-} from "../../src/plugin/http.js";
-import { CookieJar, restoreJar, serializeJar } from "../../src/plugin/cookies.js";
+} from "../../src/provider/http.js";
+import { CookieJar, restoreJar, serializeJar } from "../../src/provider/cookies.js";
 import { guardedFetch, publicOnlyLookup } from "../../src/net/guarded-fetch.js";
 import { FakeClock } from "../helpers.js";
 
@@ -24,12 +24,12 @@ function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string
     limits: { "*": { intervalMs: 1000, burst: 2 } },
     ...(userAgent === undefined ? {} : { userAgent }),
   };
-  return { http: new PluginHttp(policy, limiter, clock, fetchImpl), waits, clock };
+  return { http: new ProviderHttp(policy, limiter, clock, fetchImpl), waits, clock };
 }
 
 const ok: FetchLike = () => Promise.resolve(new Response('{"a":1}', { status: 200 }));
 
-describe("plug-in HTTP client", () => {
+describe("provider HTTP client", () => {
   it("lets a burst through, then paces requests per host", async () => {
     const { http, waits } = setup(ok);
     const url = new URL("https://carrier.example.invalid/api");
@@ -42,7 +42,7 @@ describe("plug-in HTTP client", () => {
     expect(waits).toEqual([1000, 1000]);
   });
 
-  it("sends an honest User-Agent unless the plug-in documents why it needs another", async () => {
+  it("sends an honest User-Agent unless the provider documents why it needs another", async () => {
     const seen: (string | null)[] = [];
     const capture: FetchLike = (_url, init) => {
       seen.push(new Headers(init.headers).get("user-agent"));
@@ -194,7 +194,7 @@ describe("plug-in HTTP client", () => {
     });
     expect(error?.message).toMatch(/non-public/);
 
-    // The default transport of plug-in HTTP uses it: a server on this machine is never reached.
+    // The default transport of provider HTTP uses it: a server on this machine is never reached.
     let reached = false;
     const server = createServer((_request, response) => {
       reached = true;

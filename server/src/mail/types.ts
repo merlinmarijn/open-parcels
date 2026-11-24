@@ -1,8 +1,8 @@
 import { z } from "zod";
-import type { ParcelSnapshot, ReturnSnapshot } from "../plugin/snapshot.js";
+import type { ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 
-/** Plug-in id of mailbox sources. Mail is handled by the core, not by a carrier plug-in. */
-export const MAIL_PLUGIN = "imap";
+/** Provider id of inbox connections. Mail is handled by the core, not by a carrier provider. */
+export const MAIL_PROVIDER = "imap";
 
 export const mailConfigSchema = z.object({
   host: z.string().min(1).max(255),
@@ -27,15 +27,15 @@ export const mailSecretSchema = z.object({
 export type MailSecret = z.infer<typeof mailSecretSchema>;
 
 /**
- * The default name of a mailbox source: the account, so two mailboxes on one server differ.
+ * The default name of an inbox connection: the account, so two inboxes on one server differ.
  * A username that is already an address keeps its own domain and names the server after it.
  */
-export function mailboxLabel(username: string, host: string): string {
-  return username.includes("@") ? `Mailbox ${username} (${host})` : `Mailbox ${username}@${host}`;
+export function inboxLabel(username: string, host: string): string {
+  return username.includes("@") ? `Inbox ${username} (${host})` : `Inbox ${username}@${host}`;
 }
 
-/** True for the names older versions gave mailboxes by default, which hid the account. */
-export function isGenericMailboxLabel(label: string, host: string): boolean {
+/** True for the names older versions gave inboxes by default, which hid the account. */
+export function isGenericInboxLabel(label: string, host: string): boolean {
   return label === "Mailbox" || label === `Mailbox ${host}`;
 }
 

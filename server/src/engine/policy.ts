@@ -19,7 +19,7 @@ export const RETRY_AFTER_MAX_MS = 24 * HOUR;
 
 export interface ActiveParcel {
   readonly status: ParcelStatus;
-  readonly plannedFrom: string | null;
+  readonly expectedFrom: string | null;
 }
 
 export interface PollContext {
@@ -28,10 +28,10 @@ export interface PollContext {
   /** Skip polling 00:00–06:00 local time. On by default; one global switch, not per carrier. */
   readonly quietWindow: boolean;
   readonly kind: "account" | "tracking" | "shop" | "mail";
-  /** Minutes 0–6, derived from the install and source ids, so installs don't poll in lockstep. */
+  /** Minutes 0–6, derived from the install and connection ids, so installs don't poll in lockstep. */
   readonly staggerMinutes: number;
   readonly active: readonly ActiveParcel[];
-  /** The plug-in's fixed interval, which replaces the adaptive one and the quiet window. */
+  /** The provider's fixed interval, which replaces the adaptive one and the quiet window. */
   readonly fixedIntervalMs?: number | null;
 }
 
@@ -39,7 +39,7 @@ function isHot(parcel: ActiveParcel, now: Date): boolean {
   if (parcel.status !== "out_for_delivery") {
     return false;
   }
-  const from = parcel.plannedFrom === null ? Number.NaN : Date.parse(parcel.plannedFrom);
+  const from = parcel.expectedFrom === null ? Number.NaN : Date.parse(parcel.expectedFrom);
   return Number.isNaN(from) || now.getTime() >= from - HOT_LOOKAHEAD_MS;
 }
 
@@ -115,7 +115,7 @@ export function delayAfterFailure(
   }
 }
 
-/** Stable 0–6 minute offset from a string, so every install and source polls at its own minute. */
+/** Stable 0–6 minute offset from a string, so every install and connection polls at its own minute. */
 export function staggerMinutes(seed: string): number {
   let hash = 0;
   for (let index = 0; index < seed.length; index += 1) {

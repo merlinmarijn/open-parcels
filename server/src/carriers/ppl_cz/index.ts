@@ -22,10 +22,11 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+  type Direction,
+} from "../../provider/api.js";
 import { B2C_HOST, pinSignIn, PplAccount, type Secret } from "./account.js";
 import { API_HOST, CARRIER_ID, HISTORY_LIMIT, mapPpl, publicUrl } from "./shared.js";
 
@@ -46,7 +47,7 @@ const when = (value: unknown): string | null =>
  * website's key (in the shared rules). Not found is a 400 with a specific `detail`; any other 400
  * is a broken request and stops the run.
  */
-export async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(
     new URL(`https://${API_HOST}/ecs/ppl/webapi/TrackAndTrace/${encodeURIComponent(code)}`),
     {
@@ -109,12 +110,12 @@ export function trackingSnapshot(
   const point = asObject(raw["accessPoint"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: statusCode,
     delivered,
     deliveredAt: delivered ? when(raw["lastEventDate"]) : null,
-    plannedFrom: delivered ? null : when(raw["expectedDeliveryDate"]),
+    expectedFrom: delivered ? null : when(raw["expectedDeliveryDate"]),
     pickup: status === "at_pickup_point",
     pickupPoint: text(point["parcelshopName"]) ?? text(point["name"]),
     url: publicUrl(code),
@@ -126,7 +127,7 @@ export function trackingSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret | null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret | null>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -134,15 +135,15 @@ async function track(context: PluginContext<Config, Secret | null>, barcodes: re
   });
 }
 
-function direction(raw: Json): "incoming" | "outgoing" {
+function direction(raw: Json): Direction {
   const discriminator = (text(raw["discriminator"]) ?? "").toLowerCase();
   if (discriminator.includes("outgoing")) {
-    return "outgoing";
+    return "sending";
   }
   if (discriminator.includes("incoming")) {
-    return "incoming";
+    return "receiving";
   }
-  return "recipient" in raw && !("sender" in raw) ? "outgoing" : "incoming";
+  return "recipient" in raw && !("sender" in raw) ? "sending" : "receiving";
 }
 
 /** One shipment's events; a failed lookup costs history only, a refusal or limit stops the run. */
@@ -187,7 +188,7 @@ export function accountSnapshot(
   const point = asObject(raw["toDeliveryPoint"]);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: number,
+    trackingNumber: number,
     direction: way,
     status,
     rawStatus: code,
@@ -198,14 +199,14 @@ export function accountSnapshot(
     pickup: status === "at_pickup_point",
     pickupPoint: text(point["name"]),
     url: publicUrl(number),
-    sender: way === "incoming" ? text(raw["sender"]) : null,
-    receiver: way === "outgoing" ? text(raw["recipient"]) : null,
+    sender: way === "receiving" ? text(raw["sender"]) : null,
+    receiver: way === "sending" ? text(raw["recipient"]) : null,
     history: entries,
     raw: { lastShipmentEvent: code, discriminator: raw["discriminator"] ?? null },
   });
 }
 
-async function fetchAccount(context: PluginContext<Config, Secret | null>) {
+async function fetchAccount(context: ProviderContext<Config, Secret | null>) {
   const secret = context.secret;
   if (secret === null) {
     throw new SignInRejectedError("The mojePPL account needs a sign-in.");
@@ -245,7 +246,7 @@ export const pplCz = defineCarrier<Config, Secret | null>({
   id: CARRIER_ID,
   name: "PPL CZ",
   countries: ["CZ"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [pinSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

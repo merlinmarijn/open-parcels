@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCarrier, pastedRedirect, SignInRejectedError } from "../../plugin/api.js";
+import { defineCarrier, pastedRedirect, SignInRejectedError } from "../../provider/api.js";
 import { fetchDeAccount } from "./de/account.js";
 import { finishSignIn, startSignIn } from "./de/session.js";
 import { IBERIA_HOST } from "./iberia.js";
@@ -10,9 +10,9 @@ import { SWEDEN_HOST } from "./sweden.js";
 import { trackCodes } from "./tracking.js";
 
 /**
- * Sign-in data. A German account source stores the refresh token from the pasted-link sign-in, a
+ * Sign-in data. A German account connection stores the refresh token from the pasted-link sign-in, a
  * Dutch one the account's email and password, a Polish one its device id and session cookies;
- * a tracking source may store the user's own key for
+ * a tracking connection may store the user's own key for
  * DHL's official tracking API.
  */
 const secretSchema = z
@@ -33,7 +33,7 @@ const configSchema = z.looseObject({
    * sent to back ends that cannot know them.
    */
   regions: z.array(z.enum(["ES", "PT", "SE", "PL"])).optional(),
-  /** Which DHL account an account source reads: dhl.de (default), my.dhlecommerce.nl or mojdhl.pl. */
+  /** Which DHL account an account connection reads: dhl.de (default), my.dhlecommerce.nl or mojdhl.pl. */
   account: z.enum(["de", "nl", "pl"]).optional(),
 });
 type Config = z.infer<typeof configSchema>;
@@ -47,7 +47,7 @@ export const dhl = defineCarrier<Config, Secret>({
   id: "dhl",
   name: "DHL",
   countries: ["*"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

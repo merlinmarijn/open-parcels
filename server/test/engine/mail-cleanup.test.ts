@@ -13,15 +13,15 @@ afterEach(async () => {
 });
 
 async function mailParcel(
-  mailSource: string,
+  mailConnection: string,
   carrier: string,
-  barcode: string,
+  trackingNumber: string,
   rawStatus: string,
 ): Promise<string> {
   const parcel = await context.services.parcels.create({
     carrier,
-    barcode,
-    direction: "incoming",
+    trackingNumber,
+    direction: "receiving",
     label: null,
   });
   const now = context.clock.now().toISOString();
@@ -31,10 +31,10 @@ async function mailParcel(
     .where("id", "=", parcel.id)
     .execute();
   await context.services.db
-    .insertInto("parcel_sources")
+    .insertInto("parcel_connections")
     .values({
       parcel_id: parcel.id,
-      source_id: mailSource,
+      connection_id: mailConnection,
       external_ref: null,
       role: "mail",
       last_seen_at: now,
@@ -45,21 +45,21 @@ async function mailParcel(
 
 describe("mail false-positive cleanup", () => {
   it("archives what the current rules would not create, once, with a reason", async () => {
-    const source = await context.services.sources.create({
-      plugin: "imap",
+    const connection = await context.services.connections.create({
+      provider: "imap",
       kind: "mail",
       label: "Inbox",
       config: { host: "imap.example.invalid" },
       secret: { username: "someone@example.invalid", password: ["made", "up"].join("-") },
     });
     const portal = await mailParcel(
-      source.id,
+      connection.id,
       "dhl",
       "1795000000",
       "Account details for someone at DHL API Developer Portal",
     );
-    const placeholder = await mailParcel(source.id, "dpd", "990000000000002", "Versandt");
-    const real = await mailParcel(source.id, "dpd", "09446624362703", "Ihr Paket kommt heute");
+    const placeholder = await mailParcel(connection.id, "dpd", "990000000000002", "Versandt");
+    const real = await mailParcel(connection.id, "dpd", "09446624362703", "Ihr Paket kommt heute");
     await context.services.db
       .insertInto("items")
       .values([

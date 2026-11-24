@@ -1,5 +1,5 @@
 import {
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   carrierKey,
   readObject,
@@ -8,7 +8,7 @@ import {
   TransientError,
   type Json,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const IDENTITY_HOST = "identity.anpost.com";
 /** The public site key An Post's own web pages use for their identity service. Not a secret. */
@@ -31,7 +31,11 @@ export interface AnPostSession {
 }
 
 /** The identity service answers HTTP 200 for everything; `errorCode` carries the outcome. */
-async function call(http: PluginHttp, method: string, form: Record<string, string>): Promise<Json> {
+async function call(
+  http: ProviderHttp,
+  method: string,
+  form: Record<string, string>,
+): Promise<Json> {
   const response = await http.request(new URL(`https://${IDENTITY_HOST}/${method}`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -44,7 +48,7 @@ async function call(http: PluginHttp, method: string, form: Record<string, strin
 }
 
 /** A browser id the service hands out first; sign-in works without one, so it is best effort. */
-async function browserId(http: PluginHttp): Promise<string> {
+async function browserId(http: ProviderHttp): Promise<string> {
   const url = new URL(`https://${IDENTITY_HOST}/accounts.webSdkBootstrap`);
   url.searchParams.set("apiKey", siteKey());
   url.searchParams.set("format", "json");
@@ -58,7 +62,7 @@ async function browserId(http: PluginHttp): Promise<string> {
   return "";
 }
 
-async function signIn(http: PluginHttp, credentials: Credentials): Promise<AnPostSession> {
+async function signIn(http: ProviderHttp, credentials: Credentials): Promise<AnPostSession> {
   const gmid = await browserId(http);
   const answer = await call(http, "accounts.login", {
     loginID: credentials.username,
@@ -89,7 +93,7 @@ function stored(session: SessionStore): AnPostSession | null {
     : { uid, loginToken, gmid: text(value["gmid"]) ?? "" };
 }
 
-async function shortToken(http: PluginHttp, session: AnPostSession): Promise<Json> {
+async function shortToken(http: ProviderHttp, session: AnPostSession): Promise<Json> {
   return call(http, "accounts.getJWT", {
     login_token: session.loginToken,
     UID: session.uid,
@@ -100,10 +104,10 @@ async function shortToken(http: PluginHttp, session: AnPostSession): Promise<Jso
 
 /**
  * A short-lived token for the deliveries API. The stored session is reused; only when the
- * service says it has expired does the plug-in sign in again with the stored password, once.
+ * service says it has expired does the provider sign in again with the stored password, once.
  */
 export async function idToken(
-  http: PluginHttp,
+  http: ProviderHttp,
   store: SessionStore,
   credentials: Credentials,
 ): Promise<{ token: string; uid: string }> {

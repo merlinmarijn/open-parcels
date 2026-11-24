@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { isoTime } from "../../src/plugin/api.js";
+import { isoTime } from "../../src/provider/api.js";
 
 /* Carrier times without an offset are read in the carrier's own zone, never the server's. */
 

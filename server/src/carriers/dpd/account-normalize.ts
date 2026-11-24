@@ -1,4 +1,4 @@
-import { snapshot, type ParcelSnapshot, type SnapshotEvent } from "../../plugin/api.js";
+import { snapshot, type ParcelSnapshot, type SnapshotEvent } from "../../provider/api.js";
 import type { Detail, Row, Slot, Tab } from "./account-page.js";
 import {
   iconStatus,
@@ -140,14 +140,14 @@ export function accountSnapshot(
   const loadedDay = status === "out_for_delivery" ? dayOf("CarLoad") : null;
   return snapshot({
     carrier: "dpd",
-    barcode: row.barcode,
-    direction: tab === "incoming" ? "incoming" : "outgoing",
+    trackingNumber: row.barcode,
+    direction: tab === "incoming" ? "receiving" : "sending",
     status,
     rawStatus: row.sentence === "" ? null : row.sentence,
     delivered,
     deliveredAt: deliveredDay === null ? null : localIso(deliveredDay),
-    plannedFrom: loadedDay === null ? null : localIso(loadedDay),
-    plannedTo: loadedDay === null ? null : localIso(loadedDay, 23, 59, 59),
+    expectedFrom: loadedDay === null ? null : localIso(loadedDay),
+    expectedTo: loadedDay === null ? null : localIso(loadedDay, 23, 59, 59),
     pickup: status === "at_pickup_point",
     url: publicUrl(row.barcode),
     weightKg: weightKg(detail?.weightText ?? ""),

@@ -13,9 +13,9 @@ import {
   type InteractiveSignIn,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 
 const CUSTOMER = "https://api.airmee.com/customer";
 /** What the app sends before it has a token, and with the refresh call. */
@@ -26,10 +26,10 @@ export interface AirmeeTokens {
   readonly refreshToken: string;
 }
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
 
 /** The tokens never go to a log: the header carries the raw token, without "Bearer". */
-async function post(http: PluginHttp, path: string, body: Json, token: string) {
+async function post(http: ProviderHttp, path: string, body: Json, token: string) {
   return http.request(new URL(`${CUSTOMER}/${path}`), {
     method: "POST",
     headers: { authorization: token, "content-type": "application/json" },

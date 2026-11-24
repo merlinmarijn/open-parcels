@@ -6,7 +6,7 @@ import { appendEvent } from "../events/bus.js";
 
 /**
  * Removes the misfiled order `id`, firing `order.deleted` with `merged_into`. With a twin
- * (`into`), its parcels, item lines (numbered after the twin's own) and source links move there
+ * (`into`), its parcels, item lines (numbered after the twin's own) and connection links move there
  * first; without one its parcels lose the order and its item lines are deleted with it.
  */
 async function mergeOrderInto(
@@ -35,12 +35,12 @@ async function mergeOrderInto(
       .where("order_id", "=", id)
       .execute();
     await trx
-      .insertInto("order_sources")
-      .columns(["order_id", "source_id"])
+      .insertInto("order_connections")
+      .columns(["order_id", "connection_id"])
       .expression((eb) =>
         eb
-          .selectFrom("order_sources")
-          .select([eb.val(into).as("order_id"), "source_id"])
+          .selectFrom("order_connections")
+          .select([eb.val(into).as("order_id"), "connection_id"])
           .where("order_id", "=", id),
       )
       .onConflict((oc) => oc.doNothing())
@@ -59,7 +59,7 @@ async function mergeOrderInto(
  * Moves orders whose number cannot belong to their shop (an Amazon order without an Amazon order
  * number) to the shop their parcels are named after, else to `unknown`. Only numbers that are
  * provably not the shop's are touched. When the corrected order already exists, the parcels, item
- * lines and source links move to it (see `mergeOrderInto`). Idempotent; returns how many orders
+ * lines and connection links move to it (see `mergeOrderInto`). Idempotent; returns how many orders
  * were corrected.
  */
 export async function repairOrderShops(db: Kysely<Database>, clock: Clock): Promise<number> {

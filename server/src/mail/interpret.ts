@@ -9,7 +9,7 @@ import {
 import { isPlausibleOrder, shopFromDomain } from "../domain/order.js";
 import type { ParcelStatus } from "../domain/parcel.js";
 import { redactText } from "../log/redact.js";
-import { snapshot, type ParcelSnapshot } from "../plugin/snapshot.js";
+import { snapshot, type ParcelSnapshot } from "../provider/snapshot.js";
 import type { MailInput, MailInterpreter } from "./types.js";
 
 /** Shop id from a rule id such as `parcel-amazon` or `order-otto`. */
@@ -87,7 +87,7 @@ const SUBJECT_DIGITS = /\d{5,}/gu;
 
 /**
  * A mail subject as the parcel's status text, which is stored, sent in events and shown to every
- * client: e-mail addresses, tracking and order numbers and other digit runs are masked, and a
+ * client: email addresses, tracking and order numbers and other digit runs are masked, and a
  * mail that carries a pickup code gives no subject at all, since some services put the code that
  * opens the locker into it. Names cannot be told apart reliably and stay.
  */
@@ -131,11 +131,11 @@ export function createMailInterpreter(rules: Rules, timeZone: string): MailInter
         snapshots.push(
           snapshot({
             carrier,
-            barcode: trackingNumber,
+            trackingNumber: trackingNumber,
             status,
             rawStatus,
-            plannedFrom: result.arrival?.from ?? null,
-            plannedTo: result.arrival?.to ?? null,
+            expectedFrom: result.arrival?.from ?? null,
+            expectedTo: result.arrival?.to ?? null,
             url: result.trackingUrl ?? null,
             // A history entry needs a text: a neutral one when the subject must not be kept.
             history: [{ at, status, rawStatus: rawStatus ?? "Shipping mail", location: null, id }],

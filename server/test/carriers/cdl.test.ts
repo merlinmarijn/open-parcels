@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { cdl } from "../../src/carriers/cdl/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -35,10 +35,10 @@ describe("CDL Last Mile tracking", () => {
     const [parcel] = (await world.track([ORDER], {}, null)).snapshots;
     expect(parcel).toMatchObject({
       carrier: "cdl",
-      barcode: ORDER,
+      trackingNumber: ORDER,
       status: "out_for_delivery",
       rawStatus: "Package Out for Delivery",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T12:30:00.000Z", "out_for_delivery"],

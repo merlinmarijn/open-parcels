@@ -4,8 +4,8 @@ import {
   defineCarrier,
   TransientError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { CARRIER_ID, pageSnapshot } from "./parse.js";
 
 const HOST = "straightship.com";
@@ -15,7 +15,7 @@ const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (text: string): void => {
     context.reportUnknown("status_text", text);
@@ -44,7 +44,7 @@ export const straightship = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Straightship",
   countries: ["US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

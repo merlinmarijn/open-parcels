@@ -18,7 +18,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/api.js";
+} from "../../src/provider/api.js";
 import { FakeClock } from "../helpers.js";
 import { fakeContext, fakeNetwork, html, json } from "./harness.js";
 import {
@@ -226,11 +226,11 @@ describe("Amazon account", () => {
 
     expect(own).toMatchObject({
       carrier: "amazon",
-      barcode: "DE0000000001",
+      trackingNumber: "DE0000000001",
       status: "out_for_delivery",
       handoff: null,
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:30:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:30:00.000Z",
       order: { shop: "amazon", orderNumber: OWN_FLEET.orderId },
       externalRef: `${OWN_FLEET.orderId}/SHIPOWN1`,
     });
@@ -251,11 +251,11 @@ describe("Amazon account", () => {
 
     expect(dhl).toMatchObject({
       status: "in_transit",
-      handoff: { carrier: "dhl", barcode: "00340000000000000001" },
-      plannedFrom: "2026-11-19T23:00:00.000Z",
+      handoff: { carrier: "dhl", trackingNumber: "00340000000000000001" },
+      expectedFrom: "2026-11-19T23:00:00.000Z",
       live: null,
     });
-    expect(dpd?.handoff).toEqual({ carrier: "dpd", barcode: "01234567890123" });
+    expect(dpd?.handoff).toEqual({ carrier: "dpd", trackingNumber: "01234567890123" });
   });
 
   it("gives each item its order line's product image, the larger one when offered", async () => {
@@ -458,7 +458,10 @@ describe("Amazon account", () => {
     const second = harness(storefront([delivered], pages), first.stored);
     const two = await readAccount(second.context, rules);
     expect(second.calls.some((call) => call.startsWith("GET /progress-tracker"))).toBe(false);
-    expect(two.snapshots[0]).toMatchObject({ barcode: "00340000000000000001", delivered: true });
+    expect(two.snapshots[0]).toMatchObject({
+      trackingNumber: "00340000000000000001",
+      delivered: true,
+    });
   });
 
   it("follows only links on the storefront", () => {
@@ -613,7 +616,7 @@ describe("Amazon courier map", () => {
 describe("Amazon registration", () => {
   it("is shipped as a built-in shop with a pasted-link sign-in", () => {
     const amazon = BUILTIN_CARRIERS.find((entry) => entry.info.id === "amazon");
-    expect(amazon?.info).toMatchObject({ sourceKinds: ["shop"], signIn: "interactive" });
+    expect(amazon?.info).toMatchObject({ connectionKinds: ["shop"], signIn: "interactive" });
     expect(amazon?.info.signInFlows.map((flow) => flow.id)).toEqual(["pasted_redirect"]);
     expect(amazon?.canReadLive).toBe(true);
     expect(amazon?.http.userAgent?.reason).toBeTruthy();

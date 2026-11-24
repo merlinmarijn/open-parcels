@@ -1,4 +1,4 @@
-import { rulesTrackingUrl } from "../../plugin/api.js";
+import { rulesTrackingUrl } from "../../provider/api.js";
 
 export const CARRIER_ID = "nova_post";
 export const TRACKING_HOST = "api.novaposhta.ua";

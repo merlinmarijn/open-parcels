@@ -5,8 +5,8 @@ import {
   InvalidConfigError,
   SignInRejectedError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import {
   ACCOUNT_HOST,
   accountSignIn,
@@ -19,8 +19,8 @@ import { trackingSnapshot, type Reporter } from "./snapshot.js";
 import { isPlausibleBarcode, isPlausiblePostcode, TrackingRun } from "./tracking.js";
 
 /**
- * A tracking source is one recipient postcode: the lookup needs it next to every code. An account
- * source signs in to the app's account in one market, which decides the sign-in page.
+ * A tracking connection is one recipient postcode: the lookup needs it next to every code. An account
+ * connection signs in to the app's account in one market, which decides the sign-in page.
  */
 const configSchema = z.looseObject({
   postcode: z.string().trim().min(3).max(10).optional(),
@@ -33,7 +33,7 @@ const secretSchema = z
   .nullable();
 type Secret = AccountSecret | null;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const wanted = barcodes.filter(isPlausibleBarcode);
   const postcode = context.config.postcode;
   if (wanted.length === 0) {
@@ -67,7 +67,7 @@ export const mondialRelay = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Mondial Relay",
   countries: ["FR", "BE", "NL", "ES", "PT", "LU"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [accountSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

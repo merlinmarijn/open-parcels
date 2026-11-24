@@ -16,10 +16,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "gobolt";
 const API_HOST = "api.secondcloset.com";
@@ -36,7 +36,7 @@ function mapName(name: string | null): ParcelStatus | null {
 }
 
 /** Null when the carrier answers 404 "Tracking number not found"; any other 404 is unexpected. */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${API_HOST}${API_PATH}`);
   url.searchParams.set("tracking_number", barcode);
   const response = await http.request(url, { headers: { accept: "application/json" } });
@@ -86,7 +86,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
   const deliveryStep = steps(raw).find((s) => s["name"] === "label_delivered");
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: labelStatus,
     delivered,
@@ -94,7 +94,7 @@ function toSnapshot(raw: Json, barcode: string, report: (code: string) => void):
       ? (isoTime(raw["label_delivered_at"]) ?? isoTime(deliveryStep?.["created_at"]))
       : null,
     // A day-level estimate given as an instant: a point, never a window.
-    plannedFrom: delivered ? null : isoTime(raw["estimated_delivery_date"]),
+    expectedFrom: delivered ? null : isoTime(raw["estimated_delivery_date"]),
     history: sorted,
     raw,
   });
@@ -105,7 +105,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, BARCODE_PATTERN, async (barcode) => {
     const raw = await lookUp(context.http, barcode);
@@ -117,7 +117,7 @@ export const gobolt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "GoBolt",
   countries: ["CA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

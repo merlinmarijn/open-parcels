@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dhl } from "../../src/carriers/dhl/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/api.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/api.js";
 import { json, madeUp, on, World } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
 
@@ -37,10 +37,12 @@ describe("DHL Netherlands sign-in", () => {
   it("is the account flow for NL sources only", () => {
     const world = new World(dhl);
     const ids = (config: unknown) =>
-      world.plugin.signInFlows("account", config).map((flow) => flow.id);
+      world.provider.signInFlows("account", config).map((flow) => flow.id);
     expect(ids({})).toEqual(["de_account"]);
     expect(ids(NL)).toEqual(["nl_account"]);
-    expect(world.plugin.signInFlows("tracking", NL).map((flow) => flow.type)).toEqual(["api_key"]);
+    expect(world.provider.signInFlows("tracking", NL).map((flow) => flow.type)).toEqual([
+      "api_key",
+    ]);
   });
 
   it("asks for email and password, and stores them once DHL accepts them", async () => {
@@ -94,15 +96,18 @@ describe("DHL Netherlands account", () => {
     const [incoming, returned, sent] = result.snapshots;
     expect(result.snapshots).toHaveLength(3);
     expect(incoming).toMatchObject({
-      barcode: "JVGL00000000000000000001",
-      direction: "incoming",
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T15:00:00.000Z",
+      trackingNumber: "JVGL00000000000000000001",
+      direction: "receiving",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T15:00:00.000Z",
       sender: "Example Shop",
       url: "https://my.dhlecommerce.nl/portal/tracktrace/JVGL00000000000000000001/1234AB",
     });
-    expect(returned).toMatchObject({ direction: "outgoing", status: "delivered", delivered: true });
-    expect(sent).toMatchObject({ barcode: "JVGL00000000000000000003", direction: "outgoing" });
+    expect(returned).toMatchObject({ direction: "sending", status: "delivered", delivered: true });
+    expect(sent).toMatchObject({
+      trackingNumber: "JVGL00000000000000000003",
+      direction: "sending",
+    });
     const parcelsCall = world.calls.filter((call) => call.key === PARCELS)[1];
     expect(parcelsCall?.headers.get("x-xsrf-token")).toBe("xsrf-1");
   });

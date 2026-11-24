@@ -22,9 +22,10 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+  type Direction,
+} from "../../provider/api.js";
 import { CARRIER_ID } from "./shared.js";
 
 export const ACCOUNT_HOST = "account.inpost-group.com";
@@ -66,7 +67,7 @@ export function signatureHeaders(now: Date, nonce: string = randomUUID()): Recor
   };
 }
 
-async function postToken(http: PluginHttp, form: Record<string, string>) {
+async function postToken(http: ProviderHttp, form: Record<string, string>) {
   const response = await http.request(new URL(`https://${ACCOUNT_HOST}/oauth2/token`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -172,7 +173,7 @@ class Backend {
   #renewed = false;
 
   constructor(
-    private readonly context: PluginContext<unknown, unknown>,
+    private readonly context: ProviderContext<unknown, unknown>,
     private readonly secret: AccountSecret,
   ) {
     const parsed = storedSchema.safeParse(context.session.load());
@@ -269,7 +270,7 @@ class Backend {
 
 export function accountSnapshot(
   raw: Json,
-  direction: "incoming" | "outgoing",
+  direction: Direction,
   report: (key: string) => void,
 ): ParcelSnapshot | null {
   const expedition = asObject(raw["expedition"]);
@@ -291,7 +292,7 @@ export function accountSnapshot(
   }
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     direction,
     status,
     rawStatus: step,
@@ -305,7 +306,7 @@ export function accountSnapshot(
 
 /** Received and shipped lists, each de-duplicated by shipment UID. */
 export async function fetchAccountParcels(
-  context: PluginContext<unknown, unknown>,
+  context: ProviderContext<unknown, unknown>,
   secret: AccountSecret,
 ): Promise<FetchResult> {
   const backend = new Backend(context, secret);
@@ -313,8 +314,8 @@ export async function fetchAccountParcels(
   const snapshots: ParcelSnapshot[] = [];
   let complete = true;
   for (const [path, direction] of [
-    ["parcels-list-received", "incoming"],
-    ["parcels-list-shipped", "outgoing"],
+    ["parcels-list-received", "receiving"],
+    ["parcels-list-shipped", "sending"],
   ] as const) {
     const seen = new Set<string>();
     for (const item of await backend.list(path)) {

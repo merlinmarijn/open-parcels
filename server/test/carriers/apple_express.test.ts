@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { appleExpress } from "../../src/carriers/apple_express/index.js";
-import { InvalidSourceConfigError } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -35,10 +35,10 @@ describe("Apple Express tracking", () => {
     const [parcel] = (await w.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "apple_express",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T13:00:00.000Z",
-      plannedTo: "2026-11-18T19:00:00.000Z",
+      expectedFrom: "2026-11-18T13:00:00.000Z",
+      expectedTo: "2026-11-18T19:00:00.000Z",
       url: `https://track.appleexpress.com/en-US/orderNumber/${CODE}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -55,8 +55,8 @@ describe("Apple Express tracking", () => {
     expect(parcel).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T19:30:00.000Z",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
   });
 
@@ -87,6 +87,6 @@ describe("Apple Express tracking", () => {
 
     await expect(
       new World(appleExpress).track([CODE], { timeZone: "Mars/Base" }),
-    ).rejects.toBeInstanceOf(InvalidSourceConfigError);
+    ).rejects.toBeInstanceOf(InvalidConnectionConfigError);
   });
 });

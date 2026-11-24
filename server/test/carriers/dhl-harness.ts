@@ -1,7 +1,7 @@
 /** DHL-specific helpers on top of the carrier harness: made-up ID tokens and a DHL world. */
 import { dhl } from "../../src/carriers/dhl/index.js";
-import type { RegisteredPlugin } from "../../src/engine/registry.js";
-import type { FetchResult, PluginHttp } from "../../src/plugin/api.js";
+import type { RegisteredProvider } from "../../src/engine/registry.js";
+import type { FetchResult, ProviderHttp } from "../../src/provider/api.js";
 import { World as CarrierWorld, type Call, type Route } from "./harness.js";
 
 export { formOf, json, type Call, type Route } from "./harness.js";
@@ -24,7 +24,7 @@ export function idToken(withAccountClaim = true, tag = "a"): string {
   return `${encode({ alg: "none" })}.${encode(claims)}.c2ln`;
 }
 
-/** The DHL plug-in on the carrier harness, with an empty config and the given secret. */
+/** The DHL provider on the carrier harness, with an empty config and the given secret. */
 export class World {
   readonly #world = new CarrierWorld(dhl);
 
@@ -36,15 +36,15 @@ export class World {
     this.#world.routes = routes;
   }
 
-  get http(): PluginHttp {
+  get http(): ProviderHttp {
     return this.#world.base().http;
   }
 
-  get plugin(): RegisteredPlugin {
-    return this.#world.plugin;
+  get provider(): RegisteredProvider {
+    return this.#world.provider;
   }
 
-  /** The underlying carrier world, for account sources with their own config. */
+  /** The underlying carrier world, for account connections with their own config. */
   get carrierWorld(): CarrierWorld<Config, Context["secret"]> {
     return this.#world;
   }
@@ -81,14 +81,14 @@ export function header(call: Call | undefined, name: string): string | null {
 
 export function track(context: Context, codes: readonly string[]): Promise<FetchResult> {
   if (dhl.track === undefined) {
-    throw new Error("DHL has no tracking source");
+    throw new Error("DHL has no tracking connection");
   }
   return dhl.track(context, codes);
 }
 
 export function fetchAccount(context: Context): Promise<FetchResult> {
   if (dhl.fetchAccount === undefined) {
-    throw new Error("DHL has no account source");
+    throw new Error("DHL has no account connection");
   }
   return dhl.fetchAccount(context);
 }

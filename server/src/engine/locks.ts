@@ -1,5 +1,5 @@
 /**
- * One holder at a time per key. Used per source, so a run, a live read and each sign-in step of
+ * One holder at a time per key. Used per connection, so a run, a live read and each sign-in step of
  * one account never talk to the carrier at the same time; single-use refresh tokens would
  * otherwise race. Not re-entrant: a holder must never ask for its own key again.
  */

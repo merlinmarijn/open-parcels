@@ -4,7 +4,7 @@ import {
   rulesTrackingUrl,
   text as anyText,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "inpost";
 export const TRACKING_HOST = "inposteasy.com";

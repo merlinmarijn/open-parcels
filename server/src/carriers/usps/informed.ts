@@ -18,8 +18,8 @@ import {
   type FetchResult,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { INFORMED } from "./keys.js";
 
 export const INFORMED_API_HOST = "apis-id.usps.com";
@@ -31,7 +31,7 @@ export interface InformedSecret {
   readonly informed: { readonly refreshToken: string; readonly addresses: string[] };
 }
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "session" | "clock" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "session" | "clock" | "reportUnknown">;
 type Status = NonNullable<ParcelSnapshot["status"]>;
 
 /**
@@ -222,13 +222,13 @@ export function informedSnapshot(
       );
   return snapshot({
     carrier: "usps",
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: text(info["status"]) ?? category,
     delivered,
     deliveredAt: delivered ? isoTime(raw["eventTimestamp"], { naive: { zone } }) : null,
-    plannedFrom: planned.from,
-    plannedTo: planned.to,
+    expectedFrom: planned.from,
+    expectedTo: planned.to,
     sender: text(raw["shipperName"]),
     url: rulesTrackingUrl("usps", barcode),
     raw,
@@ -267,7 +267,7 @@ export async function fetchInformed(
       if (parcel === null) {
         // A package without a tracking number is left out, so the list is not everything.
         complete = false;
-      } else if (!snapshots.some((known) => known.barcode === parcel.barcode)) {
+      } else if (!snapshots.some((known) => known.trackingNumber === parcel.trackingNumber)) {
         snapshots.push(parcel);
       }
     }

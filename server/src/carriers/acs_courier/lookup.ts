@@ -1,5 +1,5 @@
 import {
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   isObject,
   RateLimitedError,
@@ -8,7 +8,7 @@ import {
   UnexpectedResponseError,
   type Json,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const API_HOST = "api.acscourier.net";
 export const SITE_HOST = "www.acscourier.net";
@@ -20,8 +20,8 @@ const NOT_FOUND_NOTE = "Shipment not found";
 /** After the lookup is refused twice in a row, wait this long before trying again. */
 export const REFUSED_PAUSE_SECONDS = 30 * 60;
 
-/** The public page embeds a token the lookup API wants; it is cached in the source's session. */
-async function freshToken(http: PluginHttp): Promise<string> {
+/** The public page embeds a token the lookup API wants; it is cached in the connection's session. */
+async function freshToken(http: ProviderHttp): Promise<string> {
   const response = await http.request(new URL(TRACKING_PAGE), {
     headers: { accept: "text/html" },
   });
@@ -40,7 +40,7 @@ function storedToken(session: SessionStore): string | null {
   return isObject(stored) && typeof stored["token"] === "string" ? stored["token"] : null;
 }
 
-async function ask(http: PluginHttp, barcode: string, token: string) {
+async function ask(http: ProviderHttp, barcode: string, token: string) {
   // The API answers an unknown Origin with a 404 that looks like a miss, so the site is named.
   return http.request(
     new URL(`https://${API_HOST}/api/parcels/search/${encodeURIComponent(barcode)}`),
@@ -67,7 +67,7 @@ export interface TokenRun {
  * not know the code.
  */
 export async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   session: SessionStore,
   barcode: string,
   run: TokenRun = { fetched: false },

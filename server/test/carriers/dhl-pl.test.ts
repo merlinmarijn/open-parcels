@@ -2,12 +2,12 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { MAX_NUMBER_CAP, solveAltcha } from "../../src/carriers/dhl/pl/altcha.js";
 import { dhl } from "../../src/carriers/dhl/index.js";
-import { serializeJar, CookieJar } from "../../src/plugin/cookies.js";
+import { serializeJar, CookieJar } from "../../src/provider/cookies.js";
 import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
+} from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
 
@@ -94,7 +94,7 @@ describe("DHL Poland", () => {
     expect(Object.keys(bodies[1] ?? {})).toEqual(["number1", "captcha-payload"]);
     expect(result.snapshots[0]).toMatchObject({
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T09:00:00.000Z",
+      expectedFrom: "2026-11-18T09:00:00.000Z",
     });
     expect(JSON.stringify(result.snapshots[0]?.raw)).not.toContain("shipmentPin");
   });

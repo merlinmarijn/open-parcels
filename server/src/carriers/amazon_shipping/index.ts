@@ -9,15 +9,15 @@ import {
   trackEach,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { HISTORY_EXPIRED, lookUp, publicUrl, regionFor } from "./lookup.js";
 import { AMAZON_ID, classify, key, metaValue, orderedEvents, resolveStatus } from "./status.js";
 import { parseMoment } from "./time.js";
 
 /**
- * Amazon Shipping's by-number tracker. A separate plug-in from the Amazon shop: it needs no
+ * Amazon Shipping's by-number tracker. A separate provider from the Amazon shop: it needs no
  * account, no storefront and no browser User-Agent. Its parcels are filed under the `amazon`
  * carrier, so a shop order and its tracked parcel become one.
  */
@@ -71,14 +71,14 @@ export function amazonShippingSnapshot(
   );
   return snapshot({
     carrier: AMAZON_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus,
     delivered,
     deliveredAt: delivered
       ? (deliveredEvent?.moment.iso ?? parse(metaValue(metadata, "deliveryDate"))?.iso ?? null)
       : null,
-    plannedFrom: delivered || expired ? null : (expected?.iso ?? null),
+    expectedFrom: delivered || expired ? null : (expected?.iso ?? null),
     pickup: status === "at_pickup_point",
     url: publicUrl(barcode),
     sender: sender(raw, summary),
@@ -97,7 +97,7 @@ export const amazonShipping = defineCarrier<Config, null>({
   id: PLUGIN_ID,
   name: "Amazon Shipping",
   countries: ["GB", "FR", "IT", "ES", "US"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
@@ -111,7 +111,7 @@ export const amazonShipping = defineCarrier<Config, null>({
       "*": { intervalMs: 10_000, burst: 1 },
     },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const raw = await lookUp(context.http, barcode, (kind, value) => {
         context.reportUnknown(kind, value);

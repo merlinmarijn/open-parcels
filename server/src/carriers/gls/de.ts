@@ -14,10 +14,10 @@ import {
   type HttpResponse,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderHttp,
+  type ProviderLogger,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, compactPostcode, latestHistory, mapGls, publicUrl, text } from "./shared.js";
 
 export const DE_IDENTITY_HOST = "api-backend.glsnxt.com";
@@ -28,7 +28,7 @@ const TRACKINGS = `https://${DE_PARCEL_HOST}/api/v1/trackings`;
 /** Renew this long before the token runs out: tokens live about 60 hours. */
 const REFRESH_MARGIN_MS = 6 * 3_600_000;
 const FALLBACK_LIFETIME_MS = 60 * 3_600_000;
-/** Most parcel numbers remembered per source; the oldest are dropped first. */
+/** Most parcel numbers remembered per connection; the oldest are dropped first. */
 const MAX_REMEMBERED = 200;
 
 const stateSchema = z.object({
@@ -64,8 +64,8 @@ export class GlsGermany {
   #changed = false;
 
   constructor(
-    private readonly http: PluginHttp,
-    private readonly logger: PluginLogger,
+    private readonly http: ProviderHttp,
+    private readonly logger: ProviderLogger,
     private readonly now: () => number,
     stored: unknown,
   ) {
@@ -260,7 +260,7 @@ export function deSnapshot(
   const number = text(raw["parcelNumber"]) ?? reference;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: reference,
+    trackingNumber: reference,
     externalRef: echoRef(text(raw["trackingReference"]), reference),
     status,
     rawStatus,

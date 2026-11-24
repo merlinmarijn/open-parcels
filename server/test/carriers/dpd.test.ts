@@ -9,8 +9,8 @@ import {
   SignInRejectedError,
   TransientError,
   type FetchResult,
-  type PluginContext,
-} from "../../src/plugin/api.js";
+  type ProviderContext,
+} from "../../src/provider/api.js";
 import {
   BARCODE_IN,
   BARCODE_IN2,
@@ -70,7 +70,7 @@ const credentials = { username: USERNAME, password: ["made", "up", "words"].join
 function context(fake: FakeDpd, options: { publicTracking?: boolean; saved?: unknown } = {}) {
   const fakeCtx = fakeContext(dpd.http, fake.fetch, { session: options.saved ?? null });
   const unknowns: string[] = [];
-  const ctx: PluginContext<{ publicTracking: boolean }, typeof credentials | null> = {
+  const ctx: ProviderContext<{ publicTracking: boolean }, typeof credentials | null> = {
     ...fakeCtx.base,
     reportUnknown: (kind, key) => {
       unknowns.push(`${kind}=${key}`);
@@ -137,13 +137,13 @@ describe("DPD Germany account", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "dpd",
-      barcode: BARCODE_IN,
-      direction: "incoming",
+      trackingNumber: BARCODE_IN,
+      direction: "receiving",
       status: "out_for_delivery",
       rawStatus: "Paket in Zustellung",
       weightKg: 2.5,
-      plannedFrom: "2026-11-17T23:00:00.000Z",
-      plannedTo: "2026-11-18T22:59:59.000Z",
+      expectedFrom: "2026-11-17T23:00:00.000Z",
+      expectedTo: "2026-11-18T22:59:59.000Z",
       sender: null,
       receiver: null,
     });
@@ -223,8 +223,8 @@ describe("DPD Germany account", () => {
     const result = await fetchAccount(ctx);
 
     expect(result.snapshots[0]).toMatchObject({
-      barcode: BARCODE_OUT,
-      direction: "outgoing",
+      trackingNumber: BARCODE_OUT,
+      direction: "sending",
       status: "returning",
       delivered: false,
     });
@@ -302,7 +302,7 @@ describe("DPD Germany public tracking", () => {
     expect(result.complete).toBe(true);
     expect(result.snapshots).toHaveLength(1);
     expect(result.snapshots[0]).toMatchObject({
-      barcode: BARCODE_IN,
+      trackingNumber: BARCODE_IN,
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T09:30:00.000Z",

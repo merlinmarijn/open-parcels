@@ -1,9 +1,9 @@
 import { z } from "zod";
-import { type CookieJar, restoreJar, serializeJar } from "../../plugin/api.js";
+import { type CookieJar, restoreJar, serializeJar } from "../../provider/api.js";
 import type { TrackPage } from "./pages.js";
 
 /**
- * What the plug-in keeps between runs, in the source's encrypted session store: the storefront
+ * What the provider keeps between runs, in the connection's encrypted session store: the storefront
  * cookies, and per shipment what its tracking page said, so delivered shipments are never loaded
  * again and a capped run can rotate through the rest.
  */
@@ -46,7 +46,7 @@ export interface AmazonSession {
   shipments: Record<string, RememberedShipment>;
 }
 
-/** A session the plug-in did not write (or an older shape) starts over empty. */
+/** A session the provider did not write (or an older shape) starts over empty. */
 export function loadSession(saved: unknown): AmazonSession {
   const parsed = sessionSchema.safeParse(saved);
   if (!parsed.success) {

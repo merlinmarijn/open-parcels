@@ -1,15 +1,15 @@
 import { describe, expect, it } from "vitest";
 import { nzPost } from "../../src/carriers/nz_post/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
-import type { CarrierPlugin } from "../../src/plugin/api.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import type { CarrierProvider } from "../../src/provider/api.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, inOrder, json, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty JSON object. */
 const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () => json({}, 500));
 
-function harness<C, S>(plugin: CarrierPlugin<C, S>, fetchImpl: FetchLike) {
+function harness<C, S>(plugin: CarrierProvider<C, S>, fetchImpl: FetchLike) {
   const { base, unknownKeys } = fakeContext(plugin.http, fetchImpl);
   return { registered: register(plugin), base, unknown: unknownKeys };
 }
@@ -46,13 +46,13 @@ describe("NZ Post tracking", () => {
     expect(out.complete).toBe(true);
     expect(out.snapshots[0]).toMatchObject({
       carrier: "nz_post",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "With courier for delivery",
       delivered: false,
       // The public tracking never gives a delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(out.snapshots[0]?.history.map((e) => e.status)).toEqual([
       "out_for_delivery",

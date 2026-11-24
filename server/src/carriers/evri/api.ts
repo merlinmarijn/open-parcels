@@ -3,9 +3,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type HttpResponse,
-  type PluginLogger,
+  type ProviderLogger,
   type SessionStore,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   carrierKey,
   isObject,
@@ -13,7 +13,7 @@ import {
   readJson,
   text,
   type Json,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const HOST = "tracking.platform-apis.evri.com";
 /**
@@ -22,12 +22,12 @@ export const HOST = "tracking.platform-apis.evri.com";
  * to ask the user anything.
  */
 const websiteKey = (): string => carrierKey("evri", "website_key");
-/** Most parcel ids remembered per source; the oldest are dropped first. */
+/** Most parcel ids remembered per connection; the oldest are dropped first. */
 const MAX_REMEMBERED = 200;
 
 const rememberedSchema = z.record(z.string(), z.string());
 
-async function get(http: PluginHttp, logger: PluginLogger, url: URL): Promise<HttpResponse> {
+async function get(http: ProviderHttp, logger: ProviderLogger, url: URL): Promise<HttpResponse> {
   const response = await http.request(url, {
     headers: { accept: "application/json", apikey: websiteKey() },
   });
@@ -44,10 +44,10 @@ async function get(http: PluginHttp, logger: PluginLogger, url: URL): Promise<Ht
   return response;
 }
 
-/** Evri's internal id for a barcode; null when Evri says the reference is invalid. */
+/** Evri's internal id for a tracking number; null when Evri says the reference is invalid. */
 async function resolve(
-  http: PluginHttp,
-  logger: PluginLogger,
+  http: ProviderHttp,
+  logger: ProviderLogger,
   code: string,
 ): Promise<string | null> {
   const response = await get(
@@ -78,10 +78,10 @@ async function resolve(
   );
 }
 
-/** The parcel whose identifiers include the barcode; a single result is taken as it. */
+/** The parcel whose identifiers include the tracking number; a single result is taken as it. */
 async function detail(
-  http: PluginHttp,
-  logger: PluginLogger,
+  http: ProviderHttp,
+  logger: ProviderLogger,
   ids: { code: string; urn: string; postcode: string },
 ): Promise<Json | null> {
   const url = new URL(`https://${HOST}/v1/parcels`);
@@ -99,7 +99,7 @@ async function detail(
   if (parcels.length === 0) {
     return null;
   }
-  // Only the parcel that names this barcode or the id it was looked up by, never just the first.
+  // Only the parcel that names this tracking number or the id it was looked up by, never just the first.
   const matching = parcels.find((parcel) =>
     objects(parcel["parcelIdentifiers"]).some((entry) => {
       const value = (text(entry["value"]) ?? text(entry["barcode"]))?.toUpperCase();
@@ -113,7 +113,7 @@ async function detail(
 }
 
 /**
- * Looks barcodes up in two steps: barcode to Evri's id, then id plus postcode to the parcel.
+ * Looks tracking numbers up in two steps: tracking number to Evri's id, then id plus postcode to the parcel.
  * Ids are remembered in the session store; a remembered id that finds nothing is resolved again,
  * once, in case Evri re-issued it.
  */
@@ -123,8 +123,8 @@ export class EvriTracking {
   #changed = false;
 
   constructor(
-    private readonly http: PluginHttp,
-    private readonly logger: PluginLogger,
+    private readonly http: ProviderHttp,
+    private readonly logger: ProviderLogger,
     private readonly session: SessionStore,
   ) {
     const stored = rememberedSchema.safeParse(session.load());

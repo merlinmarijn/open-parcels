@@ -45,7 +45,7 @@ describe("FAN Courier tracking", () => {
       status: "out_for_delivery",
       rawStatus: "In livrare",
       weightKg: 2,
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(found?.history[0]).toEqual({
       at: "2026-11-18T06:00:00.000Z",

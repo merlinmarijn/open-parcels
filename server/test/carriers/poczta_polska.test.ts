@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { pocztaPolska } from "../../src/carriers/poczta_polska/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { html, json, onPrefix, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -42,7 +42,7 @@ describe("Poczta Polska tracking", () => {
     const [parcel] = (await world.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "poczta_polska",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       rawStatus: "Najnowszy",
       pickup: true,

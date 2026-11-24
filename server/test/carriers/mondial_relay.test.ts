@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { mondialRelay } from "../../src/carriers/mondial_relay/index.js";
-import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, raw } from "./harness.js";
 
 // Made-up codes and values only.
@@ -98,14 +98,14 @@ describe("Mondial Relay tracking", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "mondial_relay",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       rawStatus: "4",
       pickup: true,
       pickupPoint: "Testwinkel",
       sender: "XXSHOP01",
-      plannedFrom: "2026-11-17T23:00:00.000Z",
-      plannedTo: "2026-11-18T22:59:59.000Z",
+      expectedFrom: "2026-11-17T23:00:00.000Z",
+      expectedTo: "2026-11-18T22:59:59.000Z",
     });
     expect(parcel?.url).toContain("codeMarque=XX");
     expect(parcel?.url).not.toContain(POSTCODE);
@@ -132,7 +132,7 @@ describe("Mondial Relay tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T11:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 
@@ -151,7 +151,7 @@ describe("Mondial Relay tracking", () => {
     const { base } = context(fetchImpl);
     for (const settings of [{}, { postcode: "!!!" }]) {
       await expect(plugin.track(base, settings, null, [CODE])).rejects.toBeInstanceOf(
-        InvalidSourceConfigError,
+        InvalidConnectionConfigError,
       );
     }
     expect(calls).toHaveLength(0);

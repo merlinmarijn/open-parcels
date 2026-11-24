@@ -1,7 +1,7 @@
-import { isObject, type Json } from "../../plugin/api.js";
+import { isObject, type Json } from "../../provider/api.js";
 
 /**
- * DHL-specific narrowing on top of the plug-in kit. DHL's payloads tell "no block" apart from an
+ * DHL-specific narrowing on top of the provider kit. DHL's payloads tell "no block" apart from an
  * empty one, so these return null where the kit's `asObject` and `text` would give `{}` or trim.
  */
 export type { Json };

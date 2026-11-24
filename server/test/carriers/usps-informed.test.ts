@@ -5,7 +5,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/api.js";
+} from "../../src/provider/api.js";
 import { json, madeUp, on, raw, World } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
 
@@ -206,14 +206,14 @@ describe("USPS Informed Delivery account", () => {
       on(PACKAGES, json({ code: "TOKEN_EXPIRED" }, 401), inbox),
     ]);
     const result = await world.fetchAccount({ timeZone: "America/Chicago" }, SECRET);
-    expect(result.snapshots.map((s) => [s.barcode, s.status])).toEqual([
+    expect(result.snapshots.map((s) => [s.trackingNumber, s.status])).toEqual([
       ["9400100000000000000001", "in_transit"],
       ["9400100000000000000002", "delivered"],
       ["9400100000000000000003", null],
     ]);
     expect(result.snapshots[0]).toMatchObject({
-      plannedFrom: "2026-11-19T19:00:00.000Z",
-      plannedTo: "2026-11-19T21:00:00.000Z",
+      expectedFrom: "2026-11-19T19:00:00.000Z",
+      expectedTo: "2026-11-19T21:00:00.000Z",
       sender: "Example Shop",
     });
     expect(result.snapshots[1]?.deliveredAt).toBe("2026-11-18T16:15:00.000Z");

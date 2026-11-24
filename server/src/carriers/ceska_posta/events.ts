@@ -9,7 +9,7 @@ import {
   type Json,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const ZONE = "Europe/Prague";
 const CARRIER_ID = "ceska_posta";

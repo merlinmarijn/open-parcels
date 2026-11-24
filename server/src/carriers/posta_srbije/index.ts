@@ -16,10 +16,10 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "posta_srbije";
 export const HOST = "api.posta.rs";
@@ -71,7 +71,7 @@ function notice(value: unknown): string {
  * notice is an absence. A refusal, an unknown notice, an edge page or an answer about another
  * number stops the run.
  */
-export async function lookUp(http: PluginHttp, code: string): Promise<Json[] | null> {
+export async function lookUp(http: ProviderHttp, code: string): Promise<Json[] | null> {
   const response = await http.request(new URL(`https://${HOST}/paketi`), {
     method: "POST",
     headers: { accept: "application/json", "content-type": "application/json; charset=utf-8" },
@@ -188,7 +188,7 @@ export function toSnapshot(
   const grams = typeof accepted?.["Masa"] === "number" ? accepted["Masa"] : null;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: history[0]?.rawStatus ?? null,
     delivered,
@@ -210,7 +210,7 @@ export function toSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code) => {
     const scans = await lookUp(context.http, code);
@@ -223,7 +223,7 @@ export const postaSrbije = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Pošta Srbije",
   countries: ["RS"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.null(),
   signIn: { type: "none" },

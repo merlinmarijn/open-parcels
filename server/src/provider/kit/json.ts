@@ -1,6 +1,6 @@
 /**
  * Narrowing helpers for untrusted carrier payloads, and reading a response body as JSON. Every
- * plug-in uses these instead of carrying its own copy; they reach plug-ins through the plug-in API.
+ * provider uses these instead of carrying its own copy; they reach providers through the provider API.
  */
 import { TransientError, UnexpectedResponseError } from "../errors.js";
 import type { HttpResponse } from "../http.js";

@@ -4,7 +4,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
+} from "../../src/provider/errors.js";
 import { json, madeUp, on, World } from "./harness.js";
 
 // Made-up mailpiece ids and tokens only.
@@ -50,8 +50,8 @@ describe("Swiss Post account", () => {
     expect(
       result.snapshots.map((parcel) => [parcel.status, parcel.pickupPoint, parcel.direction]),
     ).toEqual([
-      ["at_pickup_point", "Test Office", "incoming"],
-      ["delivered", null, "outgoing"],
+      ["at_pickup_point", "Test Office", "receiving"],
+      ["delivered", null, "sending"],
     ]);
   });
 

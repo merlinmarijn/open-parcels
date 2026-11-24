@@ -8,9 +8,9 @@ import {
   TransientError,
   UnexpectedResponseError,
   type Json,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { awbSnapshot, CARRIER_ID, COUNTRIES, type Country } from "./parse.js";
 
 /** AWB numbers are digits, sometimes with a letter prefix; anything else is never sent. */
@@ -24,7 +24,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 
 /** Returns the AWB history, or null when Sameday does not know the code (404 or no history). */
-async function lookUp(http: PluginHttp, barcode: string, country: Country): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string, country: Country): Promise<Json | null> {
   const url = new URL(
     `https://api.sameday.${country}/api/public/awb/${encodeURIComponent(barcode)}/awb-history`,
   );
@@ -43,7 +43,7 @@ async function lookUp(http: PluginHttp, barcode: string, country: Country): Prom
   return body["awbHistory"].length === 0 ? null : body;
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const country = context.config.country ?? "ro";
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
@@ -58,7 +58,7 @@ export const sameday = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Sameday",
   countries: ["RO", "HU", "BG"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

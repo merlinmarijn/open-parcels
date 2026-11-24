@@ -88,7 +88,7 @@ export interface TokenVault {
 const VAULT_KEY = "ha_discovery_token";
 const vaultAad = "settings:ha_discovery_token";
 
-/** Keeps the token encrypted in the settings table, bound to its row like source secrets. */
+/** Keeps the token encrypted in the settings table, bound to its row like connection secrets. */
 export function settingsTokenVault(
   db: Kysely<Database>,
   secrets: SecretBox,

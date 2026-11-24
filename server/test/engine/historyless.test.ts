@@ -3,17 +3,17 @@ import { mergeParcel, type ParcelState } from "../../src/engine/merge.js";
 import { FakeWorld, fakePost, snapshot } from "../fakes/carriers.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
-/* Sources whose answers carry no history. Every code is made up. */
+/* Connections whose answers carry no history. Every code is made up. */
 
 const SCANNED: ParcelState = {
-  direction: "incoming",
+  direction: "receiving",
   status: "out_for_delivery",
   rawStatus: "Out for delivery",
   statusAt: "2026-11-18T09:00:00.000Z",
   delivered: false,
   deliveredAt: null,
-  plannedFrom: null,
-  plannedTo: null,
+  expectedFrom: null,
+  expectedTo: null,
   pickup: false,
   pickupPoint: null,
   url: null,
@@ -23,9 +23,9 @@ const SCANNED: ParcelState = {
 };
 
 const bare = (status: "in_transit" | "delivered") =>
-  snapshot({ carrier: "dhl", barcode: "JVGL0000000000000009", status, rawStatus: status });
+  snapshot({ carrier: "dhl", trackingNumber: "JVGL0000000000000009", status, rawStatus: status });
 
-describe("a source without history", () => {
+describe("a connection without history", () => {
   it("does not take back a status a timed scan set", () => {
     expect(mergeParcel(SCANNED, bare("in_transit"), "carrier").status).toBe("out_for_delivery");
   });
@@ -49,7 +49,7 @@ describe("a delivery without a time", () => {
 
   beforeEach(async () => {
     post = new FakeWorld();
-    context = await createTestContext({ plugins: [fakePost(post)] });
+    context = await createTestContext({ providers: [fakePost(post)] });
   });
   afterEach(async () => {
     await context.close();
@@ -59,22 +59,22 @@ describe("a delivery without a time", () => {
     post.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0000000009",
+        trackingNumber: "FP0000000009",
         status: "delivered",
         rawStatus: "x",
       }),
     ];
-    const source = await context.services.sources.create({
-      plugin: "fakepost",
+    const connection = await context.services.connections.create({
+      provider: "fakepost",
       kind: "account",
       label: "account",
       config: {},
       secret: { username: "user@example.invalid", password: ["p", "q"].join("-") },
     });
-    await context.services.runner.run(source.id);
+    await context.services.runner.run(connection.id);
     const seen = context.clock.now().toISOString();
     context.clock.advance(60_000);
-    await context.services.runner.run(source.id);
+    await context.services.runner.run(connection.id);
     const row = await context.services.db
       .selectFrom("parcels")
       .select("delivered_at")

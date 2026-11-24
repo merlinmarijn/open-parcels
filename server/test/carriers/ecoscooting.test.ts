@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ecoscooting } from "../../src/carriers/ecoscooting/index.js";
 import { register } from "../../src/engine/registry.js";
-import { UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up references and values only.
@@ -50,8 +50,8 @@ describe("Ecoscooting tracking", () => {
       carrier: "ecoscooting",
       status: "out_for_delivery",
       rawStatus: "Out for delivery",
-      plannedFrom: "2025-11-18T08:00:00.000Z",
-      plannedTo: "2025-11-18T22:59:59.000Z",
+      expectedFrom: "2025-11-18T08:00:00.000Z",
+      expectedTo: "2025-11-18T22:59:59.000Z",
       pickupPoint: "Example Locker, Test Street 1",
       weightKg: 1.25,
     });

@@ -1,4 +1,9 @@
-import type { LiveReading, ParcelSnapshot, SnapshotEvent, SnapshotItem } from "../../plugin/api.js";
+import type {
+  LiveReading,
+  ParcelSnapshot,
+  SnapshotEvent,
+  SnapshotItem,
+} from "../../provider/api.js";
 
 /**
  * Made-up parcels for trying the app without a real account. Every ten minutes the demo starts
@@ -257,15 +262,15 @@ export function courierView(
         ? tomorrowAtTen(start + parcel.pickup.at * 1000)
         : start + parcel.pickup.at * 1000;
   return {
-    barcode: parcel.barcode,
-    direction: "incoming",
+    trackingNumber: parcel.barcode,
+    direction: "receiving",
     status,
     rawStatus: latest?.text ?? null,
     delivered,
     deliveredAt: delivered && mapped !== undefined ? iso(start + mapped.at * 1000) : null,
     // Today's delivery window, or the days it can be collected once it waits somewhere.
-    plannedFrom: pickedUpLater && pickupOpens !== null ? iso(pickupOpens) : iso(start + 300_000),
-    plannedTo:
+    expectedFrom: pickedUpLater && pickupOpens !== null ? iso(pickupOpens) : iso(start + 300_000),
+    expectedTo:
       pickedUpLater && pickupOpens !== null ? iso(pickupOpens + 7 * DAY) : iso(start + 540_000),
     pickup: pickedUpLater,
     pickupPoint: pickedUpLater ? parcel.pickup.name : null,

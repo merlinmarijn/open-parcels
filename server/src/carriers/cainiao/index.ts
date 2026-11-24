@@ -15,11 +15,11 @@ import {
   unknownReporter,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "cainiao";
 const HOST = "global.cainiao.com";
@@ -37,7 +37,7 @@ function mapAction(code: string | null, report?: (c: string) => void) {
 }
 
 /** One batch; returns the entries keyed by tracking number. Unknown numbers are left out. */
-async function readBatch(http: PluginHttp, codes: readonly string[]): Promise<Map<string, Json>> {
+async function readBatch(http: ProviderHttp, codes: readonly string[]): Promise<Map<string, Json>> {
   const url = new URL(`https://${HOST}/global/detail.json`);
   url.searchParams.set("mailNos", codes.join(","));
   url.searchParams.set("lang", "en-US");
@@ -80,13 +80,13 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
   const status = latestCode !== null ? mapAction(latestCode, report) : (events[0]?.status ?? null);
   const delivered = status === "delivered";
   const eta = asObject(raw["globalEtaInfo"]);
-  const plannedFrom = isoTime(eta["deliveryMinTime"]);
+  const expectedFrom = isoTime(eta["deliveryMinTime"]);
   const maxTime = isoTime(eta["deliveryMaxTime"]);
-  const plannedTo = maxTime === plannedFrom ? null : maxTime;
+  const expectedTo = maxTime === expectedFrom ? null : maxTime;
   const barcode = text(raw["mailNo"]) ?? code;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus:
       text(raw["statusDesc"]) ??
@@ -95,8 +95,8 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
       text(raw["status"]),
     delivered,
     deliveredAt: delivered ? isoTime(latest["time"]) : null,
-    plannedFrom: delivered ? null : plannedFrom,
-    plannedTo: delivered ? null : plannedTo,
+    expectedFrom: delivered ? null : expectedFrom,
+    expectedTo: delivered ? null : expectedTo,
     pickup: status === "at_pickup_point",
     url: rulesTrackingUrl(CARRIER_ID, barcode),
     history: events,
@@ -109,7 +109,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   const codes = barcodes.filter((code) => PLAUSIBLE.test(code));
   const snapshots: ParcelSnapshot[] = [];
@@ -134,7 +134,7 @@ export const cainiao = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Cainiao",
   countries: ["*"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

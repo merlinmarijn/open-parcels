@@ -4,10 +4,10 @@ import {
   TransientError,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import {
   asObject,
   CARRIER_ID,
@@ -34,7 +34,7 @@ export function isPlausibleBarcode(barcode: string): boolean {
  * Looks one shipment up. `Pak` selects the parcel system, the only public one. An unknown code is
  * a bare 404; any other non-200 means the request itself is wrong.
  */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/api/v1/shipments/${encodeURIComponent(barcode)}/Pak`,
   );
@@ -172,7 +172,7 @@ export function trackingSnapshot(
   const newest = events.at(-1);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["shipmentNumber"]), barcode),
     status,
     rawStatus:
@@ -180,8 +180,8 @@ export function trackingSnapshot(
       localized(newest?.["text"], "english"),
     delivered,
     deliveredAt: delivered && newest !== undefined ? carrierTime(newest["createdAt"]) : null,
-    plannedFrom: window.from,
-    plannedTo: window.to,
+    expectedFrom: window.from,
+    expectedTo: window.to,
     url: publicUrl(barcode),
     weightKg: totalWeightKg(list),
     history: history(events, once),

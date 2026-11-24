@@ -4,7 +4,7 @@ import {
   rulesTrackingUrl,
   text as anyText,
   type MappedStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "hermes";
 export const TRACKING_HOST = "api.my-deliveries.de";

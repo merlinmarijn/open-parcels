@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { canpar } from "../../src/carriers/canpar/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -43,8 +43,8 @@ describe("Canpar tracking", () => {
       carrier: "canpar",
       status: "out_for_delivery",
       rawStatus: "Step WC",
-      plannedFrom: "2026-11-19T05:00:00.000Z",
-      plannedTo: "2026-11-20T04:59:59.000Z",
+      expectedFrom: "2026-11-19T05:00:00.000Z",
+      expectedTo: "2026-11-20T04:59:59.000Z",
     });
     expect(snap?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T13:00:00.000Z", "out_for_delivery"],

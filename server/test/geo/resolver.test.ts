@@ -80,7 +80,7 @@ let resolver: PlaceResolver;
 
 beforeEach(async () => {
   world = new FakeWorld();
-  context = await createTestContext({ plugins: [fakePost(world), register(demoCarrier)] });
+  context = await createTestContext({ providers: [fakePost(world), register(demoCarrier)] });
   search = new FakeSearch();
   const { db, bus, clock, logger } = context.services;
   resolver = new PlaceResolver({
@@ -89,7 +89,12 @@ beforeEach(async () => {
     bus,
     clock,
     logger,
-    presentation: { position: () => undefined, imagePath: (r) => r, labelMode: () => "items" },
+    presentation: {
+      position: () => undefined,
+      imagePath: (r) => r,
+      labelMode: () => "items",
+      timeZone: "UTC",
+    },
   });
 });
 afterEach(async () => {
@@ -102,7 +107,7 @@ function list(history: Scan[]): void {
   world.listing = [
     snapshot({
       carrier: "fakepost",
-      barcode: "FP0001",
+      trackingNumber: "FP0001",
       status: "in_transit",
       rawStatus: "On its way",
       history,
@@ -113,8 +118,11 @@ function list(history: Scan[]): void {
 /** Polls the fake account again, with the carrier now reporting this history. */
 async function refetch(history: Scan[]): Promise<void> {
   list(history);
-  const source = await context.services.db.selectFrom("sources").select("id").executeTakeFirst();
-  await context.services.runner.run(source?.id ?? "");
+  const connection = await context.services.db
+    .selectFrom("connections")
+    .select("id")
+    .executeTakeFirst();
+  await context.services.runner.run(connection?.id ?? "");
 }
 
 /** Latitude by place text, null for unplaced scans. */
@@ -127,15 +135,15 @@ async function latitudes(id: string): Promise<Record<string, number | null>> {
 
 async function track(history: Scan[]): Promise<string> {
   list(history);
-  const source = await context.services.sources.create({
-    plugin: "fakepost",
+  const connection = await context.services.connections.create({
+    provider: "fakepost",
     kind: "account",
     label: "Fake account",
     config: {},
     secret: { username: "user@example.invalid", password: ["made", "up"].join("-") },
   });
-  await context.services.runner.run(source.id);
-  const id = await context.services.parcels.repository.findIdByBarcode("fakepost", "FP0001");
+  await context.services.runner.run(connection.id);
+  const id = await context.services.parcels.repository.findIdByTrackingNumber("fakepost", "FP0001");
   if (id === undefined) throw new Error("not stored");
   return id;
 }
@@ -173,7 +181,12 @@ describe("PlaceResolver", () => {
       bus,
       clock,
       logger,
-      presentation: { position: () => undefined, imagePath: (r) => r, labelMode: () => "items" },
+      presentation: {
+        position: () => undefined,
+        imagePath: (r) => r,
+        labelMode: () => "items",
+        timeZone: "UTC",
+      },
       enabled: () => context.services.config.geocoding,
     });
     await settings.patch({ OPENPARCELS_GEOCODING: false });
@@ -227,14 +240,17 @@ describe("PlaceResolver", () => {
     world.listing = [
       snapshot({
         carrier: "fakepost",
-        barcode: "FP0001",
+        trackingNumber: "FP0001",
         status: "in_transit",
         rawStatus: "On its way",
         history: [{ ...event, latitude: 52.1, longitude: 13.2 }],
       }),
     ];
-    const source = await context.services.db.selectFrom("sources").select("id").executeTakeFirst();
-    await context.services.runner.run(source?.id ?? "");
+    const connection = await context.services.db
+      .selectFrom("connections")
+      .select("id")
+      .executeTakeFirst();
+    await context.services.runner.run(connection?.id ?? "");
     const parcel = await context.services.parcels.repository.get(id);
     expect(parcel?.history[0]).toMatchObject({ latitude: 52.1, approximate: false });
     expect(parcel?.location).toMatchObject({ precision: "exact", latitude: 52.1 });
@@ -244,8 +260,8 @@ describe("PlaceResolver", () => {
 
   it("places the demo courier's Hamburg scan, and events still carry no courier position", async () => {
     search.answers.set("Hamburg", [CITY_STATE]);
-    const courier = await context.services.sources.create({
-      plugin: "demo",
+    const courier = await context.services.connections.create({
+      provider: "demo",
       kind: "account",
       label: "demo",
       config: {},
@@ -256,7 +272,10 @@ describe("PlaceResolver", () => {
     await context.services.runner.run(courier.id);
 
     expect(await resolver.runOnce()).toMatchObject({ events: 1, parcels: 1 });
-    const id = await context.services.parcels.repository.findIdByBarcode("demo", "DEMO0000000002");
+    const id = await context.services.parcels.repository.findIdByTrackingNumber(
+      "demo",
+      "DEMO0000000002",
+    );
     const parcel = await context.services.parcels.repository.get(id ?? "");
     expect(parcel?.history.find((e) => e.location === "Hamburg")).toMatchObject({
       latitude: 53.55,

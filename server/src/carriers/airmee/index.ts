@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   defineCarrier,
   epochIso,
@@ -18,10 +18,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 import { fetchAirmeeAccount, smsSignIn } from "./account.js";
 
@@ -45,7 +45,7 @@ function stageOf(value: string): ParcelStatus | undefined {
   return ruleStatus(CARRIER_ID, value) ?? undefined;
 }
 
-async function lookUp(http: PluginHttp, hash: string, token: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, hash: string, token: string): Promise<Json | null> {
   const url = new URL(`https://${HOST}/track/track_by_url`);
   url.searchParams.set("tracking_url", token);
   url.searchParams.set("phone_number_hash", hash);
@@ -115,7 +115,7 @@ export function airmeeSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: token,
+    trackingNumber: token,
     status,
     rawStatus,
     delivered,
@@ -140,8 +140,8 @@ export function airmeeSnapshot(
 
 const configSchema = z.looseObject({});
 /**
- * A tracking source keeps the per-recipient value the tracking page sends alongside the link
- * token; an account source the token pair from the phone sign-in.
+ * A tracking connection keeps the per-recipient value the tracking page sends alongside the link
+ * token; an account connection the token pair from the phone sign-in.
  */
 const secretSchema = z.object({
   phoneNumberHash: z.string().min(1).optional(),
@@ -155,7 +155,7 @@ export const airmee = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Airmee",
   countries: ["SE"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [smsSignIn<Config>(), { type: "api_key", kinds: ["tracking"] }],
@@ -175,7 +175,7 @@ export const airmee = defineCarrier<Config, Secret>({
       url: null,
     }));
   },
-  track: (context: PluginContext<Config, Secret>, barcodes) =>
+  track: (context: ProviderContext<Config, Secret>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (token) => {
       const hash = context.secret.phoneNumberHash;
       if (hash === undefined) {

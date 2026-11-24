@@ -21,10 +21,10 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "purolator";
 export const HOST = "public-tracking.purolator.com";
@@ -65,7 +65,7 @@ const localTime = (value: unknown, zone: string): string | null =>
  * One POST per code. A bot challenge or a refusal stops the run (the challenge is never
  * answered); the carrier's own NOT FOUND is a normal absence.
  */
-export async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const response = await http.request(new URL(`https://${HOST}/tracking/data`), {
     method: "POST",
     headers: {
@@ -142,13 +142,13 @@ export function toSnapshot(raw: Json, code: string, report: (key: string) => voi
   const deliveryAt = asObject(asObject(pkg["details"])["deliveryDetails"])["deliveryDateTime"];
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus:
       text(last["description"]) ?? text(asObject(pkg["status"])["description"]) ?? eventCode,
     delivered,
     deliveredAt: delivered ? localTime(deliveryAt ?? last["dateTime"], zone) : null,
-    plannedFrom: delivered ? null : localTime(pkg["estimatedDeliveryDate"], zone),
+    expectedFrom: delivered ? null : localTime(pkg["estimatedDeliveryDate"], zone),
     pickup: status === "at_pickup_point",
     url: rulesTrackingUrl(CARRIER_ID, barcode),
     weightKg: weightKg(shipment),
@@ -157,7 +157,7 @@ export function toSnapshot(raw: Json, code: string, report: (key: string) => voi
   });
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -170,7 +170,7 @@ export const purolator = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Purolator",
   countries: ["CA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.null(),
   signIn: { type: "none" },

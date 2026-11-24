@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { ontrac } from "../../src/carriers/ontrac/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, json, type Answer } from "./harness.js";
 
 // Made-up codes and values only.
@@ -72,11 +72,11 @@ describe("OnTrac public tracking", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "ontrac",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "out_for_delivery",
       rawStatus: "OFDL",
       delivered: false,
-      plannedTo: "2026-11-18T22:00:00.000Z",
+      expectedTo: "2026-11-18T22:00:00.000Z",
       weightKg: 0.91,
     });
     expect(parcel?.history.map((e) => e.status)).toEqual([
@@ -105,7 +105,7 @@ describe("OnTrac public tracking", () => {
     expect(parcel).toMatchObject({
       delivered: true,
       deliveredAt: "2026-11-18T09:00:00.000Z",
-      plannedTo: null,
+      expectedTo: null,
     });
   });
 

@@ -1,8 +1,8 @@
 import { describe, expect, it } from "vitest";
 import { gls } from "../../src/carriers/gls/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, raw } from "./harness.js";
 
 // Made-up codes, postcodes and names only.
@@ -88,12 +88,12 @@ describe("gls Netherlands", () => {
     const result = await plugin.track(base, nlConfig, null, [CODE]);
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "Onderweg",
       delivered: false,
-      plannedFrom: "2026-11-19T08:00:00.000Z",
-      plannedTo: "2026-11-19T12:00:00.000Z",
+      expectedFrom: "2026-11-19T08:00:00.000Z",
+      expectedTo: "2026-11-19T12:00:00.000Z",
       sender: "Voorbeeldwinkel",
       weightKg: 1.5,
     });
@@ -141,7 +141,7 @@ describe("gls group countries", () => {
     const { base } = context(fetchImpl);
     const result = await plugin.track(base, czConfig, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       pickup: true,
       delivered: false,

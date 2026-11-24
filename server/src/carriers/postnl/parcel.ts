@@ -9,7 +9,7 @@ import {
   type ParcelSnapshot,
   type ParcelStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { isMetaCode, observationStatus, phaseStatus } from "./status.js";
 
 export const CARRIER_ID = "postnl";
@@ -135,7 +135,7 @@ export function shipmentSnapshot(
   const receiverTitle = text(shipment["receiverTitle"], STRINGS);
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: text(shipment["barcode"], STRINGS) ?? "",
+    trackingNumber: text(shipment["barcode"], STRINGS) ?? "",
     direction: input.direction,
     status,
     rawStatus: phase ?? (delivered ? "Pakket is bezorgd" : null),
@@ -143,8 +143,8 @@ export function shipmentSnapshot(
     deliveredAt: delivered
       ? (isoTime(shipment["deliveredTimeStamp"], INSTANT) ?? walked.deliveredAt)
       : null,
-    plannedFrom: window.from,
-    plannedTo: window.to,
+    expectedFrom: window.from,
+    expectedTo: window.to,
     pickup: shipment["deliveryAddressType"] === "ServicePoint",
     url: text(shipment["detailsUrl"], STRINGS),
     sender: text(shipment["title"], STRINGS),

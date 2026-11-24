@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { airmee } from "../../src/carriers/airmee/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { json, madeUp, on, World } from "./harness.js";
 
 // Made-up tokens and values only.
@@ -34,12 +34,12 @@ describe("Airmee tracking", () => {
     const [parcel] = (await w.track([TOKEN], {}, secret)).snapshots;
     expect(parcel).toMatchObject({
       carrier: "airmee",
-      barcode: TOKEN,
+      trackingNumber: TOKEN,
       status: "out_for_delivery",
       rawStatus: "ON_WAY_TO_DROPOFF",
       sender: "Example Shop",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://tracking.airmee.com/track/${TOKEN}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([

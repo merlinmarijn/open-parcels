@@ -4,9 +4,9 @@ import {
   snapshot,
   TransientError,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { readOrder } from "./page.js";
 import {
   asObject,
@@ -32,7 +32,7 @@ export function isPlausible(barcode: string, postalCode: string): boolean {
  * answered with a redirect to an error page (or 404), which means "not found".
  */
 export async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   barcode: string,
   postalCode: string,
 ): Promise<Json | null> {
@@ -96,14 +96,14 @@ export function trackingSnapshot(
   const ownCode = text(track["external_id"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(ownCode, barcode),
     status,
     rawStatus: code ?? text(raw["statusText"]),
     delivered,
     deliveredAt: delivered ? isoTime(active["timestamp"] ?? raw["deliveredAt"]) : null,
-    plannedFrom: delivered ? null : planned.from,
-    plannedTo: delivered ? null : planned.to,
+    expectedFrom: delivered ? null : planned.from,
+    expectedTo: delivered ? null : planned.to,
     pickup: status === "at_pickup_point",
     pickupPoint: text(track["pudo_name"]) ?? text(asObject(raw["pickupPoint"])["name"]),
     url: publicUrl(ownCode, postalCode),

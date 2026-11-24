@@ -7,7 +7,7 @@ import {
   zonedIso,
   type MappedStatus,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "gls";
 export const NL_HOST = "apm.gls.nl";

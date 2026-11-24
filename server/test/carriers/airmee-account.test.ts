@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { airmee } from "../../src/carriers/airmee/index.js";
-import { RateLimitedError, SignInRejectedError, TransientError } from "../../src/plugin/api.js";
+import { RateLimitedError, SignInRejectedError, TransientError } from "../../src/provider/api.js";
 import { json, madeUp, on, World } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
 
@@ -67,7 +67,7 @@ describe("Airmee account", () => {
       on(DONE, json([order("o-1", "ON_WAY_TO_DROPOFF"), order("o-2", "DROPOFF_CONFIRMED")])),
     ]);
     const result = await world.fetchAccount({}, SIGNED_IN);
-    expect(result.snapshots.map((s) => [s.barcode, s.status, s.url])).toEqual([
+    expect(result.snapshots.map((s) => [s.trackingNumber, s.status, s.url])).toEqual([
       ["o-1", "out_for_delivery", null],
       ["o-2", "delivered", null],
     ]);

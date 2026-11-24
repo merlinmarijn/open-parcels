@@ -1,7 +1,7 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   asArray,
   asObject,
   defineCarrier,
@@ -19,10 +19,10 @@ import {
   zonedIso,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "apple_express";
 const API_HOST = "trackapi.appleexpress.com";
@@ -73,7 +73,7 @@ export function sentenceTime(value: unknown, prefix: string, zone: string): stri
   );
 }
 
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const response = await http.request(
     new URL(`https://${API_HOST}/api/track/order/${encodeURIComponent(barcode)}/language/en`),
     { headers: { accept: "application/json" } },
@@ -133,14 +133,14 @@ export function appleExpressSnapshot(
   const code = text(order["appleTrackingNumber"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: current,
     delivered,
     deliveredAt: delivered ? sentenceTime(order["statusChangeText"], "Delivered ", zone) : null,
-    plannedFrom:
+    expectedFrom:
       windowEnd === null ? null : new Date(Date.parse(windowEnd) - WINDOW_MS).toISOString(),
-    plannedTo: windowEnd,
+    expectedTo: windowEnd,
     url: rulesTrackingUrl(CARRIER_ID, code),
     history: newestFirst(history),
     raw,
@@ -161,7 +161,7 @@ export const appleExpress = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Apple Express",
   countries: ["CA"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
@@ -169,7 +169,7 @@ export const appleExpress = defineCarrier<Config, null>({
   http: {
     limits: { [API_HOST]: { intervalMs: 5_000, burst: 2 }, "*": { intervalMs: 10_000, burst: 1 } },
   },
-  track: (context: PluginContext<Config, null>, barcodes) =>
+  track: (context: ProviderContext<Config, null>, barcodes) =>
     trackEach(barcodes, PLAUSIBLE, async (barcode) => {
       const raw = await lookUp(context.http, barcode);
       return raw === null

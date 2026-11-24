@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { hrvatskaPosta } from "../../src/carriers/hrvatska_posta/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -64,8 +64,8 @@ describe("hrvatska_posta tracking", () => {
     expect(parcel?.pickup).toBe(true);
     expect(parcel?.pickupPoint).toBe("Paketomat Primjer");
     expect(parcel?.weightKg).toBe(1.25);
-    expect(parcel?.plannedFrom).toBeNull();
-    expect(parcel?.plannedTo).toBeNull();
+    expect(parcel?.expectedFrom).toBeNull();
+    expect(parcel?.expectedTo).toBeNull();
     // Zagreb is UTC+1 in November; the unknown "ZZ" office code falls back to Zagreb too.
     expect(parcel?.history.map((event) => [event.at, event.status])).toEqual([
       ["2026-11-18T08:15:00.000Z", "at_pickup_point"],

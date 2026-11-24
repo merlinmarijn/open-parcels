@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { ukrposhta } from "../../src/carriers/ukrposhta/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -39,14 +39,14 @@ describe("Ukrposhta tracking", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "ukrposhta",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "at_pickup_point",
       rawStatus: "21400 Arrived at the post office",
       pickup: true,
       delivered: false,
       // The carrier gives no delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history[0]).toMatchObject({
       at: "2026-11-18T10:00:00.000Z",

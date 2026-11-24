@@ -4,9 +4,9 @@ import {
   defineCarrier,
   snapshot,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-  type PluginHttp,
+  type ProviderHttp,
   asObject,
   isObject,
   ruleStatus,
@@ -19,7 +19,7 @@ import {
   expectStatus,
   trackEach,
   unknownReporter,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "elta_courier";
 const HOST = "www.elta-courier.gr";
@@ -31,7 +31,7 @@ const PLAUSIBLE = carrierPattern("elta_courier");
  * Looks one code up. The answer is keyed by the code; a single entry under a differently
  * spelled key is accepted as the same parcel. No entry, or one without events, is "not found".
  */
-async function lookUp(http: PluginHttp, code: string): Promise<Json[] | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json[] | null> {
   const response = await http.request(new URL(`https://${HOST}/track.php`), {
     method: "POST",
     headers: { accept: "application/json" },
@@ -98,7 +98,7 @@ function toSnapshot(
   }
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: newest?.rawStatus ?? null,
     deliveredAt: status === "delivered" ? (newest?.at ?? null) : null,
@@ -114,7 +114,7 @@ function toSnapshot(
   });
 }
 
-async function track(context: PluginContext<unknown, unknown>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<unknown, unknown>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status");
   return trackEach(barcodes, { plausible: PLAUSIBLE }, async (code, tracked) => {
     const events = await lookUp(context.http, code);
@@ -127,7 +127,7 @@ export const eltaCourier = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
   name: "ELTA Courier",
   countries: ["GR"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

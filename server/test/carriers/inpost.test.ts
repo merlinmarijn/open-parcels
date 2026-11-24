@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { inpost } from "../../src/carriers/inpost/index.js";
 import { register } from "../../src/engine/registry.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
-import type { FetchLike } from "../../src/plugin/http.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
+import type { FetchLike } from "../../src/provider/http.js";
 import { fakeContext, fakeNetwork, json } from "./harness.js";
 import { pasted } from "./pasted.js";
 
@@ -66,13 +66,13 @@ describe("inpost tracking", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "inpost",
-      barcode: ACTIVE,
+      trackingNumber: ACTIVE,
       status: "delivered",
       rawStatus: "Latest step",
       delivered: true,
       deliveredAt: "2026-11-18T08:00:00.000Z",
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
       url: `https://inpost.it/trova-il-tuo-pacco?number=${ACTIVE}`,
     });
     expect(parcel?.history.map((event) => event.status)).toEqual([
@@ -154,7 +154,7 @@ describe("inpost account", () => {
       pickupPoint: "TST01M",
       sender: "Example Shop",
       receiver: "Test Person",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(parcel?.history.map((event) => event.status)).toEqual([
       "at_pickup_point",

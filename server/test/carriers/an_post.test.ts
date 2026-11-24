@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { anPost } from "../../src/carriers/an_post/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { json, madeUp, on, World } from "./harness.js";
 
 // Made-up codes, ids and names only.
@@ -51,11 +51,11 @@ describe("An Post account", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "an_post",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "3",
-      plannedFrom: "2026-11-20T10:00:00.000Z",
-      plannedTo: null,
+      expectedFrom: "2026-11-20T10:00:00.000Z",
+      expectedTo: null,
       sender: "Example Shop",
       history: [],
     });
@@ -76,7 +76,7 @@ describe("An Post account", () => {
     expect(parcel).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-07-01T11:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
     expect(w.requests()).toEqual([JWT, ITEMS]);
   });

@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { dao } from "../../src/carriers/dao/index.js";
 import { register } from "../../src/engine/registry.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { FakeClock } from "../helpers.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 import { pasted } from "./pasted.js";
@@ -69,11 +69,11 @@ describe("DAO account", () => {
     expect(saved).toEqual([expect.objectContaining({ refreshToken: "rt-1", accessToken: "at-1" })]);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "dao",
-      barcode: ACTIVE,
-      direction: "incoming",
+      trackingNumber: ACTIVE,
+      direction: "receiving",
       status: "in_transit",
       rawStatus: "På vej",
-      plannedFrom: null,
+      expectedFrom: null,
       pickupPoint: "Example Shop Point",
       sender: "Example Shop",
     });
@@ -100,9 +100,9 @@ describe("DAO account", () => {
     ]);
     const { base } = fakeContext(dao.http, fetchImpl);
     const { snapshots } = await plugin.fetchAccount(base, {}, SECRET);
-    expect(snapshots.map((s) => [s.barcode, s.status, s.direction])).toEqual([
-      ["A1", "delivered", "incoming"],
-      ["B1", "at_pickup_point", "outgoing"],
+    expect(snapshots.map((s) => [s.trackingNumber, s.status, s.direction])).toEqual([
+      ["A1", "delivered", "receiving"],
+      ["B1", "at_pickup_point", "sending"],
     ]);
     expect(snapshots[0]?.deliveredAt).toBe("2026-11-18T09:00:00.000Z");
   });

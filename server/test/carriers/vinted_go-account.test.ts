@@ -2,7 +2,7 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { verificationToken } from "../../src/carriers/vinted_go/account.js";
 import { vintedGo } from "../../src/carriers/vinted_go/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/api.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/api.js";
 import { json, madeUp, on, World } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
 
@@ -98,10 +98,10 @@ describe("Vinted Go account", () => {
     world.stored = { base: fingerprint(RT), refresh: RT, session: "st-old" };
     const result = await world.fetchAccount({}, { refreshToken: RT });
     expect(result.complete).toBe(false);
-    expect(result.snapshots.map((s) => [s.barcode, s.direction, s.status])).toEqual([
-      ["VG00000001", "incoming", "at_pickup_point"],
-      ["VG00000002", "outgoing", "in_transit"],
-      ["VG00000003", "incoming", "delivered"],
+    expect(result.snapshots.map((s) => [s.trackingNumber, s.direction, s.status])).toEqual([
+      ["VG00000001", "receiving", "at_pickup_point"],
+      ["VG00000002", "sending", "in_transit"],
+      ["VG00000003", "receiving", "delivered"],
     ]);
     expect(result.snapshots[0]?.pickupPoint).toBe("Example Locker");
     expect(JSON.stringify(result.snapshots.map((s) => s.raw))).not.toContain("PICK-UP-CODE");

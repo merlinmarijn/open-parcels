@@ -22,7 +22,7 @@ describe("a stored link", () => {
 
     beforeEach(async () => {
       post = new FakeWorld();
-      context = await createTestContext({ plugins: [fakePost(post)] });
+      context = await createTestContext({ providers: [fakePost(post)] });
     });
     afterEach(async () => {
       await context.close();
@@ -32,7 +32,7 @@ describe("a stored link", () => {
       post.listing = [
         snapshot({
           carrier: "fakepost",
-          barcode: "FP0000000088",
+          trackingNumber: "FP0000000088",
           status: "in_transit",
           rawStatus: "x",
           url: "javascript:alert(1)",
@@ -62,14 +62,14 @@ describe("a stored link", () => {
           ],
         }),
       ];
-      const source = await context.services.sources.create({
-        plugin: "fakepost",
+      const connection = await context.services.connections.create({
+        provider: "fakepost",
         kind: "account",
         label: "account",
         config: {},
         secret: { username: "user@example.invalid", password: ["p", "q"].join("-") },
       });
-      await context.services.runner.run(source.id);
+      await context.services.runner.run(connection.id);
       const parcel = await context.services.db
         .selectFrom("parcels")
         .select("url")

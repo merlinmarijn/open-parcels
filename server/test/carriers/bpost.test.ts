@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { bpost } from "../../src/carriers/bpost/index.js";
-import { InvalidSourceConfigError } from "../../src/engine/registry.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes, postcodes and names only.
@@ -42,12 +42,12 @@ describe("bpost tracking", () => {
     const [parcel] = (await w.track([CODE], config)).snapshots;
     expect(parcel).toMatchObject({
       carrier: "bpost",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "OUT_FOR_DELIVERY_HOME",
       delivered: false,
-      plannedFrom: "2026-11-19T09:00:00.000Z",
-      plannedTo: "2026-11-19T12:00:00.000Z",
+      expectedFrom: "2026-11-19T09:00:00.000Z",
+      expectedTo: "2026-11-19T12:00:00.000Z",
       sender: "Example Shop",
       weightKg: 1.25,
       pickup: false,
@@ -76,7 +76,7 @@ describe("bpost tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T12:06:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
       pickup: true,
       pickupPoint: "Locker Testtown",
     });
@@ -111,7 +111,7 @@ describe("bpost tracking", () => {
     await expect(new World(bpost).track([CODE], {})).rejects.toThrow(/postcode/);
     // Missing settings are a configuration problem, not an unexpected error on every run.
     await expect(new World(bpost).track([CODE], {})).rejects.toBeInstanceOf(
-      InvalidSourceConfigError,
+      InvalidConnectionConfigError,
     );
     const offline = new World(bpost);
     offline.routes = [on(ROUTE, new Error("offline"))];

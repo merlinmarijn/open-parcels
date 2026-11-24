@@ -15,9 +15,9 @@ import {
   type InteractiveSignIn,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../../provider/api.js";
 import { dutchTrackingUrl } from "../constants.js";
 import { mapEvent } from "../gateway.js";
 
@@ -39,7 +39,11 @@ export interface NlCredentials {
  * Signs in with email and password. The cookies it sets are the session; only a 401/403 is a
  * refusal, anything else is DHL being unavailable.
  */
-async function logIn(http: PluginHttp, jar: CookieJar, credentials: NlCredentials): Promise<void> {
+async function logIn(
+  http: ProviderHttp,
+  jar: CookieJar,
+  credentials: NlCredentials,
+): Promise<void> {
   const response = await http.request(new URL(LOGIN_URL), {
     method: "POST",
     headers: { "content-type": "application/json", accept: "application/json" },
@@ -54,7 +58,7 @@ async function logIn(http: PluginHttp, jar: CookieJar, credentials: NlCredential
   }
 }
 
-/** The second flow of the DHL plug-in: the Dutch account, signed in with email and password. */
+/** The second flow of the DHL provider: the Dutch account, signed in with email and password. */
 export function nlSignIn<Config>(options: {
   readonly when: (config: Config) => boolean;
 }): InteractiveSignIn<Config, { readonly nl: NlCredentials }> {
@@ -85,7 +89,7 @@ export function nlSignIn<Config>(options: {
   };
 }
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "session" | "reportUnknown">;
 
 async function xsrf(jar: CookieJar): Promise<Record<string, string>> {
   const cookies = await jar.getCookies(`https://${NL_HOST}/`);
@@ -160,15 +164,15 @@ export function normalizeNl(deps: Deps, parcel: Json, sent: boolean): ParcelSnap
   const window = deliveryWindow(parcel);
   return snapshot({
     carrier: "dhl",
-    barcode,
-    direction: sent || parcel["isReturn"] === true ? "outgoing" : "incoming",
+    trackingNumber: barcode,
+    direction: sent || parcel["isReturn"] === true ? "sending" : "receiving",
     // A finished return also says DELIVERED: it is back with the sender.
     status: delivered ? "delivered" : status,
     rawStatus: text(parcel["status"]) ?? text(parcel["category"]),
     delivered,
     deliveredAt: delivered ? window.from : null,
-    plannedFrom: delivered ? null : window.from,
-    plannedTo: delivered ? null : window.to,
+    expectedFrom: delivered ? null : window.from,
+    expectedTo: delivered ? null : window.to,
     pickup,
     pickupPoint: pickup ? text(destination["name"]) : null,
     sender: text(asObject(parcel["sender"])["name"]),

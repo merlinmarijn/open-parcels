@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { fourPx } from "../../src/carriers/4px/index.js";
-import { RateLimitedError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { RateLimitedError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -36,12 +36,12 @@ describe("4PX tracking", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "4px",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "FPX_D_SD",
       delivered: false,
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.url).toContain(CODE);
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([

@@ -12,11 +12,11 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   echoRef,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, compactPostcode, latestHistory, mapGls, publicUrl, text } from "./shared.js";
 
 export const US_HOST = "connect.gls-us.com";
@@ -43,7 +43,7 @@ function mapText(value: string | null): ReturnType<typeof mapGls> {
   return mapGls(null, collapsed) ?? mapGls(null, collapsed.split(" - ")[0] ?? null);
 }
 
-async function getJson(http: PluginHttp, url: URL, init: Parameters<PluginHttp["request"]>[1]) {
+async function getJson(http: ProviderHttp, url: URL, init: Parameters<ProviderHttp["request"]>[1]) {
   const response = await http.request(url, init);
   if (response.status !== 200) {
     return { status: response.status, body: null };
@@ -82,7 +82,7 @@ export function newestUsShipment(raw: Json, barcode: string): Json | null {
 }
 
 /** The keyless public US lookup, by number alone. 204 is the carrier's "not found". */
-export async function lookUpUs(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUpUs(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(
     `https://${US_HOST}/api/public/tracking/TrackShipmentSummariesByTrackingNumbers`,
   );
@@ -144,7 +144,7 @@ export function usSnapshot(
   const delivered = status === "delivered";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(shipment["trackingNumber"]), barcode),
     status,
     rawStatus,
@@ -173,7 +173,7 @@ function caShipment(body: Json | null, barcode: string): Json | null {
  * the postcode route for this code. Server errors never fall back.
  */
 export async function lookUpCa(
-  http: PluginHttp,
+  http: ProviderHttp,
   barcode: string,
   postcode: string,
 ): Promise<Json | null> {
@@ -237,7 +237,7 @@ export function caSnapshot(
   const number = text(shipment["trackingNumber"]) ?? barcode;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(number, barcode),
     status,
     rawStatus,

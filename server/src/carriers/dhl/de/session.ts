@@ -4,10 +4,10 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-  type PluginContext,
+  type ProviderContext,
   num,
   parseJsonBody,
-} from "../../../plugin/api.js";
+} from "../../../provider/api.js";
 import {
   DE_ACCOUNT_CLAIM,
   DE_AUTHORIZE_URL,
@@ -22,7 +22,7 @@ import {
 } from "../constants.js";
 import { asObject, asString } from "../util.js";
 
-type Http = PluginContext<unknown, unknown>["http"];
+type Http = ProviderContext<unknown, unknown>["http"];
 
 const signInStateSchema = z.object({ verifier: z.string(), state: z.string() });
 
@@ -162,10 +162,10 @@ export async function finishSignIn(
   return { refreshToken: tokens.refreshToken };
 }
 
-type SessionDeps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session">;
+type SessionDeps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session">;
 
 /**
- * The ID token lifecycle of one account source. Tokens are refreshed shortly before they
+ * The ID token lifecycle of one account connection. Tokens are refreshed shortly before they
  * expire; a rotated refresh token is saved before it is used for anything else.
  */
 export class DeSession {

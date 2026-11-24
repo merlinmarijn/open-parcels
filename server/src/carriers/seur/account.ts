@@ -9,10 +9,10 @@ import {
   UnexpectedResponseError,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderHttp,
+  type ProviderLogger,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { STRINGS } from "./parse.js";
 
 export const SSO_HOST = "sso.seur.com";
@@ -57,7 +57,7 @@ function backendFailed(body: Json): boolean {
   return text(body["codigo_error"], STRINGS) !== null || text(body["msg_error"], STRINGS) !== null;
 }
 
-async function signIn(http: PluginHttp, credentials: Credentials): Promise<Session> {
+async function signIn(http: ProviderHttp, credentials: Credentials): Promise<Session> {
   const username = credentials.username.trim();
   const form = new URLSearchParams({
     grant_type: "password",
@@ -104,7 +104,7 @@ async function signIn(http: PluginHttp, credentials: Credentials): Promise<Sessi
   return { accessToken, uuid, username };
 }
 
-async function inbox(http: PluginHttp, session: Session): Promise<HttpResponse> {
+async function inbox(http: ProviderHttp, session: Session): Promise<HttpResponse> {
   return http.request(new URL(`${BACKEND}/consultarMisEnvios`), {
     method: "POST",
     headers: { ...WEB_HEADERS, authorization: `Bearer ${session.accessToken}` },
@@ -129,10 +129,10 @@ export interface Inbox {
  * sign-in; any other failure, including network errors, ends the run without signing in.
  */
 export async function readInbox(
-  http: PluginHttp,
+  http: ProviderHttp,
   store: SessionStore,
   credentials: Credentials,
-  logger: PluginLogger,
+  logger: ProviderLogger,
 ): Promise<Inbox> {
   let session = readSession(store.load(), credentials.username.trim());
   if (session === null) {

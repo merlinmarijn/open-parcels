@@ -1,11 +1,15 @@
-import { type FetchResult, type ParcelSnapshot, type PluginContext } from "../../../plugin/api.js";
+import {
+  type FetchResult,
+  type ParcelSnapshot,
+  type ProviderContext,
+} from "../../../provider/api.js";
 import { DE_ENRICH_LIMIT } from "../constants.js";
 import { asString, type Json } from "../util.js";
 import { activeElements, fetchEnvelope, isNotFound, needsEnrichment } from "./inbox.js";
 import { normalizeDe } from "./normalize.js";
 import { DeSession } from "./session.js";
 
-type Deps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session" | "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session" | "reportUnknown">;
 
 /**
  * Everything the German DHL account lists. Bare entries are looked up by number, a few per run;

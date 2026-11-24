@@ -7,11 +7,11 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-  type PluginContext,
-} from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
 import { CARRIER_ID, SIGN_IN_HOST, text, type Market } from "./shared.js";
 
-type Http = PluginContext<unknown, unknown>["http"];
+type Http = ProviderContext<unknown, unknown>["http"];
 
 export const AUTHORIZE_URL = `https://${SIGN_IN_HOST}/oauth2/authorize`;
 export const TOKEN_URL = `https://${SIGN_IN_HOST}/oauth2/token`;
@@ -167,9 +167,9 @@ export async function finishSignIn(
   return { refreshToken: tokens.refreshToken, market: expected.market };
 }
 
-type SessionDeps = Pick<PluginContext<unknown, unknown>, "http" | "session">;
+type SessionDeps = Pick<ProviderContext<unknown, unknown>, "http" | "session">;
 
-/** The access token of one account source; a rotated refresh token is saved before use. */
+/** The access token of one account connection; a rotated refresh token is saved before use. */
 export class InPostSession {
   #stored: Stored;
   #renewed = false;

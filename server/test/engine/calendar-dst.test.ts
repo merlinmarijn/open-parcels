@@ -12,15 +12,15 @@ afterEach(async () => {
   await context.close();
 });
 
-async function insert(barcode: string, values: Record<string, string | number | null>) {
+async function insert(trackingNumber: string, values: Record<string, string | number | null>) {
   const now = context.clock.now().toISOString();
   await context.services.db
     .insertInto("parcels")
     .values({
       id: crypto.randomUUID(),
       carrier: "fakepost",
-      barcode,
-      direction: "incoming",
+      tracking_number: trackingNumber,
+      direction: "receiving",
       status: "in_transit",
       raw_status: null,
       delivered: 0,
@@ -43,7 +43,7 @@ describe("an all-day entry on a 23-hour day", () => {
       delivered: 1,
       delivered_at: midnight,
     });
-    await insert("DSTEXPECTED01", { planned_from: midnight });
+    await insert("DSTEXPECTED01", { expected_from: midnight });
     const entries = await context.services.calendar.entries(
       new Date("2027-03-20T00:00:00Z"),
       new Date("2027-04-05T00:00:00Z"),

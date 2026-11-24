@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { posti } from "../../src/carriers/posti/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -60,8 +60,8 @@ describe("Posti tracking", () => {
     expect(parcel).toMatchObject({
       carrier: "posti",
       status: "out_for_delivery",
-      plannedFrom: "2026-11-19T08:00:00.000Z",
-      plannedTo: "2026-11-19T16:00:00.000Z",
+      expectedFrom: "2026-11-19T08:00:00.000Z",
+      expectedTo: "2026-11-19T16:00:00.000Z",
       weightKg: 0.5,
       receiver: "Testi Henkilö",
     });
@@ -87,7 +87,7 @@ describe("Posti tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T08:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

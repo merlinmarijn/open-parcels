@@ -1,12 +1,12 @@
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   isOAuthRefusal,
   SignInRejectedError,
   UnexpectedResponseError,
-  type PluginLogger,
+  type ProviderLogger,
   type SessionStore,
-} from "../../plugin/api.js";
-import { expectStatus, isObject, readJson, text, type Json } from "../../plugin/api.js";
+} from "../../provider/api.js";
+import { expectStatus, isObject, readJson, text, type Json } from "../../provider/api.js";
 
 export const API_HOST = "apis.usps.com";
 
@@ -39,11 +39,11 @@ export class UspsClient {
   #renewed = false;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly session: SessionStore,
     private readonly credentials: Credentials,
     private readonly now: () => number,
-    private readonly logger: PluginLogger,
+    private readonly logger: ProviderLogger,
   ) {}
 
   async #token(force: boolean): Promise<string> {

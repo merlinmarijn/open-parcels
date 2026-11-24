@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { register, type RegisteredPlugin } from "../../src/engine/registry.js";
+import { register, type RegisteredProvider } from "../../src/engine/registry.js";
 import {
   CaptchaError,
   defineCarrier,
@@ -11,7 +11,7 @@ import {
   type LiveReading,
   type ParcelSnapshot,
   type SnapshotEvent,
-} from "../../src/plugin/api.js";
+} from "../../src/provider/api.js";
 
 /**
  * A scripted carrier world for tests. Each run returns what the test put in `listing`, or throws
@@ -50,14 +50,14 @@ export class FakeWorld {
 
 const secretSchema = z.object({ username: z.string(), password: z.string() }).nullable();
 
-/** A carrier with an account source and code tracking. */
-export function fakePost(world: FakeWorld): RegisteredPlugin {
+/** A carrier with an account connection and code tracking. */
+export function fakePost(world: FakeWorld): RegisteredProvider {
   return register(
     defineCarrier({
       id: "fakepost",
       name: "Fake Post",
       countries: ["DE"],
-      sourceKinds: ["account", "tracking"],
+      connectionKinds: ["account", "tracking"],
       configSchema: z.looseObject({}),
       secretSchema,
       signIn: { type: "credentials" },
@@ -71,14 +71,14 @@ export function fakePost(world: FakeWorld): RegisteredPlugin {
         }
         return Promise.resolve(world.result());
       },
-      async track(context, barcodes) {
-        world.trackCalls.push([...barcodes]);
+      async track(context, trackingNumbers) {
+        world.trackCalls.push([...trackingNumbers]);
         // Like keyless carriers (UPS), tracking keeps run state in the session store.
         await context.session.save({ trackRuns: world.trackCalls.length });
         const result = world.result();
         return Promise.resolve({
           ...result,
-          snapshots: result.snapshots.filter((s) => barcodes.includes(s.barcode)),
+          snapshots: result.snapshots.filter((s) => trackingNumbers.includes(s.trackingNumber)),
         });
       },
     }),
@@ -86,13 +86,13 @@ export function fakePost(world: FakeWorld): RegisteredPlugin {
 }
 
 /** A shop whose parcels are either delivered by itself or handed to fakepost. */
-export function fakeShop(world: FakeWorld): RegisteredPlugin {
+export function fakeShop(world: FakeWorld): RegisteredProvider {
   return register(
     defineCarrier({
       id: "fakeshop",
       name: "Fake Shop",
       countries: ["*"],
-      sourceKinds: ["shop"],
+      connectionKinds: ["shop"],
       configSchema: z.looseObject({}),
       secretSchema: z.object({ refreshToken: z.string() }).nullable(),
       signIn: pastedRedirect<Record<string, unknown>, { refreshToken: string } | null>({
@@ -155,16 +155,16 @@ function codeTurn(world: VerifyWorld, user: string, code: string | undefined) {
 
 /**
  * A carrier whose account sign-in walks through every step kind: a form, a method choice, then a
- * texted code, an emailed link or an approval in an app. Variant "b" sources get a second flow.
+ * texted code, an emailed link or an approval in an app. Variant "b" connections get a second flow.
  */
-export function fakeVerify(world: VerifyWorld): RegisteredPlugin {
+export function fakeVerify(world: VerifyWorld): RegisteredProvider {
   const configSchema = z.looseObject({ variant: z.enum(["a", "b"]).optional() });
   return register(
     defineCarrier<z.infer<typeof configSchema>, { token: string } | null>({
       id: "fakeverify",
       name: "Fake Verify",
       countries: ["NL"],
-      sourceKinds: ["account", "tracking"],
+      connectionKinds: ["account", "tracking"],
       configSchema,
       secretSchema: z.object({ token: z.string() }).nullable(),
       signIn: [

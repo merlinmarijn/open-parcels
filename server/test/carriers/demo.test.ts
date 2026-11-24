@@ -10,21 +10,27 @@ import { createTestContext, type TestContext } from "../helpers.js";
 let context: TestContext;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
 });
 afterEach(async () => {
   await context.close();
 });
 
-async function source(plugin: string, kind: "account" | "shop"): Promise<string> {
+async function connection(provider: string, kind: "account" | "shop"): Promise<string> {
   return (
-    await context.services.sources.create({ plugin, kind, label: plugin, config: {}, secret: null })
+    await context.services.connections.create({
+      provider,
+      kind,
+      label: provider,
+      config: {},
+      secret: null,
+    })
   ).id;
 }
 
 async function parcels() {
   const all = await new ParcelRepository(context.services.db).list({ includeArchived: true }, true);
-  return new Map(all.map((parcel) => [parcel.barcode, parcel]));
+  return new Map(all.map((parcel) => [parcel.tracking_number, parcel]));
 }
 
 /** Moves the clock to `second` into the current run and lets the courier report. */
@@ -36,8 +42,8 @@ async function at(second: number, courier: string): Promise<void> {
 
 describe("demo courier and demo shop", () => {
   it("play the story from announced to delivered, missed and collected, then start over", async () => {
-    await context.services.runner.run(await source("demo_shop", "shop"));
-    const courier = await source("demo", "account");
+    await context.services.runner.run(await connection("demo_shop", "shop"));
+    const courier = await connection("demo", "account");
     await at(5, courier);
 
     let now = await parcels();
@@ -70,7 +76,7 @@ describe("demo courier and demo shop", () => {
     expect(demoLiveReading("DEMO0000000003", start + 330_000)).toBeNull();
     // Where it is now is the courier; the last placed scan stays alongside.
     const driving = now.get("DEMO0000000001");
-    // The scheduler hands the live tracker its targets; this test runs the source directly.
+    // The scheduler hands the live tracker its targets; this test runs the connection directly.
     context.services.live.setTargets(courier, [
       {
         parcelId: driving?.id ?? "",
@@ -96,7 +102,7 @@ describe("demo courier and demo shop", () => {
       pickup_point: "Demo parcel shop, Alexanderplatz 1",
     });
     // Collectable from ten o'clock the next day.
-    expect(missed?.planned_from).toBe("2026-11-19T10:00:00.000Z");
+    expect(missed?.expected_from).toBe("2026-11-19T10:00:00.000Z");
 
     // The next run starts over, with only its own history.
     context.clock.advance(LOOP_MS - 570_000 + 10_000);

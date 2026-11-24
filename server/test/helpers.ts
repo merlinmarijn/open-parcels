@@ -8,9 +8,9 @@ import type { Clock } from "../src/clock.js";
 import { loadConfig } from "../src/config.js";
 import { SecretBox } from "../src/crypto/secrets.js";
 import { migrateToLatest, openDatabase } from "../src/db/database.js";
-import type { RegisteredPlugin } from "../src/engine/registry.js";
+import type { RegisteredProvider } from "../src/engine/registry.js";
 import type { MailboxClientFactory, MailInterpreter } from "../src/mail/types.js";
-import type { FetchLike } from "../src/plugin/http.js";
+import type { FetchLike } from "../src/provider/http.js";
 import { createServices, type Services } from "../src/services.js";
 
 /** A clock tests can move forward by hand. */
@@ -39,7 +39,7 @@ export interface TestContext {
 }
 
 export interface TestOptions {
-  readonly plugins?: readonly RegisteredPlugin[];
+  readonly providers?: readonly RegisteredProvider[];
   readonly fetchImpl?: FetchLike;
   readonly mailClientFactory?: MailboxClientFactory;
   readonly mailInterpreter?: MailInterpreter;
@@ -65,7 +65,7 @@ export async function createTestContext(options: TestOptions = {}): Promise<Test
     logger: pino({ level: "silent" }),
     clock,
     secrets: new SecretBox(randomBytes(32)),
-    plugins: options.plugins ?? [],
+    providers: options.providers ?? [],
     // Waiting for a rate limit advances the fake clock instead of real time.
     sleep: (ms) => {
       clock.advance(ms);

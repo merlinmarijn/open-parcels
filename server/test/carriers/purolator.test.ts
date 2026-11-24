@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { purolator } from "../../src/carriers/purolator/index.js";
-import { CaptchaError } from "../../src/plugin/errors.js";
-import { zonedIso } from "../../src/plugin/kit/time.js";
+import { CaptchaError } from "../../src/provider/errors.js";
+import { zonedIso } from "../../src/provider/kit/time.js";
 import { json, on, raw, World } from "./harness.js";
 
 // Made-up tracking numbers only. Expected times follow the runtime's own zone data.
@@ -49,7 +49,7 @@ describe("Purolator tracking", () => {
     expect(parcel).toMatchObject({
       status: "out_for_delivery",
       rawStatus: "On vehicle for delivery",
-      plannedFrom: zonedIso({ year: 2026, month: 11, day: 19 }, "America/Winnipeg"),
+      expectedFrom: zonedIso({ year: 2026, month: 11, day: 19 }, "America/Winnipeg"),
       weightKg: 0.907,
     });
     expect(parcel?.history[0]?.at).toBe(

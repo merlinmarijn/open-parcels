@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { betterTrucks } from "../../src/carriers/better_trucks/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, on, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -44,11 +44,11 @@ describe("Better Trucks tracking", () => {
     const [parcel] = (await w.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "better_trucks",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "in_transit",
       rawStatus: "SCANNED_AT_HUB_XYZ",
-      plannedFrom: "2026-11-19T18:00:00.000Z",
-      plannedTo: null,
+      expectedFrom: "2026-11-19T18:00:00.000Z",
+      expectedTo: null,
       url: `https://tracking.bettertrucks.com/track/${CODE}`,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -74,7 +74,7 @@ describe("Better Trucks tracking", () => {
     expect(parcel).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T20:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

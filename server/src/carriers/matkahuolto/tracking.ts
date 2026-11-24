@@ -13,10 +13,10 @@ import {
   zonedIso,
   type Json,
   type ParcelStatus,
-  type PluginHttp,
+  type ProviderHttp,
   echoRef,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "matkahuolto";
 export const TRACKING_HOST = "wwwservice.matkahuolto.fi";
@@ -31,7 +31,7 @@ export function publicUrl(barcode: string): string | null {
 }
 
 /** Returns the parcel, or null when the carrier answers `{"notFound": true}` (HTTP 200). */
-export async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const url = new URL(`https://${TRACKING_HOST}/search/trackingInfo`);
   url.searchParams.set("language", "en");
   url.searchParams.set("parcelNumber", barcode);
@@ -115,7 +115,7 @@ export function trackingSnapshot(raw: Json, barcode: string, report: Report): Pa
   const pickup = status === "at_pickup_point";
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["parcelNumber"]), barcode),
     status,
     rawStatus: latest?.label ?? null,

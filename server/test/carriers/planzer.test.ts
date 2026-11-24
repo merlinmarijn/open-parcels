@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { planzer } from "../../src/carriers/planzer/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -47,12 +47,12 @@ describe("Planzer public tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "planzer",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Out for delivery",
       delivered: false,
-      plannedFrom: "2026-11-18T23:00:00.000Z",
-      plannedTo: "2026-11-19T22:59:59.000Z",
+      expectedFrom: "2026-11-18T23:00:00.000Z",
+      expectedTo: "2026-11-19T22:59:59.000Z",
       weightKg: 2.5,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
@@ -79,8 +79,8 @@ describe("Planzer public tracking", () => {
     const { base } = fakeContext(planzer.http, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
-      plannedFrom: "2026-07-01T08:00:00.000Z",
-      plannedTo: "2026-07-01T10:00:00.000Z",
+      expectedFrom: "2026-07-01T08:00:00.000Z",
+      expectedTo: "2026-07-01T10:00:00.000Z",
     });
   });
 
@@ -96,7 +96,7 @@ describe("Planzer public tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T10:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

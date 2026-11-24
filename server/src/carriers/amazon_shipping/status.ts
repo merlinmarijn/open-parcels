@@ -5,7 +5,7 @@ import {
   text,
   type Json,
   type ParcelStatus,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import type { Moment } from "./time.js";
 
 /** The shared table knows Amazon's codes by this id; it is also the parcel's carrier. */

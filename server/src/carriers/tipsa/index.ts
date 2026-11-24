@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { PluginHttp } from "../../plugin/api.js";
+import type { ProviderHttp } from "../../provider/api.js";
 import {
   InvalidConfigError,
   ruleStatus,
@@ -8,9 +8,9 @@ import {
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
-} from "../../plugin/api.js";
-import { carrierPattern, expectStatus } from "../../plugin/api.js";
+  type ProviderContext,
+} from "../../provider/api.js";
+import { carrierPattern, expectStatus } from "../../provider/api.js";
 import { foldWording } from "./page.js";
 import { refreshTarget } from "./html.js";
 import { madridTime, readPage, type TipsaPage } from "./page.js";
@@ -82,7 +82,7 @@ function detailUrl(target: string | null): URL | null {
  * then the detail page. The postcode-free route is never used, not even as a fallback.
  */
 async function lookUp(
-  http: PluginHttp,
+  http: ProviderHttp,
   barcode: string,
   postcode: string,
 ): Promise<TipsaPage | null> {
@@ -137,7 +137,7 @@ export function tipsaSnapshot(
   const sender = fields["sender"];
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: page.status,
     delivered,
@@ -155,7 +155,7 @@ export function tipsaSnapshot(
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const postcode = context.config.postalCode.replace(/\s+/g, "").toUpperCase();
   const snapshots: ParcelSnapshot[] = [];
   const report = (wording: string): void => {
@@ -177,7 +177,7 @@ export const tipsa = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "TIPSA",
   countries: ["ES", "PT", "AD"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

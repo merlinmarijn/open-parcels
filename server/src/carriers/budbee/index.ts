@@ -1,12 +1,12 @@
 import { z } from "zod";
 import {
   carrierPattern,
-  type PluginHttp,
+  type ProviderHttp,
   defineCarrier,
   snapshot,
   UnexpectedResponseError,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   asObject,
   dig,
   isObject,
@@ -19,7 +19,7 @@ import {
   trackEach,
   type Json,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "budbee";
 const HOST = "tracking.budbee.com";
@@ -48,7 +48,7 @@ function unwrap(body: unknown): Json | null {
   return isObject(payload) ? payload : null;
 }
 
-async function readMeta(http: PluginHttp, code: string): Promise<Json | null> {
+async function readMeta(http: ProviderHttp, code: string): Promise<Json | null> {
   const cached = metaCache.get(code);
   if (cached !== undefined) {
     return cached;
@@ -64,7 +64,7 @@ async function readMeta(http: PluginHttp, code: string): Promise<Json | null> {
   return meta;
 }
 
-async function readBox(http: PluginHttp, code: string): Promise<Json | null> {
+async function readBox(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`${API}/box/${encodeURIComponent(code)}`);
   const body = await requestJson(http, url, "Budbee locker", { notFound: [404] });
   if (body === null) {
@@ -76,7 +76,7 @@ async function readBox(http: PluginHttp, code: string): Promise<Json | null> {
   return body;
 }
 
-async function readDelivery(http: PluginHttp, code: string): Promise<Json | null> {
+async function readDelivery(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`${API}/v3/orders/${encodeURIComponent(code)}`);
   const payload = unwrap(await requestJson(http, url, "Budbee order"));
   if (payload === null) {
@@ -87,7 +87,7 @@ async function readDelivery(http: PluginHttp, code: string): Promise<Json | null
 }
 
 /** Reads one parcel: the routing call decides the route and the status vocabulary. */
-export async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const meta = await readMeta(http, code);
   if (meta === null) {
     return null;
@@ -143,27 +143,27 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
     report(`${type}:${rawStatus ?? ""}`);
   });
   const delivered = status === "delivered";
-  let plannedFrom: string | null = null;
-  let plannedTo: string | null;
+  let expectedFrom: string | null = null;
+  let expectedTo: string | null;
   if (type === "BOX") {
-    plannedTo = isoTime(raw["eta"] ?? dig(raw, "etaInformation", "eta"), {
+    expectedTo = isoTime(raw["eta"] ?? dig(raw, "etaInformation", "eta"), {
       naive: "utc",
       epoch: "ms",
       keepFraction: true,
     });
   } else {
-    plannedFrom = isoTime(dig(raw, "consignment", "start"), {
+    expectedFrom = isoTime(dig(raw, "consignment", "start"), {
       naive: "utc",
       epoch: "ms",
       keepFraction: true,
     });
-    plannedTo = isoTime(dig(raw, "consignment", "stop"), {
+    expectedTo = isoTime(dig(raw, "consignment", "stop"), {
       naive: "utc",
       epoch: "ms",
       keepFraction: true,
     });
-    if (plannedTo === plannedFrom) {
-      plannedTo = null;
+    if (expectedTo === expectedFrom) {
+      expectedTo = null;
     }
   }
   const outgoing =
@@ -172,8 +172,8 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
   const barcode = text(raw["token"]) ?? code;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
-    direction: outgoing ? "outgoing" : "incoming",
+    trackingNumber: barcode,
+    direction: outgoing ? "sending" : "receiving",
     status,
     rawStatus,
     delivered,
@@ -184,8 +184,8 @@ export function toSnapshot(raw: Json, code: string, report: (c: string) => void)
           keepFraction: true,
         })
       : null,
-    plannedFrom: delivered ? null : plannedFrom,
-    plannedTo: delivered ? null : plannedTo,
+    expectedFrom: delivered ? null : expectedFrom,
+    expectedTo: delivered ? null : expectedTo,
     pickup: status === "at_pickup_point",
     pickupPoint: lockerName(raw),
     url: rulesTrackingUrl(CARRIER_ID, barcode),
@@ -200,7 +200,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, PLAUSIBLE, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -212,7 +212,7 @@ export const budbee = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Budbee",
   countries: ["SE", "NL", "BE", "DK", "FI"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

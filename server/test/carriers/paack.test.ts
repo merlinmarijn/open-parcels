@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { paack } from "../../src/carriers/paack/index.js";
-import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
 // Made-up codes and values only.
@@ -43,11 +43,11 @@ describe("Paack public tracking", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "paack",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
-      plannedFrom: "2026-11-18T09:00:00.000Z",
-      plannedTo: "2026-11-18T13:00:00.000Z",
+      expectedFrom: "2026-11-18T09:00:00.000Z",
+      expectedTo: "2026-11-18T13:00:00.000Z",
       sender: "Example Shop",
     });
     expect(parcel?.history.map((e) => e.status)).toEqual([
@@ -73,7 +73,7 @@ describe("Paack public tracking", () => {
     const { fetchImpl, calls } = scripted([]);
     const { base } = fakeContext(paack.http, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
-      InvalidSourceConfigError,
+      InvalidConnectionConfigError,
     );
     expect(calls).toHaveLength(0);
   });

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { posteItaliane } from "../../src/carriers/poste_italiane/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { json, onPrefix, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -41,11 +41,11 @@ describe("Poste Italiane tracking", () => {
     const [parcel] = (await world.track([CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "poste_italiane",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
-      plannedFrom: "2026-11-19T23:00:00.000Z",
-      plannedTo: "2026-11-20T22:59:59.000Z",
+      expectedFrom: "2026-11-19T23:00:00.000Z",
+      expectedTo: "2026-11-20T22:59:59.000Z",
       pickupPoint: null,
     });
     expect(parcel?.history.map((e) => e.status)).toEqual([
@@ -77,7 +77,7 @@ describe("Poste Italiane tracking", () => {
       status: "delivered",
       delivered: true,
       deliveredAt: "2026-11-18T09:00:00.000Z",
-      plannedFrom: null,
+      expectedFrom: null,
     });
   });
 

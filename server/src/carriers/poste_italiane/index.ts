@@ -12,11 +12,11 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { estimateDay, isPickupSentence, sentenceStatus } from "./status.js";
 
 /** Poste Italiane's fields are strings; a number in one is not taken as text. */
@@ -34,7 +34,7 @@ type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 
 /** Returns the record, or null when Poste does not know the code (also true before the first scan). */
-async function lookUp(http: PluginHttp, barcode: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, barcode: string): Promise<Json | null> {
   const response = await http.request(API, {
     method: "POST",
     headers: {
@@ -106,7 +106,7 @@ function toSnapshot(raw: Json, barcode: string, report: (text: string) => void):
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(code, barcode),
     status,
     rawStatus: latest?.rawStatus ?? text(raw["stato"]),
@@ -114,8 +114,8 @@ function toSnapshot(raw: Json, barcode: string, report: (text: string) => void):
     deliveredAt: delivered
       ? (history.find((entry) => entry.status === "delivered")?.at ?? null)
       : null,
-    plannedFrom: day === null ? null : isoTime(`${day}T00:00:00`, { naive: { zone: ZONE } }),
-    plannedTo: day === null ? null : isoTime(`${day}T23:59:59`, { naive: { zone: ZONE } }),
+    expectedFrom: day === null ? null : isoTime(`${day}T00:00:00`, { naive: { zone: ZONE } }),
+    expectedTo: day === null ? null : isoTime(`${day}T23:59:59`, { naive: { zone: ZONE } }),
     pickup: status === "at_pickup_point",
     pickupPoint: pickupPoint(events.map((entry) => entry.event)),
     url: rulesTrackingUrl(CARRIER_ID, code),
@@ -124,7 +124,7 @@ function toSnapshot(raw: Json, barcode: string, report: (text: string) => void):
   });
 }
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (sentence: string): void => {
     context.reportUnknown("status_text", sentence);
@@ -146,7 +146,7 @@ export const posteItaliane = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Poste Italiane",
   countries: ["IT"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -2,7 +2,7 @@ import type { Kysely } from "kysely";
 import type { Logger } from "pino";
 import { isoNow, type Clock } from "../clock.js";
 import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
-import type { Database, SourceRow } from "../db/schema.js";
+import type { Database, ConnectionRow } from "../db/schema.js";
 import type { EventBus } from "../events/bus.js";
 import {
   CaptchaError,
@@ -12,21 +12,26 @@ import {
   type FetchResult,
   type LiveReading,
   type LiveTarget,
-  type PluginLogger,
+  type ProviderLogger,
   type SessionStore,
-} from "../plugin/api.js";
-import { PluginHttp, type FetchLike, type HostLimiter, type HttpPolicy } from "../plugin/http.js";
+} from "../provider/api.js";
+import {
+  ProviderHttp,
+  type FetchLike,
+  type HostLimiter,
+  type HttpPolicy,
+} from "../provider/http.js";
 import { redactText } from "../log/redact.js";
 import { KeyedMutex } from "./locks.js";
 import type { FailureKind } from "./policy.js";
 import type { LiveTargetOfParcel, Reconciler } from "./reconciler.js";
 import {
-  InvalidSourceConfigError,
+  InvalidConnectionConfigError,
   type BaseContext,
-  type PluginRegistry,
-  type RegisteredPlugin,
+  type ProviderRegistry,
+  type RegisteredProvider,
 } from "./registry.js";
-import { NOT_SIGNED_IN_YET, secretAad, sessionAad } from "./sources.js";
+import { NOT_SIGNED_IN_YET, secretAad, sessionAad } from "./connections.js";
 import { recordUnknown } from "./vocab.js";
 
 export type RunOutcome =
@@ -36,7 +41,7 @@ export type RunOutcome =
       readonly updated: number;
       readonly events: number;
       readonly liveTargets: readonly LiveTargetOfParcel[];
-      /** Why the plug-in did nothing, when it chose to; such a run is not a success. */
+      /** Why the provider did nothing, when it chose to; such a run is not a success. */
       readonly idle?: string;
     }
   | {
@@ -48,7 +53,7 @@ export type RunOutcome =
 
 export interface RunnerDeps {
   readonly db: Kysely<Database>;
-  readonly registry: PluginRegistry;
+  readonly registry: ProviderRegistry;
   readonly secrets: SecretBox;
   readonly reconciler: Reconciler;
   readonly limiter: HostLimiter;
@@ -78,7 +83,7 @@ function classify(error: unknown): {
   if (error instanceof CaptchaError) {
     return { kind: "captcha", detail: "The carrier showed a captcha; paused for six hours." };
   }
-  if (error instanceof InvalidSourceConfigError) {
+  if (error instanceof InvalidConnectionConfigError) {
     return { kind: "invalid_config", detail: error.message };
   }
   if (error instanceof DecryptionError) {
@@ -89,7 +94,7 @@ function classify(error: unknown): {
     };
   }
   if (error instanceof TransientError) {
-    // The plug-in said what broke (an HTTP status, a changed response); show it, scrubbed.
+    // The provider said what broke (an HTTP status, a changed response); show it, scrubbed.
     return {
       kind: "transient",
       detail: `The last update failed: ${redactText(error.message)} Retrying later.`,
@@ -98,41 +103,41 @@ function classify(error: unknown): {
   return { kind: "transient", detail: "The last update failed; retrying later." };
 }
 
-/** Runs one source: calls its plug-in and hands the result to the reconciler. */
-export class SourceRunner {
+/** Runs one connection: calls its provider and hands the result to the reconciler. */
+export class ConnectionRunner {
   #reports: Promise<void> = Promise.resolve();
   /** At most one request at a time per account: runs, live reads and sign-in steps queue here. */
   readonly #locks = new KeyedMutex();
 
   constructor(private readonly deps: RunnerDeps) {}
 
-  /** Runs `work` while holding the source's lock; sign-in steps go through this too. */
-  async exclusive<T>(sourceId: string, work: () => Promise<T>): Promise<T> {
-    return this.#locks.exclusive(sourceId, work);
+  /** Runs `work` while holding the connection's lock; sign-in steps go through this too. */
+  async exclusive<T>(connectionId: string, work: () => Promise<T>): Promise<T> {
+    return this.#locks.exclusive(connectionId, work);
   }
 
-  async run(sourceId: string): Promise<RunOutcome> {
-    return this.exclusive(sourceId, () => this.#run(sourceId));
+  async run(connectionId: string): Promise<RunOutcome> {
+    return this.exclusive(connectionId, () => this.#run(connectionId));
   }
 
-  async #run(sourceId: string): Promise<RunOutcome> {
+  async #run(connectionId: string): Promise<RunOutcome> {
     const { db, registry } = this.deps;
     const row = await db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
-      .where("id", "=", sourceId)
+      .where("id", "=", connectionId)
       .executeTakeFirst();
-    const plugin = row === undefined ? undefined : registry.get(row.plugin);
-    if (row === undefined || plugin === undefined) {
+    const provider = row === undefined ? undefined : registry.get(row.provider);
+    if (row === undefined || provider === undefined) {
       return {
         ok: false,
         kind: "invalid_config",
-        detail: "The source's carrier plug-in is not installed.",
+        detail: "The connection's carrier provider is not installed.",
       };
     }
-    const log = this.deps.logger.child({ plugin: row.plugin, source: row.id });
+    const log = this.deps.logger.child({ provider: row.provider, connection: row.id });
     try {
-      const { result, asked } = await this.#fetch(row, plugin, log);
+      const { result, asked } = await this.#fetch(row, provider, log);
       if (result.idle !== undefined) {
         // Nothing was asked, so nothing is reconciled: an empty answer must not count as "not found".
         return { ok: true, created: 0, updated: 0, events: 0, liveTargets: [], idle: result.idle };
@@ -150,7 +155,7 @@ export class SourceRunner {
       return { ok: true, ...summary };
     } catch (error) {
       const classified = classify(error);
-      // Nothing was ever stored, so nothing was rejected: the source simply awaits its sign-in.
+      // Nothing was ever stored, so nothing was rejected: the connection simply awaits its sign-in.
       const outcome =
         classified.kind === "sign_in_rejected" &&
         row.secret_blob === null &&
@@ -158,81 +163,81 @@ export class SourceRunner {
           ? { ...classified, detail: NOT_SIGNED_IN_YET }
           : classified;
       if (outcome.kind === "transient" && !(error instanceof TransientError)) {
-        // Not a failure the plug-in signalled: most likely a bug. Keep the stack for diagnosis.
-        log.error({ err: error }, "Source run failed unexpectedly.");
+        // Not a failure the provider signalled: most likely a bug. Keep the stack for diagnosis.
+        log.error({ err: error }, "Connection run failed unexpectedly.");
       } else {
         log.warn(
           { failure: outcome.kind, error: error instanceof Error ? error.message : String(error) },
-          "Source run failed.",
+          "Connection run failed.",
         );
       }
       return { ok: false, ...outcome };
     }
   }
 
-  /** A rate-limited HTTP client for a plug-in, for work outside a source run (sign-in). */
-  httpFor(policy: HttpPolicy): PluginHttp {
-    return new PluginHttp(policy, this.deps.limiter, this.deps.clock, this.deps.fetchImpl);
+  /** A rate-limited HTTP client for a provider, for work outside a connection run (sign-in). */
+  httpFor(policy: HttpPolicy): ProviderHttp {
+    return new ProviderHttp(policy, this.deps.limiter, this.deps.clock, this.deps.fetchImpl);
   }
 
   /**
    * Reads one live courier map. Errors propagate to the live tracker, which owns the retry rules;
    * none of them ever triggers a new sign-in here.
    */
-  async readLive(sourceId: string, target: LiveTarget): Promise<LiveReading | null> {
-    return this.exclusive(sourceId, () => this.#readLive(sourceId, target));
+  async readLive(connectionId: string, target: LiveTarget): Promise<LiveReading | null> {
+    return this.exclusive(connectionId, () => this.#readLive(connectionId, target));
   }
 
-  async #readLive(sourceId: string, target: LiveTarget): Promise<LiveReading | null> {
+  async #readLive(connectionId: string, target: LiveTarget): Promise<LiveReading | null> {
     const row = await this.deps.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .selectAll()
-      .where("id", "=", sourceId)
+      .where("id", "=", connectionId)
       .executeTakeFirst();
-    const plugin = row === undefined ? undefined : this.deps.registry.get(row.plugin);
-    if (row === undefined || plugin?.canReadLive !== true) {
+    const provider = row === undefined ? undefined : this.deps.registry.get(row.provider);
+    if (row === undefined || provider?.canReadLive !== true) {
       return null;
     }
     const { base, config, secret } = this.#prepare(
       row,
-      plugin,
-      this.deps.logger.child({ plugin: row.plugin, source: row.id, live: true }),
+      provider,
+      this.deps.logger.child({ provider: row.provider, connection: row.id, live: true }),
     );
-    return plugin.readLive(base, config, secret, target);
+    return provider.readLive(base, config, secret, target);
   }
 
-  /** Runs the plug-in; for a tracking source also returns the ids of the parcels it asked about. */
+  /** Runs the provider; for a tracking connection also returns the ids of the parcels it asked about. */
   async #fetch(
-    row: SourceRow,
-    plugin: RegisteredPlugin,
+    row: ConnectionRow,
+    provider: RegisteredProvider,
     log: Logger,
   ): Promise<{ result: FetchResult; asked: readonly string[] }> {
-    const { base, config, secret } = this.#prepare(row, plugin, log);
+    const { base, config, secret } = this.#prepare(row, provider, log);
     if (row.kind !== "tracking") {
-      return { result: await plugin.fetchAccount(base, config, secret), asked: [] };
+      return { result: await provider.fetchAccount(base, config, secret), asked: [] };
     }
     const tracked = await this.#trackedParcels(row.id);
     if (tracked.length === 0) {
       return { result: { snapshots: [], complete: false }, asked: [] };
     }
-    const result = await plugin.track(
+    const result = await provider.track(
       base,
       config,
       secret,
-      tracked.map((parcel) => parcel.barcode),
+      tracked.map((parcel) => parcel.tracking_number),
     );
     const really = result.asked === undefined ? undefined : new Set(result.asked);
     return {
       result,
       asked: tracked
-        .filter((parcel) => really === undefined || really.has(parcel.barcode))
+        .filter((parcel) => really === undefined || really.has(parcel.tracking_number))
         .map((parcel) => parcel.id),
     };
   }
 
   #prepare(
-    row: SourceRow,
-    plugin: RegisteredPlugin,
+    row: ConnectionRow,
+    provider: RegisteredProvider,
     log: Logger,
   ): { base: BaseContext; config: unknown; secret: unknown } {
     const secret =
@@ -241,16 +246,21 @@ export class SourceRunner {
         : this.deps.secrets.decryptJson(row.secret_blob, secretAad(row.id));
     const config = JSON.parse(row.config) as unknown;
     const base: BaseContext = {
-      sourceId: row.id,
-      http: new PluginHttp(plugin.http, this.deps.limiter, this.deps.clock, this.deps.fetchImpl),
+      connectionId: row.id,
+      http: new ProviderHttp(
+        provider.http,
+        this.deps.limiter,
+        this.deps.clock,
+        this.deps.fetchImpl,
+      ),
       clock: this.deps.clock,
-      logger: this.#pluginLogger(log),
+      logger: this.#providerLogger(log),
       session: this.#sessionStore(row),
       reportUnknown: (kind, key) => {
         // Reports are written one after another (two reports of a new key would otherwise race
         // into a duplicate insert) and never fail the run.
         this.#reports = this.#reports
-          .then(() => this.#reportUnknown(row.plugin, kind, key, log))
+          .then(() => this.#reportUnknown(row.provider, kind, key, log))
           .catch((error: unknown) => {
             log.error({ err: error }, "Recording an unrecognised value failed.");
           });
@@ -259,13 +269,13 @@ export class SourceRunner {
     return { base, config, secret };
   }
 
-  async #trackedParcels(sourceId: string): Promise<{ id: string; barcode: string }[]> {
+  async #trackedParcels(connectionId: string): Promise<{ id: string; tracking_number: string }[]> {
     return (
       this.deps.db
-        .selectFrom("parcel_sources")
-        .innerJoin("parcels", "parcels.id", "parcel_sources.parcel_id")
-        .select(["parcels.id", "parcels.barcode"])
-        .where("parcel_sources.source_id", "=", sourceId)
+        .selectFrom("parcel_connections")
+        .innerJoin("parcels", "parcels.id", "parcel_connections.parcel_id")
+        .select(["parcels.id", "parcels.tracking_number"])
+        .where("parcel_connections.connection_id", "=", connectionId)
         .where("parcels.delivered", "=", 0)
         // Marked delivered by hand: the owner closed it, so the carrier is not asked any more.
         .where((eb) =>
@@ -279,7 +289,7 @@ export class SourceRunner {
     );
   }
 
-  #pluginLogger(log: Logger): PluginLogger {
+  #providerLogger(log: Logger): ProviderLogger {
     return {
       debug: (context, message) => {
         log.debug(context, message);
@@ -293,7 +303,7 @@ export class SourceRunner {
     };
   }
 
-  #sessionStore(row: SourceRow): SessionStore {
+  #sessionStore(row: ConnectionRow): SessionStore {
     let cached: unknown =
       row.session_blob === null
         ? undefined
@@ -303,7 +313,7 @@ export class SourceRunner {
       save: async (value) => {
         cached = value;
         await this.deps.db
-          .updateTable("sources")
+          .updateTable("connections")
           .set({
             session_blob: this.deps.secrets.encryptJson(value, sessionAad(row.id)),
             updated_at: isoNow(this.deps.clock),
@@ -314,7 +324,7 @@ export class SourceRunner {
     };
   }
 
-  async #reportUnknown(plugin: string, kind: string, key: string, log: Logger): Promise<void> {
-    await recordUnknown(this.deps, { plugin, kind, key }, log);
+  async #reportUnknown(provider: string, kind: string, key: string, log: Logger): Promise<void> {
+    await recordUnknown(this.deps, { provider, kind, key }, log);
   }
 }

@@ -15,10 +15,10 @@ import {
   type Clock,
   type HttpResponse,
   type Json,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderHttp,
+  type ProviderLogger,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const TOKEN_HOST = "sso-osu.canadapost-postescanada.ca";
 export const LIST_HOST = "b3n4knmt6famlj575e5pfn74lm.appsync-api.ca-central-1.amazonaws.com";
@@ -57,10 +57,10 @@ export class CanadaPostAccount {
   #renewed = false;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly clock: Clock,
     private readonly session: SessionStore,
-    private readonly logger: PluginLogger,
+    private readonly logger: ProviderLogger,
   ) {
     const stored = tokensSchema.safeParse(session.load());
     this.#tokens = stored.success ? stored.data : null;

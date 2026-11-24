@@ -12,10 +12,10 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
-  type PluginLogger,
+  type ProviderHttp,
+  type ProviderLogger,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { CARRIER_ID, compactPostcode, isoTime, latestHistory, mapGls, text } from "./shared.js";
 
 export const ES_HOST = "api.consignee.gls-spain.es";
@@ -44,8 +44,8 @@ export function signRequest(key: string, method: string, path: string, stamp: st
  * a rejected signature or a non-JSON page stops the run.
  */
 export async function lookUpEs(
-  http: PluginHttp,
-  logger: PluginLogger,
+  http: ProviderHttp,
+  logger: ProviderLogger,
   now: Date,
   barcode: string,
   postcode: string,
@@ -173,7 +173,7 @@ export function esSnapshot(
   const deliveredScan = events.find((event) => event.status === "delivered");
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: ids.barcode,
+    trackingNumber: ids.barcode,
     status,
     rawStatus: code,
     delivered,

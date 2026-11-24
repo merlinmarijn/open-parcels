@@ -5,12 +5,12 @@ import {
   type Json,
   type ParcelStatus,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "pdn_express";
 export const TRACKING_HOST = "pdn.express";
 
-export { asObject, isObject, newestFirst, type Json } from "../../plugin/api.js";
+export { asObject, isObject, newestFirst, type Json } from "../../provider/api.js";
 
 /** PDN's fields are strings; a number in one is not taken as text. */
 export const text = (value: unknown): string | null => kitText(value, { numbers: false });

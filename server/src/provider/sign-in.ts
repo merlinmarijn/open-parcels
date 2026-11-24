@@ -1,9 +1,9 @@
 import type { z } from "zod";
 import type { Clock } from "../clock.js";
-import type { PluginHttp } from "./http.js";
+import type { ProviderHttp } from "./http.js";
 
-/** Source kinds a sign-in flow can apply to (mirrors `SOURCE_KINDS` in the plug-in API). */
-export type SignInSourceKind = "account" | "tracking" | "shop";
+/** Connection kinds a sign-in flow can apply to (mirrors `CONNECTION_KINDS` in the provider API). */
+export type SignInConnectionKind = "account" | "tracking" | "shop";
 
 /** One input on a form step. Typed values are never echoed back to the client. */
 export interface SignInField {
@@ -81,15 +81,15 @@ export type SignInTurn<Secret> =
 
 export interface SignInContext<Config> {
   readonly config: Config;
-  readonly kind: SignInSourceKind;
-  /** Rate-limited like every other request of the plug-in. */
-  readonly http: PluginHttp;
+  readonly kind: SignInConnectionKind;
+  /** Rate-limited like every other request of the provider. */
+  readonly http: ProviderHttp;
   readonly clock: Clock;
 }
 
-/** Restricts a flow to some source kinds or configurations. Both default to "always". */
+/** Restricts a flow to some connection kinds or configurations. Both default to "always". */
 export interface SignInScope<Config> {
-  readonly kinds?: readonly SignInSourceKind[];
+  readonly kinds?: readonly SignInConnectionKind[];
   when?(config: Config): boolean;
 }
 
@@ -99,7 +99,7 @@ export interface StaticSignIn<Config> extends SignInScope<Config> {
   readonly id?: string;
   readonly label?: string;
   /**
-   * The fields the user fills in for this flow, when they are only part of the plug-in's sign-in
+   * The fields the user fills in for this flow, when they are only part of the provider's sign-in
    * data (an optional API key next to an account's stored session). Defaults to the whole schema.
    */
   readonly fields?: z.ZodType;
@@ -138,7 +138,7 @@ export type SignInFlow<Config, Secret> = StaticSignIn<Config> | InteractiveSignI
 export function pastedRedirect<Config, Secret>(options: {
   readonly id?: string;
   readonly label?: string;
-  readonly kinds?: readonly SignInSourceKind[];
+  readonly kinds?: readonly SignInConnectionKind[];
   readonly when?: (config: Config) => boolean;
   readonly message?: string;
   /** Start of the final address; defaults to the sign-in address's `redirect_uri`. */

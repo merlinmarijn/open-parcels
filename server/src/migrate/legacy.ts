@@ -6,13 +6,13 @@ import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database } from "../db/schema.js";
 import { isPlausibleOrder, shopFromDomain } from "../domain/order.js";
 import type { ParcelStatus } from "../domain/parcel.js";
-import { normaliseBarcode } from "../engine/barcode.js";
+import { normaliseTrackingNumber } from "../engine/tracking-number.js";
 import { BUILTIN_CARRIERS } from "../engine/builtin-carriers.js";
-import { linkUntrackedParcels, trackingSourceIn } from "../engine/linking.js";
-import { PluginRegistry } from "../engine/registry.js";
-import { secretAad } from "../engine/sources.js";
+import { linkUntrackedParcels, trackingConnectionIn } from "../engine/linking.js";
+import { ProviderRegistry } from "../engine/registry.js";
+import { secretAad } from "../engine/connections.js";
 import { appendEvent } from "../events/bus.js";
-import { MAIL_PLUGIN, mailConfigSchema, mailSecretSchema, mailboxLabel } from "../mail/types.js";
+import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema, inboxLabel } from "../mail/types.js";
 import { fixesCarrier, resolveLegacyCarrier } from "./legacy-carrier.js";
 import { DELIBERATELY_SKIPPED, isMailService, parseLegacyImap, serviceKey } from "./legacy-imap.js";
 
@@ -46,14 +46,14 @@ export interface LegacyReport {
   readonly skippedDuplicateParcels: number;
   readonly events: number;
   readonly droppedPositionEvents: number;
-  readonly mailboxes: number;
-  /** Mailboxes already present (same host and user), from an earlier import or added by hand. */
+  readonly inboxes: number;
+  /** Inboxes already present (same host and user), from an earlier import or added by hand. */
   readonly skippedDuplicateMailboxes: number;
-  /** Active parcels linked to their carrier's tracking source, so they get refreshed. */
+  /** Active parcels linked to their carrier's tracking connection, so they get refreshed. */
   readonly linkedParcels: number;
-  /** Parcels from an earlier import whose placeholder carrier was replaced by a plug-in id. */
+  /** Parcels from an earlier import whose placeholder carrier was replaced by a provider id. */
   readonly correctedCarriers: number;
-  /** Imported parcels per plug-in id; `unknown` only when nothing identified the carrier. */
+  /** Imported parcels per provider id; `unknown` only when nothing identified the carrier. */
   readonly carriers: Readonly<Record<string, number>>;
   /** Stored credentials that were not imported, each with the reason (e.g. Amazon: sign in again). */
   readonly skippedCredentials: readonly SkippedCredential[];
@@ -132,7 +132,7 @@ interface Counters {
   skippedDuplicateParcels: number;
   events: number;
   droppedPositionEvents: number;
-  mailboxes: number;
+  inboxes: number;
   skippedDuplicateMailboxes: number;
   linkedParcels: number;
   correctedCarriers: number;
@@ -227,14 +227,14 @@ async function importParcels(
 ): Promise<Map<string, string>> {
   const ids = new Map<string, string>();
   for (const row of rows) {
-    const barcode = text(row["tracking_number"]);
-    if (barcode === null) {
+    const trackingNumber = text(row["tracking_number"]);
+    if (trackingNumber === null) {
       continue;
     }
     const order = orders.get(String(row["order_id"]));
     const carrier = resolveLegacyCarrier({
       courier: row["courier"],
-      barcode,
+      trackingNumber,
       shop: order?.shop ?? null,
     });
     counters.carriers[carrier] = (counters.carriers[carrier] ?? 0) + 1;
@@ -242,11 +242,11 @@ async function importParcels(
     const status = STATUS_MAP[oldStatus] ?? "unknown";
     counters.statuses[`${oldStatus} → ${status}`] =
       (counters.statuses[`${oldStatus} → ${status}`] ?? 0) + 1;
-    const stored = normaliseBarcode(carrier, barcode);
+    const stored = normaliseTrackingNumber(carrier, trackingNumber);
     const existing = await trx
       .selectFrom("parcels")
       .select(["id", "carrier"])
-      .where("barcode", "in", [...new Set([barcode, stored])])
+      .where("tracking_number", "in", [...new Set([trackingNumber, stored])])
       .execute();
     if (existing.length > 0) {
       counters.skippedDuplicateParcels += 1;
@@ -266,14 +266,14 @@ async function importParcels(
       .values({
         id,
         carrier,
-        barcode: stored,
-        direction: "incoming",
+        tracking_number: stored,
+        direction: "receiving",
         status,
         raw_status: text(row["last_event_description"]),
         delivered: delivered ? 1 : 0,
         delivered_at: delivered ? updatedAt : null,
-        planned_from: delivered ? null : toIso(row["estimated_delivery_start"]),
-        planned_to: delivered ? null : toIso(row["estimated_delivery_end"]),
+        expected_from: delivered ? null : toIso(row["estimated_delivery_start"]),
+        expected_to: delivered ? null : toIso(row["estimated_delivery_end"]),
         pickup: status === "at_pickup_point" ? 1 : 0,
         label: text(row["name"]),
         order_id: order?.id ?? null,
@@ -301,7 +301,7 @@ async function importEvents(
     const at = toIso(row["timestamp"]);
     const description = text(row["description"]);
     // Rows written by the old live scraper were courier positions; positions are never history.
-    // Only the scraper's own names (`live`, `amazon-live`), never a source that merely contains
+    // Only the scraper's own names (`live`, `amazon-live`), never a connection that merely contains
     // the letters (`delivery`, `delivered`).
     if (/(?:^|[-_])live$/i.test(text(row["source"]) ?? "")) {
       counters.droppedPositionEvents += 1;
@@ -315,7 +315,7 @@ async function importEvents(
       .insertInto("parcel_events")
       .values({
         parcel_id: parcelId,
-        source_id: null,
+        connection_id: null,
         at,
         status: null,
         raw_status: description,
@@ -336,7 +336,7 @@ interface ImportCredentials {
   readonly secrets: SecretBox;
   readonly clock: Clock;
   readonly now: string;
-  /** Mailbox settings the old app kept outside the credential (imap_host, imap_port, ...). */
+  /** Inbox settings the old app kept outside the credential (imap_host, imap_port, ...). */
   readonly settings: Readonly<Record<string, unknown>>;
 }
 
@@ -347,7 +347,7 @@ function skipReason(service: string, key: Buffer | undefined, encrypted: string 
     return deliberate;
   }
   if (!isMailService(service)) {
-    return "No source type takes this service's stored credentials; add it again by hand.";
+    return "No connection type takes this service's stored credentials; add it again by hand.";
   }
   if (encrypted === null) {
     return "The credential row is empty.";
@@ -357,7 +357,7 @@ function skipReason(service: string, key: Buffer | undefined, encrypted: string 
 
 /**
  * The decrypted credential: JSON, or a bare `user:password@host:port` string. The server is after
- * the last `@` and the user before the first `:`, so an e-mail address as the user and a password
+ * the last `@` and the user before the first `:`, so an email address as the user and a password
  * holding `@` or `:` both read correctly.
  */
 export function parseDecrypted(plain: string): unknown {
@@ -404,7 +404,7 @@ async function importCredentials(
       continue;
     }
     const decrypted = parseDecrypted(plain);
-    // Some versions kept a list of mailboxes under one credential.
+    // Some versions kept a list of inboxes under one credential.
     for (const record of Array.isArray(decrypted) ? decrypted : [decrypted]) {
       const parsed = parseLegacyImap(record, input.settings);
       if (!parsed.ok) {
@@ -412,7 +412,7 @@ async function importCredentials(
         continue;
       }
       if (await insertMailbox(input, parsed.config, parsed.secret)) {
-        counters.mailboxes += 1;
+        counters.inboxes += 1;
       } else {
         counters.skippedDuplicateMailboxes += 1;
       }
@@ -420,16 +420,16 @@ async function importCredentials(
   }
 }
 
-/** True when a mailbox source for this host and user already exists. */
+/** True when an inbox connection for this host and user already exists. */
 async function hasMailbox(
   input: ImportCredentials,
   host: string,
   username: string,
 ): Promise<boolean> {
   const rows = await input.trx
-    .selectFrom("sources")
+    .selectFrom("connections")
     .select(["id", "config", "secret_blob"])
-    .where("plugin", "=", MAIL_PLUGIN)
+    .where("provider", "=", MAIL_PROVIDER)
     .where("kind", "=", "mail")
     .execute();
   const same = (a: string, b: string): boolean => a.trim().toLowerCase() === b.trim().toLowerCase();
@@ -445,7 +445,7 @@ async function hasMailbox(
       if (!(error instanceof DecryptionError)) {
         throw error;
       }
-      // A mailbox whose sign-in this key cannot read is not the same one; it never aborts the
+      // An inbox whose sign-in this key cannot read is not the same one; it never aborts the
       // whole import.
       return false;
     }
@@ -454,7 +454,7 @@ async function hasMailbox(
   });
 }
 
-/** Adds the mailbox unless one for the same host and user exists; true when it was added. */
+/** Adds the inbox unless one for the same host and user exists; true when it was added. */
 async function insertMailbox(
   input: ImportCredentials,
   config: { host: string },
@@ -464,12 +464,12 @@ async function insertMailbox(
     return false;
   }
   const id = crypto.randomUUID();
-  const label = mailboxLabel(secret.username, config.host);
+  const label = inboxLabel(secret.username, config.host);
   await input.trx
-    .insertInto("sources")
+    .insertInto("connections")
     .values({
       id,
-      plugin: MAIL_PLUGIN,
+      provider: MAIL_PROVIDER,
       kind: "mail",
       label,
       config: JSON.stringify(config),
@@ -482,12 +482,12 @@ async function insertMailbox(
       updated_at: input.now,
     })
     .execute();
-  // Clients add the mailbox's device when the running server next delivers events.
+  // Clients add the inbox's device when the running server next delivers events.
   await appendEvent(input.trx, input.clock, {
-    type: "source.added",
+    type: "connection.added",
     parcelId: null,
     payload: {
-      source: { id, plugin: MAIL_PLUGIN, label, kind: "mail" },
+      connection: { id, provider: MAIL_PROVIDER, label, kind: "mail" },
       state: "ok",
       detail: null,
     },
@@ -536,7 +536,7 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
     skippedDuplicateParcels: 0,
     events: 0,
     droppedPositionEvents: 0,
-    mailboxes: 0,
+    inboxes: 0,
     skippedDuplicateMailboxes: 0,
     linkedParcels: 0,
     correctedCarriers: 0,
@@ -573,12 +573,12 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
         counters,
         skipped,
       );
-      // Active parcels are followed by their carrier's tracking source, as `POST /parcels` does;
-      // the sources are due at once, so the first poll after start refreshes them.
+      // Active parcels are followed by their carrier's tracking connection, as `POST /parcels` does;
+      // the connections are due at once, so the first poll after start refreshes them.
       const linked = await linkUntrackedParcels(
         trx,
         options.clock,
-        trackingSourceIn(trx, new PluginRegistry(BUILTIN_CARRIERS), options.clock),
+        trackingConnectionIn(trx, new ProviderRegistry(BUILTIN_CARRIERS), options.clock),
       );
       counters.linkedParcels = linked.parcels;
       if (options.dryRun) {

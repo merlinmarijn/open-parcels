@@ -7,8 +7,8 @@ import {
   TransientError,
   UnexpectedResponseError,
   type HttpResponse,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 import type { Storefront } from "./storefronts.js";
 
 /**
@@ -151,7 +151,7 @@ const registrationSchema = z.object({
  * host's outage never looks like a refused sign-in.
  */
 export async function registerDevice(
-  http: PluginHttp,
+  http: ProviderHttp,
   storefront: Storefront,
   state: SignInState,
   code: string,
@@ -233,7 +233,7 @@ const cookieExchangeSchema = z.object({
  * A refused token is a `SignInRejectedError`; anything else that goes wrong is transient.
  */
 export async function mintCookies(
-  http: PluginHttp,
+  http: ProviderHttp,
   storefront: Storefront,
   refreshToken: string,
   jar: CookieJar,

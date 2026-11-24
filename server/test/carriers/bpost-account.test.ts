@@ -1,11 +1,11 @@
 import { describe, expect, it } from "vitest";
 import { bpost } from "../../src/carriers/bpost/index.js";
-import { carrierKey } from "../../src/plugin/rules.js";
+import { carrierKey } from "../../src/provider/rules.js";
 import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/errors.js";
+} from "../../src/provider/errors.js";
 import { json, madeUp, on, World } from "./harness.js";
 
 // Made-up item codes, accounts and tokens only.
@@ -49,10 +49,10 @@ describe("My bpost account", () => {
     expect(world.calls[0]?.headers.get("appversion")).toBe(carrierKey("bpost", "app_version"));
     expect(world.calls[1]?.headers.get("authorization")).toBe("a1");
     expect(result.snapshots[0]).toMatchObject({
-      barcode: "323200000000000001",
+      trackingNumber: "323200000000000001",
       sender: "Example Shop",
-      plannedFrom: "2026-11-18T09:00:00.000Z",
-      plannedTo: "2026-11-18T11:00:00.000Z",
+      expectedFrom: "2026-11-18T09:00:00.000Z",
+      expectedTo: "2026-11-18T11:00:00.000Z",
     });
     expect(world.stored).toEqual({ access: "a1", refresh: "r-a1" });
   });

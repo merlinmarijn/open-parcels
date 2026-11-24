@@ -1,4 +1,4 @@
-import { ruleStatus, type ParcelStatus } from "../../plugin/api.js";
+import { ruleStatus, type ParcelStatus } from "../../provider/api.js";
 
 const CARRIER_ID = "bpost";
 

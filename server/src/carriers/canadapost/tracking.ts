@@ -13,10 +13,10 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { DELIVERED_EVENT_CODE, mapEvent, resolveStatus } from "./status.js";
 
 export const CARRIER_ID = "canadapost";
@@ -32,7 +32,7 @@ const detailHeaders = () => ({
 });
 
 /** One PIN's detail; null when Canada Post has no history for it (an `error` in the body). */
-export async function lookUp(http: PluginHttp, pin: string): Promise<Json | null> {
+export async function lookUp(http: ProviderHttp, pin: string): Promise<Json | null> {
   const url = new URL(
     `https://${TRACKING_HOST}/track-reperage/rs/track/json/package/${encodeURIComponent(pin)}/detail`,
   );
@@ -155,15 +155,15 @@ export function toSnapshot(
   );
   return snapshot({
     carrier: CARRIER_ID,
-    barcode: pin,
+    trackingNumber: pin,
     status,
     rawStatus: text(detail["status"]),
     delivered,
     deliveredAt: delivered
       ? (deliveredEvent?.at ?? parseLocal(text(detail["actualDlvryDate"]), options.zone))
       : null,
-    plannedFrom: planned.from,
-    plannedTo: planned.to,
+    expectedFrom: planned.from,
+    expectedTo: planned.to,
     pickup: status === "at_pickup_point",
     pickupPoint: status === "at_pickup_point" ? pickupPoint(dated) : null,
     url: rulesTrackingUrl(CARRIER_ID, pin, options.lang),

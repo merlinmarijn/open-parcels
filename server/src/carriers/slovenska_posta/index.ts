@@ -9,9 +9,9 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, resultSnapshot, STRINGS } from "./parse.js";
 
 const HOST = "api.posta.sk";
@@ -24,7 +24,10 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 
 /** Looks up to BATCH_SIZE codes up at once; returns the results by number. */
-async function lookUpBatch(http: PluginHttp, codes: readonly string[]): Promise<Map<string, Json>> {
+async function lookUpBatch(
+  http: ProviderHttp,
+  codes: readonly string[],
+): Promise<Map<string, Json>> {
   const url = new URL(`https://${HOST}/tracking`);
   url.searchParams.set("q", codes.join(","));
   url.searchParams.set("l", "en");
@@ -49,7 +52,7 @@ async function lookUpBatch(http: PluginHttp, codes: readonly string[]): Promise<
   return byNumber;
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const codes = barcodes.filter((code) => CODE_PATTERN.test(code));
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
@@ -74,7 +77,7 @@ export const slovenskaPosta = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Slovenská pošta",
   countries: ["SK"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

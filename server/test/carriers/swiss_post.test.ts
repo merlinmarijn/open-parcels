@@ -1,6 +1,6 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { resetWordingCache, swissPost } from "../../src/carriers/swiss_post/index.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
@@ -87,10 +87,10 @@ describe("Swiss Post tracking", () => {
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "swiss_post",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T09:00:00.000Z",
-      plannedTo: "2026-11-18T12:00:00.000Z",
+      expectedFrom: "2026-11-18T09:00:00.000Z",
+      expectedTo: "2026-11-18T12:00:00.000Z",
       sender: "Testfirma AG",
       receiver: "9999 Teststadt",
       weightKg: 1.14,
@@ -129,7 +129,7 @@ describe("Swiss Post tracking", () => {
     });
     const { base, unknownKeys: unknown } = fakeContext(swissPost.http, fetchImpl);
     const [parcel] = (await plugin.track(base, { eventHistory: false }, null, [CODE])).snapshots;
-    expect(parcel).toMatchObject({ status: null, delivered: true, plannedFrom: null });
+    expect(parcel).toMatchObject({ status: null, delivered: true, expectedFrom: null });
     expect(unknown).toEqual(["SOMETHING_NEW"]);
   });
 

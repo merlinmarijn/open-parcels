@@ -6,9 +6,9 @@ import {
   UnexpectedResponseError,
   type FetchResult,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { mapDpd, publicUrl, textStatus, trackingStepStatus, type ParcelStatus } from "./status.js";
 import { localTimestamp } from "./time.js";
 
@@ -112,7 +112,7 @@ function lifeCycleSnapshot(barcode: string, data: LifeCycle, report: Report): Pa
   const delivered = status === "delivered";
   return snapshot({
     carrier: "dpd",
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: current === undefined ? latestText : current.status,
     delivered,
@@ -135,10 +135,10 @@ function topKeys(body: unknown): string {
   return keys.length === 0 ? "(none)" : keys.join(", ");
 }
 
-/** The source's detail while public tracking is off: the run looks nothing up. */
+/** The connection's detail while public tracking is off: the run looks nothing up. */
 export const PUBLIC_TRACKING_OFF = "Public tracking off: nothing to look up.";
 
-type TrackingContext = PluginContext<{ publicTracking: boolean }, unknown>;
+type TrackingContext = ProviderContext<{ publicTracking: boolean }, unknown>;
 
 /** Looks codes up on DPD Germany's public tracking page, one request per code. */
 export async function trackDe(
@@ -158,7 +158,7 @@ export async function trackDe(
         headers: { accept: "application/json", "accept-language": "de-DE,de;q=0.9" },
       })
       .catch((error: unknown) => {
-        // A reset connection is DPD's bot protection, not an outage; say so in the source.
+        // A reset connection is DPD's bot protection, not an outage; say so in the connection.
         if (
           error instanceof TransientError &&
           /\((ECONNRESET|UND_ERR_SOCKET|EPIPE)\)/u.test(error.message)
@@ -174,7 +174,7 @@ export async function trackDe(
       continue;
     }
     // Messages name the status, the content type and the schema path that broke, never the
-    // code or any value from the body; they end up in the source's detail and the log.
+    // code or any value from the body; they end up in the connection's detail and the log.
     const type = (response.headers.get("content-type") ?? "none").split(";")[0]?.trim();
     if (response.status !== 200) {
       throw new TransientError(

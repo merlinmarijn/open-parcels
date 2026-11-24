@@ -16,9 +16,9 @@ import {
   text,
   type HttpResponse,
   type Json,
-  type PluginHttp,
+  type ProviderHttp,
   type SessionStore,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { API_BASE, appHeaders, CARRIER_ID, PORTAL, portalPhoneKey, readBody } from "./shared.js";
 
 export const B2C_HOST = "mycargus.b2clogin.com";
@@ -79,7 +79,7 @@ function setting(page: string, name: string): string | null {
  * website does it. A rejected password is the user's to fix; anything else is transient.
  */
 export async function signIn(
-  http: PluginHttp,
+  http: ProviderHttp,
   credentials: Credentials,
   now: number,
 ): Promise<Tokens> {
@@ -172,7 +172,7 @@ export async function signIn(
   return tokensFrom(token, now);
 }
 
-async function refresh(http: PluginHttp, tokens: Tokens, now: number): Promise<Tokens> {
+async function refresh(http: ProviderHttp, tokens: Tokens, now: number): Promise<Tokens> {
   const response = await http.request(new URL(`${b2c()}/oauth2/v2.0/token`), {
     method: "POST",
     headers: { "user-agent": browserAgent(), accept: "application/json" },
@@ -231,7 +231,7 @@ export class CargusAccount {
   #renewed = false;
 
   constructor(
-    private readonly http: PluginHttp,
+    private readonly http: ProviderHttp,
     private readonly credentials: Credentials,
     private readonly phone: string,
     private readonly now: () => number,

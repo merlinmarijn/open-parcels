@@ -5,8 +5,8 @@ import {
   isObject,
   type Json,
   type ParcelSnapshot,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderHttp,
+} from "../../provider/api.js";
 import type { TokenKeeper } from "./auth.js";
 import { scanSnapshot } from "./scans.js";
 import { API_BASE, getJson, parcelOf, resultOf, text, type Answer } from "./shared.js";
@@ -21,7 +21,7 @@ export const DETAIL_LIMIT = 25;
  * with the password, a third means the account no longer works; after that, any refusal in the
  * same run does too. Network errors propagate and never lead to a sign-in.
  */
-async function signedGet(http: PluginHttp, keeper: TokenKeeper, url: URL): Promise<Answer> {
+async function signedGet(http: ProviderHttp, keeper: TokenKeeper, url: URL): Promise<Answer> {
   let token = await keeper.current();
   for (let stage = 0; stage < 3; stage += 1) {
     const answer = await getJson(http, url, { authorization: `Bearer ${token}` });
@@ -42,7 +42,11 @@ async function signedGet(http: PluginHttp, keeper: TokenKeeper, url: URL): Promi
 type Direction = ParcelSnapshot["direction"];
 
 /** Every row of one list, paged until `totalCount` is reached. */
-async function inbox(http: PluginHttp, keeper: TokenKeeper, direction: Direction): Promise<Json[]> {
+async function inbox(
+  http: ProviderHttp,
+  keeper: TokenKeeper,
+  list: "incoming" | "outgoing",
+): Promise<Json[]> {
   const rows = new Map<string, Json>();
   let skipped = 0;
   for (let page = 1; page <= MAX_PAGES; page += 1) {
@@ -50,7 +54,7 @@ async function inbox(http: PluginHttp, keeper: TokenKeeper, direction: Direction
     url.search = new URLSearchParams({
       page: String(page),
       pageSize: String(PAGE_SIZE),
-      [direction]: "true",
+      [list]: "true",
     }).toString();
     const result = resultOf(await signedGet(http, keeper, url));
     const total = result["totalCount"];
@@ -82,7 +86,7 @@ async function inbox(http: PluginHttp, keeper: TokenKeeper, direction: Direction
   throw new UnexpectedResponseError("MojaPošta's parcel list ended before its total.");
 }
 
-async function detail(http: PluginHttp, keeper: TokenKeeper, id: string): Promise<Json | null> {
+async function detail(http: ProviderHttp, keeper: TokenKeeper, id: string): Promise<Json | null> {
   const answer = await signedGet(http, keeper, new URL(`${API_BASE}/${encodeURIComponent(id)}`));
   return answer.status === 404 ? null : resultOf(answer);
 }
@@ -93,20 +97,23 @@ function directionOf(row: Json, result: Json | null, listed: Direction): Directi
   if (typeof flag !== "boolean") {
     return listed;
   }
-  return flag ? "outgoing" : "incoming";
+  return flag ? "sending" : "receiving";
 }
 
 /** Both lists, with the scan history of each live parcel from its detail. */
 export async function readAccount(
-  http: PluginHttp,
+  http: ProviderHttp,
   keeper: TokenKeeper,
   report: (code: string) => void,
 ): Promise<ParcelSnapshot[]> {
   const snapshots: ParcelSnapshot[] = [];
   const seen = new Set<string>();
   let details = 0;
-  for (const listed of ["incoming", "outgoing"] as const) {
-    for (const row of await inbox(http, keeper, listed)) {
+  for (const [list, listed] of [
+    ["incoming", "receiving"],
+    ["outgoing", "sending"],
+  ] as const) {
+    for (const row of await inbox(http, keeper, list)) {
       const id = String(row["parcelId"]);
       if (seen.has(id)) {
         continue;

@@ -7,9 +7,9 @@ import {
   text,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { publicTrackingUrl } from "./keys.js";
 import { mapAndReport } from "./public-normalize.js";
 
@@ -18,7 +18,7 @@ import { mapAndReport } from "./public-normalize.js";
  * no live answer has been seen yet.
  */
 
-type Deps = Pick<PluginContext<unknown, unknown>, "reportUnknown">;
+type Deps = Pick<ProviderContext<unknown, unknown>, "reportUnknown">;
 
 const DATE = /^(\d{4})(\d{2})(\d{2})$/;
 const TIME = /^(\d{2}):?(\d{2}):?(\d{2})$/;
@@ -94,7 +94,7 @@ export function normalizeOfficial(
   const delivered = status === "delivered";
   return snapshot({
     carrier: "ups",
-    barcode: code,
+    trackingNumber: code,
     status,
     rawStatus: text(asObject(pkg["currentStatus"])["description"]) ?? latestType,
     delivered,

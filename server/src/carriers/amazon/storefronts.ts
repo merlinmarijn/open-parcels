@@ -1,5 +1,5 @@
 /**
- * The storefronts this plug-in reads. Only storefronts whose order pages are in English or German
+ * The storefronts this provider reads. Only storefronts whose order pages are in English or German
  * are listed, because the status and date wording comes from the en/de locale tables of
  * open-parcels-rules; other languages are added once their tables exist there.
  */

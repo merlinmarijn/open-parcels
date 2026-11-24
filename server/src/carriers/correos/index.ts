@@ -18,11 +18,11 @@ import {
   unknownReporter,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
+  type ProviderContext,
+  type ProviderHttp,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 const CARRIER_ID = "correos";
 const HOST = "localizador.correos.es";
@@ -33,7 +33,7 @@ const PLAUSIBLE = carrierPattern("correos");
  * The endpoint answers a one-element list (sometimes a bare object). Every real answer carries
  * an error block; a non-zero code means "no traceability", the normal not-found.
  */
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(
     `https://${HOST}/canonico/eventos_envio_servicio/${encodeURIComponent(code)}`,
   );
@@ -93,7 +93,7 @@ function toSnapshot(raw: Json, code: string, report: (c: string) => void): Parce
   const barcode = text(raw["codEnvio"]) ?? code;
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     status,
     rawStatus: latest === undefined ? null : (text(latest["desTextoResumen"]) ?? latestCode),
     delivered,
@@ -112,7 +112,7 @@ type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();
 type Secret = z.infer<typeof secretSchema>;
 
-async function track(context: PluginContext<Config, Secret>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
   const report = unknownReporter(context, "status_code", { once: false });
   return trackEach(barcodes, PLAUSIBLE, async (code) => {
     const raw = await lookUp(context.http, code);
@@ -124,7 +124,7 @@ export const correos = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Correos",
   countries: ["ES"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

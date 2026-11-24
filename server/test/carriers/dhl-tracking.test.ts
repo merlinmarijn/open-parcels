@@ -3,7 +3,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/api.js";
+} from "../../src/provider/api.js";
 import { header, json, track, World } from "./dhl-harness.js";
 
 // Made-up codes in the shapes DHL uses; none belongs to a real parcel.
@@ -52,9 +52,9 @@ describe("DHL tracking", () => {
     expect(result.complete).toBe(true);
     expect(result.snapshots).toHaveLength(1);
     const parcel = result.snapshots[0];
-    expect(parcel?.barcode).toBe(CODE_B.toLowerCase());
+    expect(parcel?.trackingNumber).toBe(CODE_B.toLowerCase());
     expect(parcel?.status).toBe("out_for_delivery");
-    expect(parcel?.plannedFrom).toBe("2026-11-12T12:00:00.000Z");
+    expect(parcel?.expectedFrom).toBe("2026-11-12T12:00:00.000Z");
     expect(parcel?.history.map((e) => e.status)).toEqual(["registered", "out_for_delivery"]);
   });
 

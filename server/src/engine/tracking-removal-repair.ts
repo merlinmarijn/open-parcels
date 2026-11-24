@@ -4,10 +4,10 @@ import type { Database } from "../db/schema.js";
 import { appendParcelEvents } from "./repair-events.js";
 
 /**
- * Undoes removals that older versions derived from tracking lookups. Tracking sources used to
+ * Undoes removals that older versions derived from tracking lookups. Tracking connections used to
  * claim complete answers, so a code the carrier did not know yet was marked missing and, six hours
  * later, removed. A parcel is revived only when that path is provable: every link it has is to a
- * tracking source, and at least one of them carries such a missing mark. Every tracking link's
+ * tracking connection, and at least one of them carries such a missing mark. Every tracking link's
  * mark is cleared too, since a lookup never sets one now. Each revived parcel fires
  * `parcel.registered`, since clients dropped it on `parcel.removed`. Idempotent; returns the
  * parcels revived.
@@ -21,23 +21,23 @@ export async function reviveTrackingRemovals(db: Kysely<Database>, clock: Clock)
       .where((eb) =>
         eb.exists(
           eb
-            .selectFrom("parcel_sources")
-            .innerJoin("sources", "sources.id", "parcel_sources.source_id")
-            .select("parcel_sources.parcel_id")
-            .whereRef("parcel_sources.parcel_id", "=", "parcels.id")
-            .where("sources.kind", "=", "tracking")
-            .where("parcel_sources.missing_since", "is not", null),
+            .selectFrom("parcel_connections")
+            .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+            .select("parcel_connections.parcel_id")
+            .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
+            .where("connections.kind", "=", "tracking")
+            .where("parcel_connections.missing_since", "is not", null),
         ),
       )
       .where((eb) =>
         eb.not(
           eb.exists(
             eb
-              .selectFrom("parcel_sources")
-              .innerJoin("sources", "sources.id", "parcel_sources.source_id")
-              .select("parcel_sources.parcel_id")
-              .whereRef("parcel_sources.parcel_id", "=", "parcels.id")
-              .where("sources.kind", "!=", "tracking"),
+              .selectFrom("parcel_connections")
+              .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+              .select("parcel_connections.parcel_id")
+              .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
+              .where("connections.kind", "!=", "tracking"),
           ),
         ),
       )
@@ -60,16 +60,16 @@ export async function reviveTrackingRemovals(db: Kysely<Database>, clock: Clock)
       );
     }
     await trx
-      .updateTable("parcel_sources")
+      .updateTable("parcel_connections")
       .set({ missing_since: null })
       .where("missing_since", "is not", null)
       .where((eb) =>
         eb.exists(
           eb
-            .selectFrom("sources")
-            .select("sources.id")
-            .whereRef("sources.id", "=", "parcel_sources.source_id")
-            .where("sources.kind", "=", "tracking"),
+            .selectFrom("connections")
+            .select("connections.id")
+            .whereRef("connections.id", "=", "parcel_connections.connection_id")
+            .where("connections.kind", "=", "tracking"),
         ),
       )
       .execute();

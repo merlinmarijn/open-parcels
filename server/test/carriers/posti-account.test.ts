@@ -2,7 +2,7 @@ import { constants, generateKeyPairSync, publicEncrypt, verify } from "node:cryp
 import { describe, expect, it } from "vitest";
 import { proof, type Device } from "../../src/carriers/posti/device.js";
 import { posti } from "../../src/carriers/posti/index.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/api.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/api.js";
 import { FakeClock } from "../helpers.js";
 import { html, json, on, raw, World, type Call } from "./harness.js";
 import { SignInDriver } from "./sign-in-driver.js";
@@ -215,10 +215,10 @@ describe("Posti device", () => {
     ]);
     const result = await world.fetchAccount({}, SECRET);
     expect(
-      result.snapshots.map((s) => [s.barcode, s.direction, s.status, s.sender, s.receiver]),
+      result.snapshots.map((s) => [s.trackingNumber, s.direction, s.status, s.sender, s.receiver]),
     ).toEqual([
-      ["JJFI00000000000001", "incoming", "delivered", "Example Shop", null],
-      ["S-2", "outgoing", null, null, "A Friend"],
+      ["JJFI00000000000001", "receiving", "delivered", "Example Shop", null],
+      ["S-2", "sending", null, null, "A Friend"],
     ]);
     expect(world.calls.find((c) => c.key === `POST ${AUTH}/device_refresh`)?.body).toBe(
       `refresh_token=${VAULT_KEY}&device_trust_token=t-1`,

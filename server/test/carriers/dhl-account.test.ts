@@ -5,7 +5,7 @@ import {
   SignInRejectedError,
   TransientError,
   UnexpectedResponseError,
-} from "../../src/plugin/api.js";
+} from "../../src/provider/api.js";
 import { fetchAccount, formOf, header, idToken, json, World, type Route } from "./dhl-harness.js";
 import { pasted } from "./pasted.js";
 
@@ -98,8 +98,8 @@ function element(code: string, extra: { verlauf?: object; details?: object; info
 describe("DHL Germany sign-in", () => {
   it("starts with a fresh PKCE challenge and state every time", async () => {
     const world = new World();
-    const first = await pasted(world.plugin).start({}, world.clock);
-    const second = await pasted(world.plugin).start({}, world.clock);
+    const first = await pasted(world.provider).start({}, world.clock);
+    const second = await pasted(world.provider).start({}, world.clock);
     expect(first.state.flow).toBe("de_account");
     const url = new URL(first.url);
     expect(url.hostname).toBe("login.dhl.de");
@@ -118,7 +118,7 @@ describe("DHL Germany sign-in", () => {
     const world = new World();
     discovery(world);
     tokens(world, [tokenResponse("first", REFRESH)]);
-    const driver = pasted(world.plugin);
+    const driver = pasted(world.provider);
     const started = await driver.start({}, world.clock);
     const { verifier, state } = started.state.inner as { verifier: string; state: string };
 
@@ -192,13 +192,17 @@ describe("DHL Germany account", () => {
     const result = await fetchAccount(world.context({ refreshToken: REFRESH }));
 
     expect(result.complete).toBe(true);
-    expect(result.snapshots.map((s) => s.barcode)).toEqual([CODE, OTHER, "00340000000000000003"]);
+    expect(result.snapshots.map((s) => s.trackingNumber)).toEqual([
+      CODE,
+      OTHER,
+      "00340000000000000003",
+    ]);
     const [active, station, returning] = result.snapshots;
     expect(active).toMatchObject({
       status: "out_for_delivery",
       sender: "Beispiel & Co",
-      plannedFrom: "2026-11-18T12:00:00.000Z",
-      plannedTo: "2026-11-18T14:00:00.000Z",
+      expectedFrom: "2026-11-18T12:00:00.000Z",
+      expectedTo: "2026-11-18T14:00:00.000Z",
       url: expect.stringContaining(`piececode=${CODE}`) as string,
     });
     expect(active?.history[0]).toMatchObject({

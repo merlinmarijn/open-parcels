@@ -10,7 +10,7 @@ import {
   type ParcelStatus,
   type SnapshotEvent,
   rulesTrackingUrl,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 
 export const CARRIER_ID = "sunyou";
 
@@ -80,7 +80,7 @@ export function orderSnapshot(
   return snapshot({
     carrier: CARRIER_ID,
     // Filed under the code tracked; the carrier's own number (a re-label) is only a reference.
-    barcode: requested,
+    trackingNumber: requested,
     externalRef: echoRef(echoed, requested),
     status,
     rawStatus: newest === undefined ? null : (text(newest.event["eventCode"]) ?? code),

@@ -1,4 +1,4 @@
-import { cleanText, unescapeHtml, UnexpectedResponseError } from "../../plugin/api.js";
+import { cleanText, unescapeHtml, UnexpectedResponseError } from "../../provider/api.js";
 
 /**
  * Reader for the tracking page, which has no structured alternative. It fails closed: anything it

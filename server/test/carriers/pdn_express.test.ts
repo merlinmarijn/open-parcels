@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { pdnExpress } from "../../src/carriers/pdn_express/index.js";
 import { register } from "../../src/engine/registry.js";
-import { TransientError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 const JSON_TYPE = { "content-type": "application/json" };
@@ -40,13 +40,13 @@ describe("PDN Express public tracking", () => {
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
       carrier: "pdn_express",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       rawStatus: "Out for delivery",
       delivered: false,
       // The carrier publishes no delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((e) => [e.at, e.status])).toEqual([
       ["2026-11-18T09:00:00.000Z", null],

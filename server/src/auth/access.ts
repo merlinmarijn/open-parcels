@@ -10,7 +10,7 @@ export type AccessResult = { readonly ok: true } | { readonly ok: false; readonl
 
 /**
  * The two passwords. The admin password may change anything; the reader password
- * (OPENPARCELS_PASSWORD) may only read, and when it is empty reading needs no sign-in at all.
+ * (OPENPARCELS_PASSWORD) may only read, and when it is empty reading needs no login at all.
  *
  * The admin password comes from the environment, or from the Settings page, where it is saved
  * scrypt-hashed in the `owner` row and wins until reset. With neither, a one-time setup code
@@ -42,7 +42,7 @@ export class AccessControl {
     return new AccessControl(store, config, settings, logger, await store.hasOwner());
   }
 
-  /** Reading needs a sign-in (reader or admin). */
+  /** Reading needs a login (reader or admin). */
   get readerRequired(): boolean {
     return this.config.readerPassword !== "";
   }
@@ -62,7 +62,7 @@ export class AccessControl {
     return this.#setupCode !== undefined && normalise(candidate) === normalise(this.#setupCode);
   }
 
-  /** The role a password signs in as; admin wins when both passwords are the same. */
+  /** The role a password logs in as; admin wins when both passwords are the same. */
   async roleFor(password: string): Promise<Role | null> {
     if (await this.#isAdminPassword(password)) return "admin";
     if (this.readerRequired && safeEqual(password, this.config.readerPassword)) return "reader";
@@ -91,7 +91,7 @@ export class AccessControl {
     this.#setSaved(true);
     this.#setupCode = undefined;
     await this.store.deleteAllSessions();
-    this.logger.info("Admin password changed in the UI; every session was signed out.");
+    this.logger.info("Admin password changed in the UI; every session was logged out.");
     return { ok: true };
   }
 
@@ -108,11 +108,11 @@ export class AccessControl {
     await this.store.clearOwnerPassword();
     this.#setSaved(false);
     await this.store.deleteAllSessions();
-    this.logger.info("Admin password reset to the environment's; every session was signed out.");
+    this.logger.info("Admin password reset to the environment's; every session was logged out.");
     return { ok: true };
   }
 
-  /** After the reader password changed: readers sign in again with the new one. */
+  /** After the reader password changed: readers log in again with the new one. */
   async readerPasswordChanged(): Promise<void> {
     await this.store.deleteSessionsWithRole("reader");
   }

@@ -8,9 +8,9 @@ import {
   text,
   TransientError,
   UnexpectedResponseError,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 
 const STRINGS = { numbers: false } as const;
 const DECIMAL = { decimalComma: true } as const;
@@ -55,7 +55,7 @@ interface Tokens {
 }
 
 /** One token request. A refused grant is a SignInRejectedError; anything else is transient. */
-async function postToken(http: PluginHttp, form: Record<string, string>): Promise<Tokens> {
+async function postToken(http: ProviderHttp, form: Record<string, string>): Promise<Tokens> {
   const response = await http.request(new URL(`${base()}/token`), {
     method: "POST",
     redirect: "manual",
@@ -89,7 +89,7 @@ async function postToken(http: PluginHttp, form: Record<string, string>): Promis
 }
 
 export async function finishSignIn(
-  http: PluginHttp,
+  http: ProviderHttp,
   rawState: unknown,
   pasted: string,
 ): Promise<{ refreshToken: string }> {
@@ -131,9 +131,9 @@ type Stored = z.infer<typeof storedSchema>;
 const fingerprint = (token: string): string =>
   createHash("sha256").update(token).digest("hex").slice(0, 16);
 
-type SessionDeps = Pick<PluginContext<unknown, unknown>, "http" | "clock" | "session">;
+type SessionDeps = Pick<ProviderContext<unknown, unknown>, "http" | "clock" | "session">;
 
-/** The access token of one account source. A rotated refresh token is saved before use. */
+/** The access token of one account connection. A rotated refresh token is saved before use. */
 export class PostnlSession {
   #stored: Stored;
   #renewed = false;

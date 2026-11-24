@@ -14,10 +14,10 @@ import {
   type Json,
   type ParcelSnapshot,
   type ParcelStatus,
-  type PluginContext,
+  type ProviderContext,
   type SnapshotEvent,
   echoRef,
-} from "../../plugin/api.js";
+} from "../../provider/api.js";
 import { API_HOST, lookUp, SITE_HOST, TRACKING_PAGE } from "./lookup.js";
 
 const CARRIER_ID = "acs_courier";
@@ -95,7 +95,7 @@ export function acsSnapshot(
   });
   return snapshot({
     carrier: CARRIER_ID,
-    barcode,
+    trackingNumber: barcode,
     externalRef: echoRef(text(raw["trackingNumber"]), barcode),
     status,
     rawStatus:
@@ -106,8 +106,8 @@ export function acsSnapshot(
       ? (isoTime(raw["deliveryDate"], { naive: { zone: ZONE } }) ?? stamping?.at ?? null)
       : null,
     // A bare date (midnight) means the whole local day; a real time stays a point estimate.
-    plannedFrom: eta,
-    plannedTo:
+    expectedFrom: eta,
+    expectedTo:
       eta !== null && MIDNIGHT.test(text(raw["expectedDeliveryDate"]) ?? "")
         ? (localDay(eta, ZONE)?.to ?? null)
         : null,
@@ -127,7 +127,7 @@ export const acsCourier = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "ACS Courier",
   countries: ["GR", "CY"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
@@ -138,7 +138,7 @@ export const acsCourier = defineCarrier<Config, null>({
       "*": { intervalMs: 10_000, burst: 1 },
     },
   },
-  track: (context: PluginContext<Config, null>, barcodes) => {
+  track: (context: ProviderContext<Config, null>, barcodes) => {
     // The lookup token is fetched from the page at most once per run, whatever the code count.
     const run = { fetched: false };
     return trackEach(barcodes, PLAUSIBLE, async (barcode) => {

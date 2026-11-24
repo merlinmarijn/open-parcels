@@ -142,7 +142,7 @@ export const SETTINGS = {
   OPENPARCELS_ADMIN_PASSWORD: setting({
     group: "Security",
     description:
-      "Password to change anything: sources, parcels, orders, settings, tokens. A password changed on the Settings page replaces it until reset. Unset and never changed there: the first start asks for a setup code from the log.",
+      "Password to change anything: connections, parcels, orders, settings, tokens. A password changed on the Settings page replaces it until reset. Unset and never changed there: the first start asks for a setup code from the log.",
     schema: z.string().min(MIN_ADMIN_PASSWORD).max(MAX_PASSWORD).optional(),
     default: undefined,
     apply: "env",

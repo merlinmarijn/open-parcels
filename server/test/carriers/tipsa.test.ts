@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tipsa } from "../../src/carriers/tipsa/index.js";
-import { InvalidSourceConfigError, register } from "../../src/engine/registry.js";
-import { CaptchaError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { CaptchaError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with an empty body. */
@@ -65,15 +65,15 @@ describe("TIPSA tracking", () => {
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
       carrier: "tipsa",
-      barcode: CODE,
+      trackingNumber: CODE,
       status: "out_for_delivery",
       delivered: false,
       sender: "Tienda de Ejemplo",
       receiver: null,
       weightKg: 2.5,
       // The page carries no delivery window.
-      plannedFrom: null,
-      plannedTo: null,
+      expectedFrom: null,
+      expectedTo: null,
     });
     expect(parcel?.history.map((event) => [event.at, event.status, event.rawStatus])).toEqual([
       ["2026-11-18T07:15:00.000Z", "out_for_delivery", "EN REPARTO"],
@@ -143,7 +143,7 @@ describe("TIPSA tracking", () => {
     const { base } = fakeContext(tipsa.http, fetchImpl);
     // A refused postcode is a settings problem the user fixes, not a retry (OP-087).
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(
-      InvalidSourceConfigError,
+      InvalidConnectionConfigError,
     );
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,

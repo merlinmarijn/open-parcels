@@ -2,7 +2,7 @@ import { createCipheriv, randomBytes } from "node:crypto";
 import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { secretAad } from "../../src/engine/sources.js";
+import { secretAad } from "../../src/engine/connections.js";
 import {
   carrierId,
   importLegacy,
@@ -133,7 +133,7 @@ function run(dryRun: boolean, legacyKeyHex: string | null = legacyKey.toString("
 }
 
 describe("legacy courier names", () => {
-  it("map to plug-in ids, rules ids first", () => {
+  it("map to provider ids, rules ids first", () => {
     expect(carrierId("DHL Express")).toBe("dhl");
     expect(carrierId("Canada Post")).toBe("canadapost");
     expect(carrierId("Poczta Polska")).toBe("poczta_polska");
@@ -145,10 +145,10 @@ describe("legacy courier names", () => {
     expect(carrierId("17track")).toBe("unknown");
   });
 
-  const resolve = (courier: unknown, barcode: string, shop: string | null = null) =>
-    resolveLegacyCarrier({ courier, barcode, shop });
+  const resolve = (courier: unknown, trackingNumber: string, shop: string | null = null) =>
+    resolveLegacyCarrier({ courier, trackingNumber, shop });
 
-  it("keep a named courier a plug-in tracks", () => {
+  it("keep a named courier a provider tracks", () => {
     expect(resolve("DHL", "XX")).toBe("dhl");
     expect(resolve("Cainiao", "XX")).toBe("cainiao");
   });
@@ -157,7 +157,7 @@ describe("legacy courier names", () => {
     expect(resolve(null, "1Z999AA10123456784")).toBe("ups");
     expect(resolve("unknown", "1Z999AA10123456784")).toBe("ups");
     expect(resolve("17track", "1Z999AA10123456784")).toBe("ups");
-    // A China Post S10 code: no China Post plug-in, so Cainiao's tracker follows it.
+    // A China Post S10 code: no China Post provider, so Cainiao's tracker follows it.
     expect(resolve("china", "RR123456785CN")).toBe("cainiao");
     expect(resolve("China Post", "RR123456785CN")).toBe("cainiao");
   });
@@ -231,7 +231,7 @@ describe("legacy import", () => {
       parcels: 3,
       events: 1,
       droppedPositionEvents: 1,
-      mailboxes: 1,
+      inboxes: 1,
       skippedCredentials: [
         { service: "Amazon", reason: expect.stringContaining("device") as string },
       ],
@@ -240,29 +240,29 @@ describe("legacy import", () => {
     expect(
       await context.services.parcels.repository.list({ includeArchived: true }, false),
     ).toHaveLength(0);
-    expect(await context.services.sources.list()).toHaveLength(0);
+    expect(await context.services.connections.list()).toHaveLength(0);
   });
 
   it("imports parcels, orders, history and mailboxes, without positions", async () => {
     await run(false);
     const parcels = await context.services.parcels.repository.list({ includeArchived: true }, true);
-    const byBarcode = new Map(parcels.map((parcel) => [parcel.barcode, parcel]));
-    expect(byBarcode.get("00340434000000000001")).toMatchObject({
+    const byTrackingNumber = new Map(parcels.map((parcel) => [parcel.tracking_number, parcel]));
+    expect(byTrackingNumber.get("00340434000000000001")).toMatchObject({
       carrier: "dhl",
       status: "in_transit",
       label: "Socks",
       order: { shop: "amazon", order_number: "000-0000000-0000001" },
-      planned_from: new Date((T + 86_400) * 1000).toISOString(),
+      expected_from: new Date((T + 86_400) * 1000).toISOString(),
     });
-    expect(byBarcode.get("00340434000000000001")?.history.map((entry) => entry.raw_status)).toEqual(
-      ["Arrived at hub"],
-    );
-    expect(byBarcode.get("H0000000000000000001")).toMatchObject({
+    expect(
+      byTrackingNumber.get("00340434000000000001")?.history.map((entry) => entry.raw_status),
+    ).toEqual(["Arrived at hub"]);
+    expect(byTrackingNumber.get("H0000000000000000001")).toMatchObject({
       carrier: "hermes",
       delivered: true,
-      planned_from: null,
+      expected_from: null,
     });
-    expect(byBarcode.get("00000000000001")).toMatchObject({
+    expect(byTrackingNumber.get("00000000000001")).toMatchObject({
       carrier: "dpd",
       status: "problem",
       manual_status: "problem",
@@ -273,14 +273,14 @@ describe("legacy import", () => {
     );
     expect(stored).not.toContain("10.1");
 
-    const mailbox = (await context.services.sources.list()).find((s) => s.kind === "mail");
+    const mailbox = (await context.services.connections.list()).find((s) => s.kind === "mail");
     expect(mailbox).toMatchObject({
-      plugin: "imap",
+      provider: "imap",
       kind: "mail",
       config: { host: "imap.example.invalid", secure: true },
     });
     const row = await context.services.db
-      .selectFrom("sources")
+      .selectFrom("connections")
       .select(["id", "secret_blob"])
       .where("kind", "=", "mail")
       .executeTakeFirstOrThrow();
@@ -323,16 +323,22 @@ describe("legacy import", () => {
     const report = await run(false);
     expect(report).toMatchObject({
       parcels: 6,
-      mailboxes: 1,
+      inboxes: 1,
       carriers: { dhl: 1, hermes: 1, dpd: 1, cainiao: 2, unknown: 1 },
-      // p1 (dhl), p3 (dpd), p4 and p5 (cainiao); hermes is delivered and "unknown" has no plug-in.
+      // p1 (dhl), p3 (dpd), p4 and p5 (cainiao); hermes is delivered and "unknown" has no provider.
       linkedParcels: 4,
       skippedCredentials: [{ service: "AliExpress" }, { service: "Amazon" }],
     });
-    const tracking = (await context.services.sources.list()).filter((s) => s.kind === "tracking");
-    expect(tracking.map((source) => source.plugin).sort()).toEqual(["cainiao", "dhl", "dpd"]);
-    expect(tracking.every((source) => source.nextRunAt !== null)).toBe(true);
-    const mailbox = (await context.services.sources.list()).find((s) => s.kind === "mail");
+    const tracking = (await context.services.connections.list()).filter(
+      (s) => s.kind === "tracking",
+    );
+    expect(tracking.map((connection) => connection.provider).sort()).toEqual([
+      "cainiao",
+      "dhl",
+      "dpd",
+    ]);
+    expect(tracking.every((connection) => connection.nextRunAt !== null)).toBe(true);
+    const mailbox = (await context.services.connections.list()).find((s) => s.kind === "mail");
     expect(mailbox?.config).toMatchObject({ host: "imap.example.invalid", port: 993 });
 
     // Running it again links nothing new and changes no carrier.
@@ -346,8 +352,8 @@ describe("legacy import", () => {
       .values({
         id: "00000000-0000-4000-8000-000000000009",
         carrier: "china",
-        barcode: "00340434000000000001",
-        direction: "incoming",
+        tracking_number: "00340434000000000001",
+        direction: "receiving",
         status: "in_transit",
         raw_status: null,
         delivered: 0,
@@ -371,22 +377,22 @@ describe("legacy import", () => {
   });
 
   it("adds a mailbox once, however often it runs", async () => {
-    expect(await run(false)).toMatchObject({ mailboxes: 1, skippedDuplicateMailboxes: 0 });
-    expect(await run(false)).toMatchObject({ mailboxes: 0, skippedDuplicateMailboxes: 1 });
-    const mail = (await context.services.sources.list()).filter((s) => s.kind === "mail");
+    expect(await run(false)).toMatchObject({ inboxes: 1, skippedDuplicateMailboxes: 0 });
+    expect(await run(false)).toMatchObject({ inboxes: 0, skippedDuplicateMailboxes: 1 });
+    const mail = (await context.services.connections.list()).filter((s) => s.kind === "mail");
     expect(mail).toHaveLength(1);
   });
 
   it("imports no credentials without the old key, and counts a wrong key as undecryptable", async () => {
     expect(await run(true, null)).toMatchObject({
-      mailboxes: 0,
+      inboxes: 0,
       skippedCredentials: [
         { service: "Amazon" },
         { service: "IMAP", reason: expect.stringContaining("OPENPARCELS_LEGACY_KEY") as string },
       ],
     });
     expect(await run(true, randomBytes(32).toString("hex"))).toMatchObject({
-      mailboxes: 0,
+      inboxes: 0,
       undecryptableCredentials: 1,
     });
   });
@@ -430,7 +436,7 @@ describe("legacy import", () => {
     legacy.close();
     expect(await run(false)).toMatchObject({ events: 2, droppedPositionEvents: 1 });
     const parcels = await context.services.parcels.repository.list({ includeArchived: true }, true);
-    const socks = parcels.find((parcel) => parcel.barcode === "00340434000000000001");
+    const socks = parcels.find((parcel) => parcel.tracking_number === "00340434000000000001");
     expect(socks?.history.map((entry) => entry.raw_status).sort()).toEqual([
       "Arrived at hub",
       "Delivery attempt",
@@ -458,7 +464,7 @@ describe("legacy import", () => {
     const socks = await context.services.db
       .selectFrom("parcels")
       .select("order_id")
-      .where("barcode", "=", "00340434000000000001")
+      .where("tracking_number", "=", "00340434000000000001")
       .executeTakeFirstOrThrow();
     expect(socks.order_id).toBeNull();
   });
@@ -466,10 +472,10 @@ describe("legacy import", () => {
   it("is not stopped by a mailbox whose sign-in this key cannot read (OP-128)", async () => {
     const now = context.clock.now().toISOString();
     await context.services.db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
         id: "00000000-0000-4000-8000-0000000000b1",
-        plugin: "imap",
+        provider: "imap",
         kind: "mail",
         label: "Old mailbox",
         config: JSON.stringify({ host: "imap.example.invalid" }),
@@ -485,15 +491,15 @@ describe("legacy import", () => {
         updated_at: now,
       })
       .execute();
-    expect(await run(false)).toMatchObject({ mailboxes: 1 });
+    expect(await run(false)).toMatchObject({ inboxes: 1 });
     // The new mailbox is announced to clients (OP-129).
     const added = await context.services.db
       .selectFrom("outbox")
       .select("payload")
-      .where("type", "=", "source.added")
+      .where("type", "=", "connection.added")
       .execute();
     expect(added.map((row) => JSON.parse(row.payload) as unknown)).toContainEqual(
-      expect.objectContaining({ source: expect.objectContaining({ kind: "mail" }) as unknown }),
+      expect.objectContaining({ connection: expect.objectContaining({ kind: "mail" }) as unknown }),
     );
   });
 });
@@ -502,7 +508,7 @@ describe("bare legacy credential strings (OP-123)", () => {
   const pass = ["p", "ss"].join("@");
   const madeUp = ["made", "up"].join("-");
 
-  it("read an e-mail username, a password with @ and :, and a port", () => {
+  it("read an email username, a password with @ and :, and a port", () => {
     expect(parseDecrypted("someone@example.invalid:made-up@imap.example.invalid:993")).toEqual({
       user: "someone@example.invalid",
       password: madeUp,

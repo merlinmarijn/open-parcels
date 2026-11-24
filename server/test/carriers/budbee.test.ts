@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { budbee } from "../../src/carriers/budbee/index.js";
-import { TransientError } from "../../src/plugin/errors.js";
+import { TransientError } from "../../src/provider/errors.js";
 import { json, onFragment, World } from "./harness.js";
 
 // Made-up codes and values only.
@@ -34,8 +34,8 @@ describe("Budbee tracking", () => {
     expect(parcel).toMatchObject({
       carrier: "budbee",
       status: "out_for_delivery",
-      plannedFrom: "2026-11-18T16:00:00.000Z",
-      plannedTo: "2026-11-18T18:00:00.000Z",
+      expectedFrom: "2026-11-18T16:00:00.000Z",
+      expectedTo: "2026-11-18T18:00:00.000Z",
       sender: "Beispielshop",
       receiver: null,
       history: [],
@@ -62,7 +62,7 @@ describe("Budbee tracking", () => {
       pickup: true,
       delivered: false,
       pickupPoint: "Testlocker",
-      plannedTo: "2026-11-18T10:00:00.000Z",
+      expectedTo: "2026-11-18T10:00:00.000Z",
     });
   });
 

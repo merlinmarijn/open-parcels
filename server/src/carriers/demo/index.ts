@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { defineCarrier, type ParcelSnapshot, type SnapshotItem } from "../../plugin/api.js";
+import { defineCarrier, type ParcelSnapshot, type SnapshotItem } from "../../provider/api.js";
 import {
   courierView,
   DEMO_CARRIER,
@@ -45,14 +45,14 @@ function fromCourier(parcel: DemoParcel, now: number): ParcelSnapshot {
 function fromShop(parcel: DemoParcel, now: number): ParcelSnapshot {
   return {
     carrier: DEMO_SHOP,
-    barcode: parcel.barcode,
-    direction: "incoming",
+    trackingNumber: parcel.barcode,
+    direction: "receiving",
     status: null,
     rawStatus: null,
     delivered: false,
     deliveredAt: null,
-    plannedFrom: null,
-    plannedTo: null,
+    expectedFrom: null,
+    expectedTo: null,
     pickup: false,
     pickupPoint: null,
     url: null,
@@ -66,7 +66,7 @@ function fromShop(parcel: DemoParcel, now: number): ParcelSnapshot {
     orderItems: orderLines(parcel.order.number),
     order: order(parcel, now),
     externalRef: null,
-    handoff: { carrier: DEMO_CARRIER, barcode: parcel.barcode },
+    handoff: { carrier: DEMO_CARRIER, trackingNumber: parcel.barcode },
     raw: { demo: true, barcode: parcel.barcode },
     live: null,
   };
@@ -90,7 +90,7 @@ export const demoCarrier = defineCarrier({
   id: DEMO_CARRIER,
   name: "Demo courier",
   countries: ["*"],
-  sourceKinds: ["account", "tracking"],
+  connectionKinds: ["account", "tracking"],
   imageHosts: [IMAGE_HOST],
   pollIntervalMs: DEMO_POLL_MS,
   configSchema,
@@ -126,7 +126,7 @@ export const demoShop = defineCarrier({
   id: DEMO_SHOP,
   name: DEMO_SHOP_NAME,
   countries: ["*"],
-  sourceKinds: ["shop"],
+  connectionKinds: ["shop"],
   imageHosts: [IMAGE_HOST],
   pollIntervalMs: DEMO_POLL_MS,
   configSchema,

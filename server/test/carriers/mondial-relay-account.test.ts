@@ -2,8 +2,8 @@ import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { signatureHeaders } from "../../src/carriers/mondial_relay/account.js";
 import { mondialRelay } from "../../src/carriers/mondial_relay/index.js";
-import { carrierKey } from "../../src/plugin/rules.js";
-import { SignInRejectedError, TransientError } from "../../src/plugin/errors.js";
+import { carrierKey } from "../../src/provider/rules.js";
+import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { json, madeUp, on, onPrefix, World } from "./harness.js";
 
 // Made-up shipments, devices and tokens only.
@@ -50,8 +50,8 @@ describe("Mondial Relay account", () => {
     expect(call?.headers.get("user-agent")).toBe(carrierKey("mondial_relay", "account_user_agent"));
     expect(call?.headers.get("device-uid")).toBe("device-1");
     expect(result.snapshots.map((parcel) => [parcel.status, parcel.direction])).toEqual([
-      ["at_pickup_point", "incoming"],
-      ["delivered", "outgoing"],
+      ["at_pickup_point", "receiving"],
+      ["delivered", "sending"],
     ]);
     expect(world.saved[0]).toMatchObject({ refreshToken: madeUp("refresh", "2") });
   });

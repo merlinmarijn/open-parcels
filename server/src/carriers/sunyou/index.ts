@@ -7,9 +7,9 @@ import {
   UnexpectedResponseError,
   type Json,
   type ParcelSnapshot,
-  type PluginContext,
-  type PluginHttp,
-} from "../../plugin/api.js";
+  type ProviderContext,
+  type ProviderHttp,
+} from "../../provider/api.js";
 import { CARRIER_ID, orderSnapshot } from "./parse.js";
 
 const HOST = "www.sypost.net";
@@ -34,7 +34,7 @@ function unwrap(body: string): unknown {
 }
 
 /** Returns `data[0]`, or null when SunYou says it has nothing (`has: false`). */
-async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
+async function lookUp(http: ProviderHttp, code: string): Promise<Json | null> {
   const url = new URL(`https://${HOST}/queryTrack`);
   url.searchParams.set("trackNumber", code);
   url.searchParams.set("toLanguage", "en_US");
@@ -51,7 +51,7 @@ async function lookUp(http: PluginHttp, code: string): Promise<Json | null> {
   return parcel["has"] === true ? parcel : null;
 }
 
-async function track(context: PluginContext<Config, null>, barcodes: readonly string[]) {
+async function track(context: ProviderContext<Config, null>, barcodes: readonly string[]) {
   const snapshots: ParcelSnapshot[] = [];
   const report = (code: string): void => {
     context.reportUnknown("status_code", code);
@@ -73,7 +73,7 @@ export const sunyou = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "SunYou",
   countries: ["*"],
-  sourceKinds: ["tracking"],
+  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
