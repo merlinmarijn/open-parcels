@@ -1775,14 +1775,16 @@ tbody tr:hover {
   width: min(26rem, 100%);
 }
 
-@keyframes spin {
-  to {
-    transform: rotate(360deg);
-  }
-}
-
-.spin {
-  animation: spin 0.8s linear infinite;
+/* A button that reads as a link: "Back to the app", place search results. */
+.link-button {
+  background: none;
+  border: 0;
+  padding: 0;
+  color: var(--accent);
+  font: inherit;
+  text-align: left;
+  text-decoration: underline;
+  cursor: pointer;
 }
 
 @media (prefers-reduced-motion: reduce) {

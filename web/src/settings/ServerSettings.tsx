@@ -178,7 +178,7 @@ function MapPreview({ settings }: { readonly settings: readonly ServerSetting[] 
   const overlay =
     layers.find((l) => l.kind === "overlay" && l.id === value("OPENPARCELS_MAP_OVERLAY")) ?? null;
   return (
-    <div className="settings-map settings-map-preview">
+    <div className="settings-map">
       <SharedMap label="Default map style preview" zoom={4} style={{ base, overlay }} />
     </div>
   );

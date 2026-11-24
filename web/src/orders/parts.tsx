@@ -144,7 +144,7 @@ export function PictureGrid(props: { readonly order: Order; readonly limit: numb
           <img src={apiUrl(item.image_url ?? "")} alt={item.title} loading="lazy" />
         </li>
       ))}
-      {more > 0 ? <li className="order-pictures-more">+{more}</li> : null}
+      {more > 0 ? <li>+{more}</li> : null}
     </ul>
   );
 }

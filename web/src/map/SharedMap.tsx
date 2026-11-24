@@ -130,7 +130,6 @@ export function SharedMap(props: {
             url={tileUrl(overlay.id)}
             maxNativeZoom={overlay.max_zoom}
             maxZoom={19}
-            className="map-overlay-tiles"
             zIndex={2}
           />
         )}
