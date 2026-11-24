@@ -1744,9 +1744,6 @@
                       "tracking_number": {
                         "type": "string"
                       },
-                      "barcode": {
-                        "type": "string"
-                      },
                       "sender": {
                         "nullable": true,
                         "type": "string"
@@ -1813,18 +1810,6 @@
                           "to"
                         ],
                         "additionalProperties": false
-                      },
-                      "planned_from": {
-                        "nullable": true,
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                      },
-                      "planned_to": {
-                        "nullable": true,
-                        "type": "string",
-                        "format": "date-time",
-                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                       },
                       "pickup": {
                         "type": "boolean"
@@ -1906,13 +1891,6 @@
                         "enum": [
                           "receiving",
                           "sending"
-                        ]
-                      },
-                      "legacy_direction": {
-                        "type": "string",
-                        "enum": [
-                          "incoming",
-                          "outgoing"
                         ]
                       },
                       "label": {
@@ -2260,12 +2238,6 @@
                             "provider": {
                               "type": "string"
                             },
-                            "source_id": {
-                              "type": "string"
-                            },
-                            "plugin": {
-                              "type": "string"
-                            },
                             "label": {
                               "type": "string"
                             },
@@ -2295,64 +2267,6 @@
                           "required": [
                             "connection_id",
                             "provider",
-                            "source_id",
-                            "plugin",
-                            "label",
-                            "kind",
-                            "role",
-                            "last_seen_at"
-                          ],
-                          "additionalProperties": false
-                        }
-                      },
-                      "sources": {
-                        "type": "array",
-                        "items": {
-                          "type": "object",
-                          "properties": {
-                            "connection_id": {
-                              "type": "string"
-                            },
-                            "provider": {
-                              "type": "string"
-                            },
-                            "source_id": {
-                              "type": "string"
-                            },
-                            "plugin": {
-                              "type": "string"
-                            },
-                            "label": {
-                              "type": "string"
-                            },
-                            "kind": {
-                              "type": "string",
-                              "enum": [
-                                "account",
-                                "tracking",
-                                "shop",
-                                "mail"
-                              ]
-                            },
-                            "role": {
-                              "type": "string",
-                              "enum": [
-                                "primary",
-                                "handoff",
-                                "mail"
-                              ]
-                            },
-                            "last_seen_at": {
-                              "type": "string",
-                              "format": "date-time",
-                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                            }
-                          },
-                          "required": [
-                            "connection_id",
-                            "provider",
-                            "source_id",
-                            "plugin",
                             "label",
                             "kind",
                             "role",
@@ -2406,7 +2320,6 @@
                     "required": [
                       "carrier",
                       "tracking_number",
-                      "barcode",
                       "sender",
                       "receiver",
                       "status",
@@ -2416,15 +2329,12 @@
                       "expected_from",
                       "expected_to",
                       "expected_days",
-                      "planned_from",
-                      "planned_to",
                       "pickup",
                       "pickup_point",
                       "history",
                       "url",
                       "id",
                       "direction",
-                      "legacy_direction",
                       "label",
                       "display_name",
                       "manual_status",
@@ -2437,7 +2347,6 @@
                       "last_scan",
                       "order",
                       "connections",
-                      "sources",
                       "lookup",
                       "first_seen_at",
                       "updated_at"
@@ -2455,7 +2364,6 @@
         "tags": [
           "parcels"
         ],
-        "description": "**Deprecated for one release:** `barcode` instead of `tracking_number`, and the directions `incoming` and `outgoing` instead of `receiving` and `sending`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2473,19 +2381,12 @@
                     "minLength": 4,
                     "maxLength": 64
                   },
-                  "barcode": {
-                    "type": "string",
-                    "minLength": 4,
-                    "maxLength": 64
-                  },
                   "direction": {
                     "default": "receiving",
                     "type": "string",
                     "enum": [
                       "receiving",
-                      "sending",
-                      "incoming",
-                      "outgoing"
+                      "sending"
                     ]
                   },
                   "label": {
@@ -2494,7 +2395,10 @@
                     "type": "string",
                     "maxLength": 120
                   }
-                }
+                },
+                "required": [
+                  "tracking_number"
+                ]
               }
             }
           }
@@ -2511,9 +2415,6 @@
                       "type": "string"
                     },
                     "tracking_number": {
-                      "type": "string"
-                    },
-                    "barcode": {
                       "type": "string"
                     },
                     "sender": {
@@ -2582,18 +2483,6 @@
                         "to"
                       ],
                       "additionalProperties": false
-                    },
-                    "planned_from": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "planned_to": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                     },
                     "pickup": {
                       "type": "boolean"
@@ -2675,13 +2564,6 @@
                       "enum": [
                         "receiving",
                         "sending"
-                      ]
-                    },
-                    "legacy_direction": {
-                      "type": "string",
-                      "enum": [
-                        "incoming",
-                        "outgoing"
                       ]
                     },
                     "label": {
@@ -3029,12 +2911,6 @@
                           "provider": {
                             "type": "string"
                           },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
                           "label": {
                             "type": "string"
                           },
@@ -3064,64 +2940,6 @@
                         "required": [
                           "connection_id",
                           "provider",
-                          "source_id",
-                          "plugin",
-                          "label",
-                          "kind",
-                          "role",
-                          "last_seen_at"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "sources": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "connection_id": {
-                            "type": "string"
-                          },
-                          "provider": {
-                            "type": "string"
-                          },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string",
-                            "enum": [
-                              "account",
-                              "tracking",
-                              "shop",
-                              "mail"
-                            ]
-                          },
-                          "role": {
-                            "type": "string",
-                            "enum": [
-                              "primary",
-                              "handoff",
-                              "mail"
-                            ]
-                          },
-                          "last_seen_at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                          }
-                        },
-                        "required": [
-                          "connection_id",
-                          "provider",
-                          "source_id",
-                          "plugin",
                           "label",
                           "kind",
                           "role",
@@ -3175,7 +2993,6 @@
                   "required": [
                     "carrier",
                     "tracking_number",
-                    "barcode",
                     "sender",
                     "receiver",
                     "status",
@@ -3185,15 +3002,12 @@
                     "expected_from",
                     "expected_to",
                     "expected_days",
-                    "planned_from",
-                    "planned_to",
                     "pickup",
                     "pickup_point",
                     "history",
                     "url",
                     "id",
                     "direction",
-                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -3206,7 +3020,6 @@
                     "last_scan",
                     "order",
                     "connections",
-                    "sources",
                     "lookup",
                     "first_seen_at",
                     "updated_at"
@@ -3301,9 +3114,6 @@
                     "tracking_number": {
                       "type": "string"
                     },
-                    "barcode": {
-                      "type": "string"
-                    },
                     "sender": {
                       "nullable": true,
                       "type": "string"
@@ -3370,18 +3180,6 @@
                         "to"
                       ],
                       "additionalProperties": false
-                    },
-                    "planned_from": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "planned_to": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                     },
                     "pickup": {
                       "type": "boolean"
@@ -3463,13 +3261,6 @@
                       "enum": [
                         "receiving",
                         "sending"
-                      ]
-                    },
-                    "legacy_direction": {
-                      "type": "string",
-                      "enum": [
-                        "incoming",
-                        "outgoing"
                       ]
                     },
                     "label": {
@@ -3817,12 +3608,6 @@
                           "provider": {
                             "type": "string"
                           },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
                           "label": {
                             "type": "string"
                           },
@@ -3852,64 +3637,6 @@
                         "required": [
                           "connection_id",
                           "provider",
-                          "source_id",
-                          "plugin",
-                          "label",
-                          "kind",
-                          "role",
-                          "last_seen_at"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "sources": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "connection_id": {
-                            "type": "string"
-                          },
-                          "provider": {
-                            "type": "string"
-                          },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string",
-                            "enum": [
-                              "account",
-                              "tracking",
-                              "shop",
-                              "mail"
-                            ]
-                          },
-                          "role": {
-                            "type": "string",
-                            "enum": [
-                              "primary",
-                              "handoff",
-                              "mail"
-                            ]
-                          },
-                          "last_seen_at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                          }
-                        },
-                        "required": [
-                          "connection_id",
-                          "provider",
-                          "source_id",
-                          "plugin",
                           "label",
                           "kind",
                           "role",
@@ -3963,7 +3690,6 @@
                   "required": [
                     "carrier",
                     "tracking_number",
-                    "barcode",
                     "sender",
                     "receiver",
                     "status",
@@ -3973,15 +3699,12 @@
                     "expected_from",
                     "expected_to",
                     "expected_days",
-                    "planned_from",
-                    "planned_to",
                     "pickup",
                     "pickup_point",
                     "history",
                     "url",
                     "id",
                     "direction",
-                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -3994,7 +3717,6 @@
                     "last_scan",
                     "order",
                     "connections",
-                    "sources",
                     "lookup",
                     "first_seen_at",
                     "updated_at"
@@ -4096,9 +3818,6 @@
                     "tracking_number": {
                       "type": "string"
                     },
-                    "barcode": {
-                      "type": "string"
-                    },
                     "sender": {
                       "nullable": true,
                       "type": "string"
@@ -4165,18 +3884,6 @@
                         "to"
                       ],
                       "additionalProperties": false
-                    },
-                    "planned_from": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                    },
-                    "planned_to": {
-                      "nullable": true,
-                      "type": "string",
-                      "format": "date-time",
-                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                     },
                     "pickup": {
                       "type": "boolean"
@@ -4258,13 +3965,6 @@
                       "enum": [
                         "receiving",
                         "sending"
-                      ]
-                    },
-                    "legacy_direction": {
-                      "type": "string",
-                      "enum": [
-                        "incoming",
-                        "outgoing"
                       ]
                     },
                     "label": {
@@ -4612,12 +4312,6 @@
                           "provider": {
                             "type": "string"
                           },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
                           "label": {
                             "type": "string"
                           },
@@ -4647,64 +4341,6 @@
                         "required": [
                           "connection_id",
                           "provider",
-                          "source_id",
-                          "plugin",
-                          "label",
-                          "kind",
-                          "role",
-                          "last_seen_at"
-                        ],
-                        "additionalProperties": false
-                      }
-                    },
-                    "sources": {
-                      "type": "array",
-                      "items": {
-                        "type": "object",
-                        "properties": {
-                          "connection_id": {
-                            "type": "string"
-                          },
-                          "provider": {
-                            "type": "string"
-                          },
-                          "source_id": {
-                            "type": "string"
-                          },
-                          "plugin": {
-                            "type": "string"
-                          },
-                          "label": {
-                            "type": "string"
-                          },
-                          "kind": {
-                            "type": "string",
-                            "enum": [
-                              "account",
-                              "tracking",
-                              "shop",
-                              "mail"
-                            ]
-                          },
-                          "role": {
-                            "type": "string",
-                            "enum": [
-                              "primary",
-                              "handoff",
-                              "mail"
-                            ]
-                          },
-                          "last_seen_at": {
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                          }
-                        },
-                        "required": [
-                          "connection_id",
-                          "provider",
-                          "source_id",
-                          "plugin",
                           "label",
                           "kind",
                           "role",
@@ -4758,7 +4394,6 @@
                   "required": [
                     "carrier",
                     "tracking_number",
-                    "barcode",
                     "sender",
                     "receiver",
                     "status",
@@ -4768,15 +4403,12 @@
                     "expected_from",
                     "expected_to",
                     "expected_days",
-                    "planned_from",
-                    "planned_to",
                     "pickup",
                     "pickup_point",
                     "history",
                     "url",
                     "id",
                     "direction",
-                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -4789,7 +4421,6 @@
                     "last_scan",
                     "order",
                     "connections",
-                    "sources",
                     "lookup",
                     "first_seen_at",
                     "updated_at"
@@ -5290,21 +4921,11 @@
                             "tracking_number": {
                               "type": "string"
                             },
-                            "barcode": {
-                              "type": "string"
-                            },
                             "direction": {
                               "type": "string",
                               "enum": [
                                 "receiving",
                                 "sending"
-                              ]
-                            },
-                            "legacy_direction": {
-                              "type": "string",
-                              "enum": [
-                                "incoming",
-                                "outgoing"
                               ]
                             },
                             "display_name": {
@@ -5364,18 +4985,6 @@
                                 "to"
                               ],
                               "additionalProperties": false
-                            },
-                            "planned_from": {
-                              "nullable": true,
-                              "type": "string",
-                              "format": "date-time",
-                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                            },
-                            "planned_to": {
-                              "nullable": true,
-                              "type": "string",
-                              "format": "date-time",
-                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                             },
                             "archived_at": {
                               "nullable": true,
@@ -5447,9 +5056,7 @@
                             "id",
                             "carrier",
                             "tracking_number",
-                            "barcode",
                             "direction",
-                            "legacy_direction",
                             "display_name",
                             "status",
                             "delivered",
@@ -5457,8 +5064,6 @@
                             "expected_from",
                             "expected_to",
                             "expected_days",
-                            "planned_from",
-                            "planned_to",
                             "archived_at",
                             "location",
                             "url"
@@ -5880,21 +5485,11 @@
                           "tracking_number": {
                             "type": "string"
                           },
-                          "barcode": {
-                            "type": "string"
-                          },
                           "direction": {
                             "type": "string",
                             "enum": [
                               "receiving",
                               "sending"
-                            ]
-                          },
-                          "legacy_direction": {
-                            "type": "string",
-                            "enum": [
-                              "incoming",
-                              "outgoing"
                             ]
                           },
                           "display_name": {
@@ -5954,18 +5549,6 @@
                               "to"
                             ],
                             "additionalProperties": false
-                          },
-                          "planned_from": {
-                            "nullable": true,
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                          },
-                          "planned_to": {
-                            "nullable": true,
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                           },
                           "archived_at": {
                             "nullable": true,
@@ -6037,9 +5620,7 @@
                           "id",
                           "carrier",
                           "tracking_number",
-                          "barcode",
                           "direction",
-                          "legacy_direction",
                           "display_name",
                           "status",
                           "delivered",
@@ -6047,8 +5628,6 @@
                           "expected_from",
                           "expected_to",
                           "expected_days",
-                          "planned_from",
-                          "planned_to",
                           "archived_at",
                           "location",
                           "url"
@@ -6513,21 +6092,11 @@
                           "tracking_number": {
                             "type": "string"
                           },
-                          "barcode": {
-                            "type": "string"
-                          },
                           "direction": {
                             "type": "string",
                             "enum": [
                               "receiving",
                               "sending"
-                            ]
-                          },
-                          "legacy_direction": {
-                            "type": "string",
-                            "enum": [
-                              "incoming",
-                              "outgoing"
                             ]
                           },
                           "display_name": {
@@ -6587,18 +6156,6 @@
                               "to"
                             ],
                             "additionalProperties": false
-                          },
-                          "planned_from": {
-                            "nullable": true,
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
-                          },
-                          "planned_to": {
-                            "nullable": true,
-                            "type": "string",
-                            "format": "date-time",
-                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
                           },
                           "archived_at": {
                             "nullable": true,
@@ -6670,9 +6227,7 @@
                           "id",
                           "carrier",
                           "tracking_number",
-                          "barcode",
                           "direction",
-                          "legacy_direction",
                           "display_name",
                           "status",
                           "delivered",
@@ -6680,8 +6235,6 @@
                           "expected_from",
                           "expected_to",
                           "expected_days",
-                          "planned_from",
-                          "planned_to",
                           "archived_at",
                           "location",
                           "url"
@@ -7333,17 +6886,6 @@
                           ]
                         }
                       },
-                      "source_kinds": {
-                        "type": "array",
-                        "items": {
-                          "type": "string",
-                          "enum": [
-                            "account",
-                            "tracking",
-                            "shop"
-                          ]
-                        }
-                      },
                       "sign_in": {
                         "type": "string",
                         "description": "Type of the default sign-in flow: none, credentials, api_key or interactive."
@@ -7407,7 +6949,6 @@
                       "name",
                       "countries",
                       "connection_kinds",
-                      "source_kinds",
                       "sign_in",
                       "sign_in_flows",
                       "config_schema",
@@ -7444,9 +6985,6 @@
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                       },
                       "provider": {
-                        "type": "string"
-                      },
-                      "plugin": {
                         "type": "string"
                       },
                       "kind": {
@@ -7496,7 +7034,6 @@
                     "required": [
                       "id",
                       "provider",
-                      "plugin",
                       "kind",
                       "label",
                       "config",
@@ -7532,12 +7069,6 @@
                     "minLength": 1,
                     "maxLength": 64
                   },
-                  "plugin": {
-                    "description": "Deprecated: the old name of `provider`, accepted for one release.",
-                    "type": "string",
-                    "minLength": 1,
-                    "maxLength": 64
-                  },
                   "kind": {
                     "type": "string",
                     "enum": [
@@ -7561,6 +7092,7 @@
                   }
                 },
                 "required": [
+                  "provider",
                   "kind",
                   "label"
                 ]
@@ -7582,9 +7114,6 @@
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "provider": {
-                      "type": "string"
-                    },
-                    "plugin": {
                       "type": "string"
                     },
                     "kind": {
@@ -7634,7 +7163,6 @@
                   "required": [
                     "id",
                     "provider",
-                    "plugin",
                     "kind",
                     "label",
                     "config",
@@ -7733,9 +7261,6 @@
                     "provider": {
                       "type": "string"
                     },
-                    "plugin": {
-                      "type": "string"
-                    },
                     "kind": {
                       "type": "string",
                       "enum": [
@@ -7783,7 +7308,6 @@
                   "required": [
                     "id",
                     "provider",
-                    "plugin",
                     "kind",
                     "label",
                     "config",
@@ -10321,10 +9845,6 @@
                         "type": "string",
                         "description": "For a return: the order number."
                       },
-                      "barcode": {
-                        "type": "string",
-                        "description": "Deprecated: the same as `tracking_number`, sent for one release."
-                      },
                       "status": {
                         "type": "string"
                       },
@@ -10391,7 +9911,6 @@
                       "title",
                       "carrier",
                       "tracking_number",
-                      "barcode",
                       "status",
                       "kind",
                       "details",
@@ -10779,7 +10298,7 @@
         "tags": [
           "events"
         ],
-        "description": "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed. **Deprecated:** each `connection.*` live event and `parcel.sending_registered` / `parcel.sending_delivered` is followed, for one release, by the same live event under its old name (`source.*`, `parcel.outgoing_registered`, `parcel.outgoing_delivered`), without an `id` and with `source` (carrying `plugin`) next to `connection` in its data.",
+        "description": "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed.",
         "parameters": [
           {
             "schema": {

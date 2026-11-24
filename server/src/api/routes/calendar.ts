@@ -23,7 +23,6 @@ const entrySchema = z.object({
     .string()
     .describe("For a return: its carrier, else a drop-off option's, else the shop."),
   tracking_number: z.string().describe("For a return: the order number."),
-  barcode: z.string().describe("Deprecated: the same as `tracking_number`, sent for one release."),
   status: z.string(),
   kind: z
     .enum(["expected", "delivered", "return_by"])
@@ -89,7 +88,6 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
         title: entry.title,
         carrier: entry.carrier,
         tracking_number: entry.trackingNumber,
-        barcode: entry.trackingNumber,
         status: entry.status,
         kind: entry.kind,
         details: [...entry.details],

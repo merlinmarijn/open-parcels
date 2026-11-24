@@ -157,7 +157,6 @@ describe("connections", () => {
   const disabled: Connection = {
     id: "s3",
     provider: "dhl",
-    plugin: "dhl",
     kind: "account",
     label: "DHL account",
     config: {},
@@ -294,7 +293,6 @@ describe("calendar", () => {
       title: "Lamp",
       carrier: "dhl",
       tracking_number: "TEST0000000009",
-      barcode: "TEST0000000009",
       status: "delivered",
       kind: "delivered",
       // Local midnight in Berlin, which a UTC browser would put on the day before.

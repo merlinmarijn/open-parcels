@@ -21,23 +21,6 @@ export const parcelStatusSchema = z.enum(PARCEL_STATUSES);
 export const DIRECTIONS = ["receiving", "sending"] as const;
 export type Direction = (typeof DIRECTIONS)[number];
 
-/**
- * The names `direction` had before the glossary (`docs/glossary.md`). Accepted in requests and
- * sent as `legacy_direction` for one release. Deprecated.
- */
-export const LEGACY_DIRECTIONS = { incoming: "receiving", outgoing: "sending" } as const;
-export type LegacyDirection = keyof typeof LEGACY_DIRECTIONS;
-
-/** A direction in either naming, as requests may still send it, in the current naming. */
-export function toDirection(value: Direction | LegacyDirection): Direction {
-  return value === "incoming" || value === "outgoing" ? LEGACY_DIRECTIONS[value] : value;
-}
-
-/** The deprecated name of a direction. */
-export function legacyDirection(value: Direction): LegacyDirection {
-  return value === "receiving" ? "incoming" : "outgoing";
-}
-
 /** States of a courier map session (parcel-live/1). */
 export const LIVE_STATES = ["en_route", "next_stop", "delivered", "ended"] as const;
 export type LiveState = (typeof LIVE_STATES)[number];
@@ -114,10 +97,6 @@ export type Location = z.infer<typeof locationSchema>;
 export const parcelConnectionRefSchema = z.object({
   connection_id: z.string(),
   provider: z.string(),
-  /** Deprecated: the same as `connection_id`, sent for one release. */
-  source_id: z.string(),
-  /** Deprecated: the same as `provider`, sent for one release. */
-  plugin: z.string(),
   label: z.string(),
   kind: z.enum(["account", "tracking", "shop", "mail"]),
   role: z.enum(["primary", "handoff", "mail"]),
@@ -150,8 +129,6 @@ export type Lookup = z.infer<typeof lookupSchema>;
 export const parcelSchema = z.object({
   carrier: z.string(),
   tracking_number: z.string(),
-  /** Deprecated: the same as `tracking_number`, sent for one release. */
-  barcode: z.string(),
   sender: z.string().nullable(),
   receiver: z.string().nullable(),
   status: parcelStatusSchema,
@@ -165,10 +142,6 @@ export const parcelSchema = z.object({
    * days, so clients need not guess from the times in their own zone; null when it has times.
    */
   expected_days: z.object({ from: localDate, to: localDate }).nullable(),
-  /** Deprecated: the same as `expected_from`, sent for one release. */
-  planned_from: isoDateTime.nullable(),
-  /** Deprecated: the same as `expected_to`, sent for one release. */
-  planned_to: isoDateTime.nullable(),
   pickup: z.boolean(),
   pickup_point: z.string().nullable(),
   history: z.array(historyEntrySchema),
@@ -176,8 +149,6 @@ export const parcelSchema = z.object({
 
   id: z.uuid(),
   direction: z.enum(DIRECTIONS),
-  /** Deprecated: `direction` as `incoming` or `outgoing`, sent for one release. */
-  legacy_direction: z.enum(["incoming", "outgoing"]),
   label: z.string().nullable(),
   /** The label, else (per the "Default parcel label" setting) the item names or the code. */
   display_name: z.string(),
@@ -201,8 +172,6 @@ export const parcelSchema = z.object({
     })
     .nullable(),
   connections: z.array(parcelConnectionRefSchema),
-  /** Deprecated: the same as `connections`, sent for one release. */
-  sources: z.array(parcelConnectionRefSchema),
   lookup: lookupSchema,
   first_seen_at: isoDateTime,
   updated_at: isoDateTime,

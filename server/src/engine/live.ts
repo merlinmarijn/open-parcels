@@ -296,8 +296,6 @@ export class LiveTracker {
           longitude: position.longitude,
           accuracy: position.accuracy,
           position_at: position.positionAt,
-          // Deprecated: the camelCase name of `position_at`, kept for one release.
-          positionAt: position.positionAt,
           stops_away: reading.stopsAway,
         },
       });

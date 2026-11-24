@@ -4,7 +4,6 @@ import { parcelVisible } from "../db/visibility.js";
 import {
   effectiveDelivered,
   effectiveStatus,
-  legacyDirection,
   PARCEL_STATUSES,
   type HistoryEntry,
   type Item,
@@ -499,8 +498,6 @@ export class ParcelRepository {
         list.map((connection) => ({
           connection_id: connection.connection_id,
           provider: connection.provider,
-          source_id: connection.connection_id,
-          plugin: connection.provider,
           label: connection.label,
           kind: connection.kind,
           role: connection.role,
@@ -548,7 +545,6 @@ export class ParcelRepository {
     return {
       carrier: row.carrier,
       tracking_number: row.tracking_number,
-      barcode: row.tracking_number,
       sender: row.sender,
       receiver: row.receiver,
       status: effectiveStatus({ status: carrierStatus, manual_status: manual }),
@@ -558,15 +554,12 @@ export class ParcelRepository {
       expected_from: row.expected_from,
       expected_to: row.expected_to,
       expected_days: expectedDays(row.expected_from, row.expected_to, this.presentation.timeZone),
-      planned_from: row.expected_from,
-      planned_to: row.expected_to,
       pickup: row.pickup === 1,
       pickup_point: row.pickup_point,
       history: related.history.get(row.id) ?? [],
       url: row.url,
       id: row.id,
       direction: row.direction,
-      legacy_direction: legacyDirection(row.direction),
       label: row.label,
       display_name: displayName(
         row.label,
@@ -595,7 +588,6 @@ export class ParcelRepository {
               id: order.id,
             },
       connections: related.connections.get(row.id) ?? [],
-      sources: related.connections.get(row.id) ?? [],
       // Another connection of the same carrier (an account) listing the parcel means the carrier
       // found it, whatever its public tracking answered. It has been found since the app first
       // saw it, which is when a connection first listed it.

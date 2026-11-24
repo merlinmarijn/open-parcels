@@ -52,9 +52,7 @@ function order(overrides: Partial<Order> = {}): Order {
         id: PARCEL_ID,
         carrier: "demo",
         tracking_number: "DEMO0000000002",
-        barcode: "DEMO0000000002",
         direction: "receiving",
-        legacy_direction: "incoming",
         display_name: "Lamp parcel",
         status: "in_transit",
         delivered: false,
@@ -62,8 +60,6 @@ function order(overrides: Partial<Order> = {}): Order {
         expected_from: null,
         expected_to: null,
         expected_days: null,
-        planned_from: null,
-        planned_to: null,
         archived_at: null,
         location: {
           latitude: 52.5,

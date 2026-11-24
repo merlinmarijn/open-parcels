@@ -94,7 +94,6 @@ describe("return deadlines in the calendar", () => {
       title: "Example kettle",
       carrier: "dhl",
       tracking_number: "RET-0001",
-      barcode: "RET-0001",
       status: "requested",
       kind: "return_by",
       details: ["Drop off: Any DHL drop-off point", "Free return"],

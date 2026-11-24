@@ -145,12 +145,11 @@ describe("live courier tracking", () => {
       latitude: COURIER.latitude,
       longitude: COURIER.longitude,
     });
-    // The message names its time in snake case like every other field; the camelCase name stays
-    // for one release.
+    // The message names its time in snake case like every other field, and only so.
+    expect(positions.at(-1)?.payload).not.toHaveProperty("positionAt");
     expect(positions.at(-1)?.payload).toMatchObject({
       parcel_id: parcelId,
       position_at: "2026-11-18T14:00:00Z",
-      positionAt: "2026-11-18T14:00:00Z",
       stops_away: 0,
     });
   });

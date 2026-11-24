@@ -120,17 +120,6 @@ function trustProxySetting(value: TrustProxy): false | string[] {
   return value === false ? false : [...value];
 }
 
-/** Paths renamed to the glossary's terms; the old ones keep working for one release. */
-const LEGACY_PATH = /^\/api\/v1\/sources(?=[/?]|$)/;
-
-/**
- * Serves a deprecated path under its new name: `/api/v1/sources...` is `/api/v1/connections...`
- * since 2.0.0-dev (see `docs/glossary.md`). Removed one release after it.
- */
-export function legacyPath(url: string): string {
-  return url.replace(LEGACY_PATH, "/api/v1/connections");
-}
-
 export async function buildApp(services: Services, options: BuildAppOptions = {}): Promise<App> {
   // Typed with the base logger interface so every hook and provider uses Fastify's default types.
   // Without the explicit arguments TypeScript infers pino's narrower Logger from `loggerInstance`,
@@ -150,7 +139,6 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
     bodyLimit: 1024 * 1024,
     // Image-proxy paths carry the (encoded) picture address; shops such as Amazon use long ones.
     routerOptions: { maxParamLength: 2048 },
-    rewriteUrl: (request) => legacyPath(request.url ?? "/"),
   });
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);

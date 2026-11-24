@@ -1,5 +1,5 @@
 import { z } from "zod";
-import { DIRECTIONS, parcelSchema, parcelStatusSchema, toDirection } from "../../domain/parcel.js";
+import { DIRECTIONS, parcelSchema, parcelStatusSchema } from "../../domain/parcel.js";
 import { detectCarrier } from "../../migrate/legacy-carrier.js";
 import { PARCEL_PAGE_DEFAULT } from "../../parcels/repository.js";
 import { DuplicateParcelError } from "../../parcels/service.js";
@@ -92,25 +92,17 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
         tags: ["parcels"],
         summary:
           "Start tracking a tracking number. Without a carrier it is detected from the number.",
-        description:
-          "**Deprecated for one release:** `barcode` instead of `tracking_number`, and the " +
-          "directions `incoming` and `outgoing` instead of `receiving` and `sending`.",
         body: z.object({
           carrier: z.string().min(1).max(64).optional(),
-          tracking_number: trackingNumberField.optional(),
-          barcode: trackingNumberField.optional(),
-          direction: z.enum([...DIRECTIONS, "incoming", "outgoing"]).default("receiving"),
+          tracking_number: trackingNumberField,
+          direction: z.enum(DIRECTIONS).default("receiving"),
           label: z.string().max(120).nullable().default(null),
         }),
         response: { 201: parcelSchema, 400: errorBodySchema, 409: errorBodySchema },
       },
     },
     async (request, reply) => {
-      const { tracking_number: given, barcode, direction, label } = request.body;
-      const trackingNumber = given ?? barcode;
-      if (trackingNumber === undefined) {
-        throw new ApiError(400, "invalid_request", "Give the tracking number.");
-      }
+      const { tracking_number: trackingNumber, direction, label } = request.body;
       const carrier = request.body.carrier ?? detectCarrier(trackingNumber, null);
       if (carrier === undefined) {
         throw new ApiError(
@@ -123,7 +115,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
         const parcel = await services.parcels.create({
           carrier,
           trackingNumber,
-          direction: toDirection(direction),
+          direction,
           label,
         });
         return await reply.code(201).send(parcel);

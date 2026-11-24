@@ -23,8 +23,6 @@ export function waitText(seconds: number): string {
 const connectionSchema = z.object({
   id: z.uuid(),
   provider: z.string(),
-  /** Deprecated: the same as `provider`, sent for one release. */
-  plugin: z.string(),
   kind: z.enum(["account", "tracking", "shop", "mail"]),
   label: z.string(),
   config: z.unknown(),
@@ -43,8 +41,6 @@ const carrierSchema = z.object({
   name: z.string(),
   countries: z.array(z.string()),
   connection_kinds: z.array(z.enum(["account", "tracking", "shop"])),
-  /** Deprecated: the same as `connection_kinds`, sent for one release. */
-  source_kinds: z.array(z.enum(["account", "tracking", "shop"])),
   sign_in: z
     .string()
     .describe("Type of the default sign-in flow: none, credentials, api_key or interactive."),
@@ -73,7 +69,6 @@ function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
   return {
     id: view.id,
     provider: view.provider,
-    plugin: view.provider,
     kind: view.kind,
     label: view.label,
     config: view.config,
@@ -123,7 +118,6 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         name: provider.info.name,
         countries: [...provider.info.countries],
         connection_kinds: [...provider.info.connectionKinds],
-        source_kinds: [...provider.info.connectionKinds],
         sign_in: provider.info.signIn,
         sign_in_flows: provider.info.signInFlows.map(flowSummary),
         config_schema: z.toJSONSchema(provider.info.configSchema, { unrepresentable: "any" }),
@@ -158,13 +152,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
         tags: ["connections"],
         summary: "Add a connection. Sign-in data is encrypted at rest and never returned.",
         body: z.object({
-          provider: z.string().min(1).max(64).optional(),
-          plugin: z
-            .string()
-            .min(1)
-            .max(64)
-            .optional()
-            .describe("Deprecated: the old name of `provider`, accepted for one release."),
+          provider: z.string().min(1).max(64),
           kind: z
             .enum(["account", "tracking", "shop", "mail"])
             .describe(
@@ -178,14 +166,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
       },
     },
     async (request, reply) => {
-      const { plugin, provider, ...rest } = request.body;
-      const chosen = provider ?? plugin;
-      if (chosen === undefined) {
-        throw new ApiError(400, "invalid_connection", "Name the provider of the connection.");
-      }
-      const created = await services.connections
-        .create({ ...rest, provider: chosen })
-        .catch(asBadRequest);
+      const created = await services.connections.create(request.body).catch(asBadRequest);
       if (created.kind === "mail") {
         await services.mail.connect(created.id);
       }
