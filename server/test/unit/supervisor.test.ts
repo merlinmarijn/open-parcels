@@ -3,11 +3,13 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import { pino } from "pino";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { parseEnv } from "../../src/config.js";
 import {
   announceToHomeAssistant,
   APP_INGRESS_PORT,
   isSupervised,
   settingsTokenVault,
+  appOptionKeys,
   supervisedEnvironment,
 } from "../../src/ha/supervisor.js";
 import { createTestContext, type TestContext } from "../helpers.js";
@@ -30,16 +32,24 @@ describe("Home Assistant app support", () => {
     const file = path.join(dir, "options.json");
     writeFileSync(
       file,
-      JSON.stringify({ log_level: "debug", timezone: "Europe/Berlin", archive_days: 14 }),
+      JSON.stringify({ log_level: "debug", public_url: "https://parcels.example.test" }),
     );
-    const env = supervisedEnvironment({ OPENPARCELS_LOG_LEVEL: "warn" }, file);
+    const explicit = { OPENPARCELS_LOG_LEVEL: "warn" };
+    const env = supervisedEnvironment(explicit, file);
     expect(env).toMatchObject({
       OPENPARCELS_LOG_LEVEL: "warn",
-      OPENPARCELS_TIMEZONE: "Europe/Berlin",
-      OPENPARCELS_ARCHIVE_DAYS: "14",
+      OPENPARCELS_PUBLIC_URL: "https://parcels.example.test",
       OPENPARCELS_INGRESS_PORT: String(APP_INGRESS_PORT),
-      OPENPARCELS_DATA_DIR: "/data",
+      // The folder the app's image uses.
+      OPENPARCELS_DATA_DIR: "/data/open-parcels",
     });
+    // Only options the app has, and only where no explicit variable won, count as app options.
+    expect([...appOptionKeys(explicit, env)]).toEqual(["OPENPARCELS_PUBLIC_URL"]);
+    expect(env["OPENPARCELS_TIMEZONE"]).toBeUndefined();
+    // The Settings page names them as app options, apart from the plain environment.
+    const parsed = parseEnv(env, appOptionKeys(explicit, env));
+    expect(parsed.sources.OPENPARCELS_PUBLIC_URL).toBe("app");
+    expect(parsed.sources.OPENPARCELS_LOG_LEVEL).toBe("env");
   });
 
   it("announces itself with the same token on every start, and a new one once revoked (AP-002)", async () => {

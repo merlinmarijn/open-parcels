@@ -15,17 +15,34 @@ const SUPERVISOR_URL = "http://supervisor";
 export const DISCOVERY_SERVICE = "open_parcels";
 const DISCOVERY_TOKEN_NAME = "Home Assistant (discovery)";
 
-/** Options shown in the app's configuration tab; each maps to an OPENPARCELS_* variable. */
+/**
+ * Options shown in the app's configuration tab, exactly the app's options schema; each maps to an
+ * OPENPARCELS_* variable. The time zone comes from the app's TZ.
+ */
 const optionsSchema = z
   .object({
     log_level: z.enum(["fatal", "error", "warn", "info", "debug", "trace"]).optional(),
-    timezone: z.string().optional(),
     public_url: z.string().optional(),
-    archive_days: z.number().int().optional(),
-    delete_days: z.number().int().optional(),
     quiet_window: z.boolean().optional(),
   })
   .loose();
+
+/** The variables the app's options set; shown as "Home Assistant app option" on the Settings page. */
+export const APP_OPTION_KEYS = [
+  "OPENPARCELS_LOG_LEVEL",
+  "OPENPARCELS_PUBLIC_URL",
+  "OPENPARCELS_QUIET_WINDOW",
+] as const;
+
+/** The app's options that apply: set in the app and not overridden by an explicit variable. */
+export function appOptionKeys(
+  env: NodeJS.ProcessEnv,
+  supervised: NodeJS.ProcessEnv,
+): ReadonlySet<string> {
+  return new Set(
+    APP_OPTION_KEYS.filter((key) => env[key] === undefined && supervised[key] !== undefined),
+  );
+}
 
 /** True when running as a Home Assistant app: the Supervisor injects its token. */
 export function isSupervised(env: NodeJS.ProcessEnv = process.env): boolean {
@@ -46,13 +63,11 @@ export function supervisedEnvironment(
     : {};
   const mapped: Record<string, string | undefined> = {
     OPENPARCELS_LOG_LEVEL: options.log_level,
-    OPENPARCELS_TIMEZONE: options.timezone,
     OPENPARCELS_PUBLIC_URL: options.public_url,
-    OPENPARCELS_ARCHIVE_DAYS: options.archive_days?.toString(),
-    OPENPARCELS_DELETE_DAYS: options.delete_days?.toString(),
     OPENPARCELS_QUIET_WINDOW: options.quiet_window?.toString(),
     OPENPARCELS_INGRESS_PORT: String(APP_INGRESS_PORT),
-    OPENPARCELS_DATA_DIR: "/data",
+    // The same folder the app's image sets; the server's default must not differ from it.
+    OPENPARCELS_DATA_DIR: "/data/open-parcels",
   };
   const result: NodeJS.ProcessEnv = { ...env };
   for (const [key, value] of Object.entries(mapped)) {

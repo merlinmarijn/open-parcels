@@ -84,6 +84,7 @@ export function fromText(setting: ServerSetting, text: string): ServerSettingVal
 
 export const SOURCE_LABELS = {
   env: "environment",
+  app: "Home Assistant app option",
   default: "default",
   override: "saved in UI",
 } as const;

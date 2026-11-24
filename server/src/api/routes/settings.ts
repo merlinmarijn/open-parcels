@@ -44,7 +44,9 @@ const settingInfoSchema = z.object({
       "env: only from the environment; restart: saved now, used after a restart; live: used at once.",
     ),
   secret: z.boolean().describe("The value is never returned."),
-  source: z.enum(["env", "default", "override"]).describe("override: saved in the UI."),
+  source: z
+    .enum(["env", "default", "app", "override"])
+    .describe("app: an option of the Home Assistant app; override: saved in the UI."),
   set: z.boolean(),
   value: settingValueSchema.nullable().describe("Null when unset or secret."),
   default: settingValueSchema.nullable(),

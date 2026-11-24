@@ -440,7 +440,7 @@ export const GetApiV1SettingsConfig200ItemApply = {
 } as const;
 
 /**
- * override: saved in the UI.
+ * app: an option of the Home Assistant app; override: saved in the UI.
  */
 export type GetApiV1SettingsConfig200ItemSource =
   (typeof GetApiV1SettingsConfig200ItemSource)[keyof typeof GetApiV1SettingsConfig200ItemSource];
@@ -448,6 +448,7 @@ export type GetApiV1SettingsConfig200ItemSource =
 export const GetApiV1SettingsConfig200ItemSource = {
   env: "env",
   default: "default",
+  app: "app",
   override: "override",
 } as const;
 
@@ -462,7 +463,7 @@ export type GetApiV1SettingsConfig200Item = {
   apply: GetApiV1SettingsConfig200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** override: saved in the UI. */
+  /** app: an option of the Home Assistant app; override: saved in the UI. */
   source: GetApiV1SettingsConfig200ItemSource;
   set: boolean;
   /** Null when unset or secret. */
@@ -496,7 +497,7 @@ export const PatchApiV1SettingsConfig200ItemApply = {
 } as const;
 
 /**
- * override: saved in the UI.
+ * app: an option of the Home Assistant app; override: saved in the UI.
  */
 export type PatchApiV1SettingsConfig200ItemSource =
   (typeof PatchApiV1SettingsConfig200ItemSource)[keyof typeof PatchApiV1SettingsConfig200ItemSource];
@@ -504,6 +505,7 @@ export type PatchApiV1SettingsConfig200ItemSource =
 export const PatchApiV1SettingsConfig200ItemSource = {
   env: "env",
   default: "default",
+  app: "app",
   override: "override",
 } as const;
 
@@ -518,7 +520,7 @@ export type PatchApiV1SettingsConfig200Item = {
   apply: PatchApiV1SettingsConfig200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** override: saved in the UI. */
+  /** app: an option of the Home Assistant app; override: saved in the UI. */
   source: PatchApiV1SettingsConfig200ItemSource;
   set: boolean;
   /** Null when unset or secret. */
@@ -557,7 +559,7 @@ export const DeleteApiV1SettingsConfigKey200ItemApply = {
 } as const;
 
 /**
- * override: saved in the UI.
+ * app: an option of the Home Assistant app; override: saved in the UI.
  */
 export type DeleteApiV1SettingsConfigKey200ItemSource =
   (typeof DeleteApiV1SettingsConfigKey200ItemSource)[keyof typeof DeleteApiV1SettingsConfigKey200ItemSource];
@@ -565,6 +567,7 @@ export type DeleteApiV1SettingsConfigKey200ItemSource =
 export const DeleteApiV1SettingsConfigKey200ItemSource = {
   env: "env",
   default: "default",
+  app: "app",
   override: "override",
 } as const;
 
@@ -579,7 +582,7 @@ export type DeleteApiV1SettingsConfigKey200Item = {
   apply: DeleteApiV1SettingsConfigKey200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** override: saved in the UI. */
+  /** app: an option of the Home Assistant app; override: saved in the UI. */
   source: DeleteApiV1SettingsConfigKey200ItemSource;
   set: boolean;
   /** Null when unset or secret. */

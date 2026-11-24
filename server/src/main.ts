@@ -10,6 +10,7 @@ import { cleanupMailFalsePositives } from "./engine/mail-cleanup.js";
 import { loadRules } from "open-parcels-rules";
 import {
   announceToHomeAssistant,
+  appOptionKeys,
   isSupervised,
   settingsTokenVault,
   supervisedEnvironment,
@@ -31,7 +32,8 @@ async function runMaintenance(services: Services): Promise<void> {
 
 async function main(): Promise<void> {
   const supervised = isSupervised();
-  const config = loadConfig(supervised ? supervisedEnvironment(process.env) : process.env);
+  const env = supervised ? supervisedEnvironment(process.env) : process.env;
+  const config = loadConfig(env, supervised ? appOptionKeys(process.env, env) : new Set());
   const logger = createLogger(config.logLevel);
   mkdirSync(config.dataDir, { recursive: true });
 

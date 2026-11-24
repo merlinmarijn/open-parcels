@@ -340,12 +340,18 @@ export function parseSetting(key: SettingKey, raw: unknown): ParseResult {
 /** The environment's values and whether each came from the environment or the default. */
 export interface ParsedEnv {
   readonly values: Readonly<SettingValues>;
-  readonly sources: Readonly<Record<SettingKey, "env" | "default">>;
+  readonly sources: Readonly<Record<SettingKey, EnvSource>>;
 }
 
-export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
+/** `app`: an option of the Home Assistant app, passed in as a variable. */
+export type EnvSource = "env" | "default" | "app";
+
+export function parseEnv(
+  env: NodeJS.ProcessEnv,
+  appOptions: ReadonlySet<string> = new Set(),
+): ParsedEnv {
   const values: Record<string, unknown> = {};
-  const sources: Record<string, "env" | "default"> = {};
+  const sources: Record<string, EnvSource> = {};
   const problems: string[] = [];
   for (const key of SETTING_KEYS) {
     const raw = env[key];
@@ -357,7 +363,7 @@ export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
     const parsed = parseSetting(key, raw);
     if (parsed.ok) {
       values[key] = parsed.value;
-      sources[key] = "env";
+      sources[key] = appOptions.has(key) ? "app" : "env";
     } else {
       problems.push(parsed.error);
     }
@@ -368,7 +374,7 @@ export function parseEnv(env: NodeJS.ProcessEnv): ParsedEnv {
   // Every value came through its own schema or is its declared default.
   return {
     values: values as SettingValues,
-    sources: sources as Record<SettingKey, "env" | "default">,
+    sources: sources as Record<SettingKey, EnvSource>,
   };
 }
 
@@ -474,7 +480,10 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
 }
 
 /** Parses the environment once at start-up; any invalid value stops the process with a clear message. */
-export function loadConfig(env: NodeJS.ProcessEnv = process.env): AppConfig {
-  const parsed = parseEnv(env);
+export function loadConfig(
+  env: NodeJS.ProcessEnv = process.env,
+  appOptions: ReadonlySet<string> = new Set(),
+): AppConfig {
+  const parsed = parseEnv(env, appOptions);
   return toConfig(parsed.values, parsed);
 }

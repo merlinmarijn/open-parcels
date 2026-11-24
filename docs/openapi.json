@@ -1142,9 +1142,10 @@
                         "enum": [
                           "env",
                           "default",
+                          "app",
                           "override"
                         ],
-                        "description": "override: saved in the UI."
+                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"
@@ -1285,9 +1286,10 @@
                         "enum": [
                           "env",
                           "default",
+                          "app",
                           "override"
                         ],
-                        "description": "override: saved in the UI."
+                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"
@@ -1442,9 +1444,10 @@
                         "enum": [
                           "env",
                           "default",
+                          "app",
                           "override"
                         ],
-                        "description": "override: saved in the UI."
+                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"

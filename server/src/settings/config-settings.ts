@@ -17,7 +17,8 @@ import {
 } from "../config.js";
 import type { Database } from "../db/schema.js";
 
-export type SettingSource = "env" | "default" | "override";
+/** `app`: an option of the Home Assistant app; `override`: saved on the Settings page. */
+export type SettingSource = "env" | "default" | "app" | "override";
 
 export interface SettingInfo {
   readonly key: SettingKey;
@@ -81,6 +82,14 @@ export class ConfigSettings {
         this.logger.warn(
           { key: row.key },
           "Ignoring a saved setting that is no longer valid; the environment or default applies.",
+        );
+      }
+    }
+    for (const key of this.#overrides.keys()) {
+      if (this.config.env.sources[key] === "app") {
+        this.logger.info(
+          { key },
+          "Home Assistant app option ignored: a value saved on the Settings page overrides it.",
         );
       }
     }
