@@ -75,6 +75,7 @@ describe("migration 0009-idle-source-state", () => {
         "0015-order-sources",
         "0016-manual-at",
         "0017-join-indexes",
+        "0018-returns",
       ]);
 
       const rows = await sql<{ id: string; state: string; state_detail: string | null }>`

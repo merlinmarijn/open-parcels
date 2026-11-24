@@ -50,6 +50,7 @@ describe("migration 0015-order-sources", () => {
         "0015-order-sources",
         "0016-manual-at",
         "0017-join-indexes",
+        "0018-returns",
       ]);
 
       const links = await db

@@ -18,6 +18,7 @@ import * as m0014 from "./migrations/0014-place-candidates.js";
 import * as m0015 from "./migrations/0015-order-sources.js";
 import * as m0016 from "./migrations/0016-manual-at.js";
 import * as m0017 from "./migrations/0017-join-indexes.js";
+import * as m0018 from "./migrations/0018-returns.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -42,6 +43,7 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0015-order-sources": m0015,
   "0016-manual-at": m0016,
   "0017-join-indexes": m0017,
+  "0018-returns": m0018,
 };
 
 const staticProvider: MigrationProvider = {

@@ -48,3 +48,35 @@ export function orderVisible(eb: ExpressionBuilder<Database, "orders">): Express
     ),
   ]);
 }
+
+/** The same rule for returns, over `return_sources`; the order must show too. */
+export function returnVisible(eb: ExpressionBuilder<Database, "returns">): Expression<SqlBool> {
+  return eb.and([
+    eb.exists(
+      eb
+        .selectFrom("orders")
+        .select("orders.id")
+        .whereRef("orders.id", "=", "returns.order_id")
+        .where("orders.deleted_at", "is", null)
+        .where(orderVisible),
+    ),
+    eb.or([
+      eb.not(
+        eb.exists(
+          eb
+            .selectFrom("return_sources as vis_rs")
+            .select("vis_rs.return_id")
+            .whereRef("vis_rs.return_id", "=", "returns.id"),
+        ),
+      ),
+      eb.exists(
+        eb
+          .selectFrom("return_sources as vis_rs")
+          .innerJoin("sources as vis_s", "vis_s.id", "vis_rs.source_id")
+          .select("vis_rs.return_id")
+          .whereRef("vis_rs.return_id", "=", "returns.id")
+          .where("vis_s.state", "!=", "disabled"),
+      ),
+    ]),
+  ]);
+}

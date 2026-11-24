@@ -37,6 +37,7 @@ describe("migration 0014-place-candidates", () => {
         "0015-order-sources",
         "0016-manual-at",
         "0017-join-indexes",
+        "0018-returns",
       ]);
 
       expect(await db.selectFrom("places").selectAll().execute()).toEqual([]);

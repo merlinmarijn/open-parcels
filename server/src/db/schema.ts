@@ -87,6 +87,8 @@ export interface OrderTable {
   archived_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
   /** Set when the owner deleted the order: kept as a tombstone so a shop cannot re-create it. */
   deleted_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
+  /** Last day of the shop's return window (`YYYY-MM-DD`), when it lists one. See migration 0018. */
+  return_until: ColumnType<string | null, string | null | undefined>;
 }
 
 export interface ParcelTable {
@@ -148,6 +150,44 @@ export interface ParcelSourceTable {
 export interface OrderSourceTable {
   order_id: string;
   source_id: string;
+}
+
+/** One return of an order. See migration 0018. */
+export interface ReturnTable {
+  id: string;
+  order_id: string;
+  external_ref: string | null;
+  status: string;
+  reason: string | null;
+  /** `YYYY-MM-DD`, the server's local day. */
+  return_by: string | null;
+  /** JSON array of `{carrier, kind, description}`. */
+  drop_off: string;
+  cost_free: Bool | null;
+  cost_amount: number | null;
+  cost_currency: string | null;
+  label_url: string | null;
+  carrier: string | null;
+  tracking_number: string | null;
+  parcel_id: string | null;
+  refund_amount: number | null;
+  refund_currency: string | null;
+  refund_status: "pending" | "issued" | null;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
+export interface ReturnSourceTable {
+  return_id: string;
+  source_id: string;
+}
+
+export interface ReturnItemTable {
+  id: Generated<number>;
+  return_id: string;
+  position: number;
+  title: string;
+  order_item_id: number | null;
 }
 
 export interface ParcelEventTable {
@@ -270,6 +310,9 @@ export interface Database {
   parcels: ParcelTable;
   parcel_sources: ParcelSourceTable;
   order_sources: OrderSourceTable;
+  returns: ReturnTable;
+  return_sources: ReturnSourceTable;
+  return_items: ReturnItemTable;
   parcel_events: ParcelEventTable;
   order_items: OrderItemTable;
   parcel_raw: ParcelRawTable;

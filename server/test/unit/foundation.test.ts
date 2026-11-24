@@ -185,6 +185,7 @@ describe("migrations", () => {
         "0015-order-sources",
         "0016-manual-at",
         "0017-join-indexes",
+        "0018-returns",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
     } finally {
