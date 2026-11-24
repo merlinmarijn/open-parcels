@@ -79,6 +79,7 @@ describe("migration 0009-idle-source-state", () => {
         "0019-glossary-names",
         "0020-ha-import-markers",
         "0021-order-totals",
+        "0022-live-state-connection",
       ]);
 
       const rows = await sql<{ id: string; state: string; state_detail: string | null }>`

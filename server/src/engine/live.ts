@@ -94,9 +94,8 @@ export class LiveTracker {
   async #retire(connectionId: string, dropped: readonly string[]): Promise<void> {
     const stored = await this.deps.db
       .selectFrom("live_state")
-      .innerJoin("parcel_connections", "parcel_connections.parcel_id", "live_state.parcel_id")
-      .select(["live_state.parcel_id", "live_state.state", "live_state.stops_away"])
-      .where("parcel_connections.connection_id", "=", connectionId)
+      .select(["parcel_id", "state", "stops_away"])
+      .where("connection_id", "=", connectionId)
       .execute();
     const states = new Map(stored.map((row) => [row.parcel_id, row]));
     for (const parcelId of new Set([...dropped, ...states.keys()])) {
@@ -303,7 +302,7 @@ export class LiveTracker {
       this.#positions.delete(parcelId);
     }
     const changed = previous?.state !== session.state || previous.stopsAway !== session.stopsAway;
-    await this.#upsertState(parcelId, reading);
+    await this.#upsertState(parcelId, connectionId, reading);
     if (changed) {
       await this.#record(parcelId, previous, session);
     }
@@ -312,9 +311,10 @@ export class LiveTracker {
     }
   }
 
-  async #upsertState(parcelId: string, reading: LiveReading): Promise<void> {
+  async #upsertState(parcelId: string, connectionId: string, reading: LiveReading): Promise<void> {
     const now = isoNow(this.deps.clock);
     const values = {
+      connection_id: connectionId,
       state: reading.state,
       stops_away: reading.stopsAway,
       message: reading.message,

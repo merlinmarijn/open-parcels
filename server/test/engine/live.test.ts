@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { LIVE_FAST_MS, LIVE_PROBE_MS } from "../../src/engine/live.js";
+import { LIVE_FAST_MS, LIVE_PROBE_MS, LiveTracker } from "../../src/engine/live.js";
 import type { EphemeralMessage } from "../../src/events/bus.js";
 import { RateLimitedError, TransientError } from "../../src/provider/api.js";
 import { FakeWorld, fakeShop, reading, snapshot } from "../fakes/carriers.js";
@@ -229,6 +229,58 @@ describe("live courier tracking", () => {
     await poll("out_for_delivery", true);
     shop.liveScript = [reading("en_route", 3, COURIER)];
     expect(await context.services.live.pass()).toBe(LIVE_FAST_MS);
+  });
+
+  it("after a restart, lets only the connection following a session end it (OP-030)", async () => {
+    const parcelId = await poll("out_for_delivery", true);
+    shop.liveScript = [reading("en_route", 4, COURIER)];
+    await context.services.live.pass();
+    const other = await context.services.connections.create({
+      provider: "fakeshop",
+      kind: "shop",
+      label: "Other shop",
+      config: {},
+      secret: null,
+    });
+    await context.services.db
+      .insertInto("parcel_connections")
+      .values({
+        parcel_id: parcelId,
+        connection_id: other.id,
+        external_ref: null,
+        role: "handoff",
+        last_seen_at: context.clock.now().toISOString(),
+      })
+      .execute();
+    // A tracker that starts empty, as after a restart.
+    const { services } = context;
+    const restarted = new LiveTracker({
+      db: services.db,
+      runner: services.runner,
+      bus: services.bus,
+      clock: services.clock,
+      logger: services.logger,
+      refreshConnection: () => Promise.resolve(),
+      presentation: {
+        position: () => undefined,
+        imagePath: () => null,
+        labelMode: () => services.settings.labelMode,
+        timeZone: services.config.timeZone,
+      },
+    });
+    restarted.setTargets(other.id, []);
+    // Ending a session takes a few local database calls; give the other connection's run time.
+    await new Promise((resolve) => setTimeout(resolve, 50));
+    expect(await liveState(parcelId)).toBe("en_route");
+    restarted.setTargets(connectionId, []);
+    // The owning connection's empty run ends the session, once.
+    await vi.waitFor(async () => {
+      expect(await liveState(parcelId)).toBeUndefined();
+    });
+    expect((await liveEvents()).map((event) => event["new_live_state"])).toEqual([
+      "en_route",
+      null,
+    ]);
   });
 
   it("forgets the target of a parcel deleted since the last poll", async () => {

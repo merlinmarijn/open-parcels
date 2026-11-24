@@ -248,6 +248,8 @@ export interface OrderItemTable {
 
 export interface LiveStateTable {
   parcel_id: string;
+  /** The connection following the session; only its runs may end it. See migration 0022. */
+  connection_id: string;
   state: "en_route" | "next_stop" | "delivered" | "ended";
   stops_away: number | null;
   message: string | null;

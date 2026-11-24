@@ -32,6 +32,17 @@ Assistant app and the browser extension are released in lockstep with this serve
 older Home Assistant integration stops seeing connections and live events until it is updated.
 Scripts that call the API by hand must switch paths and fields; nothing else is needed.
 
+### Fixed
+
+- **Live courier sessions survive a restart.** A stored session now names the connection that
+  follows it, so the first run of another connection of the same parcel no longer ends it
+  (migration `0022-live-state-connection`; sessions stored before the upgrade are dropped once and
+  start again on their connection's next poll).
+- Connections leaving the quiet window poll a few minutes after 00:00 and 06:00 instead of on the
+  hour; a stale map tile is served at once while it refreshes in the background; parcel collages
+  are only cached when every picture loaded, and pruned after 30 days; API tokens record their use
+  at most once a minute.
+
 ### Added
 
 - **Orders from order emails.** Inbox connections now act on the rules' order emails

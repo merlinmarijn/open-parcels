@@ -41,7 +41,11 @@ describe("migration 0020-ha-import-markers", () => {
         ])
         .execute();
 
-      expect(await migrateToLatest(db)).toEqual(["0020-ha-import-markers", "0021-order-totals"]);
+      expect(await migrateToLatest(db)).toEqual([
+        "0020-ha-import-markers",
+        "0021-order-totals",
+        "0022-live-state-connection",
+      ]);
 
       const rows = await db
         .selectFrom("settings")
