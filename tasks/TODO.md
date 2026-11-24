@@ -46,7 +46,9 @@ already fixed. Still open, by audit group:
       columns, events, web UI text, docs, README, website, org profile, Home Assistant integration
       and app to the glossary terms; renames that cross a public boundary keep the old names
       working for one release as listed in the glossary's Renames table. Do this before the
-      provider rewrite starts.
+      provider rewrite starts. Includes OP-044: the server says when an expected delivery is whole
+      days (local dates in the server's zone, next to `expected_from` / `expected_to`), the web
+      renders from that instead of guessing in the browser's zone.
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
 - [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
@@ -74,7 +76,6 @@ already fixed. Still open, by audit group:
 
 ## 4. Returns follow-ups
 
-- [ ] Ship rules 2.0.0-dev.10 to the server (carries the Amazon "Refund on order …" mail rule)
 - [ ] Return mails of other shops (generic rules), PayPal refunds matched to orders
 - [ ] Move return detail reading (deadline, drop-off, cost) from the server into the rules/providers
 - [ ] Verify the Amazon return-window parsing on a live account run
@@ -89,14 +90,12 @@ already fixed. Still open, by audit group:
 
 ## 6. Home Assistant integration (open-parcels-ha)
 
-- [ ] Returns: sensor and attributes, calendar entries with drop-off and cost lines
 - [ ] Source actions as buttons/services once the server has them
-- [ ] Remaining low findings HA-009 … HA-032
+- [ ] HA-032 (the other lows shipped in 0.5.0)
 
 ## 7. Home Assistant app (open-parcels-ha-apps)
 
-- [ ] AP-011: option precedence
-- [ ] AP-008: consistent database backups (backup mode or SQLite backup before HA backups)
+- [ ] AP-017: run as non-root; needs testing on a real Home Assistant install
 - [ ] Bump to every server release automatically (script)
 
 ## 8. Browser extension (open-parcels-extension)
@@ -106,9 +105,6 @@ already fixed. Still open, by audit group:
       Deny and a 10-minute cool-down after Deny; cancel reasons `busy` and `error`; main-frame
       watching, results only to the requesting origin; stored state = approval choices, refused
       hosts, storage.session)
-- [ ] `web/src/sources/OpenUrlStep.tsx`: "installed? click the extension's button and choose Enable
-      on this site" hint, CANCEL_REASONS texts for `busy` and `error`, and inside the Home
-      Assistant ingress frame a hint to open the web UI in its own tab
 - [ ] Signed releases; store publishing (walk the owner through it)
 
 ## 9. Website and org profile

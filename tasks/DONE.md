@@ -4,6 +4,25 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- Web correctness: route map redraws only on change (OP-149, `8eb9ab1`); settings editor, secrets
+  and reader password (OP-152, `29ed45b`); sign-in loose ends, extension 0.2.0 hints for enabling
+  it, `busy`/`error` reasons and the Home Assistant frame (OP-154, OP-038, `a57d551`); split orders
+  and unknown currencies, sources section (OP-151, OP-157, `2f76956`); maps follow a mode change
+  (OP-150, `f3095a6`); "All" orders tab, calendar asks once for the right range (OP-153,
+  `db55eca`); session and live-stream recovery, Retry-After dates, live courier position (OP-073,
+  OP-043, OP-041, OP-061, `fbf4bd6`)
+- Home Assistant app follow-ups on the server: only the app's options are mapped (time zone,
+  archive and delete days dropped), data folder `/data/open-parcels`, "Home Assistant app option"
+  as a value's origin, a log line when a saved setting overrides an option (`fbc9538`)
+- Rules 2.0.0-dev.10 on the server: Amazon "Refund on order …" mails (`4879801`)
+- Installable themes with a separate mode recorded: TODO §3, decision 10 in 0002, glossary
+  (`8cf7a65`)
+- open-parcels-ha 0.5.0: returns sensor, events and calendar, HA-009…HA-031 lows; released and
+  deployed to the owner's Home Assistant
+- open-parcels-ha-apps: AP-005, AP-007, AP-008, AP-011, AP-013, AP-015, AP-018…AP-022 (app
+  2.0.0-dev.20261124.3: cold backups, watchdog, admin-only panel, pinned base image; open-parcels-ha-apps
+  `6ac768e`); AP-017 (non-root) skipped, needs testing on a real Home Assistant install
+- Website WS-006…WS-016; org profile GH-011…GH-014
 - Orders: only the page's orders are built, the view is decided from the order rows and their
   parcels' states; the web reads every page instead of stopping at 1,000 parcels / 500 orders
   (OP-063, OP-064, `3ebf2ea`)
