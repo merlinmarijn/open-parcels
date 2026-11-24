@@ -42,13 +42,6 @@ already fixed. Still open, by audit group:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
-- [ ] Consistency pass against `docs/glossary.md`: bring all code identifiers, API fields, DB
-      columns, events, web UI text, docs, README, website, org profile, Home Assistant integration
-      and app to the glossary terms; renames that cross a public boundary keep the old names
-      working for one release as listed in the glossary's Renames table. Do this before the
-      provider rewrite starts. Includes OP-044: the server says when an expected delivery is whole
-      days (local dates in the server's zone, next to `expected_from` / `expected_to`), the web
-      renders from that instead of guessing in the browser's zone.
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
 - [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
