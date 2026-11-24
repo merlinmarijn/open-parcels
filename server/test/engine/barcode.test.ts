@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import type { NewParcelRow } from "../../src/db/schema.js";
 import { normaliseBarcode } from "../../src/engine/barcode.js";
 import { repairBarcodes } from "../../src/engine/barcode-repair.js";
 import { trackEach } from "../../src/plugin/api.js";
@@ -128,5 +129,45 @@ describe("codes in another spelling", () => {
       .where("type", "=", "parcel.deleted")
       .execute();
     expect(deleted).toEqual([{ type: "parcel.deleted", parcel_id: newer }]);
+  });
+
+  it("revived by an active twin fire parcel.registered (OP-130)", async () => {
+    const db = context.services.db;
+    const row = (
+      id: string,
+      barcode: string,
+      firstSeen: string,
+      removed: string | null,
+    ): NewParcelRow => ({
+      id,
+      carrier: "ups",
+      barcode,
+      direction: "incoming",
+      status: "in_transit",
+      raw_status: null,
+      delivered: 0,
+      pickup: 0,
+      label: null,
+      first_seen_at: firstSeen,
+      last_seen_at: firstSeen,
+      updated_at: firstSeen,
+      removed_at: removed,
+    });
+    const older = "00000000-0000-4000-8000-0000000000b1";
+    const newer = "00000000-0000-4000-8000-0000000000b2";
+    await db
+      .insertInto("parcels")
+      .values([
+        row(older, UPS_CODE, "2026-11-01T00:00:00.000Z", "2026-11-03T00:00:00.000Z"),
+        row(newer, UPS_TYPED, "2026-11-02T00:00:00.000Z", null),
+      ])
+      .execute();
+    await repairBarcodes(db, context.clock);
+    const registered = await db
+      .selectFrom("outbox")
+      .select("parcel_id")
+      .where("type", "=", "parcel.registered")
+      .execute();
+    expect(registered).toEqual([{ parcel_id: older }]);
   });
 });

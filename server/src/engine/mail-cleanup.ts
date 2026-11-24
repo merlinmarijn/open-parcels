@@ -8,6 +8,7 @@ import {
 } from "open-parcels-rules";
 import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
+import { appendParcelEvents } from "./repair-events.js";
 
 /** Settings key that marks the one-off cleanup as done. */
 export const MAIL_CLEANUP_KEY = "cleanup.mail-false-positives.v1";
@@ -102,7 +103,8 @@ async function candidates(db: Kysely<Database>): Promise<Candidate[]> {
 /**
  * One-off and idempotent: archives (never deletes) parcels that earlier, looser mail rules made
  * from mails that were not shipments, records why in `archive_reason`, and drops item titles
- * that were instructions. Marks itself done in the settings table so later starts skip it.
+ * that were instructions, firing `parcel.archived` for each parcel it archives. Marks itself done
+ * in the settings table so later starts skip it.
  */
 export async function cleanupMailFalsePositives(
   db: Kysely<Database>,
@@ -130,12 +132,15 @@ export async function cleanupMailFalsePositives(
       const reason = cleanupReason(rules, candidate);
       if (reason === null) continue;
       archived[reason] += 1;
-      await trx
+      const updated = await trx
         .updateTable("parcels")
         .set({ archived_at: now, archive_reason: `mail-cleanup: ${reason}`, updated_at: now })
         .where("id", "=", candidate.id)
         .where("archived_at", "is", null)
-        .execute();
+        .executeTakeFirst();
+      if (updated.numUpdatedRows > 0n) {
+        await appendParcelEvents(trx, clock, "parcel.archived", [candidate.id]);
+      }
     }
     if (boilerplate.length > 0) {
       await trx.deleteFrom("items").where("id", "in", boilerplate).execute();

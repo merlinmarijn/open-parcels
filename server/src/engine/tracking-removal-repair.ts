@@ -1,13 +1,16 @@
 import type { Kysely } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
+import { appendParcelEvents } from "./repair-events.js";
 
 /**
  * Undoes removals that older versions derived from tracking lookups. Tracking sources used to
  * claim complete answers, so a code the carrier did not know yet was marked missing and, six hours
  * later, removed. A parcel is revived only when that path is provable: every link it has is to a
  * tracking source, and at least one of them carries such a missing mark. Every tracking link's
- * mark is cleared too, since a lookup never sets one now. Idempotent; returns the parcels revived.
+ * mark is cleared too, since a lookup never sets one now. Each revived parcel fires
+ * `parcel.registered`, since clients dropped it on `parcel.removed`. Idempotent; returns the
+ * parcels revived.
  */
 export async function reviveTrackingRemovals(db: Kysely<Database>, clock: Clock): Promise<number> {
   return db.transaction().execute(async (trx) => {
@@ -49,6 +52,12 @@ export async function reviveTrackingRemovals(db: Kysely<Database>, clock: Clock)
           revivable.map((row) => row.id),
         )
         .execute();
+      await appendParcelEvents(
+        trx,
+        clock,
+        "parcel.registered",
+        revivable.map((row) => row.id),
+      );
     }
     await trx
       .updateTable("parcel_sources")

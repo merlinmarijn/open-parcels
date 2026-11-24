@@ -4,6 +4,7 @@ import type { Database, ParcelRow } from "../db/schema.js";
 import { RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
 import { normaliseBarcode } from "./barcode.js";
 import { foldParcel } from "./fold.js";
+import { appendParcelEvents } from "./repair-events.js";
 
 export interface BarcodeRepair {
   /** Parcels whose code was rewritten in the carrier's spelling. */
@@ -57,6 +58,10 @@ export async function repairBarcodes(
           .where("id", "=", keep.id)
           .execute();
         respelled += keep.barcode === spelling ? 0 : 1;
+        if (revive) {
+          // Clients dropped it on `parcel.removed`; an active twin brings it back.
+          await appendParcelEvents(trx, clock, "parcel.registered", [keep.id], presentation);
+        }
       }
     }
     return { respelled, folded };

@@ -83,6 +83,12 @@ describe("mail false-positive cleanup", () => {
     expect(byId.get(portal)?.archive_reason).toBe("mail-cleanup: ignored_mail");
     expect(byId.get(placeholder)?.archive_reason).toBe("mail-cleanup: placeholder_or_pattern");
     expect(byId.get(real)?.archived_at).toBeNull();
+    const archivedEvents = await context.services.db
+      .selectFrom("outbox")
+      .select("parcel_id")
+      .where("type", "=", "parcel.archived")
+      .execute();
+    expect(archivedEvents.map((row) => row.parcel_id).sort()).toEqual([portal, placeholder].sort());
     const titles = await context.services.db.selectFrom("items").select("title").execute();
     expect(titles).toEqual([{ title: "Beispielartikel" }]);
 

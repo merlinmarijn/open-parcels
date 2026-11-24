@@ -61,6 +61,16 @@ async function main(): Promise<void> {
     );
   }
 
+  // Before listening, so no client loads the state it is about to change.
+  const cleanup = await cleanupMailFalsePositives(db, systemClock, loadRules());
+  if (cleanup.ran) {
+    logger.info(
+      { archived: cleanup.archived, boilerplateItemsRemoved: cleanup.boilerplateItemsRemoved },
+      "Mail false-positive cleanup finished.",
+    );
+    await services.bus.notify();
+  }
+
   // server/dist/main.js → web/dist at the repository (or image) root.
   const webDir = config.webDir ?? fileURLToPath(new URL("../../web/dist", import.meta.url));
   const servers: App[] = [await buildApp(services, { webDir })];
@@ -72,14 +82,6 @@ async function main(): Promise<void> {
     });
     await ingress.listen({ host: config.host, port: config.ingressPort });
     servers.push(ingress);
-  }
-
-  const cleanup = await cleanupMailFalsePositives(db, systemClock, loadRules());
-  if (cleanup.ran) {
-    logger.info(
-      { archived: cleanup.archived, boilerplateItemsRemoved: cleanup.boilerplateItemsRemoved },
-      "Mail false-positive cleanup finished.",
-    );
   }
 
   await services.reconciler.repair();

@@ -182,6 +182,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   }
   const revived = await reviveTrackingRemovals(db, clock);
   if (revived > 0) {
+    await bus.notify();
     logger.info({ revived }, "Revived parcels removed only because a lookup did not find them.");
   }
   if (await followUntracked(sources, registry, logger)) {
