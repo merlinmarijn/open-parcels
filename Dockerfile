@@ -5,14 +5,19 @@
 # optional browser variant) does not support musl.
 
 ARG NODE_VERSION=26
+# The node:26-slim index (amd64 + arm64) by digest, so a moved tag never changes the build. Bump:
+# `docker buildx imagetools inspect node:26-slim`, copy the Digest line here.
+ARG NODE_DIGEST=sha256:abe7e5a82b61a8ef67b315b85497c9e65173387ccf2f4a029248184b8e020be5
 # Tailscale is built in (optional, off unless TS_STATE_DIR is set). Pinned; bump deliberately.
 ARG TAILSCALE_VERSION=v1.104.7
+# Its index digest; bump both together (the digest wins over the tag).
+ARG TAILSCALE_DIGEST=sha256:72c1e19e0aedca96b8533bbb0b4368564410ff20b17e53b804eb6c1f04a31be4
 
 # --- Tailscale binaries (copied into the runtime; no sidecar container needed) ----------------------
-FROM tailscale/tailscale:${TAILSCALE_VERSION} AS tailscale
+FROM tailscale/tailscale:${TAILSCALE_VERSION}@${TAILSCALE_DIGEST} AS tailscale
 
 # --- Build: compile TypeScript with the full toolchain -------------------------------------------
-FROM node:${NODE_VERSION}-slim AS build
+FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS build
 # Compilers for better-sqlite3 when no prebuilt binary matches this Node ABI and architecture.
 RUN apt-get update \
  && apt-get install --no-install-recommends -y python3 make g++ \
@@ -36,7 +41,7 @@ RUN rm -rf node_modules server/node_modules \
  && npm ci --workspace server --omit=dev
 
 # --- Runtime ------------------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-slim AS runtime
+FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS runtime
 RUN apt-get update \
  && apt-get install --no-install-recommends -y tini \
  && rm -rf /var/lib/apt/lists/* \
