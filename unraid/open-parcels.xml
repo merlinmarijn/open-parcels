@@ -17,7 +17,7 @@ The image runs as uid 1000. The data folder must be writable for that user (chow
   <Category>Tools:Utilities HomeAutomation:</Category>
   <WebUI>http://[IP]:[PORT:3000]</WebUI>
   <Icon>https://raw.githubusercontent.com/open-parcels/open-parcels/main/docs/icon.png</Icon>
-  <ExtraParams>--read-only --tmpfs /tmp --security-opt no-new-privileges</ExtraParams>
+  <ExtraParams>--read-only --tmpfs /tmp --security-opt no-new-privileges --cap-drop ALL</ExtraParams>
   <PostArgs/>
   <Config Name="Web UI port" Target="3000" Default="3000" Mode="tcp" Description="Port of the web UI and the API." Type="Port" Display="always" Required="true" Mask="false">3000</Config>
   <Config Name="Data" Target="/data" Default="/mnt/user/appdata/open-parcels" Mode="rw" Description="Database, encryption key and image cache. Back this folder up." Type="Path" Display="always" Required="true" Mask="false">/mnt/user/appdata/open-parcels</Config>
