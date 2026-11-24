@@ -76,6 +76,23 @@ export default tseslint.config(
     },
   },
   {
+    // The importers of older data may be deleted one day; the API and engine must not need them.
+    files: ["server/src/api/**/*.ts", "server/src/engine/**/*.ts"],
+    rules: {
+      "no-restricted-imports": [
+        "error",
+        {
+          patterns: [
+            {
+              regex: "/migrate/",
+              message: "Only start-up and import code may use the importers in server/src/migrate.",
+            },
+          ],
+        },
+      ],
+    },
+  },
+  {
     files: ["web/**/*.{ts,tsx}"],
     plugins: { "react-hooks": reactHooks },
     languageOptions: { globals: { ...globals.browser } },

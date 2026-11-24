@@ -1,5 +1,6 @@
-import { detectTrackingNumbers, findCarrier, loadRules } from "open-parcels-rules";
+import { findCarrier, loadRules } from "open-parcels-rules";
 import { BUILTIN_CARRIERS } from "../engine/builtin-carriers.js";
+import { detectCarrier, isProvider, trackable } from "../engine/detect.js";
 
 /**
  * Old courier values that name no carrier: the old app's placeholders, aggregators it looked
@@ -16,13 +17,6 @@ const GENERIC_COURIERS: ReadonlySet<string> = new Set([
   "seventeen_track",
   "aliexpress",
 ]);
-
-/** Carriers the shared rules know but no provider tracks, mapped to the provider that does. */
-const TRACKED_THROUGH: Readonly<Record<string, string>> = {
-  // Cainiao's global tracker covers China Post's S10 codes, which is how the old app tracked them.
-  china_post: "cainiao",
-  china_ems: "cainiao",
-};
 
 /** Shops whose parcels go through one logistics network when nothing else identifies the carrier. */
 const SHOP_CARRIER: Readonly<Record<string, string>> = {
@@ -46,13 +40,7 @@ export function snakeCase(value: string): string {
     .replace(/^_|_$/g, "");
 }
 
-let providerIds: ReadonlySet<string> | undefined;
 let providersByName: ReadonlyMap<string, string> | undefined;
-
-function isProvider(id: string): boolean {
-  providerIds ??= new Set(BUILTIN_CARRIERS.map(({ info }) => info.id));
-  return providerIds.has(id);
-}
 
 /** Built-in provider ids by the snake_case of their display name, e.g. `box_now` for "BOX NOW". */
 function providerIdByName(name: string): string | undefined {
@@ -60,12 +48,6 @@ function providerIdByName(name: string): string | undefined {
     BUILTIN_CARRIERS.map(({ info }) => [snakeCase(info.name), info.id] as const),
   );
   return providersByName.get(snakeCase(name));
-}
-
-/** A provider id for a carrier id, following carriers that are tracked through another provider. */
-function trackable(id: string): string | undefined {
-  const target = TRACKED_THROUGH[id] ?? id;
-  return isProvider(target) ? target : undefined;
 }
 
 /**
@@ -80,25 +62,6 @@ export function carrierId(courier: unknown): string {
   }
   const id = findCarrier(loadRules(), name)?.id ?? providerIdByName(name) ?? snakeCase(name);
   return id === "" || GENERIC_COURIERS.has(id) ? UNKNOWN : id;
-}
-
-/** The best provider for a code by the shared tracking-number detection, as the mail watcher does. */
-export function detectCarrier(trackingNumber: string, hint: string | null): string | undefined {
-  const normalised = trackingNumber.replace(/\s+/g, "").toUpperCase();
-  const candidates = detectTrackingNumbers(
-    loadRules(),
-    normalised,
-    hint === null ? undefined : { carrier: hint },
-  )
-    .filter((candidate) => candidate.trackingNumber === normalised)
-    .sort((a, b) => b.confidence - a.confidence);
-  for (const candidate of candidates) {
-    const id = trackable(candidate.carrier);
-    if (id !== undefined) {
-      return id;
-    }
-  }
-  return undefined;
 }
 
 /** True when `next` is a provider id that should replace a stored id no provider serves. */

@@ -1,6 +1,6 @@
 import { z } from "zod";
 import { DIRECTIONS, parcelSchema, parcelStatusSchema } from "../../domain/parcel.js";
-import { detectCarrier } from "../../migrate/legacy-carrier.js";
+import { detectCarrier } from "../../engine/detect.js";
 import { PARCEL_PAGE_DEFAULT } from "../../parcels/repository.js";
 import { DuplicateParcelError } from "../../parcels/service.js";
 import type { Services } from "../../services.js";
