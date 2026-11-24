@@ -20,6 +20,15 @@ export function App(props: { readonly router?: AppRouter }): ReactNode {
     return (
       <main className="auth-page">
         <ErrorNotice error={session.error} />
+        <button
+          type="button"
+          className="button primary"
+          onClick={() => {
+            void session.refetch();
+          }}
+        >
+          Try again
+        </button>
       </main>
     );
   }

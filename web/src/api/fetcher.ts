@@ -51,6 +51,20 @@ async function readBody(response: Response): Promise<unknown> {
   return type.includes("json") ? (JSON.parse(text) as unknown) : text;
 }
 
+/** Retry-After in seconds, given as seconds or as an HTTP date (a proxy may send one; OP-041). */
+export function parseRetryAfter(value: string | null, now: number = Date.now()): number | null {
+  if (value === null) return null;
+  const text = value.trim();
+  if (/^\d+$/u.test(text)) {
+    const seconds = Number(text);
+    return seconds > 0 ? seconds : null;
+  }
+  const at = Date.parse(text);
+  if (Number.isNaN(at)) return null;
+  const seconds = Math.ceil((at - now) / 1000);
+  return seconds > 0 ? seconds : null;
+}
+
 function toApiError(response: Response, body: unknown): ApiError {
   const parsed: ErrorBody = typeof body === "object" && body !== null ? body : {};
   const code = typeof parsed.error === "string" ? parsed.error : `http_${response.status}`;
@@ -58,12 +72,11 @@ function toApiError(response: Response, body: unknown): ApiError {
     typeof parsed.message === "string"
       ? parsed.message
       : `The server answered ${response.status} ${response.statusText}.`;
-  const retry = Number(response.headers.get("retry-after"));
   return new ApiError(
     response.status,
     code,
     message,
-    Number.isFinite(retry) && retry > 0 ? retry : null,
+    parseRetryAfter(response.headers.get("retry-after")),
   );
 }
 

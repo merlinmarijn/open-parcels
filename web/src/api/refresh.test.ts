@@ -1,6 +1,8 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
-import { throttled } from "./events";
+import { parseLivePosition, throttled, withLivePosition } from "./events";
+import { parcel } from "../test/helpers";
+import { parseRetryAfter } from "./fetcher";
 import { allPages, invalidateParcelViews } from "./queries";
 
 describe("refreshing after a parcel edit", () => {
@@ -63,5 +65,54 @@ describe("reading a paged list", () => {
     });
     expect(all).toEqual(rows);
     expect(offsets).toEqual([0, 2, 4]);
+  });
+});
+
+describe("Retry-After (OP-041)", () => {
+  it("reads seconds and HTTP dates", () => {
+    const now = Date.parse("2026-11-24T10:00:00.000Z");
+    expect(parseRetryAfter("30", now)).toBe(30);
+    expect(parseRetryAfter("Tue, 24 Nov 2026 10:01:00 GMT", now)).toBe(60);
+    expect(parseRetryAfter("Tue, 24 Nov 2026 09:00:00 GMT", now)).toBeNull();
+    expect(parseRetryAfter("soon", now)).toBeNull();
+    expect(parseRetryAfter(null, now)).toBeNull();
+  });
+});
+
+describe("a courier position from the live stream (OP-061)", () => {
+  const message = {
+    parcel_id: "00000000-0000-4000-8000-000000000001",
+    latitude: 53.5,
+    longitude: 10,
+    accuracy: 20,
+    position_at: "2026-11-24T10:00:00.000Z",
+    stops_away: 3,
+  };
+
+  it("is read only when every field has its type", () => {
+    expect(parseLivePosition(JSON.stringify(message))).toEqual(message);
+    expect(parseLivePosition(JSON.stringify({ ...message, latitude: "53" }))).toBeNull();
+    expect(parseLivePosition("not json")).toBeNull();
+  });
+
+  it("moves the courier of a parcel on the road and leaves others alone", () => {
+    const idle = { ...parcel(), sources: [] };
+    expect(withLivePosition(idle, message)).toBe(idle);
+    const onRoad = {
+      ...idle,
+      live: {
+        state: "en_route" as const,
+        stops_away: 5,
+        latitude: 53,
+        longitude: 9,
+        accuracy: null,
+        position_at: null,
+        message: null,
+        updated_at: "2026-11-24T09:00:00.000Z",
+      },
+    };
+    const moved = withLivePosition(onRoad, message);
+    expect(moved.live).toMatchObject({ latitude: 53.5, longitude: 10, stops_away: 3 });
+    expect(moved.location).toMatchObject({ latitude: 53.5, longitude: 10, source: "courier" });
   });
 });

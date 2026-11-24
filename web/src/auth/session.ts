@@ -21,7 +21,10 @@ export function useSession() {
       return session;
     },
     staleTime: Infinity,
-    retry: 1,
+    // A restarting server or a network blip is retried with backoff instead of ending in an error
+    // page (OP-073); the page also offers "Try again".
+    retry: 5,
+    retryDelay: (attempt) => Math.min(1000 * 2 ** attempt, 30_000),
   });
 }
 

@@ -1,8 +1,14 @@
 import { useQueryClient } from "@tanstack/react-query";
-import { useEffect, useState } from "react";
+import { useEffect, useRef, useState } from "react";
+import { SESSION_KEY } from "../auth/session";
 import { apiUrl } from "./fetcher";
+import type { ParcelDetail } from "./types";
 import { settingsKey } from "../settings/home";
 import { keys } from "./queries";
+
+/** First wait before a stream the server closed is opened again; it doubles up to the maximum. */
+const STREAM_RETRY_MS = 5_000;
+const STREAM_RETRY_MAX_MS = 5 * 60_000;
 
 const PARCEL_EVENTS = [
   "parcel.registered",
@@ -76,6 +82,63 @@ interface EventPayload {
   readonly parcel?: { readonly id?: unknown };
 }
 
+/** A courier position from `parcel.live_position`; never stored, never replayed. */
+export interface LivePositionMessage {
+  readonly parcel_id: string;
+  readonly latitude: number;
+  readonly longitude: number;
+  readonly accuracy: number | null;
+  readonly position_at: string | null;
+  readonly stops_away: number | null;
+}
+
+const isNumberOrNull = (value: unknown): value is number | null =>
+  value === null || typeof value === "number";
+
+export function parseLivePosition(data: string): LivePositionMessage | null {
+  try {
+    // Every field is checked below; nothing is trusted from the cast (as in `subjectIdOf`).
+    const payload = JSON.parse(data) as Partial<Record<keyof LivePositionMessage, unknown>> | null;
+    if (typeof payload !== "object" || payload === null) return null;
+    const { parcel_id, latitude, longitude, accuracy, position_at, stops_away } = payload;
+    if (typeof parcel_id !== "string" || typeof latitude !== "number") return null;
+    if (typeof longitude !== "number" || !isNumberOrNull(accuracy)) return null;
+    if (!isNumberOrNull(stops_away)) return null;
+    if (position_at !== null && typeof position_at !== "string") return null;
+    return { parcel_id, latitude, longitude, accuracy, position_at, stops_away };
+  } catch {
+    return null;
+  }
+}
+
+/**
+ * The parcel with the courier moved to the new position, without asking the server again
+ * (OP-061). A parcel not on the road (no `live`) is left alone.
+ */
+export function withLivePosition(parcel: ParcelDetail, message: LivePositionMessage): ParcelDetail {
+  if (parcel.live === null) return parcel;
+  return {
+    ...parcel,
+    live: {
+      ...parcel.live,
+      latitude: message.latitude,
+      longitude: message.longitude,
+      accuracy: message.accuracy,
+      position_at: message.position_at,
+      stops_away: message.stops_away,
+    },
+    location: {
+      latitude: message.latitude,
+      longitude: message.longitude,
+      source: "courier",
+      precision: "exact",
+      name: null,
+      address: null,
+      at: message.position_at,
+    },
+  };
+}
+
 function subjectIdOf(data: string): string | undefined {
   try {
     const payload = JSON.parse(data) as EventPayload;
@@ -93,6 +156,9 @@ function subjectIdOf(data: string): string | undefined {
 export function useLiveUpdates(enabled: boolean): LiveState {
   const client = useQueryClient();
   const [state, setState] = useState<LiveState>("connecting");
+  // Bumped to open a new stream after the server closed one for good (OP-043).
+  const [generation, setGeneration] = useState(0);
+  const closedRuns = useRef(0);
 
   useEffect(() => {
     if (!enabled || typeof EventSource === "undefined") {
@@ -126,11 +192,25 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       // removed source takes its links with it.
       void client.invalidateQueries({ queryKey: keys.parcels });
     };
+    let reopen: ReturnType<typeof setTimeout> | undefined;
     source.onopen = () => {
+      closedRuns.current = 0;
       setState("live");
     };
     source.onerror = () => {
-      setState(source.readyState === EventSource.CLOSED ? "offline" : "connecting");
+      if (source.readyState !== EventSource.CLOSED) {
+        setState("connecting");
+        return;
+      }
+      // Closed for good (an ended session, a server error on reconnect): ask for the session,
+      // which shows the sign-in page when needed, and open a new stream after a growing wait.
+      setState("offline");
+      void client.invalidateQueries({ queryKey: SESSION_KEY });
+      const wait = Math.min(STREAM_RETRY_MS * 2 ** closedRuns.current, STREAM_RETRY_MAX_MS);
+      closedRuns.current += 1;
+      reopen = setTimeout(() => {
+        setGeneration((value) => value + 1);
+      }, wait);
     };
     for (const type of PARCEL_EVENTS) {
       source.addEventListener(type, onParcel);
@@ -168,11 +248,20 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries();
     };
     source.addEventListener("resync", onResync);
+    const onPosition = (event: MessageEvent<string>): void => {
+      const message = parseLivePosition(event.data);
+      if (message === null) return;
+      client.setQueryData<ParcelDetail>(keys.parcel(message.parcel_id), (parcel) =>
+        parcel === undefined ? undefined : withLivePosition(parcel, message),
+      );
+    };
+    source.addEventListener("parcel.live_position", onPosition);
     return () => {
       liveLists.cancel();
+      clearTimeout(reopen);
       source.close();
     };
-  }, [client, enabled]);
+  }, [client, enabled, generation]);
 
   return state;
 }
