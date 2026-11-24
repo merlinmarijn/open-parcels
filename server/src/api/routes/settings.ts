@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { PARCEL_LABEL_MODES } from "../../domain/parcel.js";
-import { appendEvent } from "../../events/bus.js";
 import { GeocodeError } from "../../geo/geocoder.js";
 import type { Services } from "../../services.js";
 import { homeSchema } from "../../settings/store.js";
@@ -16,15 +15,6 @@ const settingsSchema = z.object({
       "How a parcel without a label is named: its tracking code, or its item names (max 100 characters).",
     ),
 });
-
-/** Every parcel's display name may change: clients re-read (the HA integration resyncs). */
-async function announce(services: Services, what: string): Promise<void> {
-  await appendEvent(services.db, services.clock, {
-    type: "settings.updated",
-    parcelId: null,
-    payload: { changed: what },
-  });
-}
 
 function current(services: Services): z.infer<typeof settingsSchema> {
   return { home: services.settings.home, parcel_label: services.settings.labelMode };
@@ -65,7 +55,7 @@ async function afterConfigChange(services: Services, changed: readonly string[])
   if (changed.length === 0) return;
   // Readers signed in with the old password sign in again with the new one.
   if (changed.includes("OPENPARCELS_PASSWORD")) await services.access.readerPasswordChanged();
-  await announce(services, changed.join(","));
+  await services.settings.announce(changed.join(","));
 }
 
 /** The OPENPARCELS_* settings: the environment, with values saved here on top. Admin only. */
@@ -149,7 +139,6 @@ export function registerSettingsRoutes(app: TypedApp, services: Services): void 
     },
     async (request) => {
       await services.settings.setHome(request.body);
-      await announce(services, "home");
       return request.body;
     },
   );
@@ -162,7 +151,6 @@ export function registerSettingsRoutes(app: TypedApp, services: Services): void 
     },
     async (_request, reply) => {
       await services.settings.setHome(null);
-      await announce(services, "home");
       return reply.code(204).send();
     },
   );
@@ -180,7 +168,6 @@ export function registerSettingsRoutes(app: TypedApp, services: Services): void 
     },
     async (request) => {
       await services.settings.setLabelMode(request.body.parcel_label);
-      await announce(services, "parcel_label");
       return current(services);
     },
   );

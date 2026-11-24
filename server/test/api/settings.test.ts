@@ -53,6 +53,19 @@ describe("home location", () => {
     });
   });
 
+  it("delivers settings.updated to subscribers on its own (OP-069)", async () => {
+    const { app, headers } = await setUp();
+    const seen: string[] = [];
+    context.services.bus.subscribe((event) => seen.push(event.type));
+    await app.inject({
+      method: "PUT",
+      url: "/api/v1/settings/home",
+      headers,
+      payload: { latitude: 52.5, longitude: 13.25, label: null },
+    });
+    expect(seen).toEqual(["settings.updated"]);
+  });
+
   it("looks places up through the server and reports a failing search", async () => {
     const seen: URL[] = [];
     const { app, headers } = await setUp((input) => {

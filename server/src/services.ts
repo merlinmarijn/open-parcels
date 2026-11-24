@@ -5,7 +5,7 @@ import { AccessControl } from "./auth/access.js";
 import { AuthStore } from "./auth/store.js";
 import { CalendarService } from "./calendar/service.js";
 import { BUILTIN_CARRIERS } from "./engine/builtin-carriers.js";
-import { isoNow, type Clock } from "./clock.js";
+import type { Clock } from "./clock.js";
 import type { AppConfig } from "./config.js";
 import type { SecretBox } from "./crypto/secrets.js";
 import type { Database } from "./db/schema.js";
@@ -135,39 +135,13 @@ function mailInterpreters(timeZone: string, interpret: MailInterpreter | undefin
   };
 }
 
-/** A random id per installation, stored once; it spreads polling of different installs apart. */
-async function loadInstallId(db: Kysely<Database>, clock: Clock): Promise<string> {
-  const row = await db
-    .selectFrom("settings")
-    .select("value")
-    .where("key", "=", "install_id")
-    .executeTakeFirst();
-  if (row !== undefined) {
-    return JSON.parse(row.value) as string;
-  }
-  const id = crypto.randomUUID();
-  await db
-    .insertInto("settings")
-    .values({ key: "install_id", value: JSON.stringify(id), updated_at: isoNow(clock) })
-    .execute();
-  return id;
-}
-
-export async function createServices(deps: ServiceDeps): Promise<Services> {
-  const { db, clock, logger } = deps;
-  // First: values saved in the UI change `deps.config` in place before anything reads it.
-  const configSettings = new ConfigSettings(db, clock, logger, deps.config, (key, config) => {
-    if (key === "OPENPARCELS_LOG_LEVEL") logger.level = config.logLevel;
-  });
-  await configSettings.load();
-  const installId = await loadInstallId(db, clock);
-  const auth = new AuthStore(db, clock);
-  const bus = new EventBus(db, clock, logger);
-  await bus.start();
-  const registry = new ProviderRegistry(deps.providers ?? BUILTIN_CARRIERS);
-  const connections = new ConnectionService(db, registry, deps.secrets, bus, clock);
-  // Repairs on every start. Duplicate keyless tracking connections are merged first, so parcels
-  // imported or added before they could be linked are then followed by the surviving one.
+/**
+ * Repairs of stored data, run by `main` on every start before the server listens (not by tools
+ * such as the OpenAPI export). Duplicate keyless tracking connections are merged first, so parcels
+ * imported or added before they could be linked are then followed by the surviving one.
+ */
+export async function repairOnStart(services: Services): Promise<void> {
+  const { db, clock, logger, bus, connections, registry } = services;
   const mergedConnections = await mergeDuplicateTrackingConnections(db, clock);
   if (mergedConnections > 0) {
     await bus.notify();
@@ -202,6 +176,23 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   if (await followUntracked(connections, registry, logger)) {
     logger.info("Linked parcels without a tracking connection to their carrier.");
   }
+}
+
+export async function createServices(deps: ServiceDeps): Promise<Services> {
+  const { db, clock, logger } = deps;
+  // First: values saved in the UI change `deps.config` in place before anything reads it.
+  const configSettings = new ConfigSettings(db, clock, logger, deps.config, (key, config) => {
+    if (key === "OPENPARCELS_LOG_LEVEL") logger.level = config.logLevel;
+  });
+  await configSettings.load();
+  const auth = new AuthStore(db, clock);
+  const bus = new EventBus(db, clock, logger);
+  await bus.start();
+  const settings = new SettingsStore(db, clock, bus);
+  await settings.load();
+  const installId = await settings.installId();
+  const registry = new ProviderRegistry(deps.providers ?? BUILTIN_CARRIERS);
+  const connections = new ConnectionService(db, registry, deps.secrets, bus, clock);
   const images = new ImageProxy({
     secretKey: deps.secrets.derive("image proxy"),
     cacheDir: path.join(deps.config.dataDir, "images"),
@@ -219,8 +210,6 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     userAgent: USER_AGENT,
     ...(deps.fetchImpl === undefined ? {} : { fetchImpl: deps.fetchImpl }),
   });
-  const settings = new SettingsStore(db, clock);
-  await settings.load();
   // Filled in once the live tracker exists; reads before that see no positions.
   const presentation: Presentation = {
     position: (parcelId) => live.position(parcelId),

@@ -1,6 +1,5 @@
 import { z } from "zod";
 import { randomSecret, safeEqual, sha256Hex } from "../../auth/crypto.js";
-import { isoNow } from "../../clock.js";
 import { renderIcs } from "../../calendar/ics.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
@@ -8,7 +7,6 @@ import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema } from "../errors.js";
 
 const DAY = 24 * 60 * 60 * 1000;
-const FEED_SETTING = "calendar_feed_token_hash";
 /** The feed shows a month back and two months ahead. */
 const FEED_PAST_MS = 30 * DAY;
 const FEED_FUTURE_MS = 60 * DAY;
@@ -43,15 +41,6 @@ const entrySchema = z.object({
   url: z.string().nullable(),
   pickup_point: z.string().nullable(),
 });
-
-async function feedHash(services: Services): Promise<string | undefined> {
-  const row = await services.db
-    .selectFrom("settings")
-    .select("value")
-    .where("key", "=", FEED_SETTING)
-    .executeTakeFirst();
-  return row === undefined ? undefined : (JSON.parse(row.value) as string);
-}
 
 export function registerCalendarRoutes(app: TypedApp, services: Services): void {
   app.get(
@@ -117,14 +106,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
     },
     async (_request, reply) => {
       const token = randomSecret(24);
-      const value = JSON.stringify(sha256Hex(token));
-      await services.db
-        .insertInto("settings")
-        .values({ key: FEED_SETTING, value, updated_at: isoNow(services.clock) })
-        .onConflict((oc) =>
-          oc.column("key").doUpdateSet({ value, updated_at: isoNow(services.clock) }),
-        )
-        .execute();
+      await services.settings.setFeedHash(sha256Hex(token));
       const path = `/ical/${token}.ics`;
       const publicUrl = services.config.publicUrl;
       return reply.code(201).send({
@@ -145,7 +127,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
       },
     },
     async (_request, reply) => {
-      await services.db.deleteFrom("settings").where("key", "=", FEED_SETTING).execute();
+      await services.settings.setFeedHash(null);
       return reply.code(204).send(null);
     },
   );
@@ -163,8 +145,8 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
       },
     },
     async (request, reply) => {
-      const stored = await feedHash(services);
-      if (stored === undefined || !safeEqual(stored, sha256Hex(request.params.token))) {
+      const stored = services.settings.feedHash;
+      if (stored === null || !safeEqual(stored, sha256Hex(request.params.token))) {
         return reply
           .code(404)
           .send({ error: "not_found", message: "This calendar feed does not exist." });
