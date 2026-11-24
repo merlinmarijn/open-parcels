@@ -4,7 +4,7 @@
   take precedence over the proposal text where they differ (notably: several providers per repo in
   folders listed by a repo manifest, not tags per provider; community discovery on by default).
   Implementation is tracked in `tasks/TODO.md` §3.
-- **Builds on:** [0001](0001-architecture.md), §2.3 (repositories) and §2.4 (plug-in contract).
+- **Builds on:** [0001](0001-architecture.md), §2.3 (repositories) and §2.4 (provider contract).
   It changes one rule there: carrier code no longer has to ship inside the image.
 
 ## 1. Context
@@ -13,19 +13,19 @@ Today every carrier is a module under `server/src/carriers/` (88 folders, about 
 `engine/builtin-carriers.ts` imports each one and passes it to `register()`, and `PluginRegistry`
 holds the result. The boundary is narrow already:
 
-- ESLint lets carrier code import only `plugin/api.ts`. In practice carriers use `zod`,
-  `node:crypto` and the plug-in API, and nothing else.
-- `PluginContext` is the whole world a plug-in sees: `config`, `secret`, `http` (`PluginHttp`,
+- ESLint lets carrier code import only `provider/api.ts`. In practice carriers use `zod`,
+  `node:crypto` and the provider API, and nothing else.
+- `PluginContext` is the whole world a provider sees: `config`, `secret`, `http` (`PluginHttp`,
   the only way out to the network, with per-host token buckets and a refusal of non-public
-  addresses), `clock`, `logger`, `session` (an encrypted per-source store) and `reportUnknown`.
-- Plug-ins return plain data (`ParcelSnapshot`, `SignInTurn`, `LiveReading`). They never touch
+  addresses), `clock`, `logger`, `session` (an encrypted per-connection store) and `reportUnknown`.
+- Providers return plain data (`ParcelSnapshot`, `SignInTurn`, `LiveReading`). They never touch
   the database and never send events.
 - Shared knowledge comes from `open-parcels-rules` (a vendored tarball, `2.0.0-dev.8`). That covers
-  carriers, keys, status tables, locales, tracking-number patterns and 33 declarative mail rules.
+  carriers, keys, status tables, locales, tracking-number patterns and 33 declarative email rules.
   It is never downloaded at runtime (0001 §2.3).
-- Mailboxes are core code (`MAIL_PLUGIN = "imap"`). They run every mail through the rules.
-- The web UI's Sources page lists configured sources. "Add a source" is a flat carrier
-  dropdown, then a kind, then a form generated from the plug-in's zod schema.
+- Inboxes are core code (`MAIL_PLUGIN = "imap"`). They run every email through the rules.
+- The web UI's Connections page lists configured connections. "Add a connection" is a flat carrier
+  dropdown, then a kind, then a form generated from the provider's zod schema.
 
 The owner wants providers to become separately installable from the web UI. Each provider would
 be its own git repo with a manifest, and the UI would show three trust tiers: verified (listed in
@@ -41,9 +41,9 @@ repo. Once code can be installed at runtime, it no longer is.
 
 | Term | Meaning |
 |---|---|
-| **Provider** | The installable unit: a manifest plus data, and optionally code. Replaces "plug-in" in the UI |
+| **Provider** | The installable unit: a manifest plus data, and optionally code. Replaces "provider" in the UI |
 | **Capability** | What a provider offers: `carrier`, `tracking`, `account`, `shop`, `live`, `mail-rules`, `status-table`, … |
-| **Source** | A configured instance of a provider's capability (unchanged: one row in `sources`) |
+| **Connection** | A configured instance of a provider's capability (unchanged: one row in `connections`) |
 | **Registry** | The signed index in the org that lists verified providers, pinned versions and the blocklist |
 | **Tier** | `bundled`, `verified`, `custom` or `community`: where an install came from and what vouches for it |
 
@@ -55,10 +55,10 @@ repo. Once code can be installed at runtime, it no longer is.
 | **HACS** | `hacs/default` holds per-category JSON lists of `owner/repo`. `blacklist` is a flat `["owner/repo"]` array; `removed` holds objects `{repository, removal_type: blacklist\|removed\|critical, reason, link}`. Custom repos are added by URL. No code review, no sandbox | Blocklist by `owner/repo` with type, reason and link; "critical" removes installed copies. Custom-URL tier. **Not** taken: no pinning (it installs the latest release) |
 | **Obsidian** | `community-plugins.json` (`{id, name, author, description, repo}`) after a one-time review; installs `manifest.json` + `main.js` from the repo's releases. Separate deprecation list by version. "Restricted mode" turns all community code off. No sandbox | A one-time review is not enough: later releases are unreviewed. Per-version deprecation. A global off switch |
 | **Jellyfin** | Repositories are JSON manifests: `versions[]` with `targetAbi`, `sourceUrl` and a checksum. Users add repo URLs | A version's compatibility comes from an ABI/API range, and each artifact carries a checksum in the index |
-| **Grafana** | Signature levels: Grafana, Commercial, Community (reviewed, signed by Grafana) and Private (self-signed for listed URLs). `MANIFEST.txt` hashes every file; modified plugins don't load; unsigned ones only behind an allow-list setting | **Per-file hashes over the whole package, checked on every load**, and tier labels that come from a signature, not from metadata |
+| **Grafana** | Signature levels: Grafana, Commercial, Community (reviewed, signed by Grafana) and Private (self-signed for listed URLs). `MANIFEST.txt` hashes every file; modified providers don't load; unsigned ones only behind an allow-list setting | **Per-file hashes over the whole package, checked on every load**, and tier labels that come from a signature, not from metadata |
 | **VS Code Marketplace** | Verified publisher badge (domain ownership), marketplace-signed packages, a malicious-extension kill list, Workspace Trust | "Verified" says who published it, not that it is safe. The kill list is pushed to installed clients |
 | **MetaMask Snaps** | Third-party code in a hardened JS sandbox (SES) inside an isolated process. The manifest declares permissions (network, storage, specific APIs) plus a `shasum` of the bundle. An allow-list of audited snaps for the main UI | **The closest analogue**: least-privilege manifest permissions shown at install, a digest in the manifest, and a reviewed list |
-| **Backstage** | Plugins are npm packages; "dynamic plugins" load at runtime with no isolation | A warning: runtime-loaded JS without isolation is the default, and it is what we avoid |
+| **Backstage** | Providers are npm packages; "dynamic providers" load at runtime with no isolation | A warning: runtime-loaded JS without isolation is the default, and it is what we avoid |
 | **npm / JSR provenance, Sigstore** | Build provenance through CI OIDC (Fulcio certificate + Rekor log entry); verifiable with `sigstore-js` | Useful as an *extra* badge for third parties with their own CI. It cannot be our root of trust, because workflows don't run under the owner's account |
 
 ## 2. Decision (proposed)
@@ -72,7 +72,7 @@ already has. It may contain:
 - status tables;
 - tracking-number patterns;
 - locale tables;
-- mail rules;
+- email rules;
 - fixed public keys.
 
 It runs no code. The worst it can do is produce wrong parcels or a slow regular expression
@@ -82,15 +82,15 @@ It runs no code. The worst it can do is produce wrong parcels or a slow regular 
 `CarrierPlugin` (account, tracking, shop, live, sign-in flows). It always runs in the provider
 sandbox (§2.7).
 
-The split matters because most of what the community will contribute is mail rules and status
+The split matters because most of what the community will contribute is email rules and status
 tables, and those can be installed from any tier with almost no risk. Code is where the risk is,
 so the UI keeps the two visibly apart.
 
-**The mailbox is in charge of mail access, not the provider.** Mailbox sources stay `imap` in the
-core and decide which mails go to which provider. Each provider declares mail filters in its
-manifest. The core matches them and hands a provider **only the mails its filters selected**
-(§2.14). No provider, of any tier, can ask for "all mail": a provider that saw the whole inbox
-would see password resets and bank mail.
+**The inbox is in charge of email access, not the provider.** Inbox connections stay `imap` in the
+core and decide which emails go to which provider. Each provider declares email filters in its
+manifest. The core matches them and hands a provider **only the emails its filters selected**
+(§2.14). No provider, of any tier, can ask for "all email": a provider that saw the whole inbox
+would see password resets and bank email.
 
 ### 2.2 Capabilities
 
@@ -104,13 +104,13 @@ provider
 │   ├── mail-rules        sender/subject/extract rules + test vectors
 │   └── keys              fixed public carrier keys
 └── code (sandboxed)
-    ├── tracking          track(codes)                  → source kind "tracking"
-    ├── account           fetchAccount()                → source kind "account"
-    ├── shop              fetchAccount() with orders    → source kind "shop"
+    ├── tracking          track(codes)                  → connection kind "tracking"
+    ├── account           fetchAccount()                → connection kind "account"
+    ├── shop              fetchAccount() with orders    → connection kind "shop"
     ├── live              readLive(target)
     ├── sign-in flows     none | credentials | api_key | interactive
-    ├── mail              parseMail(mail) for mails its filters matched   (§2.14)
-    └── actions           runAction(id, input) for buttons on its sources (§2.12)
+    ├── mail              parseMail(mail) for emails its filters matched   (§2.14)
+    └── actions           runAction(id, input) for buttons on its connections (§2.12)
 ```
 
 These map one to one onto today's `CarrierPlugin` fields and `SOURCE_KINDS`, so the engine,
@@ -147,7 +147,7 @@ engine:
 
 provides:
   carriers: [hermes]              # carrier ids this provider claims
-  sources: [tracking, account]    # source kinds; [] for a declarative provider
+  connections: [tracking, account]    # connection kinds; [] for a declarative provider
   live: false
   data:                           # paths are relative to the manifest; globs allowed
     carriers: data/carriers.yaml
@@ -166,11 +166,11 @@ permissions:                      # shown at install; anything not listed is ref
       reason: myHermes account sign-in and parcel list.
   image_hosts: [.hermesworld.com] # what the image proxy may fetch for this provider
   secrets: [credentials]          # credentials | api_key | token (from interactive sign-in)
-  session: true                   # per-source encrypted session store
+  session: true                   # per-connection encrypted session store
   user_agent: false               # true only with a reason; overriding the honest UA
   browser: false                  # reserved for the -browser image variant (0001 §2.4)
 
-  mail:                           # §2.14; absent: the provider never receives mail
+  mail:                           # §2.14; absent: the provider never receives email
     attachments: metadata         # metadata | content (content: ≤ 5 MB each, listed types only)
 
 mail:                             # filters the core matches; see §2.14 for the rules
@@ -182,12 +182,12 @@ mail:                             # filters the core matches; see §2.14 for the
     from_domains: [myhermes.de]
     parse: data/mail/parcel-hermes.yaml
 
-actions:                          # §2.12: buttons on this provider's source cards
+actions:                          # §2.12: buttons on this provider's connection cards
   - id: open_account
     label: Open myHermes
     kind: link
     url: "https://www.myhermes.de/empfangen/sendungsverfolgung/"
-    source_kinds: [account]
+    connection_kinds: [account]
 
 support:
   issues: https://github.com/example/op-hermes-de/issues
@@ -203,7 +203,7 @@ support:
   bundle is parsed.
 - Data files are size-capped: 2 MB per file, 10 MB per provider.
 - Every regular expression must pass the portable-subset lint, plus the linear-time check (§2.7).
-- Mail-rule test vectors must pass against the provider's own fixtures, if it ships any.
+- Email-rule test vectors must pass against the provider's own fixtures, if it ships any.
 
 `permissions.network` already exists implicitly: today's `HttpPolicy.limits` lists hosts. It
 becomes mandatory and enforced. A wildcard `*` host is accepted only for `custom` installs, with
@@ -217,9 +217,9 @@ a red warning, and never for `verified`.
   - Major: anything a working provider could notice.
 - **The core supports the current major and the previous one** for at least six months after a
   major. A provider whose `engine.api` the core can't satisfy is installable only as "incompatible
-  (disabled)", with the reason shown, so the user keeps its sources and config.
+  (disabled)", with the reason shown, so the user keeps its connections and config.
 - **Types and tools ship as `@open-parcels/provider-sdk`.** That covers the `CarrierPlugin` types
-  (moved from `server/src/plugin/api.ts`), the `kit/` helpers, `defineCarrier`, an esbuild
+  (moved from `server/src/provider/api.ts`), the `kit/` helpers, `defineCarrier`, an esbuild
   preset, `op-provider validate`, and a test harness that replays recorded fixtures through
   `MockAgent`. The ESLint boundary that exists today becomes the SDK's public surface.
 - **The SDK is published from the owner's machine** (`npm publish`), because workflows don't run
@@ -352,7 +352,7 @@ entries:
 |---|---|---|---|
 | `hidden` | not shown | allowed by URL, as custom | untouched |
 | `block` | not shown | refused | warning banner; updates offered |
-| `critical` | not shown | refused | **disabled at once**, its sources paused, a banner explains why. The user may re-enable it only by typing its id |
+| `critical` | not shown | refused | **disabled at once**, its connections paused, a banner explains why. The user may re-enable it only by typing its id |
 
 The blocklist applies to **every tier**, including custom installs (matched by host/owner/repo,
 id and digest). A copy is bundled in each image, so even an offline install has a recent list.
@@ -361,7 +361,7 @@ id and digest). A copy is bundled in each image, so even an offline install has 
 
 1. The author opens a PR to the registry with `providers/<id>.yaml` (or a new version entry).
 2. The reviewer reads the diff **between the previously pinned commit and the new one**, not the
-   whole repo. The bundle must be reproducible from source: the registry's check script runs the
+   whole repo. The bundle must be reproducible from connection: the registry's check script runs the
    SDK's esbuild preset at the commit and compares the digest.
 3. Checklist (in the registry's `REVIEW.md`):
    - network hosts justified;
@@ -371,7 +371,7 @@ id and digest). A copy is bundled in each image, so even an offline install has 
    - no obfuscated code;
    - fixtures contain made-up data only;
    - the API range is honest;
-   - mail rules have test vectors.
+   - email rules have test vectors.
 4. The owner merges, then regenerates and signs the index locally.
 5. Withdrawing a version: remove it from `versions`. If it is dangerous, add a blocklist entry.
 
@@ -393,11 +393,11 @@ required.
 
 | Asset | Today | Threat from a hostile provider |
 |---|---|---|
-| Other sources' secrets and sessions | Encrypted in SQLite; key in `/data/secret.key` | Read the key or the DB, decrypt everything |
-| The user's mail | Only the core sees it | Read via a mail capability or DB access |
+| Other connections' secrets and sessions | Encrypted in SQLite; key in `/data/secret.key` | Read the key or the DB, decrypt everything |
+| The user's email | Only the core sees it | Read via an email capability or DB access |
 | Admin/session tokens, API tokens | DB | Take over the instance |
 | The LAN | `PluginHttp` refuses non-public addresses | SSRF into the home network (router, HA, NAS) |
-| Its **own** source's credentials | — | Exfiltrate them to its own server |
+| Its **own** connection's credentials | — | Exfiltrate them to its own server |
 | Availability | — | Hang the event loop, exhaust memory, flood a carrier |
 
 The last-but-one row cannot be prevented entirely: a tracking provider needs the credential it
@@ -440,10 +440,10 @@ node --permission
   - caps body sizes.
 
   This is today's code path, with one more check.
-- **Secrets are scoped per call.** The host sends exactly one source's `config`, `secret` and
+- **Secrets are scoped per call.** The host sends exactly one connection's `config`, `secret` and
   `session` with each call, and the child keeps nothing between calls. That is a protocol rule; a
   provider may still cache in memory, which is harmless because it only ever sees its own
-  sources. The child never sees `/data`, the secret key or the DB.
+  connections. The child never sees `/data`, the secret key or the DB.
 - **The session store is brokered** (`load`/`save` over IPC, size-capped at 256 KB), and so are
   `logger` (the core's scrubber runs on it) and `reportUnknown`. Cookie jars are serialised with
   `serializeJar`/`restoreJar`, which exist already.
@@ -465,7 +465,7 @@ node --permission
 - One **verified pool** process for `bundled` + `verified` providers. They are reviewed, so
   isolating them *from the core* is what matters; isolating them from each other is not.
 - One process **per custom/community provider**.
-- Every sandbox starts lazily, on the first source that needs it, and stops after 10 minutes idle.
+- Every sandbox starts lazily, on the first connection that needs it, and stops after 10 minutes idle.
   A typical install with two community providers runs three extra processes, about 120 MB.
 - Setting `OPENPARCELS_PROVIDER_ISOLATION=strict` gives every provider its own process.
 
@@ -485,14 +485,14 @@ QuickJS/WASM runtime. The IPC protocol is designed so the runtime is swappable.
 
 - **Regular expressions** go through the existing portable-subset lint (no lookaround, no
   backreferences) and run on V8's linear-time engine (`--enable-experimental-regexp_engine`
-  with the `l` flag, or `re2` if that stays experimental), so a crafted pattern can't hang mail
+  with the `l` flag, or `re2` if that stays experimental), so a crafted pattern can't hang email
   processing.
 - **Tracking-number patterns from non-verified providers** only ever match for their own
   carrier ids and rank below bundled/verified patterns. A community pattern of `.*` must not
   claim every code the user adds.
-- **Mail rules from non-verified providers** can only produce snapshots tagged with their
+- **Email rules from non-verified providers** can only produce snapshots tagged with their
   provider. Their extracted values pass the same plausibility checks as today
-  (`isPlausibleOrder`), and they never mark mail read.
+  (`isPlausibleOrder`), and they never mark email read.
 - **Carrier ids** that a verified or bundled provider has registered are reserved. A custom or
   community provider claiming `dhl` is refused at install.
 
@@ -529,14 +529,14 @@ QuickJS/WASM runtime. The IPC protocol is designed so the runtime is swappable.
   consent screen shows the diff and updating needs a click, even with auto-update on.
 - **The previous version stays on disk.** "Roll back" switches `current` back.
 - **Config compatibility:** a provider may export `migrateConfig(fromVersion, config)` (pure,
-  run in the sandbox). A source whose config no longer validates is set to `error` with "settings
+  run in the sandbox). A connection whose config no longer validates is set to `error` with "settings
   need attention", never dropped.
 
 **Uninstall:**
 
-- It is refused while sources use the provider. The dialog lists them and offers "remove the
-  sources too".
-- Parcels keep their history; their `parcel_sources` links go the way source deletion already
+- It is refused while connections use the provider. The dialog lists them and offers "remove the
+  connections too".
+- Parcels keep their history; their `parcel_connections` links go the way connection deletion already
   handles them.
 - The files are deleted; the row is kept with `removed_at` so the audit trail survives.
 
@@ -545,7 +545,7 @@ QuickJS/WASM runtime. The IPC protocol is designed so the runtime is swappable.
 | `providers` | id, tier, repository, path, version, commit, digest, api_range, manifest (JSON), permissions_granted (JSON), signer_fingerprint, state (enabled/disabled/incompatible/blocked), installed_at, updated_at, removed_at |
 |---|---|
 
-`sources.plugin` keeps its meaning (a provider id), so existing sources need no migration. The
+`connections.provider` keeps its meaning (a provider id), so existing connections need no migration. The
 API gains:
 
 - `GET /providers` (installed);
@@ -577,11 +577,11 @@ All of them are admin-only, by the existing method rule.
   ingress listener already counts as the owner, so installs from ingress are admin actions.
   This is right: whoever can reach the HA app page is an HA admin.
 - **The `open-parcels-ha` integration is unaffected at the contract level.** It still gets a
-  device per source and reads `source.plugin`; it should show the provider's name and tier
+  device per connection and reads `connection.provider`; it should show the provider's name and tier
   (from `GET /providers`) in the device's model and manufacturer fields, and listen for
   `provider.blocked` to raise an HA repair issue ("Open Parcels disabled provider X: reason").
   That puts a critical blocklist hit in the HA notification centre, where the user will see it.
-- **Source actions** appear as button entities, a job sensor and the services
+- **Connection actions** appear as button entities, a job sensor and the services
   `open_parcels.run_action` / `cancel_job` (§2.12). Imported history is flagged so automations
   don't fire for it (§2.15).
 - **The HA config flow does not install providers.** It links to the ingress Providers page.
@@ -619,9 +619,9 @@ All of them are admin-only, by the existing method rule.
 - **An installed provider never needs the network to load.** Updates are the only thing that
   stops.
 
-### 2.12 Source actions
+### 2.12 Connection actions
 
-Providers may put buttons on their source cards: "Import history", "Open account page",
+Providers may put buttons on their connection cards: "Import history", "Open account page",
 "Re-register device", "Fetch delivery photos" and so on.
 
 #### Kinds of action
@@ -642,8 +642,8 @@ actions:
     label: Import order history
     description: Reads every order on the account, back to the first one. Can take hours.
     kind: task
-    source_kinds: [shop, account]
-    when_state: [ok]                    # only offered while the source is signed in and healthy
+    connection_kinds: [shop, account]
+    when_state: [ok]                    # only offered while the connection is signed in and healthy
     input:                              # JSON Schema subset, rendered by the existing SchemaForm
       type: object
       properties:
@@ -653,23 +653,23 @@ actions:
     confirm: >-
       This reads your whole order history from Amazon, slowly, one page at a time. It can take
       several hours and pauses whenever Amazon asks it to.
-    destructive: false                  # true: the confirm dialog needs the source label typed
+    destructive: false                  # true: the confirm dialog needs the connection label typed
     expose_to_ha: true                  # offered as an HA button (§2.12, Home Assistant)
     cooldown: 24h                       # earliest re-run after a completed run
   - id: open_orders
     label: Your orders on Amazon
     kind: link
-    url: "{storefront_origin}/your-orders/orders"   # placeholders from the source's config only
+    url: "{storefront_origin}/your-orders/orders"   # placeholders from the connection's config only
 ```
 
 **Validation:**
 
-- `link` URLs may use only placeholders the source's config schema defines. They are filled
+- `link` URLs may use only placeholders the connection's config schema defines. They are filled
   server-side and checked against the network allow-list after substitution, so a config value
   can't turn into `javascript:` or an internal address.
 - `input` is limited to the JSON Schema subset the web UI's `SchemaForm` already renders.
 - Actions don't widen permissions. A task makes its requests through the same brokered http, on
-  the same hosts, with the same token buckets as the source's normal runs.
+  the same hosts, with the same token buckets as the connection's normal runs.
 
 #### The task contract
 
@@ -701,8 +701,8 @@ runAction?(id: string, context: ActionContext<Config, Secret>): Promise<ActionRe
 
 **Rules the host enforces:**
 
-- **One job per source at a time, and jobs share the source lock** (0001: one request in flight
-  per account). A scheduled run of the same source waits for the job's current page, not the
+- **One job per connection at a time, and jobs share the connection lock** (0001: one request in flight
+  per account). A scheduled run of the same connection waits for the job's current page, not the
   whole job. The job yields the lock between pages, so normal polling continues during a
   multi-hour import.
 - **Heavy actions are serialised across the instance** (`weight: heavy`): one at a time, the
@@ -717,7 +717,7 @@ runAction?(id: string, context: ActionContext<Config, Secret>): Promise<ActionRe
 - **Resumable by design.** The checkpoint is saved after every emitted batch. "Resume" or a
   server restart continues from it; "Start over" clears it.
 - **Idempotent by design.** Everything goes through the reconciler, which already merges by
-  (carrier, barcode), history fingerprints and (shop, order_number). Re-importing the same
+  (carrier, tracking number), history fingerprints and (shop, order_number). Re-importing the same
   page changes nothing.
 - **Cancellation** aborts `signal`. The provider gets 30 s to save a checkpoint, then the sandbox
   call is killed. Results emitted so far stay.
@@ -726,15 +726,15 @@ runAction?(id: string, context: ActionContext<Config, Secret>): Promise<ActionRe
 
 #### Jobs, API and events
 
-New table `jobs`: id, source_id, provider, action, input (JSON), state
+New table `jobs`: id, connection_id, provider, action, input (JSON), state
 (queued/running/paused/done/partial/failed/cancelled), progress (JSON), checkpoint_blob (AES-GCM),
 summary, error_type, created_at, started_at, updated_at, finished_at, resume_not_before.
 
 | Route | Does |
 |---|---|
-| `GET /sources/{id}/actions` | The source's actions that apply now (kind, state filter), with `cooldown_until` |
-| `POST /sources/{id}/actions/{action}` | `{input}`; returns `202 {job}` for a task, or `200 {url}` for a link. `409 job_running`, `429 action_cooldown` with `Retry-After` |
-| `GET /jobs?source_id&state` / `GET /jobs/{id}` | State, progress and summary |
+| `GET /connections/{id}/actions` | The connection's actions that apply now (kind, state filter), with `cooldown_until` |
+| `POST /connections/{id}/actions/{action}` | `{input}`; returns `202 {job}` for a task, or `200 {url}` for a link. `409 job_running`, `429 action_cooldown` with `Retry-After` |
+| `GET /jobs?connection_id&state` / `GET /jobs/{id}` | State, progress and summary |
 | `POST /jobs/{id}/cancel`, `/resume`, `/restart` | |
 
 Events go through the outbox and SSE:
@@ -749,13 +749,13 @@ API tokens need the `write` scope to start or cancel a job.
 
 #### Home Assistant
 
-The integration creates, per source:
+The integration creates, per connection:
 
 - **a `button` entity for each action with `expose_to_ha: true`** and no `input`, or with an
   input whose fields all have defaults. Pressing it runs the action with the defaults;
-- **a `sensor` per source with the current job** (state = job state, attributes = progress,
+- **a `sensor` per connection with the current job** (state = job state, attributes = progress,
   phase, summary). It is updated from the `job.*` events;
-- **the service `open_parcels.run_action`** (`source` device/entity, `action`, `input`) and
+- **the service `open_parcels.run_action`** (`connection` device/entity, `action`, `input`) and
   `open_parcels.cancel_job`, for automations and for actions with real inputs.
 
 Confirmations can't be shown from HA. A `destructive: true` action is therefore never exposed as a
@@ -790,7 +790,7 @@ behaviour for polling, and it stays.
 - A 2-minute break every 25 pages.
 - At most 300 pages per job leg; the job then pauses for 1 h and resumes on its own. A ten-year
   account is roughly 100–300 pages, so one to three legs.
-- Polling of the same source keeps priority between pages.
+- Polling of the same connection keeps priority between pages.
 - Signs of trouble pause the job, never retry it fast:
   - a captcha (`looksLikeCaptcha`): pause 6 h, and one notice;
   - signed out (`looksSignedOut`): stop as "needs sign-in";
@@ -800,7 +800,7 @@ behaviour for polling, and it stays.
 **Results are idempotent:**
 
 - Orders merge on (shop, order number); items on `external_id`; parcels on
-  (carrier, barcode).
+  (carrier, tracking number).
 - A second import over the same years only fills gaps.
 - An import never overwrites a manual status or label.
 
@@ -813,13 +813,13 @@ behaviour for polling, and it stays.
 
 Digital orders are skipped unless `include_digital` is set.
 
-### 2.14 Mail routing: mailboxes dispatch to providers
+### 2.14 Email routing: inboxes dispatch to providers
 
-**Today:** the core's mail watcher runs every mail through schema.org markup, then all
-`open-parcels-rules` mail rules, then tracking-number detection.
+**Today:** the core's email watcher runs every email through schema.org markup, then all
+`open-parcels-rules` email rules, then tracking-number detection.
 
-**Proposed:** the mailbox becomes a *router*. Providers declare which mails they want. The core
-matches, and hands each matching mail to that provider's parser. The provider returns snapshots
+**Proposed:** the inbox becomes a *router*. Providers declare which emails they want. The core
+matches, and hands each matching email to that provider's parser. The provider returns snapshots
 through the normal reconciler.
 
 #### Filters (manifest `mail:`)
@@ -842,15 +842,15 @@ mail:
 - **`from_domains` is required and may not be a public suffix or a webmail domain**
   (`gmail.com`, `outlook.com`, `gmx.de`, … from a list in `open-parcels-rules`). That forces a
   provider to name the shop or carrier it parses. A filter on subject alone would turn into
-  "read my mail".
+  "read my email".
 - **Domains must relate to the provider.** For verified providers the reviewer checks them. For
-  custom/community ones the consent screen lists them prominently ("will receive mail from:
+  custom/community ones the consent screen lists them prominently ("will receive email from:
   amazon.de, amazon.com, …"). A filter domain overlapping a domain another installed provider
-  declares shows "Amazon (verified) also reads these mails".
-- **Sender spoofing is checked.** With `authenticated: true` (the default), a mail only matches
+  declares shows "Amazon (verified) also reads these emails".
+- **Sender spoofing is checked.** With `authenticated: true` (the default), an email only matches
   if the receiving server's `Authentication-Results` says DKIM or DMARC passed for the `From`
-  domain. A mail claiming to come from `amazon.de` without that never reaches the Amazon parser.
-  Users whose server adds no such header can turn the check off per mailbox; the UI then says
+  domain. A email claiming to come from `amazon.de` without that never reaches the Amazon parser.
+  Users whose server adds no such header can turn the check off per inbox; the UI then says
   so.
 
 #### What a provider receives
@@ -861,7 +861,7 @@ interface MailMessage {
   readonly messageId: string | null;
   readonly date: string | null;
   readonly from: { address: string; name: string | null };
-  readonly to: readonly string[];        // only the mailbox's own addresses; no Cc/Bcc lists
+  readonly to: readonly string[];        // only the inbox's own addresses; no Cc/Bcc lists
   readonly subject: string;
   readonly headers: Readonly<Record<string, string>>;  // allow-listed headers only
   readonly text: string | null;
@@ -879,11 +879,11 @@ parseMail?(context: MailContext, mail: MailMessage): Promise<MailParseResult>;
 // MailParseResult = { snapshots, orders, ignored?: reason }
 ```
 
-- `MailContext` is a `PluginContext` **without** `secret`, `session` and `http`. Parsing a mail
-  needs no network and no credentials. Removing them is what lets the core hand mail to
+- `MailContext` is a `PluginContext` **without** `secret`, `session` and `http`. Parsing an email
+  needs no network and no credentials. Removing them is what lets the core hand email to
   less-trusted code: there is no channel to send it anywhere. The sandbox has no network of its
-  own (§2.7), so a mail parser is a pure function.
-- A provider that wants to *act* on a mail (a "sign-in link" mail completing an interactive
+  own (§2.7), so an email parser is a pure function.
+- A provider that wants to *act* on an email (a "sign-in link" email completing an interactive
   sign-in, or a tracking code worth looking up) returns that in its result. The core then
   starts the provider's normal tracking for the code, or passes the link to the waiting sign-in
   attempt. That second case replaces today's paste-the-email-link step when the user opts in.
@@ -894,9 +894,9 @@ parseMail?(context: MailContext, mail: MailMessage): Promise<MailParseResult>;
 
 1. **Filter.** Every filter of every enabled provider is evaluated on the headers first (cheap),
    then `body_contains`.
-2. **All matching providers receive the mail**, ordered by `priority`, then tier (bundled/verified
+2. **All matching providers receive the email**, ordered by `priority`, then tier (bundled/verified
    before custom/community). Their results all go to the reconciler, which already merges
-   several sources' views of one parcel. Usually this is the shop and the carrier both reading
+   several connections' views of one parcel. Usually this is the shop and the carrier both reading
    a shipping notice.
 3. **Order claims.** A result's order is attributed by the reconciler's existing plausibility
    check (`isPlausibleOrder`). A community provider can't attach orders to a shop whose number
@@ -904,31 +904,31 @@ parseMail?(context: MailContext, mail: MailMessage): Promise<MailParseResult>;
 4. **Generic fallback, last.** If no provider matched, the core still runs schema.org markup and
    tracking-number detection constrained by sender and text (today's steps 1 and 3), so nothing
    is lost for unknown senders. These run in the core and pass nothing to a provider.
-5. **Result attribution.** Each snapshot is filed under a per-provider mail source role, as
-   today's `parcel_sources.role = mail`, plus the provider id. The UI can then show "found in
-   mail by Amazon".
+5. **Result attribution.** Each snapshot is filed under a per-provider email connection role, as
+   today's `parcel_connections.role = mail`, plus the provider id. The UI can then show "found in
+   email by Amazon".
 
 #### Privacy
 
-- A provider only ever sees mails its filters matched. Nothing else leaves the core.
-- Mails are never stored. The core keeps Message-ID hashes for dedup, as today, and a
-  per-provider count ("Amazon parsed 214 mails").
+- A provider only ever sees emails its filters matched. Nothing else leaves the core.
+- Emails are never stored. The core keeps Message-ID hashes for dedup, as today, and a
+  per-provider count ("Amazon parsed 214 emails").
 - Logs show the filter id and result counts, never the subject or the sender's local part.
-- The mailbox's source card lists which providers receive which senders ("Routes: Amazon ← 3
+- The inbox's connection card lists which providers receive which senders ("Routes: Amazon ← 3
   domains, DHL ← 2 domains, …") and can switch a route off per provider.
 
 #### Backfill
 
-- **A mailbox action** (§2.12) re-reads old mail: "Scan old mail" with `since` (date) and
+- **An inbox action** (§2.12) re-reads old email: "Event old email" with `since` (date) and
   optionally `providers` (only route to these).
-- **Installing or updating a provider with new mail filters offers the same backfill for that
-  provider only.** "Hermes can read mail you already have. Scan the last 180 days?"
+- **Installing or updating a provider with new email filters offers the same backfill for that
+  provider only.** "Hermes can read email you already have. Event the last 180 days?"
 - It is a job: resumable by IMAP UID per folder (the checkpoint is the existing
   `mailProgressSchema` shape), paced at a configurable messages/second, using IMAP `SEARCH FROM`
-  for the filter domains so the server does the filtering and unrelated mail is never
+  for the filter domains so the server does the filtering and unrelated email is never
   downloaded.
-- Idempotent: Message-ID dedup is per (mail, provider), so a backfill for a new provider doesn't
-  skip mails other providers already saw.
+- Idempotent: Message-ID dedup is per (email, provider), so a backfill for a new provider doesn't
+  skip emails other providers already saw.
 
 ### 2.15 REST API impact
 
@@ -936,7 +936,7 @@ parseMail?(context: MailContext, mail: MailMessage): Promise<MailParseResult>;
 few additions:
 
 - **Orders without parcels.** Today orders are created from a parcel snapshot's `order`. History
-  import and mail parsing need `OrderSnapshot` (order + items, no parcel), so the reconciler
+  import and email parsing need `OrderSnapshot` (order + items, no parcel), so the reconciler
   gains an order-only path. `GET /orders` already lists orders whose parcels are gone, so no
   route changes.
 - **Imported, historical data is not news.**
@@ -949,14 +949,14 @@ few additions:
     of "delivered" automations after an import.
 - **Retention vs. history.** The 365-day delete for delivered parcels would erase an import of
   older years. Proposed: retention deletes the *parcel tracking detail* (history, raw) but keeps
-  the order, its items and a stub parcel row (carrier, barcode, delivered_at). Open question 11.
+  the order, its items and a stub parcel row (carrier, tracking number, delivered_at). Open question 11.
 - **Filters:**
   - `GET /orders?shop=&placed_from=&placed_to=&q=` (shop and date range, for a decade of
     orders);
-  - `GET /parcels?provider=` and `?source_id=`.
+  - `GET /parcels?provider=` and `?connection_id=`.
 - **Provenance in responses.**
-  - `sources[]` entries in a parcel gain `provider` and `tier`.
-  - Orders gain `sources[]`: which source or mail provider reported them.
+  - `connections[]` entries in a parcel gain `provider` and `tier`.
+  - Orders gain `connections[]`: which connection or email provider reported them.
 - **Unchanged:** auth, scopes, SSE, ICS. Actions and jobs are new routes (§2.12), not changes
   to these.
 
@@ -965,7 +965,7 @@ few additions:
 ### 3.1 The in-repo carriers
 
 1. **Manifests in place.** Each `server/src/carriers/<id>/` gains `open-parcels-provider.yaml`
-   (generated from the plug-in's metadata and `http.limits`, then reviewed). `permissions.network`
+   (generated from the provider's metadata and `http.limits`, then reviewed). `permissions.network`
    is derived from the hosts each carrier calls. A test asserts the manifest and the code agree:
    a request to a host not in the manifest fails in the fixture suite. **This is the most
    valuable step on its own:** it documents every carrier's reach.
@@ -982,7 +982,7 @@ few additions:
 ### 3.2 `open-parcels-rules`: shrink it to a shared library
 
 **The owner's requirement:** everything specific to one provider (its regexes, status tables,
-mail rules and keys) moves into that provider's package. This record agrees, with one exception
+email rules and keys) moves into that provider's package. This record agrees, with one exception
 (the vendored upstream tracking-number dataset), and recommends **keeping the repo as a small
 shared library rather than deleting it.**
 
@@ -993,19 +993,19 @@ shared library rather than deleting it.**
 | `data/status/*.yaml` | 86 files, 6,349 lines; one table per carrier | **Yes** | Each provider's `data/status/` |
 | `data/keys.yaml` | 74 keys for 32 carriers, 453 lines | **Yes** (one carrier's app/web keys each) | Each provider's `data/keys.yaml` |
 | `data/mail/*.yaml` (shop/carrier rules) | 31 files, ~1,250 lines | **Yes** | The shop's or carrier's provider, as `mail:` routes (§2.14). Shops without code (Otto, Zalando, Berrybase, JLCPCB, eBay, Shopify, PayPal returns, …) become declarative providers |
-| `data/mail/ignore-*.yaml` | 2 files, 42 lines | No: generic noise suppression | Core (mail router fallback) |
-| `data/carriers.yaml` | 95 carriers, 811 lines: names, aliases, domains, tracking URLs, UPU countries, cross-references | **Yes**, per entry | `provides.carriers` data in each provider. The core builds the union from installed providers. The 7 carriers without a plug-in get declarative providers |
+| `data/mail/ignore-*.yaml` | 2 files, 42 lines | No: generic noise suppression | Core (email router fallback) |
+| `data/carriers.yaml` | 95 carriers, 811 lines: names, aliases, domains, tracking URLs, UPU countries, cross-references | **Yes**, per entry | `provides.carriers` data in each provider. The core builds the union from installed providers. The 7 carriers without a provider get declarative providers |
 | `data/tracking-numbers/*.json` (our EU overlay) | 6 files, 229 lines | **Yes** | Each provider's `data/tracking-numbers/` |
 | `vendor/tracking_number_data/couriers/*.json` | 18 courier files, ~3,200 lines; a pinned **upstream** dataset | Per courier, but upstream's, not ours | **Stays shared** (see below). `s10.json` (UPU S10, every postal operator) is cross-carrier anyway |
-| `data/locales/{de,en}.yaml` | 593 lines: months, weekdays, relative days, window phrases | No: used by Amazon, mail rules and several carriers | Shared library |
+| `data/locales/{de,en}.yaml` | 593 lines: months, weekdays, relative days, window phrases | No: used by Amazon, email rules and several carriers | Shared library |
 | `src/arrival/` | Delivery-date grammar and zoned parsing | No | Shared library |
 | `src/tracking/` | Detection, compile, check-digit algorithms (mod 7/10/11, S10, Luhn…), validation | No | Shared library |
-| `src/mail/` | Declarative mail-rule engine, extractors, HTML-to-text, schema.org reader | No: runs every provider's declarative rules | Shared library |
+| `src/mail/` | Declarative email-rule engine, extractors, HTML-to-text, schema.org reader | No: runs every provider's declarative rules | Shared library |
 | `src/status.ts`, canonical `PARCEL_STATUSES` | Status vocabulary and the mapping engine | No | Shared library |
 | `schema/*.json` + `src/schema/` | 7 JSON Schemas, ~3,300 lines, zod mirrors | No | Shared library, plus the new `provider.schema.json` |
 | `src/portability.ts`, `scripts/` | Portable-regex lint, bundle build | No | Shared library (the SDK's `validate` uses them) |
 | `python/` | Stdlib-only loader + vector runner, 560 lines | No | Shared library |
-| `test/` | 73 files; `.eml` fixtures for mail rules, vectors | Mostly per rule | Fixtures move with their rules; engine tests stay |
+| `test/` | 73 files; `.eml` fixtures for email rules, vectors | Mostly per rule | Fixtures move with their rules; engine tests stay |
 
 #### What remains shared
 
@@ -1021,7 +1021,7 @@ The repo therefore stops being "the knowledge" and becomes "the engine and the f
 
 Folding the remainder into the core looks simpler, but it breaks the provider model:
 
-- **Providers outside this repo need the engine at build and test time.** Declarative mail
+- **Providers outside this repo need the engine at build and test time.** Declarative email
   rules, status mapping, arrival parsing, check digits and schema validation are what the SDK's
   `validate` and test harness run. If those live in the server, every provider would depend on
   the whole server package, or the SDK would copy them.
@@ -1050,16 +1050,16 @@ So: **keep the repo, narrow its purpose, and give the provider SDK the same home
 #### Migration steps (recommended path)
 
 1. **Provider schema first.** Add `provider.schema.json` and a `providers/` loader to the engine
-   that merges carrier, status, key, tracking and mail files from several roots, with provider
+   that merges carrier, status, key, tracking and email files from several roots, with provider
    namespacing and the override rules of §2.7. Tests: loading today's monolithic data through the
    new loader gives a bit-identical `bundle.json`.
 2. **Split mechanically, by script.** For each carrier id, move its status file, keys, carrier
-   entry, overlay patterns, mail rules and their `.eml` fixtures into
+   entry, overlay patterns, email rules and their `.eml` fixtures into
    `open-parcels-providers/providers/<id>/data/`, and generate its manifest. Shops with only
-   mail rules become declarative providers. Check: the merged bundle from all providers equals
+   email rules become declarative providers. Check: the merged bundle from all providers equals
    the old bundle (same test as step 1).
 3. **Server consumes providers.** The bundled-provider snapshot (P1/P5) feeds the loader. The
-   server stops reading the engine package's data directory. `plugin/rules.ts` keeps its
+   server stops reading the engine package's data directory. `provider/rules.ts` keeps its
    functions, now backed by the merged registry.
 4. **Strip the data from the engine.** Delete the moved files, keep the engine, locales,
    schemas, ignore rules (or move those two to the core), the upstream dataset and the tooling.
@@ -1098,8 +1098,8 @@ server's, and it puts a Python package in a TypeScript server repo. The recommen
 
 ## 4. UI
 
-The page is named **Providers**, alongside Sources in the navigation. The Sources page's
-"Add a source" becomes the HA-style picker (B).
+The page is named **Providers**, alongside Connections in the navigation. The Connections page's
+"Add a connection" becomes the HA-style picker (B).
 
 ### A. Providers page
 
@@ -1110,15 +1110,15 @@ The page is named **Providers**, alongside Sources in the navigation. The Source
 │─────────────────────────────────────────────────────────────────────────────────│
 │ ⚠ 1 update needs your approval: Hermes Germany 1.5.0 asks for a new host.  [Review]│
 │─────────────────────────────────────────────────────────────────────────────────│
-│ [icon] DHL                      [Built in]        v2.6.3    3 sources   ●  [⋯]  │
+│ [icon] DHL                      [Built in]        v2.6.3    3 connections ● [⋯] │
 │        tracking · account · live · mail rules     DE NL PL SE …                 │
-│ [icon] Hermes Germany           [✔ Verified]      v1.4.2 → 1.5.0  2 sources [Update]│
+│ [icon] Hermes Germany           [✔ Verified]      v1.4.2 → 1.5.0  2 connections [Update]│
 │        tracking · account · mail rules            DE                            │
 │ [icon] Paket-Shop Rules DE      [Custom]          v0.3.0    —   data only  [⋯]  │
 │        mail rules · status table                  DE  git.example.org/me/pkt     │
-│ [icon] Gofo Unofficial          [⚠ Community]     v0.9.1    1 source    ● [⋯]   │
+│ [icon] Gofo Unofficial          [⚠ Community]     v0.9.1    1 connection ● [⋯]  │
 │        tracking                                   US  github.com/x/op-gofo      │
-│ [icon] Shady Carrier            [⛔ Blocked]       v1.0.0    1 source paused     │
+│ [icon] Shady Carrier            [⛔ Blocked]       v1.0.0    1 connection paused │
 │        Disabled by the registry: sends credentials to a third-party host. [Details]│
 └─────────────────────────────────────────────────────────────────────────────────┘
 
@@ -1136,10 +1136,10 @@ The page is named **Providers**, alongside Sources in the navigation. The Source
 └─────────────────────────────────────────────────────────────────────────────────┘
 ```
 
-### B. Add-source dialog (HA "Add integration" style)
+### B. Add-connection dialog (HA "Add integration" style)
 
 ```
-┌ Add a source ───────────────────────────────────────────── [×] ┐
+┌ Add a connection ───────────────────────────────────────── [×] ┐
 │ Search: [ her_______________ ]                                 │
 │                                                                │
 │  Installed providers                                           │
@@ -1208,7 +1208,7 @@ The page is named **Providers**, alongside Sources in the navigation. The Source
    Update with wider permissions: the Network/Asks-for rows show + / − diffs.
 ```
 
-### E. Source card with actions and a running job; mailbox routes
+### E. Connection card with actions and a running job; inbox routes
 
 ```
 ┌ Amazon.de · Jane ──────────────────────── [✔ Verified] shop · ● ok ─┐
@@ -1241,8 +1241,8 @@ Every phase is shippable and keeps the gate green.
 |---|---|---|
 | **P1. Manifests in-tree** | Manifest schema in the engine package; a manifest per carrier; the host allow-list **enforced** in `PluginHttp`; `providers` table with `bundled` rows; read-only Providers page (Installed tab) | Value without any remote code: it documents and enforces every carrier's network reach, and fixes the model before anything is downloaded |
 | **P2. Provider host** | IPC protocol, child process with the permission model + SES, brokered http/session/logger, result validation, timeouts and crash policy; bundled providers in the verified pool behind a flag, then by default | The sandbox has to exist before any foreign code. Running our own 88 carriers through it is the best test it can get |
-| **P2b. Actions + jobs** | `jobs` table, action routes and SSE events, source-card UI; Amazon "Import history" as the first task action; order-only reconciler path, `imported` flag, archived-on-import; HA buttons and job sensor | Usable on bundled providers right after P2, and independent of remote installs. It is also the owner's most visible feature |
-| **P2c. Mail routing** | `mail:` filters, DKIM/DMARC gate, router with fallback, `parseMail` in the sandbox, per-provider dedup, route list on mailbox cards, "Scan old mail" backfill job | Needs the sandbox (P2) and jobs (P2b). Bundled mail rules are converted to routes in place, before any split |
+| **P2b. Actions + jobs** | `jobs` table, action routes and SSE events, connection-card UI; Amazon "Import history" as the first task action; order-only reconciler path, `imported` flag, archived-on-import; HA buttons and job sensor | Usable on bundled providers right after P2, and independent of remote installs. It is also the owner's most visible feature |
+| **P2c. Email routing** | `mail:` filters, DKIM/DMARC gate, router with fallback, `parseMail` in the sandbox, per-provider dedup, route list on inbox cards, "Event old email" backfill job | Needs the sandbox (P2) and jobs (P2b). Bundled email rules are converted to routes in place, before any split |
 | **P3. SDK + custom installs** | `@open-parcels/provider-sdk`; `.opp` upload and git-URL install with isomorphic-git, digest, consent screen, update/rollback/uninstall; `PROVIDERS_CUSTOM`, `PROVIDERS_LOCKED` | The owner can install their own providers from Gitea, which proves the flow end to end |
 | **P4. Registry + verified tier** | `open-parcels-registry` repo with signed index, blocklist and review checklist; verified install and auto-update; `provider.blocked` → HA repair issue | Needs P3's install path; adds trust on top |
 | **P5. Extraction** | `open-parcels-providers` monorepo; per-provider data split out of `open-parcels-rules` by script (§3.2), the engine released as 3.0 without carrier data; `GET /rules/bundle`; the image bundles a pinned snapshot; the carriers leave `server/src/carriers/` | Only after the API has been stable through P2–P4 |
@@ -1266,14 +1266,14 @@ Every phase is shippable and keeps the gate green.
    the detail text either way).
 9. **Licence requirement for verified providers** (any OSI licence? matching the core's, which is
    still undecided per 0001 §5)?
-10. **Mail sender authentication:** require DKIM/DMARC pass by default (recommended; some
-    self-hosted mail servers add no `Authentication-Results`, and those users must switch it off
-    per mailbox)?
+10. **Email sender authentication:** require DKIM/DMARC pass by default (recommended; some
+    self-hosted email servers add no `Authentication-Results`, and those users must switch it off
+    per inbox)?
 11. **Retention vs. imported history:** keep orders and stub parcels indefinitely and drop only
     tracking detail after 365 days (recommended), or let retention delete imported years too?
 12. **`open-parcels-rules`:** keep it as a slim engine + SDK repo (recommended), and if so,
     rename it to `open-parcels-sdk` or keep the name? Or fold it into the core and archive it?
-13. **Source actions in HA:** expose every action without required input as a button by
+13. **Connection actions in HA:** expose every action without required input as a button by
     default, or only those the provider marks `expose_to_ha`?
 
 ## Owner decisions (2026-11-23)
@@ -1281,9 +1281,9 @@ Every phase is shippable and keeps the gate green.
 1. **Repos and providers:** a repository may hold several providers, one folder each. The repo-level manifest lists every provider (id, kind, folder). The official providers live in one org repo this way; third parties may ship one or many per repo. No per-provider tags: a repo release versions all providers in it.
 2. **Auto-update:** available for every tier. On by default for built-in and verified providers; custom and community providers must have it enabled per provider in its settings. A new permission still needs a click.
 3. **Community discovery:** on by default. Community providers are shown with a yellow background and a warning sign; installing one opens a dialog saying it is an unreviewed community add-on, linking to its source code (to check, or hand to an agent) before confirming.
-4. **DKIM/DMARC:** on by default, as one global setting (not per provider) the user can turn off. Measured on the owner's local Betterbird cache: 81 of 81 order/shipping mails from shops (AliExpress, Amazon, Hermes, PayPal, DHL, eBay, two small shops) passed both. Re-check on the full IMAP mailboxes when mail routing is built.
-5. **Clearing data:** every source gets a "Clear data" action that removes everything it imported (parcels, orders, links, raw payloads) so it can re-sync or re-import from scratch. Retention of imported history (the 365-day cleanup) still needs designing: history imports must not be deleted again right after.
-6. **Community install dialog:** besides "View source", a "Copy review prompt" button copies a ready-made prompt for any AI agent: repo URL plus the exact commit/digest that would be installed, the declared permissions (network hosts, mail filters, secrets/session use), what to check (exfiltration to undeclared places, credential misuse, obfuscated or dynamic code, behaviour beyond the stated purpose), and a request for a clear verdict (safe / suspicious / do not install) with reasons.
+4. **DKIM/DMARC:** on by default, as one global setting (not per provider) the user can turn off. Measured on the owner's local Betterbird cache: 81 of 81 order/shipping emails from shops (AliExpress, Amazon, Hermes, PayPal, DHL, eBay, two small shops) passed both. Re-check on the full IMAP inboxes when email routing is built.
+5. **Clearing data:** every connection gets a "Clear data" action that removes everything it imported (parcels, orders, links, raw payloads) so it can re-sync or re-import from scratch. Retention of imported history (the 365-day cleanup) still needs designing: history imports must not be deleted again right after.
+6. **Community install dialog:** besides "View source", a "Copy review prompt" button copies a ready-made prompt for any AI agent: repo URL plus the exact commit/digest that would be installed, the declared permissions (network hosts, email filters, secrets/session use), what to check (exfiltration to undeclared places, credential misuse, obfuscated or dynamic code, behaviour beyond the stated purpose), and a request for a clear verdict (safe / suspicious / do not install) with reasons.
    - UI detail: the button is a small copy icon (two overlapping documents) right next to the "give it to your agent" text in the warning; clicking it copies the templated audit prompt to the clipboard and shows a short "Copied" confirmation. Template draft:
 
      ```

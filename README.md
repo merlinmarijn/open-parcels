@@ -15,18 +15,18 @@
 # Open Parcels
 
 **Self-hosted parcel and order tracking.** One service on your own hardware follows about 95
-carriers, signs in to carrier and shop accounts, reads shipping mails, shows the courier live on a
+carriers, signs in to carrier and shop accounts, reads shipping emails, shows the courier live on a
 map and keeps a delivery calendar (also as an ICS feed).
 
 > **Status:** early development, `2.0.0-dev`. Expect breaking changes.
 
-This repository holds the server and the web UI: carrier plug-ins, mail parsing, the scheduler,
+This repository holds the server and the web UI: carrier providers, email parsing, the scheduler,
 the REST API with its event stream, the Docker image and the Unraid template.
 
 - Website, install guides and the carrier list: <https://open-parcels.github.io>
 - Home Assistant integration: [open-parcels-ha](https://github.com/open-parcels/open-parcels-ha)
 - Home Assistant app (runs the server inside Home Assistant, in the sidebar): [open-parcels-ha-apps](https://github.com/open-parcels/open-parcels-ha-apps)
-- Shared carrier and mail rules: [open-parcels-rules](https://github.com/open-parcels/open-parcels-rules)
+- Shared carrier and email rules: [open-parcels-rules](https://github.com/open-parcels/open-parcels-rules)
 - Browser extension for app-only carrier sign-ins: [open-parcels-extension](https://github.com/open-parcels/open-parcels-extension)
 
 ## Quick start
@@ -36,7 +36,7 @@ docker compose up -d   # uses docker-compose.yml from this repository
 ```
 
 Then open <http://localhost:3000> and finish the setup with the code from `docker compose logs open-parcels`. The website has guides for Unraid and Home Assistant. For something to look at before
-you add real accounts, add the **Demo shop** and **Demo courier** sources: three made-up parcels
+you add real accounts, add the **Demo shop** and **Demo courier** connections: three made-up parcels
 in two orders, with a live courier on the map.
 
 ## Access
@@ -46,16 +46,16 @@ Two passwords, both optional settings (environment, or **Settings → Security**
 | Setting | Allows | Unset |
 | :--- | :--- | :--- |
 | `OPENPARCELS_PASSWORD` | Reading: the web UI, the API, live updates, maps, images. | Anyone who can reach the server reads everything. |
-| `OPENPARCELS_ADMIN_PASSWORD` | Everything that changes something (every non-GET request): sources, sign-ins, sync, parcel and order edits, settings, tokens. | First start prints a setup code to the log; entering it in the web UI chooses the admin password. |
+| `OPENPARCELS_ADMIN_PASSWORD` | Everything that changes something (every non-GET request): connections, sign-ins, sync, parcel and order edits, settings, tokens. | First start prints a setup code to the log; entering it in the web UI chooses the admin password. |
 
 The admin password may also be changed in the UI (it needs the current one). It is then stored
 scrypt-hashed and wins over the environment until **Reset to environment**; changing or resetting
-it signs every session out. Changing the reader password signs readers out. Home Assistant ingress
+it logs every session out. Changing the reader password logs readers out. Home Assistant ingress
 counts as the admin. API tokens keep their scopes: `read` reads, `write` or `admin` may change
 things, and only `admin` manages tokens and server settings.
 
 **Upgrading** from a version with a single owner password: nothing to do. The owner password
-becomes the admin password (still hashed, shown as "saved in UI"), open sessions stay signed in as
+becomes the admin password (still hashed, shown as "saved in UI"), open sessions stay logged in as
 admin, and reading is open until `OPENPARCELS_PASSWORD` is set. To keep reading private as before,
 set `OPENPARCELS_PASSWORD` (or set it on the Security card right after upgrading).
 
@@ -64,7 +64,7 @@ set `OPENPARCELS_PASSWORD` (or set it on the Security card right after upgrading
 Open Parcels talks to the carriers and shops you add (and the hosts of their item pictures), and
 otherwise only to these:
 
-- **Place lookups** (`OPENPARCELS_GEOCODING`, on by default): carrier scans that name only a place
+- **Place lookups** (`OPENPARCELS_GEOCODING`, on by default): carrier events that name only a place
   ("Leipzig hub") are looked up on [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org),
   so they can show on the map. Only those place names are sent, at most five a minute, and each
   answer is cached. Turn the setting off (**Settings → Map**, admin only) to keep them on this server.
@@ -79,7 +79,7 @@ served at `https://<TS_HOSTNAME>.<your-tailnet>.ts.net` (`TS_HOSTNAME` defaults 
 Tailscale runs in userspace mode, as the same unprivileged user, so the container needs no extra
 capabilities and no `/dev/net/tun`. Without `TS_STATE_DIR` the image behaves as before.
 Tailnet visitors reach the app through `tailscale serve` on 127.0.0.1, so the image then sets
-`OPENPARCELS_TRUST_PROXY=127.0.0.1` itself (unless you set it), and the sign-in throttle sees each
+`OPENPARCELS_TRUST_PROXY=127.0.0.1` itself (unless you set it), and the login throttle sees each
 visitor's own address.
 Set `OPENPARCELS_PUBLIC_URL` to the tailnet address so links point there.
 

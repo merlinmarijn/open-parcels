@@ -11,8 +11,8 @@ what this service is, the stack, the data model, the API and event contract, and
 
 | Path | What |
 |---|---|
-| `server/` | The backend: Fastify API, engine, carrier plug-ins (TypeScript, Node 26) |
-| `server/src/carriers/` | Carrier plug-ins. They may import only the plug-in API; ESLint enforces it |
+| `server/` | The backend: Fastify API, engine, carrier providers (TypeScript, Node 26) |
+| `server/src/carriers/` | Carrier providers. They may import only the provider API; ESLint enforces it |
 | `server/test/` | vitest suites: `unit/`, `api/`, and recorded made-up fixtures |
 | `web/` | The web UI (React + Vite). Still the pre-rewrite frontend until phase 6 |
 | `docs/decisions/` | Decision records |
@@ -42,7 +42,7 @@ npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc
 - **No secrets in logs or events.** Use the logger, which redacts. Event payloads go through
   `parcelForEvent`, which strips courier coordinates.
 - **Carrier knowledge that other projects could reuse goes to `open-parcels-rules`, not here.**
-  That covers regexes, status tables, locale tables and mail rules.
+  That covers regexes, status tables, locale tables and email rules.
 - **Don't name the projects an endpoint was learned from** in code, docs or commit messages.
 - **GitHub Actions never run under this account.** Workflows keep only `workflow_dispatch` active;
   automatic triggers stay commented out, with the reason written above them.

@@ -12,7 +12,7 @@ live courier tracking, calendars and the map. The goal now is to make open-parce
 where tracking happens. It is a Docker container that:
 
 - signs in to carriers and polls them;
-- reads mail;
+- reads email;
 - follows couriers live;
 - resolves places;
 - stores history and publishes events.
@@ -32,7 +32,7 @@ Raspberry Pi.
   - GET requests need no token.
   - `/admin/db-backup` returns the whole database to anyone.
   - The WebSocket streams every log line without authentication.
-  - Mail rules are downloaded and run with `node:vm`.
+  - Email rules are downloaded and run with `node:vm`.
   - The encryption key silently falls back to a random one.
 - **Schema push at every boot.** There are no versioned migrations.
 - **The image can't run Playwright.** It also runs as root and has no healthcheck.
@@ -57,15 +57,15 @@ Raspberry Pi.
   read every 30 s, the stop count went down and back up, and the events carried no coordinates.
 
 **Earlier rule repos of the owner's own** (`Bluscream/email-parser-rules` and
-`Bluscream/mail-parser-ts`, both last touched 2026-06-11) hold mail rules as TypeScript modules
-with `parse()` functions. There are 25 rules across parcel, order, return and dunning mails.
+`Bluscream/mail-parser-ts`, both last touched 2026-06-11) hold email rules as TypeScript modules
+with `parse()` functions. There are 25 rules across parcel, order, return and dunning emails.
 
 **Prior art: nothing covers the whole job.**
 
 | Project | Strength | Gap |
 |---|---|---|
 | *Dude, Where's My Package* | Closest architecture: Docker, API, HA app and integration | Dutch-focused; no Hermes, IMAP, map or ICS |
-| *Paket Tracker* | Best German mail rules, plus an anonymised `.eml` corpus | Runs only inside Home Assistant |
+| *Paket Tracker* | Best German email rules, plus an anonymised `.eml` corpus | Runs only inside Home Assistant |
 | *jkeen/tracking_number_data* | The de-facto tracking-number dataset | No Hermes, GLS, PostNL or DHL Paket DE |
 
 ## 2. Decision
@@ -101,7 +101,7 @@ Versions are pinned and checked at install time.
 | Web framework | Fastify 5 with `fastify-type-provider-zod`, `@fastify/swagger` | Route types and OpenAPI come from one schema |
 | Validation | zod 4 | API schemas and parsing of messy carrier payloads use the same tool |
 | Database | SQLite (WAL) through better-sqlite3 + Kysely | Typed queries; migrations are code; no ORM magic. Drizzle was dropped because of its 0.x→1.0 migration churn and the memory measured during research |
-| HTTP to carriers | undici (built-in `fetch`) by default; `impit` only for carriers that check the browser's TLS fingerprint | Each plug-in chooses its transport. Not added yet: DPD's public tracking, the first candidate, was tried with `impit` 0.14 (Chrome and Firefox fingerprints, Node 26) in November 2026. The fingerprint passed (its HTML pages answered), but the lookup endpoint still reset every request, so DPD's public lookup is off by default instead |
+| HTTP to carriers | undici (built-in `fetch`) by default; `impit` only for carriers that check the browser's TLS fingerprint | Each provider chooses its transport. Not added yet: DPD's public tracking, the first candidate, was tried with `impit` 0.14 (Chrome and Firefox fingerprints, Node 26) in November 2026. The fingerprint passed (its HTML pages answered), but the lookup endpoint still reset every request, so DPD's public lookup is off by default instead |
 | HTML parsing | cheerio | |
 | Scheduler | Our own: a heap of next-run times, token buckets, backoff | The polling rules don't fit cron; testable with fake timers |
 | IMAP | imapflow (IDLE) + mailparser | |
@@ -118,10 +118,10 @@ Versions are pinned and checked at install time.
 
 | Repo | Contents |
 |---|---|
-| `open-parcels` (this repo, npm workspaces) | `server/` (API, engine, carrier plug-ins), `web/` (UI), Dockerfile, Unraid template |
+| `open-parcels` (this repo, npm workspaces) | `server/` (API, engine, carrier providers), `web/` (UI), Dockerfile, Unraid template |
 | **`open-parcels-rules`** (`email-parser-rules` renamed; `mail-parser-ts` merged in with its history, then archived) | Language-neutral data plus a TypeScript engine, published as an npm package and a JSON bundle. See the list below |
 | `open-parcels-ha-apps` (later) | The Home Assistant app repository. It is separate because the Marketplace refuses repositories that contain apps |
-| `open-parcels-ha` (later, not part of this task) | The thin integration, installed from the Marketplace. **One coherent "Open Parcels" integration** (owner's decision, 2026-11-18), unlike the one-repo-per-carrier suite: a Home Assistant device per provider and account (one per open-parcels source), with the parcels as that device's entities |
+| `open-parcels-ha` (later, not part of this task) | The thin integration, installed from the Marketplace. **One coherent "Open Parcels" integration** (owner's decision, 2026-11-18), unlike the one-repo-per-carrier suite: a Home Assistant device per provider and account (one per open-parcels connection), with the parcels as that device's entities |
 
 `open-parcels-rules` holds:
 
@@ -129,7 +129,7 @@ Versions are pinned and checked at install time.
   same schema.
 - **Carrier status tables**, mapped to the canonical status list.
 - **Locale tables** for delivery dates and windows.
-- **Declarative mail rules**, kept as data wherever a rule can be expressed that way.
+- **Declarative email rules**, kept as data wherever a rule can be expressed that way.
 - **Place-extraction patterns and tracking-URL templates.**
 - **Shared tooling:**
   - a JSON Schema for every file;
@@ -140,8 +140,8 @@ Versions are pinned and checked at install time.
 The app consumes `open-parcels-rules` as a versioned dependency. Rules are **never** downloaded and
 run at runtime.
 
-The carrier plug-ins live in `server/src/carriers/` behind a lint-enforced boundary: they import
-only the plug-in API. Once that API settles they can split out into their own package.
+The carrier providers live in `server/src/carriers/` behind a lint-enforced boundary: they import
+only the provider API. Once that API settles they can split out into their own package.
 
 ### 2.4 Architecture
 
@@ -152,11 +152,11 @@ only the plug-in API. Once that API settles they can split out into their own pa
                │      │                                                 │
                │  Services: parcels · events · calendar · places · auth │
                │      │                     ▲                           │
-               │  Scheduler ──► Source runners (one per source)        │
-               │   (tiers, quiet window,     │  carrier plug-ins:       │
+               │  Scheduler ──► Connection runners (one each)          │
+               │   (tiers, quiet window,     │  carrier providers:      │
                │    token buckets, backoff)  │  account / tracking /    │
                │  Live tracker (30 s / 5 min)│  shop / live / mail      │
-               │  Mail watcher (IMAP IDLE) ──┘                          │
+               │  Email watcher (IMAP IDLE) ─┘                          │
                │      │                                                 │
                │  Reconciler: merge snapshots → parcels, dedup and      │
                │  hand-off, status fallback, event rules, outbox        │
@@ -165,28 +165,28 @@ only the plug-in API. Once that API settles they can split out into their own pa
                └────────────────────────────────────────────────────────┘
 ```
 
-#### Plug-in contract
+#### Provider contract
 
 Each carrier is a module that declares:
 
-- metadata: id, name, countries, capabilities, and the source kinds it offers;
+- metadata: id, name, countries, capabilities, and the connection kinds it offers;
 - a zod config schema, which the UI renders as a form;
 - its sign-in flows (see below);
 - its rate-limit policy;
 - async methods that return `ParcelSnapshot` objects.
 
-Plug-ins never touch the database and never send events.
+Providers never touch the database and never send events.
 
-**Sign-in flows.** A plug-in declares one flow or a list of them. Each flow may be limited to some
-source kinds (`kinds`) and to some configurations (`when(config)`); the first applicable flow is
+**Sign-in flows.** A provider declares one flow or a list of them. Each flow may be limited to some
+connection kinds (`kinds`) and to some configurations (`when(config)`); the first applicable flow is
 the default. DHL, for example, signs a German account in by pasted link, a Dutch account
-(`config.account = "nl"`) by email and password, and a tracking source by an optional API key.
+(`config.account = "nl"`) by email and password, and a tracking connection by an optional API key.
 
-- `none`, `credentials` and `api_key` are static: the UI renders the plug-in's secret schema as a
+- `none`, `credentials` and `api_key` are static: the UI renders the provider's secret schema as a
   form and stores what the user types.
 - `interactive` flows run on the server, step by step, because open-parcels has its own UI and can
   ask several questions in a row. `start` and `continue` may call the carrier through the
-  rate-limited plug-in HTTP client. Each call returns either the next step with the state to keep,
+  rate-limited provider HTTP client. Each call returns either the next step with the state to keep,
   or the finished secret, which is validated against the secret schema before it is stored.
 - Step kinds and the input each takes:
 
@@ -199,7 +199,7 @@ the default. DHL, for example, signs a German account in by pasted link, a Dutch
   | `choose_method` | options | `choice`: an option id |
   | `await_approval` | message, poll interval, timeout | none; the UI polls |
 
-- What a plug-in's error means: `SignInRejectedError` is a refused input (a wrong code); the
+- What a provider's error means: `SignInRejectedError` is a refused input (a wrong code); the
   attempt keeps its step so the user can try again. `TransientError`/`RateLimitedError` mean the
   carrier could not be reached; the attempt stays exactly as it was and is never restarted on its
   own. Any other error counts as a failed try. After five failed tries the attempt is dropped.
@@ -207,8 +207,8 @@ the default. DHL, for example, signs a German account in by pasted link, a Dutch
   `open_url` step.
 
 The flow state lives in `sign_in_attempts` (§2.5), encrypted like `session_blob` and bound to the
-attempt and its source, with an expiry of 15 minutes per step (an approval step uses its own
-timeout, which polling does not extend). One attempt per source; a new start replaces it. The
+attempt and its connection, with an expiry of 15 minutes per step (an approval step uses its own
+timeout, which polling does not extend). One attempt per connection; a new start replaces it. The
 state may hold cookies, PKCE verifiers or a typed password and is never logged; failures are
 logged by error type only.
 
@@ -216,11 +216,11 @@ logged by error type only.
 
 The reconciler is the only writer of parcels. It:
 
-- merges the snapshots from all sources: for DHL the newest scan wins and other backends fill
+- merges the snapshots from all connections: for DHL the newest event wins and other backends fill
   gaps;
 - applies the suite's status rule: map the status, else take the newest history entry that maps,
   else `unknown`, with one warning per new value;
-- handles hand-off: an Amazon parcel carried by DHL becomes one parcel with two sources. When a
+- handles hand-off: an Amazon parcel carried by DHL becomes one parcel with two connections. When a
   shop reports a code without naming the carrier, and exactly one parcel of another carrier has
   that code, the hand-off is inferred; a startup repair folds such pairs stored earlier;
 - derives events by comparing old and new state, inside the same transaction that writes the
@@ -232,19 +232,19 @@ It implements the suite's polling rules:
 
 - **Quiet window:** 00:00–06:00, with catch-up anchors. On by default; one global opt-out
   (`OPENPARCELS_QUIET_WINDOW=false`, or the app option `quiet_window`), never per carrier.
-- **Fast tier:** every 15 min for parcels out for delivery within an hour of `planned_from`.
+- **Fast tier:** every 15 min for parcels out for delivery within an hour of `expected_from`.
 - **Slow tier:** every 45 min for everything else.
-- **Stagger** per install and per source.
+- **Stagger** per install and per connection.
 - **On 429:** back off 60 s × 2ⁿ, up to 1 h; a longer `Retry-After` is honoured up to 24 h, a
   shorter one (or `0`) never brings the run forward.
-- **Account-less sources stop** when they track nothing active.
+- **Account-less connections stop** when they track nothing active.
 
 On top of that:
 
 - a token bucket per carrier host;
 - at most one request at a time per account;
 - **a network error never triggers a new sign-in.** Only an explicit rejection does, once. After
-  that the source is marked "needs sign-in".
+  that the connection is marked "needs sign-in".
 
 #### Live tracker
 
@@ -256,7 +256,7 @@ On top of that:
 - Keeps the courier's position in memory and in the current `live` value only. Positions are
   never written to history.
 
-#### Mail watcher
+#### Email watcher
 
 - Uses IMAP IDLE on each configured folder.
 - Each new message goes through, in order:
@@ -264,7 +264,7 @@ On top of that:
   2. the shop and carrier rules from `open-parcels-rules`;
   3. tracking-number detection, constrained by the sender and the surrounding text.
 - Deduplicates by Message-ID.
-- Never marks a mail as read unless the user opts in.
+- Never marks an email as read unless the user opts in.
 
 #### Browser
 
@@ -284,18 +284,18 @@ There is one owner per container, so tables carry no user column.
 |---|---|---|
 | `owner` | password_hash (scrypt), created_at | A single row, created by the setup page on first start |
 | `api_tokens` | id, name, hash (SHA-256), scopes, last_used_at, expires_at | The token value is shown once |
-| `sources` | id, plugin, kind (account/tracking/shop/mail), label, config (JSON), secret_blob (AES-GCM), session_blob (AES-GCM), state (ok/needs_sign_in/error/disabled), backoff fields, last_ok_at | One row per sign-in or mailbox |
-| `parcels` | id (UUID), carrier, barcode, direction, status, raw_status, delivered, delivered_at, planned_from, planned_to, pickup, pickup_point, url, sender, receiver, weight, dimensions, label, order_id, manual_status, manual_until, first_seen_at, last_seen_at, removed_at, archived_at | Unique on (carrier, barcode). Nothing ever overwrites a manual override |
-| `parcel_sources` | parcel_id, source_id, external_ref, role (primary/handoff/mail), last_seen_at | Hand-off and deduplication |
-| `parcel_events` | id, parcel_id, source_id, at, status, raw_status, location_text, fingerprint (unique) | History. No coordinates |
-| `parcel_raw` | parcel_id, source_id, fetched_at, payload (JSON) | The latest raw payload per source. Codes that open or sign in to something, and personal data (names, addresses, contact details, coordinates), are stripped |
+| `connections` | id, provider, kind (account/tracking/shop/mail), label, config (JSON), secret_blob (AES-GCM), session_blob (AES-GCM), state (ok/needs_sign_in/error/disabled), backoff fields, last_ok_at | One row per sign-in or inbox |
+| `parcels` | id (UUID), carrier, tracking_number, direction, status, raw_status, delivered, delivered_at, expected_from, expected_to, expected_days, pickup, pickup_point, url, sender, receiver, weight, dimensions, label, order_id, manual_status, manual_until, first_seen_at, last_seen_at, removed_at, archived_at | Unique on (carrier, tracking number). Nothing ever overwrites a manual override |
+| `parcel_connections` | parcel_id, connection_id, external_ref, role (primary/handoff/mail), last_seen_at | Hand-off and deduplication |
+| `parcel_events` | id, parcel_id, connection_id, at, status, raw_status, location_text, fingerprint (unique) | History. No coordinates |
+| `parcel_raw` | parcel_id, connection_id, fetched_at, payload (JSON) | The latest raw payload per connection. Codes that open or sign in to something, and personal data (names, addresses, contact details, coordinates), are stripped |
 | `items` | id, parcel_id, title, image_ref, url, external_id, quantity, price, currency | |
 | `orders` | id, shop, order_number, placed_at, status | |
 | `live_state` | parcel_id, state, stops_away, message, position_at, updated_at | No coordinates |
-| `places` | key (normalised text), candidates (JSON), looked_at | Every usable answer for a name is cached; which one a scan stands for is chosen from the parcel's route. Names without one are retried after 30 days |
+| `places` | key (normalised text), candidates (JSON), looked_at | Every usable answer for a name is cached; which one an event stands for is chosen from the parcel's route. Names without one are retried after 30 days |
 | `outbox` | seq (monotonic), type, parcel_id, payload (JSON), created_at | Feeds SSE replay and, later, webhooks and MQTT |
-| `unknown_vocab` | plugin, kind, key, first_seen_at, count | Drives the one-time "please report" warning. Keys only |
-| `sign_in_attempts` | id, source_id, flow, blob (AES-GCM: plug-in state and current step), failures, expires_at, poll_not_before | Interactive sign-ins in progress; one per source, gone when finished, cancelled or expired |
+| `unknown_vocab` | provider, kind, key, first_seen_at, count | Drives the one-time "please report" warning. Keys only |
+| `sign_in_attempts` | id, connection_id, flow, blob (AES-GCM: provider state and current step), failures, expires_at, poll_not_before | Interactive sign-ins in progress; one per connection, gone when finished, cancelled or expired |
 | `settings`, `image_cache` | | |
 
 **Retention defaults**, all configurable:
@@ -318,42 +318,42 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 **Parcels**
 
 - `GET /parcels`, with filters: status, carrier, active, delivered-within, q.
-- `GET /parcels/{id}`, which adds history, items, sources, live and location.
+- `GET /parcels/{id}`, which adds history, items, connections, live and location.
 - `POST /parcels` to track a code. The carrier is detected, or given by the caller.
 - `PATCH /parcels/{id}` for the label, the manual status, or archiving.
 - `DELETE /parcels/{id}`.
 - `POST /parcels/{id}/refresh`.
 
-**Sources**
+**Connections**
 
-- `GET`, `POST`, `PATCH` and `DELETE /sources`; `PUT /sources/{id}/secret` for static flows.
-- `GET /sources/{id}/sign-in/flows`: the flows that apply to this source, the default first.
-- `POST /sources/{id}/sign-in/attempts` with an optional `{flow}` starts an interactive sign-in and
+- `GET`, `POST`, `PATCH` and `DELETE /connections`; `PUT /connections/{id}/secret` for static flows.
+- `GET /connections/{id}/sign-in/flows`: the flows that apply to this connection, the default first.
+- `POST /connections/{id}/sign-in/attempts` with an optional `{flow}` starts an interactive sign-in and
   returns `{status: "step", attempt_id, flow, expires_at, step}`.
-- `POST /sources/{id}/sign-in/attempts/{attempt}/continue` with `{input}` answers the current step
-  and returns the next one or `{status: "done"}`; the secret is then stored and the source runs.
-- `POST /sources/{id}/sign-in/attempts/{attempt}/poll` checks an `await_approval` step. Calls
+- `POST /connections/{id}/sign-in/attempts/{attempt}/continue` with `{input}` answers the current step
+  and returns the next one or `{status: "done"}`; the secret is then stored and the connection runs.
+- `POST /connections/{id}/sign-in/attempts/{attempt}/poll` checks an `await_approval` step. Calls
   closer together than the step's interval get 429 with `Retry-After`; after its timeout the
   attempt ends with `sign_in_timeout`.
-- `DELETE /sources/{id}/sign-in/attempts/{attempt}` cancels.
+- `DELETE /connections/{id}/sign-in/attempts/{attempt}` cancels.
 - Errors: `sign_in_refused` (400, try the step again), `sign_in_unavailable` (503, carrier
   unreachable, the step is kept), `sign_in_failed` (400), `sign_in_expired` (400: expired,
-  cancelled, tampered with or belonging to another source), `sign_in_timeout`,
+  cancelled, tampered with or belonging to another connection), `sign_in_timeout`,
   `sign_in_wrong_step` (409), `sign_in_poll_too_soon` (429).
-- `POST /sources/{id}/sign-in/start` and `/sign-in/finish` remain for pasted-link flows: they run
+- `POST /connections/{id}/sign-in/start` and `/sign-in/finish` remain for pasted-link flows: they run
   the same attempt mechanism in one call each.
-- `POST /sources/{id}/sync` (202). While the carrier's own wait runs (a captcha pause, or a 429
-  and its `Retry-After`) the run is not brought forward: 429 `source_backing_off` with
+- `POST /connections/{id}/sync` (202). While the carrier's own wait runs (a captcha pause, or a 429
+  and its `Retry-After`) the run is not brought forward: 429 `connection_backing_off` with
   `Retry-After` and the remaining wait in the message. Our own retry delay after a network error
   does not block it.
 - Sign-in errors also include `sign_in_captcha` (503 with `Retry-After`; the step is kept and
-  the try does not count as failed). Every sign-in step, run and live read of one source holds
-  the source's lock, so one account never has two requests in flight; a second submit of a step
+  the try does not count as failed). Every sign-in step, run and live read of one connection holds
+  the connection's lock, so one account never has two requests in flight; a second submit of a step
   that was already answered gets `sign_in_wrong_step` (409) or `sign_in_expired`.
 
 **Other routes**
 
-- `GET /carriers` lists the plug-ins with their capabilities, config schemas, the default
+- `GET /carriers` lists the providers with their capabilities, config schemas, the default
   sign-in type (`sign_in`) and every flow (`sign_in_flows`: id, label, type, kinds, conditional).
 - `GET /calendar?from&to` returns the same entries the UI calendar and the ICS feed use. A
   calendar is a history too: archived parcels keep their delivery entry. Archived undelivered
@@ -382,32 +382,32 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 
 | Type | Fires when |
 |---|---|
-| `parcel.registered` | A new incoming parcel appears |
+| `parcel.registered` | A new receiving parcel appears |
 | `parcel.status_changed` | The canonical status changes, except a change *to* delivered |
 | `parcel.delivered` | The only event for the hop to delivered |
-| `parcel.delivery_time_changed` | `planned_from` or `planned_to` changes |
-| `parcel.outgoing_registered`, `parcel.outgoing_delivered` | The outgoing pair |
+| `parcel.delivery_time_changed` | `expected_from` or `expected_to` changes |
+| `parcel.sending_registered`, `parcel.sending_delivered` | The sending pair |
 | `parcel.live_updated` | A live session starts or ends, its state changes, or `stops_away` changes. Never for a position change alone |
-| `parcel.location_changed` | Scans that named only a place gained approximate coordinates looked up from that name (history entries with `approximate: true`; a `location` with precision `area`) |
-| `parcel.removed` | An active parcel has been gone, undelivered, for 6 h. Nothing is judged while one of its sources is failing |
+| `parcel.location_changed` | Events that named only a place gained approximate coordinates looked up from that name (history entries with `approximate: true`; a `location` with precision `area`) |
+| `parcel.removed` | An active parcel has been gone, undelivered, for 6 h. Nothing is judged while one of its connections is failing |
 | `parcel.deleted` | A parcel was deleted: by the user, by retention, or folded into another parcel with the same code (`merged_into`: its id) |
 | `parcel.archived` | A parcel was archived: by the user or by retention (delivered, by the carrier or by hand, longer ago than the archive period; or not found for too long) |
-| `source.added` | A source was created, by the user or by the app for a code added by hand. Clients add its device |
-| `source.updated` | A source's label or configuration changed. Clients rename its device |
-| `source.state_changed` | A source changes state, including "needs sign-in" |
-| `source.run_finished` | A source run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the plug-in skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone and puts the reason in the detail |
-| `source.removed` | A source was deleted, or merged into another (`merged_into`: its id). Clients drop its device |
+| `connection.added` | A connection was created, by the user or by the app for a code added by hand. Clients add its device |
+| `connection.updated` | A connection's label or configuration changed. Clients rename its device |
+| `connection.state_changed` | A connection changes state, including "needs sign-in" |
+| `connection.run_finished` | A connection run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the provider skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone and puts the reason in the detail |
+| `connection.removed` | A connection was deleted, or merged into another (`merged_into`: its id). Clients drop its device |
 | `vocab.unknown` | An unmapped status value is seen for the first time |
 
 The payload is the normalised parcel without `raw`, with `live` stripped of coordinates and the
-trail, plus `old_*` and `new_*` for whatever changed. Source events carry
-`source: {id, plugin, label, kind}` instead; `source.added`, `source.updated` and
-`source.run_finished` also carry the source's current `state` and `detail`.
+trail, plus `old_*` and `new_*` for whatever changed. Connection events carry
+`connection: {id, provider, label, kind}` instead; `connection.added`, `connection.updated` and
+`connection.run_finished` also carry the connection's current `state` and `detail`.
 
 #### Parcel shape
 
-The suite contract keys: `carrier`, `barcode`, `sender`, `receiver`, `status`, `raw_status`,
-`delivered`, `delivered_at`, `planned_from`, `planned_to`, `pickup`, `pickup_point`, `history`
+The suite contract keys: `carrier`, `tracking_number`, `sender`, `receiver`, `status`, `raw_status`,
+`delivered`, `delivered_at`, `expected_from`, `expected_to`, `pickup`, `pickup_point`, `history`
 and `url`. On top of those:
 
 - `status` and `delivered` are the **effective** values: a manual status wins, so every client
@@ -415,12 +415,12 @@ and `url`. On top of those:
 - `id`, `items`, `live`, `location`, `order`, `manual_status`, `label`, `archived_at` and
   `updated_at`;
 - `carrier_status` and `carrier_delivered`: what the carrier itself last said, for display;
-- `sources`: `{source_id, plugin, label, kind, role, last_seen_at}` per linked source;
-- `lookup: {state, since, checked_at}`: what a tracking source last heard from the carrier about
-  the code. `pending` (never answered, or no tracking source follows it), `found`, or
+- `connections`: `{connection_id, provider, label, kind, role, last_seen_at}` per linked connection;
+- `lookup: {state, since, checked_at}`: what a tracking connection last heard from the carrier about
+  the code. `pending` (never answered, or no tracking connection follows it), `found`, or
   `not_found` (asked, and the carrier did not return it). `since` is when the state began,
   `checked_at` the last time the carrier was asked. Not found fires no event. An account or shop
-  source of the same carrier that currently lists the parcel makes it `found`;
+  connection of the same carrier that currently lists the parcel makes it `found`;
 - the runner logs at info level how many codes it asked about and how many were found, never
   the codes;
 - `raw` only on request, with `?include=raw`.
@@ -443,13 +443,13 @@ and `url`. On top of those:
 `/img/{id}.{sig}`.
 
 - The id is HMAC-signed, so the proxy is not open to arbitrary URLs.
-- It fetches only from hosts a carrier plug-in lists in `imageHosts` (`.example.com` also
+- It fetches only from hosts a carrier provider lists in `imageHosts` (`.example.com` also
   allows subdomains), on every hop, with a 5 MB cap checked against Content-Length and enforced
   while streaming.
 - It refuses non-public addresses before and at connect time (DNS rebinding): private, loopback,
   link-local, shared, benchmarking (198.18.0.0/15), documentation, multicast and reserved
   ranges, and every IPv6 form that embeds IPv4 (mapped, compatible, NAT64, 6to4, Teredo).
-  Plug-in requests refuse such address literals and `localhost` the same way.
+  Provider requests refuse such address literals and `localhost` the same way.
 - Images are cached on disk.
 - Delivery photos behind expiring links are fetched at once and kept.
 
@@ -478,7 +478,7 @@ and `url`. On top of those:
 - Encrypted with AES-256-GCM, with the row id as associated data.
 - The key comes from `OPENPARCELS_SECRET_KEY`, or else from `/data/secret.key`, which is created
   with mode 0600.
-- A decryption failure is a hard error that marks the source "needs sign-in". There is never a
+- A decryption failure is a hard error that marks the connection "needs sign-in". There is never a
   silent random key.
 
 **Logs and diagnostics**
@@ -543,17 +543,17 @@ applied.
 
 ### 2.9 First carriers
 
-| Carrier | Source kinds | Notes |
+| Carrier | Connection kinds | Notes |
 |---|---|---|
 | Amazon (shop) | account (device registration), live, items, hand-off | Several storefronts; arrival parsing driven by locale tables (en/de first) |
 | DHL | tracking (several backends, merged), DE account (OIDC with pasted link) | The official keyed API is optional |
-| DPD | DE public tracking page, myDPD DE account | The public page can be switched off per source, because of its `robots.txt` |
+| DPD | DE public tracking page, myDPD DE account | The public page can be switched off per connection, because of its `robots.txt` |
 | Hermes | tracking, account | Public forecast window for account parcels, with a concurrency cap |
-| Mail | IMAP IDLE | Rules from `open-parcels-rules`, seeded from the existing rules and the German `.eml` corpus |
+| Email | IMAP IDLE | Rules from `open-parcels-rules`, seeded from the existing rules and the German `.eml` corpus |
 
 **Coverage goal** (owner's decision, 2026-11-18): open-parcels supports at least every provider and
 courier the Home Assistant suite covers, and more where it is cheap. After the suite, the
-universal-lookup service's carriers are the next source to mine.
+universal-lookup service's carriers are the next connection to mine.
 
 ## 3. Migrating the existing data
 
@@ -565,7 +565,7 @@ The deployed `/mnt/user/appdata/openparcels/data.db` uses the UUID schema. It ho
    old schema variants and reports what it would do. Without `--dry-run` it writes everything in
    one transaction:
    - orders become `orders`;
-   - parcels become `parcels`, with courier names normalised to plug-in ids and old statuses
+   - parcels become `parcels`, with courier names normalised to provider ids and old statuses
      mapped (`arriving` → `out_for_delivery`, and so on);
    - `is_manual_status` becomes `manual_status`;
    - events become `parcel_events`. Courier-position rows from the old live scraper are dropped;
@@ -574,10 +574,10 @@ The deployed `/mnt/user/appdata/openparcels/data.db` uses the UUID schema. It ho
      Amazon → Amazon); China Post codes go to Cainiao, which tracks them. `unknown` remains only
      when nothing identifies the carrier. Running the importer again corrects a placeholder
      carrier left by an earlier run;
-   - undelivered, unarchived parcels are linked to their carrier's tracking source (created if
+   - undelivered, unarchived parcels are linked to their carrier's tracking connection (created if
      missing), as `POST /parcels` does. Every server start repeats this for any active parcel no
-     carrier source follows, so databases imported earlier are covered;
-   - IMAP credentials are decrypted with the old key and re-encrypted as a mail source. The usual
+     carrier connection follows, so databases imported earlier are covered;
+   - IMAP credentials are decrypted with the old key and re-encrypted as an email connection. The usual
      field names and nestings are read (host/server, port, secure/tls/ssl, user/username/email,
      password/pass, folders), with the host and port also taken from old `imap_*` settings.
      Amazon passwords and TOTP secrets are **not** imported, because Amazon is signed in again by
@@ -594,11 +594,11 @@ Every phase lands as reviewable commits, with the gate green at each one.
 | Phase | Delivers |
 |---|---|
 | **1. Foundation** | npm workspaces; the quality gate (tsc, eslint strict-type-checked with size limits, vitest, a pre-commit hook); config; database and migrations; auth (setup, sessions, tokens); parcel model and API skeleton; outbox and SSE; Docker image |
-| **2. Engine** | Plug-in contract; reconciler and event rules; scheduler with fake-timer integration tests; rate limits and backoff; a fake carrier for tests |
-| **3. `open-parcels-rules`** | Rename and merge; schemas, engine, test vectors; jkeen import plus the EU overlay; status tables for the first carriers; en/de locale tables; the existing mail rules converted |
+| **2. Engine** | Provider contract; reconciler and event rules; scheduler with fake-timer integration tests; rate limits and backoff; a fake carrier for tests |
+| **3. `open-parcels-rules`** | Rename and merge; schemas, engine, test vectors; jkeen import plus the EU overlay; status tables for the first carriers; en/de locale tables; the existing email rules converted |
 | **4. Carriers, wave 1** | Amazon (account, items, arrival parsing, hand-off, live), DHL, DPD, Hermes, each with recorded made-up fixtures |
-| **5. Mail** | IMAP IDLE watcher, rule engine integration, `.eml` fixture tests |
-| **6. Web UI** | Parcel list, detail view, map with live couriers, Calendar tab, carrier/account setup, mail setup, tokens, Status page |
+| **5. Email** | IMAP IDLE watcher, rule engine integration, `.eml` fixture tests |
+| **6. Web UI** | Parcel list, detail view, map with live couriers, Calendar tab, carrier/account setup, email setup, tokens, Status page |
 | **7. Map, calendar and images** | Place resolver (Nominatim, 1 request/s, cached; on by default, `OPENPARCELS_GEOCODING=false` turns it off, owner's decision of 2026-11-23), ICS feed, image proxy, retention jobs |
 | **8. Migrate and deploy** | Legacy importer; NAS backup; replace the container; update the template; end-to-end check through the logs and visually in LibreWolf |
 | **9. HA app** | App repository, ingress, discovery, multi-arch publish to Docker Hub and GHCR |
