@@ -2,7 +2,7 @@ import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { mockApi, renderApp, SIGNED_IN } from "../test/helpers";
-import type { ServerSetting } from "./server-settings";
+import { fromText, type ServerSetting } from "./server-settings";
 
 // Leaflet needs a real browser; the home card's map is not what these tests are about.
 vi.mock("../map/SharedMap", () => ({ SharedMap: () => null }));
@@ -171,5 +171,12 @@ describe("settings page", () => {
         next,
       });
     });
+  });
+});
+
+describe("a server setting's typed value (OP-152)", () => {
+  it("keeps a secret as typed and trims the rest", () => {
+    expect(fromText(SECRET, " made up ")).toBe(" made up ");
+    expect(fromText(setting({ kind: "string" }), " plain ")).toBe("plain");
   });
 });

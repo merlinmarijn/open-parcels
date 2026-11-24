@@ -3,6 +3,7 @@ import type { Logger } from "pino";
 import { isoNow, type Clock } from "../clock.js";
 import {
   isSettingKey,
+  MIN_ADMIN_PASSWORD,
   parseSetting,
   SETTING_KEYS,
   SETTINGS,
@@ -117,6 +118,16 @@ export class ConfigSettings {
           ok: false,
           error: `${key}: a value is required. Reset the setting to go back to the environment or default.`,
         };
+      }
+      // A reader password set here follows the admin password's minimum; the environment's is
+      // left as configured, so no running install breaks (OP-152).
+      if (
+        key === "OPENPARCELS_PASSWORD" &&
+        typeof parsed.value === "string" &&
+        parsed.value !== "" &&
+        parsed.value.length < MIN_ADMIN_PASSWORD
+      ) {
+        return { ok: false, error: `${key}: use at least ${MIN_ADMIN_PASSWORD} characters.` };
       }
       accepted.push([key, parsed.value]);
     }

@@ -1,8 +1,7 @@
 import { useState, type SyntheticEvent, type ReactNode } from "react";
 import { ErrorNotice, Field } from "../components/ui";
+import { MIN_PASSWORD } from "./password";
 import { useSetup, useSignIn } from "./session";
-
-const MIN_PASSWORD = 10;
 
 interface AuthPageProps {
   /** Set when reading is open and this page was opened from the app: a way back to it. */

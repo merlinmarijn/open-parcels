@@ -25,6 +25,7 @@ import {
   createTestContext,
   OWNER_PASSWORD,
   READER_PASSWORD,
+  SHORT_PASSWORD,
   signIn,
   WRONG_PASSWORD,
   type TestContext,
@@ -168,6 +169,19 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
     expect(await sessionState(app, headersOf(reader))).toMatchObject({ method: "anonymous" });
     expect(await sessionState(app, headersOf(admin))).toMatchObject({ role: "admin" });
     expect((await app.inject("/api/v1/parcels")).statusCode).toBe(200);
+  });
+
+  it("refuses a reader password shorter than the admin minimum (OP-152)", async () => {
+    const { ctx, app } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
+    const admin = { ...(await signIn(ctx, app)), role: "admin" };
+    const short = await app.inject({
+      method: "PATCH",
+      url: "/api/v1/settings/config",
+      headers: headersOf(admin),
+      payload: { OPENPARCELS_PASSWORD: SHORT_PASSWORD },
+    });
+    expect(short.statusCode).toBe(400);
+    expect(await signInWith(app, READER_PASSWORD)).toMatchObject({ role: "reader" });
   });
 
   it("throttles failed sign-ins", async () => {

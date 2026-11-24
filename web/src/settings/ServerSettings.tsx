@@ -34,6 +34,8 @@ function Editor(props: {
           onText(e.target.value);
         }}
       >
+        {/* Without a value nothing is chosen yet, so choosing "on" is a change (OP-152). */}
+        {text === "" ? <option value="">unset</option> : null}
         <option value="true">on</option>
         <option value="false">off</option>
       </select>

@@ -6,6 +6,7 @@ import {
   useResetAdminPassword,
   useSession,
 } from "../auth/session";
+import { MIN_PASSWORD } from "../auth/password";
 import { ErrorNotice, Field } from "../components/ui";
 import {
   SOURCE_LABELS,
@@ -16,7 +17,6 @@ import {
 
 const ADMIN_KEY = "OPENPARCELS_ADMIN_PASSWORD";
 const READER_KEY = "OPENPARCELS_PASSWORD";
-const MIN_ADMIN_PASSWORD = 10;
 
 function PasswordInput(props: {
   readonly label: string;
@@ -56,8 +56,8 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
 
   const submit = (event: SyntheticEvent): void => {
     event.preventDefault();
-    if (next.length < MIN_ADMIN_PASSWORD) {
-      setProblem(`Use at least ${MIN_ADMIN_PASSWORD} characters.`);
+    if (next.length < MIN_PASSWORD) {
+      setProblem(`Use at least ${MIN_PASSWORD} characters.`);
       return;
     }
     if (next !== repeat) {
@@ -88,7 +88,7 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
         />
         <PasswordInput
           label="New admin password"
-          hint={`At least ${MIN_ADMIN_PASSWORD} characters.`}
+          hint={`At least ${MIN_PASSWORD} characters.`}
           value={next}
           onChange={setNext}
           autoComplete="new-password"
@@ -139,6 +139,8 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
   const save = useSaveServerSetting();
   const reset = useResetServerSetting();
   const [next, setNext] = useState("");
+  const [repeat, setRepeat] = useState("");
+  const [problem, setProblem] = useState<string | null>(null);
   const set = setting?.set === true;
   const refreshSession = (): void => {
     void client.invalidateQueries({ queryKey: SESSION_KEY });
@@ -149,6 +151,7 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
       {
         onSuccess: () => {
           setNext("");
+          setRepeat("");
           refreshSession();
         },
       },
@@ -168,7 +171,16 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
         className="setting-edit"
         onSubmit={(event) => {
           event.preventDefault();
-          if (next !== "") store(next);
+          // The same rules as the admin password: a mistyped one would lock every reader out
+          // (OP-152).
+          if (next.length < MIN_PASSWORD) {
+            setProblem(`Use at least ${MIN_PASSWORD} characters.`);
+          } else if (next !== repeat) {
+            setProblem("The passwords do not match.");
+          } else {
+            setProblem(null);
+            store(next);
+          }
         }}
       >
         <input
@@ -179,6 +191,16 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
           value={next}
           onChange={(e) => {
             setNext(e.target.value);
+          }}
+        />
+        <input
+          type="password"
+          aria-label="Repeat the reader password"
+          placeholder="repeat"
+          autoComplete="new-password"
+          value={repeat}
+          onChange={(e) => {
+            setRepeat(e.target.value);
           }}
         />
         <button type="submit" className="button primary" disabled={save.isPending || next === ""}>
@@ -212,6 +234,11 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
           </button>
         ) : null}
       </form>
+      {problem === null ? null : (
+        <p role="alert" className="notice notice-error">
+          {problem}
+        </p>
+      )}
       <ErrorNotice error={save.error ?? reset.error} />
     </div>
   );

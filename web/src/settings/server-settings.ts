@@ -71,7 +71,8 @@ export function formatValue(value: ServerSettingValue | null): string {
 
 /** Turns the editor's text back into the setting's type; null when it is not one. */
 export function fromText(setting: ServerSetting, text: string): ServerSettingValue | null {
-  const trimmed = text.trim();
+  // A secret is kept as typed: a space may be part of it (OP-152).
+  const trimmed = setting.secret ? text : text.trim();
   if (trimmed.length === 0) return null;
   if (setting.kind === "boolean") return trimmed === "true";
   if (setting.kind === "number") {
