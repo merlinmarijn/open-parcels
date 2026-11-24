@@ -1,4 +1,4 @@
-import type { LookupState, ParcelStatus, Source, SourceState } from "../api/types";
+import type { LookupState, ParcelStatus, Connection, ConnectionState } from "../api/types";
 import { UI_LOCALE } from "./locale";
 
 export const STATUS_LABELS: Readonly<Record<ParcelStatus, string>> = {
@@ -18,7 +18,7 @@ export const LOOKUP_LABELS: Readonly<Record<LookupState, string>> = {
   not_found: "Not found by carrier",
 };
 
-export const SOURCE_STATE_LABELS: Readonly<Record<SourceState, string>> = {
+export const CONNECTION_STATE_LABELS: Readonly<Record<ConnectionState, string>> = {
   ok: "OK",
   idle: "Idle",
   needs_sign_in: "Needs sign-in",
@@ -26,11 +26,11 @@ export const SOURCE_STATE_LABELS: Readonly<Record<SourceState, string>> = {
   disabled: "Disabled",
 };
 
-export const SOURCE_KIND_LABELS: Readonly<Record<Source["kind"], string>> = {
+export const CONNECTION_KIND_LABELS: Readonly<Record<Connection["kind"], string>> = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
-  mail: "mailbox",
+  mail: "inbox",
 };
 
 const locales = UI_LOCALE;
@@ -51,19 +51,44 @@ export function formatDateTime(value: string | null | undefined): string {
   return Number.isNaN(date.getTime()) ? value : dateTime.format(date);
 }
 
+/** What a parcel says about its expected delivery, as the API sends it. */
+export interface ExpectedDelivery {
+  readonly expected_from: string | null;
+  readonly expected_to: string | null;
+  /** Whole local days in the server's time zone; null when the window has times. */
+  readonly expected_days: { readonly from: string; readonly to: string } | null;
+}
+
+/** A `YYYY-MM-DD` day as a date at noon in the browser's zone, so formatting keeps the day. */
+function localDay(day: string): Date {
+  const [year, month, date] = day.split("-").map(Number);
+  return new Date(year ?? 1970, (month ?? 1) - 1, date ?? 1, 12);
+}
+
+/**
+ * The expected delivery: whole days as the server's local days (OP-044), never shifted by the
+ * browser's zone; else "Mon 3 Nov, 10:00–12:00", or one side only when the other is missing.
+ */
+export function formatExpected(parcel: ExpectedDelivery): string {
+  const days = parcel.expected_days;
+  if (days !== null) {
+    return days.from === days.to
+      ? dateOnly.format(localDay(days.from))
+      : `${dateOnly.format(localDay(days.from))} – ${dateOnly.format(localDay(days.to))}`;
+  }
+  return formatWindow(parcel.expected_from, parcel.expected_to);
+}
+
 /** "Mon 3 Nov, 10:00–12:00", or one side only when the other is missing. */
-export function formatWindow(from: string | null, to: string | null): string {
+function formatWindow(from: string | null, to: string | null): string {
   if (from === null && to === null) {
     return "—";
   }
   const start = from === null ? null : new Date(from);
   const end = to === null ? null : new Date(to);
   if (start !== null && end !== null) {
+    // Whole days come as `expected_days`; a window here always has times.
     const sameDay = start.toDateString() === end.toDateString();
-    const wholeDay = sameDay && start.getHours() === 0 && end.getHours() >= 23;
-    if (wholeDay) {
-      return dateOnly.format(start);
-    }
     return sameDay
       ? `${dateOnly.format(start)}, ${timeOnly.format(start)}–${timeOnly.format(end)}`
       : `${dateOnly.format(start)} – ${dateOnly.format(end)}`;
