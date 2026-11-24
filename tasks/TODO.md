@@ -7,11 +7,21 @@ Assistant integration, `AP-` Home Assistant app, `EX-` extension, `WS-` website,
 
 ## 1. Core hardening (server + web, audit "Now" items not yet shipped)
 
-- [ ] Verify each "Now" audit id against `main` and record which are fixed (the overnight batch
-      fixed most of groups 1–16; confirm with tests, then list the rest here)
+Verified against `main` at `0f6b858` (2026-11-24). Groups 1–16 are fixed with a regression test
+in the commit except the ids below; of groups 17–24 only OP-020 (no test), OP-021 and OP-026 were
+already fixed. Still open, by audit group:
+
+| Group | Open | Note |
+|---|---|---|
+| 9 | OP-130 (partly) | only the order-shop repair appends events; revival, barcode repair and mail clean-up do not |
+| 12 | OP-085, OP-086 | non-refusals read as "sign in again"; no once-per-run renewal in five plug-ins |
+| 14 | OP-063, OP-064 | orders paged in memory; web caps at 1,000 parcels / 500 orders |
+| 15 | OP-148 | four parcel mutations per page, silent "Mark delivered" failure |
+| 18 | OP-005 (partly), OP-010, OP-022, OP-042 | CSP is on `index.html` only; no `nosniff` on JSON/static |
+| 17, 19–24 | all ids | none fixed yet |
+
 - [ ] OP-063, OP-064: order paging in the database instead of memory; no silent 1,000/500 caps
-- [ ] OP-005 (re-check against the CSP commit), OP-010, OP-020, OP-021, OP-022, OP-026, OP-042:
-      remaining hardening and lifecycle items
+- [ ] OP-005, OP-010, OP-022, OP-042: remaining hardening and lifecycle items
 - [ ] OP-149, OP-151, OP-152, OP-154, OP-150, OP-153, OP-157, OP-038, OP-043, OP-073, OP-061,
       OP-041, OP-044: web correctness
 - [ ] OP-072, OP-077, OP-158, OP-047, OP-045, OP-046, OP-076: build, styles and tooling
