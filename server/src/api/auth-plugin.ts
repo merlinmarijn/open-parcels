@@ -115,7 +115,7 @@ export function credentialCheck(
       return () => Promise.resolve(!access.readerRequired);
     case "token": {
       const token = bearerToken(request) ?? "";
-      return async () => (await store.findToken(token))?.id === auth.tokenId;
+      return async () => (await store.tokenAlive(token)) === auth.tokenId;
     }
     case "session": {
       const cookie = request.cookies[SESSION_COOKIE] ?? "";

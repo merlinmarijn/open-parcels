@@ -29,6 +29,8 @@ function parseRole(value: string): Role {
 const SESSION_TTL_MS = 30 * 24 * 60 * 60 * 1000;
 /** Sliding expiry is only written back once per hour to avoid a write on every request. */
 const SESSION_TOUCH_MS = 60 * 60 * 1000;
+/** "Last used" of a token is written at most once a minute, not on every request. */
+const TOKEN_TOUCH_MS = 60 * 1000;
 const TOKEN_PREFIX = "opk_";
 
 export interface SessionInfo {
@@ -197,24 +199,42 @@ export class AuthStore {
 
   /** Resolves a bearer token to its scopes; undefined when unknown or expired. */
   async findToken(token: string): Promise<{ id: string; scopes: Scope[] } | undefined> {
+    const row = await this.#liveToken(token);
+    if (row === undefined) {
+      return undefined;
+    }
+    const now = this.clock.now();
+    if (
+      row.last_used_at === null ||
+      now.getTime() - Date.parse(row.last_used_at) >= TOKEN_TOUCH_MS
+    ) {
+      await this.db
+        .updateTable("api_tokens")
+        .set({ last_used_at: now.toISOString() })
+        .where("id", "=", row.id)
+        .execute();
+    }
+    return { id: row.id, scopes: parseScopes(row.scopes) };
+  }
+
+  /** The id of a bearer token still valid, without recording a use (the event stream's check). */
+  async tokenAlive(token: string): Promise<string | undefined> {
+    return (await this.#liveToken(token))?.id;
+  }
+
+  async #liveToken(token: string) {
     if (!token.startsWith(TOKEN_PREFIX)) {
       return undefined;
     }
-    const now = isoNow(this.clock);
     const row = await this.db
       .selectFrom("api_tokens")
       .select(["id", "scopes", "expires_at", "last_used_at"])
       .where("token_hash", "=", sha256Hex(token))
       .executeTakeFirst();
-    if (row === undefined || (row.expires_at !== null && row.expires_at <= now)) {
+    if (row === undefined || (row.expires_at !== null && row.expires_at <= isoNow(this.clock))) {
       return undefined;
     }
-    await this.db
-      .updateTable("api_tokens")
-      .set({ last_used_at: now })
-      .where("id", "=", row.id)
-      .execute();
-    return { id: row.id, scopes: parseScopes(row.scopes) };
+    return row;
   }
 
   async listTokens(): Promise<TokenInfo[]> {
