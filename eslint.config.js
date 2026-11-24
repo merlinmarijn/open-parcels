@@ -47,7 +47,7 @@ export default tseslint.config(
     },
   },
   {
-    // Carrier plug-ins may only use the plug-in API, never the app's internals.
+    // Carrier providers may only use the provider API, never the app's internals.
     files: ["server/src/carriers/**/*.ts"],
     rules: {
       "no-restricted-imports": [
@@ -55,16 +55,16 @@ export default tseslint.config(
         {
           patterns: [
             {
-              // Anything outside the carriers folder other than the plug-in API itself.
+              // Anything outside the carriers folder other than the provider API itself.
               regex:
-                "^(\\.\\./)+(api|auth|calendar|crypto|db|domain|engine|events|ha|images|log|mail|migrate|parcels|tools)/|^(\\.\\./)+(clock|config|main|services)\\.js$|^(\\.\\./)+plugin/(?!api\\.js$)",
+                "^(\\.\\./)+(api|auth|calendar|crypto|db|domain|engine|events|ha|images|log|mail|migrate|parcels|tools)/|^(\\.\\./)+(clock|config|main|services)\\.js$|^(\\.\\./)+provider/(?!api\\.js$)",
               message:
-                "Carrier plug-ins may only import the plug-in API (server/src/plugin/api.ts).",
+                "Carrier providers may only import the provider API (server/src/provider/api.ts).",
             },
             {
               group: ["open-parcels-rules", "open-parcels-rules/*"],
               message:
-                "Carrier plug-ins reach the shared rules through the plug-in API (server/src/plugin/rules.ts).",
+                "Carrier providers reach the shared rules through the provider API (server/src/provider/rules.ts).",
             },
           ],
         },
