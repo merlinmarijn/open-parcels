@@ -118,6 +118,9 @@ export function plSignIn<Config>(
         },
       });
       const token = text(asObject(asObject(answer.body)["token"])["token"]);
+      if (![200, 400, 401, 403].includes(answer.status)) {
+        throw new TransientError(`Mój DHL /auth/validate-code answered HTTP ${answer.status}.`);
+      }
       if (answer.status !== 200 || asObject(answer.body)["success"] !== true || token === null) {
         throw new SignInRejectedError("Mój DHL did not accept the SMS code.");
       }

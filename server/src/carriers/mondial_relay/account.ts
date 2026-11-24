@@ -4,6 +4,7 @@ import {
   asArray as asList,
   asObject,
   carrierKey,
+  isOAuthRefusal,
   isObject,
   isoTime,
   num,
@@ -72,7 +73,7 @@ async function postToken(http: PluginHttp, form: Record<string, string>) {
     body: new URLSearchParams({ client_id: clientId(), ...form }),
   });
   const body = asObject(parseJsonBody(response.body));
-  if (response.status === 400 || response.status === 401) {
+  if (isOAuthRefusal(response)) {
     throw new SignInRejectedError(
       `The Mondial Relay sign-in was refused (${text(body["error"]) ?? String(response.status)}).`,
     );

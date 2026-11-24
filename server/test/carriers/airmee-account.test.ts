@@ -83,6 +83,13 @@ describe("Airmee account", () => {
     await expect(down.fetchAccount({}, SIGNED_IN)).rejects.toBeInstanceOf(TransientError);
   });
 
+  it("treats a 400 or 403 on the refresh as transient, not as a refused sign-in (OP-085)", async () => {
+    for (const status of [400, 403]) {
+      const world = new World(airmee, [on(ACTIVE, json({}, 401)), on(REFRESH, json({}, status))]);
+      await expect(world.fetchAccount({}, SIGNED_IN)).rejects.toBeInstanceOf(TransientError);
+    }
+  });
+
   it("keeps tracking sources on the phone number hash", async () => {
     const world = new World(airmee);
     await expect(world.fetchAccount({}, {})).rejects.toBeInstanceOf(SignInRejectedError);

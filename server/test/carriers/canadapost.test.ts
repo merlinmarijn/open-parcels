@@ -154,6 +154,12 @@ describe("Canada Post account", () => {
     await expect(world.fetchAccount({}, credentials)).rejects.toBeInstanceOf(SignInRejectedError);
   });
 
+  it("does not ask for a sign-in on a token error that is not a refusal (OP-085)", async () => {
+    const world = new World(canadapost);
+    world.routes = [onFragment("/oauth20/token", json({ error: "temporarily_unavailable" }, 400))];
+    await expect(world.fetchAccount({}, credentials)).rejects.toBeInstanceOf(TransientError);
+  });
+
   it("stops on a list answer without its items instead of reading an empty account (OP-083)", async () => {
     const world = new World(canadapost);
     world.routes = [

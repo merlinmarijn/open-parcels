@@ -73,11 +73,40 @@ describe("PPL CZ account", () => {
     expect(world.stored).toMatchObject({ access: "a1" });
   });
 
+  it("renews at most once per run, however many shipments are refused (OP-086)", async () => {
+    const world = new World(pplCz, [
+      on(
+        TOKEN,
+        json({ access_token: "a1", expires_in: 3600 }),
+        json({ access_token: "a2", expires_in: 3600 }),
+      ),
+      on(
+        LIST,
+        json({
+          items: [
+            { id: "s1", number: CODE, lastShipmentEvent: "DELIVERING" },
+            { id: "s2", number: "40000000002", lastShipmentEvent: "DELIVERING" },
+          ],
+        }),
+      ),
+      onPrefix(
+        "GET api.dhl.com/ecs/ppl/mobapp/api/v1/me/shipments/",
+        json([], 401),
+        json([]),
+        json([], 401),
+      ),
+    ]);
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
+    expect(world.requests().filter((request) => request === TOKEN)).toHaveLength(2);
+  });
+
   it("asks for a new sign-in only when the stored password is refused", async () => {
     const world = new World(pplCz, [on(TOKEN, json({ error: "invalid_grant" }, 400))]);
     await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
     const outage = new World(pplCz, [on(TOKEN, json({ error: "server_error" }, 400))]);
     await expect(outage.fetchAccount({}, SECRET)).rejects.not.toBeInstanceOf(SignInRejectedError);
+    const proxy = new World(pplCz, [on(TOKEN, json({}, 403))]);
+    await expect(proxy.fetchAccount({}, SECRET)).rejects.not.toBeInstanceOf(SignInRejectedError);
   });
 
   it("signs in with an e-mailed PIN", async () => {

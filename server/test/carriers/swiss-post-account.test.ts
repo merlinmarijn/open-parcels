@@ -1,6 +1,10 @@
 import { describe, expect, it } from "vitest";
 import { swissPost } from "../../src/carriers/swiss_post/index.js";
-import { SignInRejectedError, UnexpectedResponseError } from "../../src/plugin/errors.js";
+import {
+  SignInRejectedError,
+  TransientError,
+  UnexpectedResponseError,
+} from "../../src/plugin/errors.js";
 import { json, madeUp, on, World } from "./harness.js";
 
 // Made-up mailpiece ids and tokens only.
@@ -78,6 +82,11 @@ describe("Swiss Post account", () => {
       on(OVERVIEW, json({ inProgress: [{ mailpieceStatusType: "DELIVERED" }], completed: [] })),
     ]);
     expect((await world.fetchAccount({}, SECRET)).complete).toBe(false);
+  });
+
+  it("treats a 403 for a freshly renewed token as transient (OP-085)", async () => {
+    const world = new World(swissPost, [tokens(), on(OVERVIEW, json({}, 403))]);
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(TransientError);
   });
 
   it("renews only once per run: a token renewed for its age is not renewed again after a 401", async () => {

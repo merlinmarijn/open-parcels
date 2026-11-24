@@ -138,6 +138,19 @@ describe("Posti sign-in", () => {
     ).toBe("fi.itella.posti.android");
   });
 
+  it("treats a failed token exchange that is no refusal as transient (OP-085)", async () => {
+    const world = new World(posti, [
+      on(`POST ${AUTH}/token_v2`, json({}, 502)),
+      ...loginRoutes({}),
+    ]);
+    const driver = new SignInDriver(world, "bank_id", "account");
+    await driver.start();
+    await driver.continue({ choice: "nordea" });
+    await expect(
+      driver.continue({ pasted: `https://${UAS}/uas/return/abc?code=xyz` }),
+    ).rejects.toBeInstanceOf(TransientError);
+  });
+
   it("treats an unreachable login as transient", async () => {
     const world = new World(posti, [on(`POST ${AUTH}/device_login`, new TypeError("offline"))]);
     await expect(new SignInDriver(world, "bank_id", "account").start()).rejects.toBeInstanceOf(

@@ -106,6 +106,15 @@ describe("An Post account", () => {
     expect(w.requests()).toEqual([JWT, BOOT, LOGIN, JWT, ITEMS]);
   });
 
+  it("keeps the session on a token error that does not refuse it (OP-085)", async () => {
+    const w = new World(anPost);
+    const session = { uid: "uid-1", loginToken: madeUp("kept"), gmid: "" };
+    w.stored = session;
+    w.routes = [on(JWT, json({ errorCode: 500001 }))];
+    await expect(w.fetchAccount({}, secret)).rejects.toBeInstanceOf(TransientError);
+    expect(w.stored).toEqual(session);
+  });
+
   it("tells wrong credentials apart from a network error", async () => {
     const refused = new World(anPost);
     refused.routes = [on(BOOT, json({})), on(LOGIN, json({ errorCode: 403042 }))];

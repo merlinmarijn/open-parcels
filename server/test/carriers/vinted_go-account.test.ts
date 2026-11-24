@@ -122,6 +122,15 @@ describe("Vinted Go account", () => {
     expect(world.requests().filter((key) => key === REFRESH)).toHaveLength(1);
   });
 
+  it("treats a 404 or 422 on the refresh as transient (OP-085)", async () => {
+    for (const status of [404, 422]) {
+      const world = new World(vintedGo, [on(REFRESH, json({}, status))]);
+      await expect(world.fetchAccount({}, { refreshToken: RT })).rejects.toBeInstanceOf(
+        TransientError,
+      );
+    }
+  });
+
   it("asks for a new sign-in only when the refresh token is refused", async () => {
     const refused = new World(vintedGo, [on(REFRESH, json({}, 401))]);
     await expect(refused.fetchAccount({}, { refreshToken: RT })).rejects.toBeInstanceOf(

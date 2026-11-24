@@ -64,10 +64,30 @@ describe("BRT account", () => {
     expect(world.requests()).toEqual([LIST, LOGIN]);
   });
 
+  it("does not ask for a sign-in on a login 400 without an OAuth refusal (OP-085)", async () => {
+    const world = new World(brt, [on(LOGIN, json({ error: "server_error" }, 400))]);
+    await expect(world.fetchAccount({}, SECRET)).rejects.not.toBeInstanceOf(SignInRejectedError);
+  });
+
   it("stops on an answer without its shipment lists instead of reading an empty account (OP-083)", async () => {
     const world = new World(brt, [on(LIST, json({ error: "maintenance" }))]);
     world.stored = { token: "old" };
     await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(UnexpectedResponseError);
+  });
+
+  it("signs in at most once per run, however many details are refused (OP-086)", async () => {
+    const second = { ...shipment, parcelNumber: "0000000000002" };
+    const world = new World(brt, [
+      on(LIST, json({ incomingShipments: [shipment, second], sendingShipments: [] })),
+      onPrefix(DETAIL, json({}, 401), json({}, 401), json({}, 403)),
+      on(LOGIN, json({ access_token: "kc" })),
+      on(GUEST, json({ access_token: "app" })),
+      on(SSO, json({ access_token: "user" })),
+    ]);
+    world.stored = { token: "old" };
+    const result = await world.fetchAccount({}, SECRET);
+    expect(result.snapshots).toHaveLength(2);
+    expect(world.requests().filter((request) => request === LOGIN)).toHaveLength(1);
   });
 
   it("never signs in again on a network error", async () => {

@@ -189,10 +189,15 @@ const OAUTH_REFUSALS = new Set([
  * failing, and must not ask them to sign in again.
  */
 export function isOAuthRefusal(response: HttpResponse): boolean {
-  if (response.status !== 400 && response.status !== 401) {
-    return false;
-  }
-  const error = asObject(parseJsonBody(response.body))["error"];
+  return (
+    (response.status === 400 || response.status === 401) &&
+    isOAuthRefusalBody(parseJsonBody(response.body))
+  );
+}
+
+/** True when an already parsed token answer's `error` names an OAuth refusal. */
+export function isOAuthRefusalBody(body: unknown): boolean {
+  const error = asObject(body)["error"];
   return typeof error === "string" && OAUTH_REFUSALS.has(error);
 }
 

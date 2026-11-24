@@ -93,4 +93,9 @@ describe("Mondial Relay account", () => {
     world.stored = null;
     await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
   });
+
+  it("treats a token 400 without an OAuth refusal as transient (OP-085)", async () => {
+    const world = new World(mondialRelay, [on(TOKEN, json({ error: "server_error" }, 400))]);
+    await expect(world.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(TransientError);
+  });
 });

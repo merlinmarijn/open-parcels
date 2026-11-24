@@ -1,5 +1,6 @@
 import type { PluginHttp } from "../../plugin/api.js";
 import {
+  isOAuthRefusal,
   SignInRejectedError,
   UnexpectedResponseError,
   type PluginLogger,
@@ -34,6 +35,9 @@ function storedToken(value: unknown): Token | null {
  * the tracking scope, is a sign-in problem; a network error never leads to a new token.
  */
 export class UspsClient {
+  /** One renewal per run (a client lives for one run), never one per tracked code. */
+  #renewed = false;
+
   constructor(
     private readonly http: PluginHttp,
     private readonly session: SessionStore,
@@ -56,7 +60,7 @@ export class UspsClient {
         grant_type: "client_credentials",
       }),
     });
-    if (response.status === 400 || response.status === 401 || response.status === 403) {
+    if (isOAuthRefusal(response)) {
       throw new SignInRejectedError(`USPS refused the consumer key (HTTP ${response.status}).`);
     }
     expectStatus(response, "USPS", 200);
@@ -87,8 +91,9 @@ export class UspsClient {
       const response = await this.http.request(url, {
         headers: { accept: "application/json", authorization: `Bearer ${token}` },
       });
-      if (response.status === 401 && !force) {
-        // The token was refused outright; renewing it once from the stored key pair is fine.
+      if (response.status === 401 && !force && !this.#renewed) {
+        // The token was refused outright; renewing it once per run from the key pair is fine.
+        this.#renewed = true;
         continue;
       }
       if (response.status === 401 || response.status === 403) {

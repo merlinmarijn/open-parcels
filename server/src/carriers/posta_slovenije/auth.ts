@@ -152,6 +152,9 @@ export class TokenKeeper {
     return this.renew(true);
   }
 
+  /** Set by the caller once a refused token was renewed in this run. */
+  renewedAfterRefusal = false;
+
   /** Renews after MojaPošta refused a token: refresh first when asked, else the password. */
   async renew(tryRefresh: boolean): Promise<string> {
     const refreshToken = this.#tokens?.refreshToken ?? null;

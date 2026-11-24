@@ -162,6 +162,20 @@ describe("Pošta Slovenije account", () => {
     expect(world.stored).toMatchObject({ accessToken: "at-2" });
   });
 
+  it("renews only in the first refused call of a run (OP-086)", async () => {
+    const world = new World(postaSlovenije, [
+      onPrefix(TOKEN, json(tokens(2)), json(tokens(3))),
+      onPrefix(LIST, json({}, 401), page([]), json({}, 401)),
+    ]);
+    world.stored = {
+      accessToken: "at-1",
+      refreshToken: "rt-1",
+      expiresAt: world.clock.now().getTime() + 3_600_000,
+    };
+    await expect(world.fetchAccount({}, secret)).rejects.toBeInstanceOf(SignInRejectedError);
+    expect(world.requests().filter((p) => p.startsWith("POST"))).toHaveLength(1);
+  });
+
   it("reports a refused password as a sign-in problem", async () => {
     const world = new World(postaSlovenije, [
       onPrefix(

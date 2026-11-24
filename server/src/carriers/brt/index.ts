@@ -5,6 +5,7 @@ import {
   carrierKey,
   defineCarrier,
   isObject,
+  isOAuthRefusal,
   isoTime,
   newestFirst,
   num,
@@ -74,7 +75,7 @@ export async function signIn(http: PluginHttp, secret: Secret): Promise<string> 
       }),
     },
   );
-  if (login.status === 400 || login.status === 401) {
+  if (isOAuthRefusal(login)) {
     throw new SignInRejectedError("BRT rejected the e-mail address or password.");
   }
   const userToken = tokenFrom(login, "login");
@@ -179,6 +180,9 @@ export function shipmentSnapshot(
 }
 
 class BrtAccount {
+  /** One new sign-in per run (a BrtAccount lives for one run). */
+  #renewed = false;
+
   constructor(
     private readonly http: PluginHttp,
     private readonly secret: Secret,
@@ -189,7 +193,7 @@ class BrtAccount {
     return this.token;
   }
 
-  /** A refused token (401/403) leads to one new sign-in; a network error never does. */
+  /** A refused token (401/403) leads to one new sign-in per run; a network error never does. */
   async call(url: URL, body?: string): Promise<{ status: number; body: string }> {
     const send = async (token: string) =>
       this.http.request(url, {
@@ -203,10 +207,13 @@ class BrtAccount {
       });
     if (this.token !== null) {
       const first = await send(this.token);
-      if (first.status !== 401 && first.status !== 403) {
+      // After this run's sign-in a refusal is about the resource (a detail the account may not
+      // see), so the caller gets the answer as it is instead of another password grant.
+      if ((first.status !== 401 && first.status !== 403) || this.#renewed) {
         return first;
       }
     }
+    this.#renewed = true;
     this.token = await signIn(this.http, this.secret);
     return send(this.token);
   }

@@ -6,6 +6,7 @@ import {
   carrierKey,
   CookieJar,
   isObject,
+  isOAuthRefusal,
   mayHaveMorePages,
   parseJsonBody,
   SignInRejectedError,
@@ -182,7 +183,7 @@ async function refresh(http: PluginHttp, tokens: Tokens, now: number): Promise<T
       scope: scope(),
     }),
   });
-  if (response.status === 400 || response.status === 401) {
+  if (isOAuthRefusal(response)) {
     throw new RefreshRefused("refresh refused");
   }
   if (response.status !== 200) {

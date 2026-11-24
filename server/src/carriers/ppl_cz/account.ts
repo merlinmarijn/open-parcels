@@ -3,6 +3,7 @@ import { z } from "zod";
 import {
   asObject,
   carrierKey,
+  isOAuthRefusal,
   num,
   parseJsonBody,
   SignInRejectedError,
@@ -48,12 +49,7 @@ async function passwordGrant(http: PluginHttp, secret: Secret) {
     }),
   });
   const body = asObject(parseJsonBody(response.body));
-  const error = text(body["error"]);
-  if (
-    response.status === 401 ||
-    response.status === 403 ||
-    (response.status === 400 && (error === "access_denied" || error === "invalid_grant"))
-  ) {
+  if (isOAuthRefusal(response)) {
     throw new SignInRejectedError(
       "PPL refused the stored sign-in; signing in to the mojePPL app replaces it.",
     );
@@ -148,6 +144,7 @@ export class PplAccount {
   #access: string | null;
   #expiresAt: number;
   #changed = false;
+  #renewedAfterRefusal = false;
 
   constructor(private readonly context: PluginContext<unknown, Secret>) {
     const stored = storedSchema.safeParse(context.session.load());
@@ -185,6 +182,11 @@ export class PplAccount {
         : await this.#renew(),
     );
     if (response.status === 401) {
+      // One renewal per run (a PplAccount lives for one run), never one per shipment.
+      if (this.#renewedAfterRefusal) {
+        throw new SignInRejectedError("PPL refused the session again after renewing it.");
+      }
+      this.#renewedAfterRefusal = true;
       response = await send(await this.#renew());
       if (response.status === 401) {
         throw new SignInRejectedError("PPL refused a freshly renewed session.");

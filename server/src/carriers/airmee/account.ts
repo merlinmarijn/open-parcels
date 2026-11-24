@@ -151,7 +151,7 @@ class Session {
     return this.#tokens.accessToken;
   }
 
-  /** Rotates both tokens, once per refused access token. Only 400/401/403 mean "sign in again". */
+  /** Rotates both tokens, once per refused access token. Only a 401 means "sign in again". */
   async refresh(): Promise<void> {
     const response = await post(
       this.deps.http,
@@ -159,7 +159,7 @@ class Session {
       { refresh_token: this.#tokens.refreshToken },
       TEMP_TOKEN,
     );
-    if ([400, 401, 403].includes(response.status)) {
+    if (response.status === 401) {
       throw new SignInRejectedError("Airmee no longer accepts the sign-in.");
     }
     if (response.status !== 200) {

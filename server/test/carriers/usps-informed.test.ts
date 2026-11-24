@@ -232,6 +232,8 @@ describe("USPS Informed Delivery account", () => {
       on(PACKAGES, json({ code: "REVOKED" }, 401)),
     ]);
     await expect(revoked.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
+    const odd = new World(usps, [on(TOKEN, json({}, 400))]);
+    await expect(odd.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(TransientError);
     const offline = new World(usps, [on(TOKEN, new TypeError("offline"))]);
     await expect(offline.fetchAccount({}, SECRET)).rejects.toBeInstanceOf(TransientError);
   });

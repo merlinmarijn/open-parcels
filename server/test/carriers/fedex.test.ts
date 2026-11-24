@@ -96,6 +96,23 @@ describe("FedEx tracking", () => {
     expect(found).toMatchObject({ status: "delivered", plannedFrom: null });
   });
 
+  it("renews at most once per run, not once per code (OP-086)", async () => {
+    const { fetchImpl, calls } = fakeNetwork([
+      routeTable(
+        {
+          [TOKEN]: [token("t1"), token("t2"), token("t3")],
+          [TRACK]: [json({}, 401), json(result("DL"), 200), json({}, 401)],
+        },
+        "host",
+      ),
+    ]);
+    const { base } = fakeContext(fedex.http, fetchImpl);
+    await expect(plugin.track(base, {}, SECRET, [CODE, "990000000002"])).rejects.toBeInstanceOf(
+      SignInRejectedError,
+    );
+    expect(calls.filter((call) => call.key === TOKEN)).toHaveLength(2);
+  });
+
   it("never sends a token stored for another key", async () => {
     const stored = { base: "other", accessToken: "old", expiresAt: Date.parse("2027-01-01") };
     const { fetchImpl, calls } = fakeNetwork([

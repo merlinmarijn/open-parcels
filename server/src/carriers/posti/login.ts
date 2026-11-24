@@ -6,6 +6,7 @@ import {
   TransientError,
   UnexpectedResponseError,
   isObject,
+  isOAuthRefusal,
   parseJsonBody,
   restoreJar,
   serializeJar,
@@ -175,11 +176,14 @@ async function finish(http: PluginHttp, jar: CookieJar, verifier: string, pasted
       grant_type: "authorization_code",
     }),
   });
+  if (isOAuthRefusal(response)) {
+    throw new SignInRejectedError("Posti did not hand out tokens for the login.");
+  }
   const body = parseJsonBody(response.body);
   const idToken = isObject(body) ? text(body["id_token"]) : null;
   const refreshToken = isObject(body) ? text(body["refresh_token"]) : null;
-  if (!isObject(body) || "error" in body || idToken === null || refreshToken === null) {
-    throw new SignInRejectedError("Posti did not hand out tokens for the login.");
+  if (response.status !== 200 || idToken === null || refreshToken === null) {
+    throw new TransientError(`Posti's token exchange answered HTTP ${response.status}.`);
   }
   return { idToken, refreshToken };
 }

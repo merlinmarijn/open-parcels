@@ -176,9 +176,10 @@ async function overview(
   if ((response.status === 401 || response.status === 403) && fresh) {
     response = await send(await renew());
   }
-  if (response.status === 401 || response.status === 403) {
+  if (response.status === 401) {
     throw new SignInRejectedError("Swiss Post refused a freshly renewed session.");
   }
+  // A 403 for a token that was just issued is the gateway's, not a refused sign-in.
   if (response.status !== 200) {
     throw new TransientError(`Swiss Post's inbox answered HTTP ${response.status}.`);
   }

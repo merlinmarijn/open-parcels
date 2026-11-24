@@ -16,6 +16,8 @@ const siteKey = (): string => carrierKey("an_post", "site_key");
 const OK = 0;
 const WRONG_CREDENTIALS = 403042;
 const SESSION_EXPIRED = 403007;
+/** Gigya codes after a fresh sign-in that mean the account itself is refused, not a hiccup. */
+const SESSION_REFUSED = new Set([403005, 403007, 403042, 403044]);
 
 export interface Credentials {
   readonly username: string;
@@ -113,9 +115,13 @@ export async function idToken(
     await store.save(session);
     answer = await shortToken(http, session);
   }
-  if (answer["errorCode"] !== OK) {
+  const code = answer["errorCode"];
+  if (code !== OK && typeof code === "number" && SESSION_REFUSED.has(code)) {
     await store.save(null);
     throw new SignInRejectedError("An Post no longer accepts the stored session.");
+  }
+  if (code !== OK) {
+    throw new TransientError(`An Post's token request failed (error ${String(code)}).`);
   }
   const token = text(answer["id_token"]);
   if (token === null) {

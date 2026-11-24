@@ -132,6 +132,13 @@ describe("Cargus account", () => {
     expect(world.requests()).toEqual([TOKEN]);
   });
 
+  it("treats a refresh 400 without an OAuth refusal as transient (OP-085)", async () => {
+    const world = new World(cargus, [on(TOKEN, json({}, 400))]);
+    world.stored = { ...tokens, expiresAt: 0 };
+    await expect(world.fetchAccount(CONFIG, SECRET)).rejects.toBeInstanceOf(TransientError);
+    expect(world.requests()).toEqual([TOKEN]);
+  });
+
   it("renews the token at most once per run, not once per list", async () => {
     const world = new World(cargus, [
       on(LIST, json({}, 401), json([]), json({}, 401)),

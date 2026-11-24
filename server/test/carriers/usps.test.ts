@@ -91,7 +91,7 @@ describe("USPS tracking", () => {
 
   it("reports a refused key pair, or one without tracking, as a sign-in problem", async () => {
     const { fetchImpl } = network({
-      [TOKEN]: [json({}, 401), token(2, "addresses")],
+      [TOKEN]: [json({ error: "invalid_client" }, 401), token(2, "addresses")],
     });
     const { base } = fakeContext(usps.http, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(SignInRejectedError);
@@ -106,6 +106,20 @@ describe("USPS tracking", () => {
     const { base } = fakeContext(usps.http, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(SignInRejectedError);
     expect(calls.map((call) => call.key)).toEqual([TOKEN, DETAIL, TOKEN, DETAIL]);
+  });
+
+  it("renews at most once per run, not once per code (OP-086)", async () => {
+    const other = "9400000000000000000002";
+    const { fetchImpl, calls } = network({
+      [TOKEN]: [token(1), token(2), token(3)],
+      [DETAIL]: [json({}, 401), json(detail("Delivered", "Delivered"), 200)],
+      [`GET apis.usps.com/tracking/v3/tracking/${other}`]: [json({}, 401)],
+    });
+    const { base } = fakeContext(usps.http, fetchImpl);
+    await expect(plugin.track(base, {}, keys, [CODE, other])).rejects.toBeInstanceOf(
+      SignInRejectedError,
+    );
+    expect(calls.filter((call) => call.key === TOKEN)).toHaveLength(2);
   });
 
   it("never asks for a new token on a network error", async () => {

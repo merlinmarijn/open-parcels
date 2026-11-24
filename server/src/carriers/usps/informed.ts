@@ -5,6 +5,7 @@ import {
   UnexpectedResponseError,
   asObject,
   isObject,
+  isOAuthRefusal,
   isoTime,
   objects,
   parseJsonBody,
@@ -76,7 +77,7 @@ class Chain {
         redirect_uri: INFORMED.redirectUri,
       }),
     });
-    if (response.status === 400) {
+    if (isOAuthRefusal(response)) {
       throw new SignInRejectedError("USPS's sign-in chain expired. Sign in again.");
     }
     if (response.status !== 200) {

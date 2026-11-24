@@ -9,6 +9,7 @@ import {
   UnexpectedResponseError,
 } from "../../src/plugin/errors.js";
 import { json, on, World } from "./harness.js";
+import { SignInDriver } from "./sign-in-driver.js";
 
 // Made-up shipment numbers, salts and tokens only.
 const challenge = (number: number, maxnumber = 50_000) => ({
@@ -122,5 +123,19 @@ describe("DHL Poland", () => {
     await expect(expired.fetchAccount({ account: "pl" }, secret)).rejects.toBeInstanceOf(
       SignInRejectedError,
     );
+  });
+
+  it("treats an outage while checking the SMS code as transient, not as a wrong code (OP-085)", async () => {
+    const auth = "POST mojdhl.pl/api/dhl/public/auth";
+    const world = new World(dhl, [
+      on(CHALLENGE, json(challenge(7)), json(challenge(7)), json(challenge(7))),
+      on(`${auth}/validate-account`, json({ responseCode: 0 })),
+      on(`${auth}/generate-code`, json({ responseCode: 0 })),
+      on(`${auth}/validate-code`, json({}, 502)),
+    ]);
+    const driver = new SignInDriver(world, "pl_account", "account", { account: "pl" });
+    await driver.start();
+    await driver.continue({ phone: "600000000" });
+    await expect(driver.continue({ code: "123456" })).rejects.toBeInstanceOf(TransientError);
   });
 });

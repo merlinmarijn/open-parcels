@@ -4,6 +4,7 @@ import {
   asObject,
   carrierKey,
   isObject,
+  isOAuthRefusalBody,
   num,
   parseJsonBody,
   requiredList,
@@ -111,7 +112,7 @@ export class CanadaPostAccount {
         "Canada Post asked for a second factor, which is not supported.",
       );
     }
-    if ([400, 401, 403].includes(status) && isObject(payload) && payload["error"] !== undefined) {
+    if ([400, 401, 403].includes(status) && isOAuthRefusalBody(payload)) {
       throw new SignInRejectedError("Canada Post refused the username or password.");
     }
     throw new TransientError(`Canada Post sign-in answered HTTP ${status}.`);

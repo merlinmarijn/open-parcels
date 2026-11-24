@@ -75,6 +75,8 @@ async function requestToken(deps: Deps, credentials: Credentials): Promise<Store
 /** The access token of one source: reused while valid, renewed when expired or refused once. */
 export class FedExSession {
   #stored: Stored | null;
+  /** One renewal per run (a session lives for one run), never one per tracked code. */
+  #renewed = false;
 
   constructor(
     private readonly deps: Deps,
@@ -111,13 +113,14 @@ export class FedExSession {
   /** The track result for one number; null when FedEx does not know it. */
   async track(code: string): Promise<Json | null> {
     let response = await this.#post(code);
-    if (response.status === 401) {
-      // FedEx refused the token itself: renew it once, never on any other failure.
+    if (response.status === 401 && !this.#renewed) {
+      // FedEx refused the token itself: renew it once per run, never on any other failure.
+      this.#renewed = true;
       this.#stored = null;
       response = await this.#post(code);
     }
     if (response.status === 401 || response.status === 403) {
-      throw new SignInRejectedError("FedEx refused a freshly issued token.");
+      throw new SignInRejectedError("FedEx refused the token after renewing it.");
     }
     if (response.status !== 200) {
       throw new TransientError(`FedEx tracking answered HTTP ${response.status}.`);

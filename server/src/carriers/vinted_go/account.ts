@@ -149,7 +149,7 @@ class Session {
     const response = await post(this.deps.http, "sessions/refresh", {
       refresh_token: this.#stored.refresh,
     });
-    if ([400, 401, 403, 404, 422].includes(response.status)) {
+    if ([400, 401, 403].includes(response.status)) {
       throw new SignInRejectedError("Vinted Go no longer accepts the sign-in.");
     }
     if (response.status !== 200) {

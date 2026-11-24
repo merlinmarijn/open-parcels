@@ -18,8 +18,8 @@ export const DETAIL_LIMIT = 25;
 
 /**
  * A signed-in GET. The first 401 renews the token (refresh, else password), a second signs in
- * with the password, a third means the account no longer works. Network errors propagate and
- * never lead to a sign-in.
+ * with the password, a third means the account no longer works; after that, any refusal in the
+ * same run does too. Network errors propagate and never lead to a sign-in.
  */
 async function signedGet(http: PluginHttp, keeper: TokenKeeper, url: URL): Promise<Answer> {
   let token = await keeper.current();
@@ -28,9 +28,12 @@ async function signedGet(http: PluginHttp, keeper: TokenKeeper, url: URL): Promi
     if (answer.status !== 401) {
       return answer;
     }
-    if (stage === 2) {
+    // Renewals happen in the first refused call only (a keeper lives for one run), so a detail
+    // the account may not see never sends the password again and again.
+    if (stage === 2 || (stage === 0 && keeper.renewedAfterRefusal)) {
       break;
     }
+    keeper.renewedAfterRefusal = true;
     token = await keeper.renew(stage === 0);
   }
   throw new SignInRejectedError("MojaPošta keeps refusing a fresh sign-in.");
