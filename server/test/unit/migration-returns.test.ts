@@ -1,10 +1,10 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { sql, type Kysely } from "kysely";
-import { Migrator } from "kysely/migration";
+import { sql } from "kysely";
 import { afterEach, describe, expect, it } from "vitest";
-import { MIGRATIONS, migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateBefore } from "../helpers.js";
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -18,29 +18,19 @@ describe("migration 0018-returns", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "open-parcels-migrate-"));
     dirs.push(dir);
     const { db } = openDatabase(path.join(dir, "db.sqlite"));
-    const raw = db as unknown as Kysely<unknown>;
     try {
-      const before = Object.fromEntries(
-        Object.entries(MIGRATIONS).filter(([name]) => name < "0018"),
-      );
-      const old = new Migrator({ db, provider: { getMigrations: () => Promise.resolve(before) } });
-      expect((await old.migrateToLatest()).error).toBeUndefined();
+      await migrateBefore(db, "0018");
       await sql`
         insert into orders (id, shop, order_number, created_at, updated_at)
         values ('o-1', 'example-shop.de', 'A-1', 't', 't')
-      `.execute(raw);
+      `.execute(db);
       await sql`
         insert into sources (id, plugin, kind, label, config, state, created_at, updated_at)
         values ('s-1', 'demo_shop', 'shop', 'Demo shop', '{}', 'ok', 't', 't')
-      `.execute(raw);
+      `.execute(db);
 
-      expect(await migrateToLatest(db)).toEqual([
-        "0018-returns",
-        "0019-glossary-names",
-        "0020-ha-import-markers",
-        "0021-order-totals",
-        "0022-live-state-connection",
-      ]);
+      // Later migrations follow; this test pins only its own.
+      expect((await migrateToLatest(db))[0]).toBe("0018-returns");
 
       const order = await db.selectFrom("orders").select("return_until").executeTakeFirst();
       expect(order).toEqual({ return_until: null });

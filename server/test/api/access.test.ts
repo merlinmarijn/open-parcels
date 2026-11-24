@@ -1,8 +1,7 @@
 import { mkdtempSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { sql, type Kysely } from "kysely";
-import { Migrator, type Migration } from "kysely/migration";
+import { sql } from "kysely";
 import cookie from "@fastify/cookie";
 import Fastify from "fastify";
 import { afterEach, describe, expect, it } from "vitest";
@@ -10,17 +9,6 @@ import { HA_INGRESS_ADDRESS, registerAuth } from "../../src/api/auth-plugin.js";
 import type { App } from "../../src/api/app.js";
 import { hashPassword, sha256Hex } from "../../src/auth/crypto.js";
 import { openDatabase } from "../../src/db/database.js";
-import * as m0001 from "../../src/db/migrations/0001-initial.js";
-import * as m0002 from "../../src/db/migrations/0002-reconciler.js";
-import * as m0003 from "../../src/db/migrations/0003-sign-in-attempts.js";
-import * as m0004 from "../../src/db/migrations/0004-lookup-state.js";
-import * as m0005 from "../../src/db/migrations/0005-archive-reason.js";
-import * as m0006 from "../../src/db/migrations/0006-auto-created-sources.js";
-import * as m0007 from "../../src/db/migrations/0007-event-coordinates.js";
-import * as m0008 from "../../src/db/migrations/0008-order-items.js";
-import * as m0009 from "../../src/db/migrations/0009-idle-source-state.js";
-import * as m0010 from "../../src/db/migrations/0010-order-lifecycle.js";
-import * as m0011 from "../../src/db/migrations/0011-setting-overrides.js";
 import {
   createTestContext,
   OWNER_PASSWORD,
@@ -30,6 +18,7 @@ import {
   WRONG_PASSWORD,
   type TestContext,
   type TestOptions,
+  migrateBefore,
 } from "../helpers.js";
 
 const NEW_PASSWORD = ["a", "brand", "new", "admin", "secret"].join(" ");
@@ -490,34 +479,18 @@ describe("the admin password", () => {
 });
 
 describe("upgrading from the single owner password", () => {
-  const BEFORE: Readonly<Record<string, Migration>> = {
-    "0001-initial": m0001,
-    "0002-reconciler": m0002,
-    "0003-sign-in-attempts": m0003,
-    "0004-lookup-state": m0004,
-    "0005-archive-reason": m0005,
-    "0006-auto-created-sources": m0006,
-    "0007-event-coordinates": m0007,
-    "0008-order-items": m0008,
-    "0009-idle-source-state": m0009,
-    "0010-order-lifecycle": m0010,
-    "0011-setting-overrides": m0011,
-  };
-
   it("keeps the owner password as the admin password and the open sessions as admin", async () => {
     const dataDir = mkdtempSync(path.join(tmpdir(), "open-parcels-upgrade-"));
     const { db } = openDatabase(path.join(dataDir, "openparcels.db"));
-    const raw = db as unknown as Kysely<unknown>;
     const cookieValue = "an-old-session-cookie-value";
     try {
-      const old = new Migrator({ db, provider: { getMigrations: () => Promise.resolve(BEFORE) } });
-      expect((await old.migrateToLatest()).error).toBeUndefined();
+      await migrateBefore(db, "0012");
       const hash = await hashPassword(OWNER_PASSWORD);
       await sql`insert into owner (id, password_hash, created_at, updated_at)
-        values (1, ${hash}, 't', 't')`.execute(raw);
+        values (1, ${hash}, 't', 't')`.execute(db);
       await sql`insert into sessions (id_hash, csrf_token, created_at, expires_at, last_seen_at, user_agent)
         values (${sha256Hex(cookieValue)}, 'old-csrf', '2026-11-18T00:00:00.000Z',
-          '2026-12-18T00:00:00.000Z', '2026-11-18T12:00:00.000Z', null)`.execute(raw);
+          '2026-12-18T00:00:00.000Z', '2026-11-18T12:00:00.000Z', null)`.execute(db);
     } finally {
       await db.destroy();
     }

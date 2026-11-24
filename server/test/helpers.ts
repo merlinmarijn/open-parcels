@@ -7,11 +7,32 @@ import { buildApp, type App, type BuildAppOptions } from "../src/api/app.js";
 import type { Clock } from "../src/clock.js";
 import { loadConfig } from "../src/config.js";
 import { SecretBox } from "../src/crypto/secrets.js";
-import { migrateToLatest, openDatabase } from "../src/db/database.js";
+import { Migrator } from "kysely/migration";
+import type { Kysely } from "kysely";
+import { MIGRATIONS, migrateToLatest, openDatabase } from "../src/db/database.js";
+import type { Database } from "../src/db/schema.js";
 import type { RegisteredProvider } from "../src/engine/registry.js";
 import type { MailboxClientFactory, MailInterpreter } from "../src/mail/types.js";
 import type { FetchLike } from "../src/provider/http.js";
 import { createServices, repairOnStart, type Services } from "../src/services.js";
+
+/**
+ * Migrates a fresh database up to, not including, the first migration whose name sorts at or after
+ * `before` (e.g. "0014"): the state a migration test starts from.
+ */
+export async function migrateBefore(db: Kysely<Database>, before: string): Promise<void> {
+  const migrations = Object.fromEntries(
+    Object.entries(MIGRATIONS).filter(([name]) => name < before),
+  );
+  const migrator = new Migrator({
+    db,
+    provider: { getMigrations: () => Promise.resolve(migrations) },
+  });
+  const { error } = await migrator.migrateToLatest();
+  if (error !== undefined) {
+    throw new Error(`Migrating to before ${before} failed.`, { cause: error });
+  }
+}
 
 /** A clock tests can move forward by hand. */
 export class FakeClock implements Clock {

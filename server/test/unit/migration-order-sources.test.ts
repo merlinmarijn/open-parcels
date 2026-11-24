@@ -1,10 +1,10 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { sql, type Kysely } from "kysely";
-import { Migrator } from "kysely/migration";
+import { sql } from "kysely";
 import { afterEach, describe, expect, it } from "vitest";
-import { MIGRATIONS, migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateBefore } from "../helpers.js";
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -18,44 +18,31 @@ describe("migration 0015-order-sources", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "open-parcels-migrate-"));
     dirs.push(dir);
     const { db } = openDatabase(path.join(dir, "db.sqlite"));
-    const raw = db as unknown as Kysely<unknown>;
     try {
-      const before = Object.fromEntries(
-        Object.entries(MIGRATIONS).filter(([name]) => name < "0015"),
-      );
-      const old = new Migrator({ db, provider: { getMigrations: () => Promise.resolve(before) } });
-      expect((await old.migrateToLatest()).error).toBeUndefined();
+      await migrateBefore(db, "0015");
       await sql`
         insert into sources (id, plugin, kind, label, config, state, created_at, updated_at)
         values ('s-shop', 'demo_shop', 'shop', 'Demo shop', '{}', 'disabled', 't', 't'),
                ('s-track', 'dhl', 'tracking', 'DHL tracking', '{}', 'ok', 't', 't')
-      `.execute(raw);
+      `.execute(db);
       await sql`
         insert into orders (id, shop, order_number, created_at, updated_at)
         values ('o-parcel', 'elsewhere', 'A-1', 't', 't'),
                ('o-named', 'Demo shop', 'A-2', 't', 't'),
                ('o-none', 'unknown shop', 'A-3', 't', 't')
-      `.execute(raw);
+      `.execute(db);
       await sql`
         insert into parcels (id, carrier, barcode, direction, status, delivered, pickup,
                              order_id, first_seen_at, last_seen_at, updated_at)
         values ('p-1', 'dhl', 'X1', 'incoming', 'in_transit', 0, 0, 'o-parcel', 't', 't', 't')
-      `.execute(raw);
+      `.execute(db);
       await sql`
         insert into parcel_sources (parcel_id, source_id, role, last_seen_at)
         values ('p-1', 's-track', 'primary', 't')
-      `.execute(raw);
+      `.execute(db);
 
-      expect(await migrateToLatest(db)).toEqual([
-        "0015-order-sources",
-        "0016-manual-at",
-        "0017-join-indexes",
-        "0018-returns",
-        "0019-glossary-names",
-        "0020-ha-import-markers",
-        "0021-order-totals",
-        "0022-live-state-connection",
-      ]);
+      // Later migrations follow; this test pins only its own.
+      expect((await migrateToLatest(db))[0]).toBe("0015-order-sources");
 
       const links = await db
         .selectFrom("order_connections")

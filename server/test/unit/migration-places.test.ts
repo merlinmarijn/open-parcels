@@ -1,10 +1,10 @@
 import { mkdtempSync, rmSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { sql, type Kysely } from "kysely";
-import { Migrator } from "kysely/migration";
+import { sql } from "kysely";
 import { afterEach, describe, expect, it } from "vitest";
-import { MIGRATIONS, migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateToLatest, openDatabase } from "../../src/db/database.js";
+import { migrateBefore } from "../helpers.js";
 
 const dirs: string[] = [];
 afterEach(() => {
@@ -18,31 +18,17 @@ describe("migration 0014-place-candidates", () => {
     const dir = mkdtempSync(path.join(tmpdir(), "open-parcels-migrate-"));
     dirs.push(dir);
     const { db } = openDatabase(path.join(dir, "db.sqlite"));
-    const raw = db as unknown as Kysely<unknown>;
     try {
-      const before = Object.fromEntries(
-        Object.entries(MIGRATIONS).filter(([name]) => name < "0014"),
-      );
-      const old = new Migrator({ db, provider: { getMigrations: () => Promise.resolve(before) } });
-      expect((await old.migrateToLatest()).error).toBeUndefined();
+      await migrateBefore(db, "0014");
       await sql`
         insert into places (key, latitude, longitude, precision, resolved_at, missed_at)
         values ('hamburg', 53.55, 10.0, 'area', 't', null),
                ('greven', null, null, null, null, 't'),
                ('mayong town', null, null, null, null, 't')
-      `.execute(raw);
+      `.execute(db);
 
-      expect(await migrateToLatest(db)).toEqual([
-        "0014-place-candidates",
-        "0015-order-sources",
-        "0016-manual-at",
-        "0017-join-indexes",
-        "0018-returns",
-        "0019-glossary-names",
-        "0020-ha-import-markers",
-        "0021-order-totals",
-        "0022-live-state-connection",
-      ]);
+      // Later migrations follow; this test pins only its own.
+      expect((await migrateToLatest(db))[0]).toBe("0014-place-candidates");
 
       expect(await db.selectFrom("places").selectAll().execute()).toEqual([]);
       await db
