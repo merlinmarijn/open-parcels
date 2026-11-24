@@ -1,5 +1,5 @@
 import { MapPin } from "lucide-react";
-import type { ReactNode } from "react";
+import { useMemo, type ReactNode } from "react";
 import { Marker, Popup } from "react-leaflet";
 import type { ParcelDetail } from "../api/types";
 import { formatDateTime } from "../lib/format";
@@ -55,27 +55,36 @@ function stopsOf(parcel: ParcelDetail): Stop[] {
  */
 export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const { home } = useHome();
-  // The React Compiler memoises these, so the animated lines only redraw when points change.
-  const stops = stopsOf(parcel);
+  // Derived once per change of the parcel or home, so the animated lines are not removed and
+  // redrawn on every refetch (OP-149).
+  const route = useMemo(() => {
+    const stops = stopsOf(parcel);
+    // Where the parcel is now comes from the server; a courier is one of its answers.
+    const location = parcel.location;
+    const courier: LatLng | null =
+      location?.source === "courier" ? [location.latitude, location.longitude] : null;
+    const travelled: LatLng[] = [
+      ...stops.map((stop) => stop.point),
+      ...(courier === null ? [] : [courier]),
+    ];
+    const current = travelled.at(-1) ?? null;
+    const homePoint: LatLng | null = home === null ? null : [home.point[0], home.point[1]];
+    return {
+      stops,
+      courier,
+      homePoint,
+      current,
+      reachedPath: travelled.length > 1 ? generateCurvedPath(travelled) : null,
+      // The way still ahead, to the home location, while the parcel is not delivered.
+      aheadPath:
+        !parcel.delivered && current !== null && homePoint !== null
+          ? generateCurvedPath([current, homePoint])
+          : null,
+      bounds: [...travelled, ...(homePoint === null ? [] : [homePoint])],
+    };
+  }, [parcel, home]);
+  const { stops, courier, homePoint, current, reachedPath, aheadPath, bounds } = route;
   const live = parcel.live;
-  // Where the parcel is now comes from the server; a courier is one of its answers.
-  const location = parcel.location;
-  const courier: LatLng | null =
-    location?.source === "courier" ? [location.latitude, location.longitude] : null;
-  const travelled: LatLng[] = [
-    ...stops.map((stop) => stop.point),
-    ...(courier === null ? [] : [courier]),
-  ];
-  const current = travelled.at(-1) ?? null;
-  const homePoint: LatLng | null = home === null ? null : [home.point[0], home.point[1]];
-
-  const reachedPath = travelled.length > 1 ? generateCurvedPath(travelled) : null;
-  // The way still ahead, to the home location, while the parcel is not delivered.
-  const aheadPath =
-    !parcel.delivered && current !== null && homePoint !== null
-      ? generateCurvedPath([current, homePoint])
-      : null;
-  const bounds: LatLng[] = [...travelled, ...(homePoint === null ? [] : [homePoint])];
 
   if (current === null) {
     return (
