@@ -47,7 +47,7 @@ const steamReceipt = () =>
     "Content-Type: text/html; charset=utf-8",
     "",
     "<html><body><p>Example Space Game</p><p>Subtotal (excl. VAT): 11,76€</p>",
-    "<p>Invoice:</p><p>712345678901234567</p></body></html>",
+    "<p>Total: 13,99€</p><p>Invoice:</p><p>712345678901234567</p></body></html>",
     "--b1--",
   ]);
 
@@ -62,6 +62,8 @@ const paypalReceipt = (reference: string) =>
     "You have sent a payment of 13,99 EUR to Example Merchant.",
     "",
     `Invoice ID: ${reference}`,
+    "",
+    "Total: 14,99 EUR",
   ]);
 
 const shopify = (name: string) =>
@@ -102,6 +104,7 @@ describe("order emails (interpreter)", () => {
         status: "delivered",
         at: "2026-11-20T10:00:00.000Z",
         items: [],
+        total: null,
         payment: false,
       },
     ]);
@@ -295,5 +298,37 @@ describe("order emails (stored orders)", () => {
     expect(all[0]?.parcels.map((parcel) => parcel.tracking_number)).toContain(
       "00340434123456789012",
     );
+  });
+});
+
+const boykisser = () =>
+  email([
+    "From: Boykisser <noreply@boykisser.gg>",
+    "To: someone@example.invalid",
+    "Subject: Your order is confirmed",
+    "Date: Mon, 16 Nov 2026 10:00:00 +0000",
+    "Content-Type: text/plain; charset=utf-8",
+    "",
+    "Order #A1B2C3",
+    "Total $21.50 USD",
+  ]);
+
+describe("order totals", () => {
+  it("names Boykisser.gg and keeps the total its email states", async () => {
+    const [report] = interpretOrders(await boykisser());
+    expect(report?.order).toEqual({ shop: "Boykisser.gg", orderNumber: "A1B2C3" });
+    expect(report?.total).toEqual({ amount: 21.5, currency: "USD" });
+    await receive(await boykisser());
+    expect(await orders()).toMatchObject([
+      { shop: "Boykisser.gg", total: { amount: 21.5, currency: "USD", partial: false } },
+    ]);
+  });
+
+  it("lets the shop's own total win over a payment receipt's, in either order", async () => {
+    const paypal = await paypalReceipt("712345678901234567");
+    await receive(paypal);
+    expect((await orders())[0]?.total).toEqual({ amount: 14.99, currency: "EUR", partial: false });
+    await receive(await steamReceipt(), paypal);
+    expect((await orders())[0]?.total).toEqual({ amount: 13.99, currency: "EUR", partial: false });
   });
 });

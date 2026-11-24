@@ -1,6 +1,6 @@
-import type { MailParseResult, Rules } from "open-parcels-rules";
+import type { EmailParseResult, Rules } from "open-parcels-rules";
 import { returnSnapshot, type ReturnSnapshot } from "../provider/snapshot.js";
-import { carrierFor, orderOf, parseEmail, senderDomain, senderName } from "./interpret.js";
+import { carrierFor, orderOf, emailResults, senderDomain, senderName } from "./interpret.js";
 import {
   mailLines,
   mentionsReturn,
@@ -18,7 +18,7 @@ import type { MailInput, MailReturnInterpreter } from "./types.js";
 
 function tracking(
   rules: Rules,
-  result: MailParseResult,
+  result: EmailParseResult,
   domain: string | undefined,
 ): { carrier: string; trackingNumber: string } | null {
   for (const trackingNumber of result.trackingNumbers) {
@@ -34,7 +34,7 @@ function tracking(
  */
 export function createReturnInterpreter(rules: Rules, timeZone: string): MailReturnInterpreter {
   return (mail: MailInput): readonly ReturnSnapshot[] => {
-    const results = parseEmail(rules, mail, timeZone);
+    const results = emailResults(rules, mail, timeZone);
     const domain = senderDomain(mail.from);
     const reports: ReturnSnapshot[] = [];
     for (const result of results) {

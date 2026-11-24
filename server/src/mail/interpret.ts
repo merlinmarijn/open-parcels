@@ -2,9 +2,9 @@ import { createHash } from "node:crypto";
 import {
   detectTrackingNumbers,
   mapStatus,
-  parseMail,
-  type MailEvent,
-  type MailParseResult,
+  parseEmail,
+  type EmailEvent,
+  type EmailParseResult,
   type Rules,
 } from "open-parcels-rules";
 import {
@@ -56,9 +56,9 @@ export function senderName(from: string): string | null {
 }
 
 /** The rules' results for an email, in the server's time zone. */
-export function parseEmail(rules: Rules, mail: MailInput, timeZone: string): MailParseResult[] {
+export function emailResults(rules: Rules, mail: MailInput, timeZone: string): EmailParseResult[] {
   return [
-    ...parseMail(rules, {
+    ...parseEmail(rules, {
       from: mail.from,
       subject: mail.subject,
       ...(mail.text === null ? {} : { text: mail.text }),
@@ -74,7 +74,7 @@ export function parseEmail(rules: Rules, mail: MailInput, timeZone: string): Mai
  * update with the order number in one result and the carrier's tracking number in another.
  */
 function emailOrder(
-  results: readonly MailParseResult[],
+  results: readonly EmailParseResult[],
   from: string,
 ): { shop: string; orderNumber: string; placedAt: null } | null {
   for (const result of results) {
@@ -93,7 +93,7 @@ function emailOrder(
 /** The carrier of a tracking number in a mail: the rule's, else the best detected match. */
 export function carrierFor(
   rules: Rules,
-  result: MailParseResult,
+  result: EmailParseResult,
   trackingNumber: string,
   domain: string | undefined,
 ): string | null {
@@ -154,7 +154,7 @@ export function subjectAsStatus(subject: string, carriesPickupCode: boolean): st
  */
 export function createMailInterpreter(rules: Rules, timeZone: string): MailInterpreter {
   return (mail: MailInput): readonly ParcelSnapshot[] => {
-    const results = parseEmail(rules, mail, timeZone);
+    const results = emailResults(rules, mail, timeZone);
     const domain = senderDomain(mail.from);
     const at = (mail.date ?? new Date()).toISOString();
     const id = mailId(mail);
@@ -204,7 +204,7 @@ export function createMailInterpreter(rules: Rules, timeZone: string): MailInter
 }
 
 /** What an order email's event says, in the order's status words; null for other events. */
-const ORDER_EVENTS: Partial<Record<MailEvent, ReportedOrderStatus>> = {
+const ORDER_EVENTS: Partial<Record<EmailEvent, ReportedOrderStatus>> = {
   order_placed: "ordered",
   order_confirmed: "ordered",
   order_shipped: "shipped",
@@ -215,22 +215,27 @@ const ORDER_EVENTS: Partial<Record<MailEvent, ReportedOrderStatus>> = {
 /**
  * Turns order emails (the shared rules' `order` kind) into order reports: confirmations,
  * shipping and delivery notices without a tracking number, cancellations, and payment receipts
- * that quote the shop's reference. An email needs an order number; one without is skipped.
+ * that quote the shop's reference. A shipping email that states the order's total reports it
+ * too (its parcel comes from the parcel interpreter). An email needs an order number; one
+ * without is skipped.
  */
 export function createOrderInterpreter(rules: Rules, timeZone: string): MailOrderInterpreter {
   return (mail: MailInput): readonly OrderSnapshot[] => {
     const domain = senderDomain(mail.from);
     const name = senderName(mail.from);
     const reports: OrderSnapshot[] = [];
-    for (const result of parseEmail(rules, mail, timeZone)) {
-      if (result.kind !== "order") continue;
+    for (const result of emailResults(rules, mail, timeZone)) {
+      const ordered = result.kind === "order";
+      if (!ordered && (result.kind !== "parcel" || result.total === undefined)) continue;
       const order = orderOf(result.ruleId, result.orderNumbers[0], domain, name);
       if (order === null) continue;
       reports.push({
         order: { shop: order.shop, orderNumber: order.orderNumber },
-        status: result.event === undefined ? null : (ORDER_EVENTS[result.event] ?? null),
+        status:
+          !ordered || result.event === undefined ? null : (ORDER_EVENTS[result.event] ?? null),
         at: mail.date?.toISOString() ?? null,
-        items: result.items ?? [],
+        items: ordered ? (result.items ?? []) : [],
+        total: result.total ?? null,
         payment: PAYMENT_SHOPS.has(order.shop),
       });
     }

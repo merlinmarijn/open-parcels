@@ -29,7 +29,7 @@ export type {
   ArrivalOptions,
   ArrivalWindow,
   CarrierInfo,
-  MailEvent,
+  EmailEvent,
   MappedStatus,
   RawStatus,
   ResolvedStatus,

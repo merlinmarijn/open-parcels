@@ -139,6 +139,8 @@ export interface OrderSnapshot {
   readonly at: string | null;
   /** Item titles, added to the order's lines where they are new. */
   readonly items: readonly string[];
+  /** What the whole order costs, as the email states it. */
+  readonly total: { readonly amount: number; readonly currency: string } | null;
   /**
    * A payment service's receipt quoting the shop's reference: the shop is not known, so the
    * report joins the order with this number at whichever shop has it.

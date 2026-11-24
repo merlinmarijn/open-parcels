@@ -89,6 +89,10 @@ export interface OrderTable {
   deleted_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
   /** Last day of the shop's return window (`YYYY-MM-DD`), when it lists one. See migration 0018. */
   return_until: ColumnType<string | null, string | null | undefined>;
+  /** The total an email stated, and who stated it (`shop` wins over `payment`). See 0021. */
+  total_amount: ColumnType<number | null, number | null | undefined>;
+  total_currency: ColumnType<string | null, string | null | undefined>;
+  total_source: ColumnType<"shop" | "payment" | null, "shop" | "payment" | null | undefined>;
 }
 
 export interface ParcelTable {

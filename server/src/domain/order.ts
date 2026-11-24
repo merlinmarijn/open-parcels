@@ -30,12 +30,16 @@ export function shopFromDomain(value: string | null | undefined): string | null 
  */
 const MULTI_WORD_SHOPS = ["instant-gaming", "netto-online"] as const;
 
+/** Shops known by another name than their rule id's word. */
+const SHOP_NAMES: Readonly<Record<string, string>> = { boykisser: "Boykisser.gg" };
+
 /** Shop id from a rule id such as `parcel-amazon`, `order-netto-online` or `return-steam`. */
 export function shopOfRule(ruleId: string): string | null {
   const rest = /^(?:parcel|order|return|dunning)-([a-z0-9-]+)$/.exec(ruleId)?.[1];
   if (rest === undefined) return null;
   const multi = MULTI_WORD_SHOPS.find((shop) => rest === shop || rest.startsWith(`${shop}-`));
-  return multi ?? rest.split("-")[0] ?? null;
+  const word = multi ?? rest.split("-")[0];
+  return word === undefined ? null : (SHOP_NAMES[word] ?? word);
 }
 
 /**

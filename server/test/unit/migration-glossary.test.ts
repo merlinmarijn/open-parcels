@@ -47,7 +47,11 @@ describe("migration 0019-glossary-names", () => {
         insert into outbox (type, payload, created_at) values ('source.added', '{}', 't')
       `.execute(raw);
 
-      expect(await migrateToLatest(db)).toEqual(["0019-glossary-names", "0020-ha-import-markers"]);
+      expect(await migrateToLatest(db)).toEqual([
+        "0019-glossary-names",
+        "0020-ha-import-markers",
+        "0021-order-totals",
+      ]);
 
       expect(
         await db

@@ -1,9 +1,9 @@
 import type { Kysely } from "kysely";
 import {
   findCarrier,
-  ignoredMail,
+  ignoredEmail,
   isBoilerplateItemTitle,
-  plausibleMailTrackingNumber,
+  plausibleEmailTrackingNumber,
   type Rules,
 } from "open-parcels-rules";
 import type { Clock } from "../clock.js";
@@ -33,12 +33,12 @@ interface Candidate {
 function ignoredSubject(rules: Rules, candidate: Candidate): boolean {
   const domains = findCarrier(rules, candidate.carrier)?.domains ?? [];
   return candidate.subjects.some((subject) =>
-    domains.some((domain) => ignoredMail(rules, `noreply@${domain}`, subject)),
+    domains.some((domain) => ignoredEmail(rules, `noreply@${domain}`, subject)),
   );
 }
 
 export function cleanupReason(rules: Rules, candidate: Candidate): MailCleanupReason | null {
-  if (!plausibleMailTrackingNumber(rules, candidate.carrier, candidate.trackingNumber)) {
+  if (!plausibleEmailTrackingNumber(rules, candidate.carrier, candidate.trackingNumber)) {
     return "placeholder_or_pattern";
   }
   return ignoredSubject(rules, candidate) ? "ignored_mail" : null;

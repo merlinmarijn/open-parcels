@@ -40,6 +40,7 @@ describe("migration 0014-place-candidates", () => {
         "0018-returns",
         "0019-glossary-names",
         "0020-ha-import-markers",
+        "0021-order-totals",
       ]);
 
       expect(await db.selectFrom("places").selectAll().execute()).toEqual([]);

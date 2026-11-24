@@ -72,6 +72,24 @@ async function addItems(trx: Trx, orderId: string, titles: readonly string[]): P
   return added;
 }
 
+/**
+ * The total after a report: the shop's own stated total wins (its latest), a payment service's
+ * only fills the gap until the shop states one.
+ */
+function totalAfter(row: OrderRow | undefined, report: OrderSnapshot) {
+  const stored = {
+    total_amount: row?.total_amount ?? null,
+    total_currency: row?.total_currency ?? null,
+    total_source: row?.total_source ?? null,
+  };
+  if (report.total === null || (report.payment && stored.total_source === "shop")) return stored;
+  return {
+    total_amount: report.total.amount,
+    total_currency: report.total.currency,
+    total_source: report.payment ? ("payment" as const) : ("shop" as const),
+  };
+}
+
 /** The columns a report changes: the status moves on, the earliest report dates the order. */
 function changes(row: OrderRow | undefined, shop: string, report: OrderSnapshot) {
   const stored = asReportedOrderStatus(row?.status ?? null);
@@ -85,7 +103,7 @@ function changes(row: OrderRow | undefined, shop: string, report: OrderSnapshot)
     (placedAt === null || (report.status === "ordered" && report.at < placedAt))
       ? report.at
       : placedAt;
-  return { status, placed_at: dated };
+  return { status, placed_at: dated, ...totalAfter(row, report) };
 }
 
 async function fire(
@@ -117,12 +135,13 @@ async function applyOrder(
   if (row !== undefined && row.deleted_at !== null) return 0;
   const shop = row?.shop ?? report.order.shop;
   const next = changes(row, shop, report);
-  const id = row?.id ?? (await createOrder(trx, report.order, now, { placedAt: next.placed_at }));
-  if (row === undefined && next.status !== null) {
-    await trx.updateTable("orders").set({ status: next.status }).where("id", "=", id).execute();
+  const id = row?.id ?? (await createOrder(trx, report.order, now));
+  if (row === undefined) {
+    await trx.updateTable("orders").set(next).where("id", "=", id).execute();
   }
   const changed =
-    row !== undefined && (row.status !== next.status || row.placed_at !== next.placed_at);
+    row !== undefined &&
+    (Object.keys(next) as (keyof typeof next)[]).some((key) => row[key] !== next[key]);
   if (changed) {
     await trx
       .updateTable("orders")

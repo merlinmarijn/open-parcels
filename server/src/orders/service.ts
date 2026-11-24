@@ -78,7 +78,11 @@ function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Da
     archive_mode: row.archive_mode ?? "automatic",
     parcel_count: parcels.length,
     delivered_count: parcels.filter((parcel) => parcel.delivered).length,
-    total: orderTotal(items),
+    // A total an email stated is the order's; else the sum of its priced lines.
+    total:
+      row.total_amount !== null && row.total_currency !== null
+        ? { amount: row.total_amount, currency: row.total_currency, partial: false }
+        : orderTotal(items),
     items,
     return_until: row.return_until,
     returns,
