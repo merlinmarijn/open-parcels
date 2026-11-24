@@ -1,7 +1,8 @@
 node_modules
 dist
 coverage
-web/dist`nweb/src/api/generated.ts
+web/dist
+web/src/api/generated.ts
 package-lock.json
 .references
 .scratch
