@@ -31,9 +31,11 @@ npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc
 - **Build on NTFS (`G:\_TEMP\...`), never on the Btrfs drives** `D:`, `E:` or `F:` from Windows.
 - **npm 11 runs install scripts only for packages listed in `allowScripts`** in the root
   `package.json`. Add a package there deliberately, never blanket-allow.
-- **The repository's pre-commit hook rejects literal strings assigned to `password` or `secret`
-  keys, even in tests.** Build made-up test values from parts, as `server/test/helpers.ts` does.
-  Never bypass it with `--no-verify`.
+- **Install the pre-commit hook once per clone: `npm run hooks`** (points git at `tools/hooks`). It
+  rejects database, key and `.env` files and literal strings assigned to `password` or `secret`
+  keys, even in tests. Build made-up test values from parts, as `server/test/helpers.ts` does.
+  Personal patterns (names, local paths) go one regex per line into the untracked
+  `.git/info/pii-patterns`. Never bypass the hook with `--no-verify`.
 
 ## Rules that matter here
 
