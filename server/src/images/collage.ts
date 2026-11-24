@@ -1,11 +1,13 @@
 import { createHash } from "node:crypto";
-import { mkdir, readFile, writeFile } from "node:fs/promises";
+import { mkdir, readdir, readFile, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import sharp from "sharp";
 
 /** Width and height of a parcel picture, in pixels. */
 export const COLLAGE_SIZE = 256;
 const MAX_TILES = 9;
+/** Collages not rebuilt for this long are deleted by `prune()`; a parcel still shown builds anew. */
+const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;
 
 /** Square tiles: one picture alone, 2 to 4 in a 2×2 grid, 5 and more in 3×3. */
 export function gridFor(count: number): number {
@@ -32,7 +34,10 @@ function moreTile(size: number, more: number): Buffer {
  * or null when it cannot be had (it is then left out).
  */
 export class CollageMaker {
-  constructor(private readonly cacheDir: string) {}
+  constructor(
+    private readonly cacheDir: string,
+    private readonly now: () => number = Date.now,
+  ) {}
 
   async make(
     pictures: readonly string[],
@@ -44,7 +49,8 @@ export class CollageMaker {
     const cached = await readFile(file).catch(() => null);
     if (cached !== null) return cached;
 
-    const loaded = (await Promise.all(pictures.slice(0, MAX_TILES).map(load))).filter(
+    const wanted = pictures.slice(0, MAX_TILES);
+    const loaded = (await Promise.all(wanted.map(load))).filter(
       (bytes): bytes is Buffer => bytes !== null,
     );
     if (loaded.length === 0) return null;
@@ -91,8 +97,31 @@ export class CollageMaker {
       .composite(layers)
       .png()
       .toBuffer();
-    await mkdir(this.cacheDir, { recursive: true });
-    await writeFile(file, png);
+    // A picture that failed to load may load next time: only a complete collage is kept.
+    const complete = loaded.length === wanted.length && tiles.every((bytes) => bytes !== null);
+    if (complete) {
+      await mkdir(this.cacheDir, { recursive: true });
+      await writeFile(file, png);
+    }
     return png;
+  }
+
+  /** Deletes collages older than 30 days. Returns how many were removed. */
+  async prune(): Promise<number> {
+    let names: string[];
+    try {
+      names = await readdir(this.cacheDir);
+    } catch {
+      return 0;
+    }
+    let removed = 0;
+    for (const name of names.filter((entry) => entry.endsWith(".png"))) {
+      const file = path.join(this.cacheDir, name);
+      if (this.now() - (await stat(file)).mtimeMs > MAX_AGE_MS) {
+        await rm(file, { force: true });
+        removed += 1;
+      }
+    }
+    return removed;
   }
 }

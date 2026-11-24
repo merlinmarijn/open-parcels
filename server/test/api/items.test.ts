@@ -3,7 +3,10 @@ import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
 import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
 import { register } from "../../src/engine/registry.js";
-import { gridFor } from "../../src/images/collage.js";
+import { mkdtemp, readdir, rm, utimes } from "node:fs/promises";
+import { tmpdir } from "node:os";
+import path from "node:path";
+import { CollageMaker, gridFor } from "../../src/images/collage.js";
 import { createTestContext, signIn, type TestContext } from "../helpers.js";
 
 /* Pictures are made up on the spot; no network is used. */
@@ -130,5 +133,34 @@ describe("gridFor", () => {
     { count: 12, side: 3 },
   ])("puts $count pictures in a $side×$side grid", ({ count, side }) => {
     expect(gridFor(count)).toBe(side);
+  });
+});
+
+describe("CollageMaker", () => {
+  it("keeps only complete collages and prunes old ones (OP-029)", async () => {
+    const dir = await mkdtemp(path.join(tmpdir(), "op-collages-"));
+    try {
+      let now = Date.now();
+      const maker = new CollageMaker(dir, () => now);
+      const picture = await png();
+      let failing = true;
+      const load = (name: string) => Promise.resolve(failing && name === "b" ? null : picture);
+      // One picture failed: the collage is drawn but not kept, so the next call tries again.
+      expect(await maker.make(["a", "b"], load)).not.toBeNull();
+      expect(await readdir(dir)).toEqual([]);
+      failing = false;
+      await maker.make(["a", "b"], load);
+      const files = await readdir(dir);
+      expect(files).toHaveLength(1);
+
+      expect(await maker.prune()).toBe(0);
+      const old = new Date(now - 31 * 24 * 60 * 60 * 1000);
+      await utimes(path.join(dir, files[0] ?? ""), old, old);
+      now += 1;
+      expect(await maker.prune()).toBe(1);
+      expect(await readdir(dir)).toEqual([]);
+    } finally {
+      await rm(dir, { recursive: true, force: true });
+    }
   });
 });
