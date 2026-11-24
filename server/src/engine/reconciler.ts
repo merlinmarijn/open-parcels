@@ -267,9 +267,6 @@ export class Reconciler {
       .selectAll()
       .where("id", "=", connectionId)
       .executeTakeFirst();
-    if (connection === undefined) {
-      throw new Error(`Unknown connection ${connectionId}.`);
-    }
     const summary = {
       created: 0,
       updated: 0,
@@ -278,6 +275,10 @@ export class Reconciler {
       asked: asked.length,
       found: 0,
     };
+    if (connection === undefined) {
+      // Deleted by the user while this run was fetching: nothing of its answer is kept.
+      return summary;
+    }
     const unknown: UnknownValue[] = [];
     await this.db.transaction().execute(async (trx) => {
       const seen = new Set<string>();

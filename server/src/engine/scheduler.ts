@@ -127,6 +127,7 @@ export class Scheduler {
       .orderBy("next_run_at")
       .execute();
     const queue = due.filter((connection) => !this.#running.has(connection.id));
+    const count = queue.length;
     const workers = Array.from(
       { length: Math.min(this.deps.concurrency ?? DEFAULT_CONCURRENCY, queue.length) },
       async () => {
@@ -136,7 +137,7 @@ export class Scheduler {
       },
     );
     await Promise.all(workers);
-    return due.length;
+    return count;
   }
 
   async #runOne(connection: ConnectionRow): Promise<void> {

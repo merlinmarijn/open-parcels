@@ -415,6 +415,34 @@ describe("scheduler", () => {
     expect(await context.services.scheduler.runDue()).toBe(0);
   });
 
+  it("counts only the connections it ran, not those already running (OP-039)", async () => {
+    await addAccount();
+    const first = context.services.scheduler.runDue();
+    const second = context.services.scheduler.runDue();
+    expect(await Promise.all([first, second])).toEqual([1, 0]);
+  });
+
+  it("drops the answer of a connection deleted during its run instead of failing (OP-031)", async () => {
+    const id = await addAccount();
+    await context.services.connections.delete(id);
+    const answer = {
+      snapshots: [
+        snapshot({
+          carrier: "fakepost",
+          trackingNumber: "FP0031",
+          status: "in_transit",
+          rawStatus: "On its way",
+        }),
+      ],
+      complete: true,
+    };
+    await expect(context.services.reconciler.ingest(id, answer)).resolves.toMatchObject({
+      created: 0,
+      updated: 0,
+    });
+    expect(await context.services.db.selectFrom("parcels").select("id").execute()).toEqual([]);
+  });
+
   it("backs off on transient errors and honours Retry-After", async () => {
     const id = await addAccount();
     post.failWith = new TransientError("timeout");
