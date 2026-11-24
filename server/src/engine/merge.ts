@@ -206,10 +206,11 @@ export function mergeParcel(
   const statusAt = setStatus
     ? (snapshotAt ?? current?.statusAt ?? null)
     : (fallback?.at ?? current?.statusAt ?? null);
-  const windowFromSnapshot = snapshot.plannedFrom !== null && setStatus;
   // A carrier that reports its complete history (a story that starts over) also states the
-  // pickup as it is now, instead of keeping one an earlier state set.
+  // pickup and the expected delivery as they are now, instead of keeping ones an earlier state set:
+  // an estimate it withdrew after a missed delivery is gone (OP-022).
   const wholeTruth = setStatus && authority === "carrier" && snapshot.historyComplete === true;
+  const windowFromSnapshot = setStatus && (snapshot.plannedFrom !== null || wholeTruth);
   return {
     direction: current?.direction ?? snapshot.direction,
     status,

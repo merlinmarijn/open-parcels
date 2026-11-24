@@ -261,3 +261,36 @@ describe("the reconciler with a carrier and a mail source", () => {
     expect(await parcelRow()).toMatchObject({ status: "delivered", delivered: 1 });
   });
 });
+
+describe("an expected delivery the carrier withdrew", () => {
+  it("is cleared when the carrier states the whole truth, kept otherwise (OP-022)", () => {
+    const planned = mergeParcel(
+      null,
+      snapshot({
+        carrier: "hermes",
+        barcode: BARCODE,
+        status: "out_for_delivery",
+        rawStatus: "Out",
+        plannedFrom: "2026-11-18T09:00:00.000Z",
+        plannedTo: "2026-11-18T11:00:00.000Z",
+        history: [OUT_FOR_DELIVERY],
+      }),
+      "carrier",
+    );
+    const missed = (historyComplete: boolean) =>
+      mergeParcel(
+        planned,
+        snapshot({
+          carrier: "hermes",
+          barcode: BARCODE,
+          status: "in_transit",
+          rawStatus: "Missed",
+          historyComplete,
+          history: [OUT_FOR_DELIVERY, { ...OUT_FOR_DELIVERY, at: "2026-11-18T12:00:00.000Z" }],
+        }),
+        "carrier",
+      );
+    expect(missed(true)).toMatchObject({ plannedFrom: null, plannedTo: null });
+    expect(missed(false)).toMatchObject({ plannedFrom: "2026-11-18T09:00:00.000Z" });
+  });
+});
