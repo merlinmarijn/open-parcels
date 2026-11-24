@@ -48,7 +48,7 @@ export interface AuthPluginOptions {
   readonly trustedIngressAddress: string | undefined;
 }
 
-function bearerToken(request: FastifyRequest): string | undefined {
+function bearerToken(request: Pick<FastifyRequest, "headers">): string | undefined {
   const header = request.headers.authorization;
   if (header === undefined) {
     return undefined;
@@ -99,8 +99,11 @@ async function resolveAuth(
  * or expired, the token not revoked, reading still open. Long-lived responses (the event stream)
  * call it to end themselves when their access ends.
  */
+/** The parts of a request whose credentials a long-lived stream re-checks. */
+export type CredentialRequest = Pick<FastifyRequest, "auth" | "headers" | "cookies">;
+
 export function credentialCheck(
-  request: FastifyRequest,
+  request: CredentialRequest,
   store: AuthStore,
   access: AccessControl,
 ): () => Promise<boolean> {

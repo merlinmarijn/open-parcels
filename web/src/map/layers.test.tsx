@@ -67,11 +67,11 @@ afterEach(() => {
 describe("map layers", () => {
   it("starts on the server's default and remembers the user's pick", async () => {
     renderHarness();
-    expect(await screen.findByText("borders+none")).toBeTruthy();
+    expect(await screen.findByText("borders+none")).toBeInTheDocument();
     await userEvent.click(screen.getByRole("button", { name: "Map style" }));
     await userEvent.click(screen.getByRole("radio", { name: "Satellite" }));
     await userEvent.click(screen.getByRole("checkbox", { name: "Borders & labels" }));
-    expect(screen.getByText("satellite+labels")).toBeTruthy();
+    expect(screen.getByText("satellite+labels")).toBeInTheDocument();
     expect(JSON.parse(window.localStorage.getItem("open-parcels.map-style") ?? "{}")).toEqual({
       base: "satellite",
       overlay: "labels",
@@ -84,14 +84,14 @@ describe("map layers", () => {
       JSON.stringify({ base: "custom", overlay: "labels" }),
     );
     renderHarness();
-    expect(await screen.findByText("borders+labels")).toBeTruthy();
+    expect(await screen.findByText("borders+labels")).toBeInTheDocument();
   });
 
   it("closes the menu with Escape", async () => {
     renderHarness();
     await screen.findByText("borders+none");
     await userEvent.click(screen.getByRole("button", { name: "Map style" }));
-    expect(screen.getByRole("group", { name: "Map style" })).toBeTruthy();
+    expect(screen.getByRole("group", { name: "Map style" })).toBeInTheDocument();
     await userEvent.keyboard("{Escape}");
     expect(screen.queryByRole("group", { name: "Map style" })).toBeNull();
   });

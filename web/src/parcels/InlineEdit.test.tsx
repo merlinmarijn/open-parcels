@@ -70,6 +70,7 @@ describe("editing a parcel in place", () => {
     // The refused save goes through a server round trip; allow a slow machine some time.
     expect(await screen.findByText("Try again.", {}, { timeout: 5000 })).toBeInTheDocument();
     expect(screen.queryByText("Delivered", { selector: ".badge" })).toBeNull();
+    expect(screen.getByText("At pickup point", { selector: ".badge" })).toBeInTheDocument();
   });
 
   it("says why Mark delivered was refused and shows the server's state again (OP-148)", async () => {

@@ -4,18 +4,15 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { createQueryClient } from "../api/client";
-import type { Connection } from "../api/types";
-import { mockApi, type Recorded } from "../test/helpers";
+import { connection, mockApi, type Recorded } from "../test/helpers";
 import { SignInDialog } from "./SignInDialog";
 
 /* Every value here is made up. */
 
-const CONNECTION = {
+const CONNECTION = connection({
   id: "00000000-0000-4000-8000-0000000000s1",
   provider: "fakeverify",
-  kind: "account",
-  label: "Test account",
-} as unknown as Connection;
+});
 const BASE = `/api/v1/connections/${CONNECTION.id}/sign-in`;
 const ATTEMPT = "attempt-1";
 const step = (body: unknown) => ({

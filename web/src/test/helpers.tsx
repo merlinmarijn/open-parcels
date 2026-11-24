@@ -4,7 +4,7 @@ import { render, type RenderResult } from "@testing-library/react";
 import { vi } from "vitest";
 import { createQueryClient } from "../api/client";
 import { setCsrfToken } from "../api/fetcher";
-import type { Parcel } from "../api/types";
+import type { Connection, Parcel } from "../api/types";
 import { App } from "../App";
 import { createAppRouter } from "../router";
 
@@ -113,4 +113,22 @@ export function parcel(overrides: Partial<Parcel> = {}): Parcel {
     ...overrides,
   };
   return { ...base, display_name: overrides.display_name ?? base.label ?? base.tracking_number };
+}
+
+/** A made-up connection; every value is invented. */
+export function connection(overrides: Partial<Connection> = {}): Connection {
+  return {
+    id: "00000000-0000-4000-8000-0000000000c1",
+    provider: "fakepost",
+    kind: "account",
+    label: "Test account",
+    config: {},
+    has_secret: false,
+    state: "ok",
+    state_detail: null,
+    next_run_at: null,
+    last_run_at: null,
+    last_ok_at: null,
+    ...overrides,
+  };
 }

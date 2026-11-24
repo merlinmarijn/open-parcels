@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
+import { HostLimiter, ProviderHttp } from "../../src/provider/http.js";
 import { extractAddress, pastedRedirect, type SignInContext } from "../../src/provider/sign-in.js";
+import { FakeClock } from "../helpers.js";
 
 /* Every address here is made up. */
 const FINAL = "app.example://sign-in/done?code=c1&state=s1";
@@ -33,7 +35,18 @@ describe("pastedRedirect", () => {
       }),
     finish: (_context, state, pasted) => Promise.resolve(`${String(state)}:${pasted}`),
   });
-  const context = { config: {}, kind: "account", clock: {} } as unknown as SignInContext<unknown>;
+  const clock = new FakeClock();
+  const context: SignInContext<unknown> = {
+    config: {},
+    kind: "account",
+    clock,
+    http: new ProviderHttp(
+      { limits: {} },
+      new HostLimiter(clock, () => Promise.resolve()),
+      clock,
+      () => Promise.reject(new Error("This flow must not use the network.")),
+    ),
+  };
 
   it("tells the UI where the sign-in ends and how to resume it without a new password", async () => {
     const turn = await flow.start(context);

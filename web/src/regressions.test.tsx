@@ -95,9 +95,13 @@ describe("an ended session and a deleted parcel", () => {
     const user = userEvent.setup();
     renderApp(`/parcels/${ID}`);
     await user.click(await screen.findByRole("button", { name: "Delete" }));
-    await screen.findByRole("table", { name: "Parcels" }).catch(() => undefined);
+    // Back on the list, whose read follows the invalidation a stale detail read would come with.
+    await screen.findByRole("table");
     await waitFor(() => {
       expect(deleted).toBe(true);
+      expect(calls.some((call) => call.method === "GET" && call.path === "/api/v1/parcels")).toBe(
+        true,
+      );
     });
     const detailReads = calls.filter(
       (call) => call.method === "GET" && call.path === `/api/v1/parcels/${ID}`,

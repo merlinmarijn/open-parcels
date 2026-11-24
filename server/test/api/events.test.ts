@@ -1,8 +1,7 @@
 import type { AddressInfo } from "node:net";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import type { FastifyRequest } from "fastify";
 import type { App } from "../../src/api/app.js";
-import { credentialCheck } from "../../src/api/auth-plugin.js";
+import { credentialCheck, type CredentialRequest } from "../../src/api/auth-plugin.js";
 import { createTestContext, READER_PASSWORD, signIn, type TestContext } from "../helpers.js";
 
 let context: TestContext;
@@ -95,22 +94,22 @@ describe("SSE event stream", () => {
 
   it("knows when the stream's token is revoked or its session signed out", async () => {
     const tokenId = (await context.services.auth.findToken(token))?.id ?? "";
-    const byToken = {
-      auth: { kind: "token", tokenId, scopes: ["read"] },
+    const byToken: CredentialRequest = {
+      auth: { kind: "token", tokenId, role: "reader", scopes: ["read"] },
       headers: { authorization: `Bearer ${token}` },
       cookies: {},
-    } as unknown as FastifyRequest;
+    };
     const tokenAllowed = credentialCheck(byToken, context.services.auth, context.services.access);
     expect(await tokenAllowed()).toBe(true);
     await context.services.auth.deleteToken(tokenId);
     expect(await tokenAllowed()).toBe(false);
 
     const session = await context.services.auth.createSession(null, "admin");
-    const bySession = {
-      auth: { kind: "session", csrfToken: session.csrfToken, scopes: ["read"] },
+    const bySession: CredentialRequest = {
+      auth: { kind: "session", csrfToken: session.csrfToken, role: "admin", scopes: ["read"] },
       headers: {},
       cookies: { op_session: session.cookieValue },
-    } as unknown as FastifyRequest;
+    };
     const sessionAllowed = credentialCheck(
       bySession,
       context.services.auth,

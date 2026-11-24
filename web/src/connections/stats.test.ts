@@ -1,13 +1,21 @@
 import { describe, expect, it } from "vitest";
 import type { Parcel } from "../api/types";
+import { parcel as made } from "../test/helpers";
 import { statsByConnection } from "./ConnectionsPage";
 
 function parcel(connections: string[], delivered: boolean, archived = false): Parcel {
-  return {
-    connections: connections.map((connection_id) => ({ connection_id })),
+  return made({
+    connections: connections.map((connection_id) => ({
+      connection_id,
+      provider: "fakepost",
+      label: "Test",
+      kind: "account",
+      role: "primary",
+      last_seen_at: "2026-01-01T00:00:00Z",
+    })),
     delivered,
     archived_at: archived ? "2026-01-01T00:00:00Z" : null,
-  } as unknown as Parcel;
+  });
 }
 
 describe("parcels per connection", () => {

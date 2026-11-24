@@ -192,8 +192,12 @@ describe("orders page", () => {
 
 describe("archive explanation", () => {
   it("says why an order is or is not archived", () => {
-    expect(archiveExplanation(order())).toMatch(/once all its parcels are archived/);
-    expect(archiveExplanation(order({ archived: true }))).toMatch(/all its parcels are archived/);
+    expect(archiveExplanation(order())).toBe(
+      "Archived automatically once all its parcels are archived. Delivered parcels are archived after the retention period.",
+    );
+    expect(archiveExplanation(order({ archived: true }))).toBe(
+      "Archived automatically: all its parcels are archived.",
+    );
     expect(archiveExplanation(order({ archive_mode: "kept" }))).toMatch(/You restored/);
   });
 });
