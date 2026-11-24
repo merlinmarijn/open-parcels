@@ -41,6 +41,12 @@ const carrierSchema = z.object({
   name: z.string(),
   countries: z.array(z.string()),
   connection_kinds: z.array(z.enum(["account", "tracking", "shop"])),
+  fallback: z
+    .boolean()
+    .describe(
+      "A fallback tracking service, not a carrier: asked only about parcels no built-in carrier " +
+        "follows or finds.",
+    ),
   sign_in: z
     .string()
     .describe("Type of the default sign-in flow: none, credentials, api_key or interactive."),
@@ -118,6 +124,7 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         name: provider.info.name,
         countries: [...provider.info.countries],
         connection_kinds: [...provider.info.connectionKinds],
+        fallback: provider.info.fallback,
         sign_in: provider.info.signIn,
         sign_in_flows: provider.info.signInFlows.map(flowSummary),
         config_schema: z.toJSONSchema(provider.info.configSchema, { unrepresentable: "any" }),

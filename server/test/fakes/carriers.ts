@@ -288,3 +288,28 @@ export function scan(
 }
 
 export { snapshot };
+
+/** A fallback tracking service that answers with what its world lists, filed under its own id. */
+export function fakeFallback(id: string, world: FakeWorld): RegisteredProvider {
+  return register(
+    defineCarrier({
+      id,
+      name: `Fallback ${id}`,
+      countries: ["*"],
+      connectionKinds: ["tracking"],
+      fallback: true,
+      configSchema: z.looseObject({}),
+      secretSchema: z.null(),
+      signIn: { type: "none" },
+      http: { limits: { "*": { intervalMs: 1000, burst: 2 } } },
+      track(_context, trackingNumbers) {
+        world.trackCalls.push([...trackingNumbers]);
+        const listed = world.listing.filter((s) => trackingNumbers.includes(s.trackingNumber));
+        return Promise.resolve({
+          snapshots: listed.map((s) => ({ ...s, carrier: id })),
+          complete: false,
+        });
+      },
+    }),
+  );
+}

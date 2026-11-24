@@ -6904,6 +6904,10 @@
                           ]
                         }
                       },
+                      "fallback": {
+                        "type": "boolean",
+                        "description": "A fallback tracking service, not a carrier: asked only about parcels no built-in carrier follows or finds."
+                      },
                       "sign_in": {
                         "type": "string",
                         "description": "Type of the default sign-in flow: none, credentials, api_key or interactive."
@@ -6967,6 +6971,7 @@
                       "name",
                       "countries",
                       "connection_kinds",
+                      "fallback",
                       "sign_in",
                       "sign_in_flows",
                       "config_schema",

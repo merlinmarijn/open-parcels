@@ -3750,6 +3750,8 @@ export type GetApiV1Carriers200Item = {
   name: string;
   countries: string[];
   connection_kinds: GetApiV1Carriers200ItemConnectionKindsItem[];
+  /** A fallback tracking service, not a carrier: asked only about parcels no built-in carrier follows or finds. */
+  fallback: boolean;
   /** Type of the default sign-in flow: none, credentials, api_key or interactive. */
   sign_in: string;
   /** Every sign-in flow of the provider. Interactive ones run as sign-in attempts. */

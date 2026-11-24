@@ -52,7 +52,9 @@ describe("linking untracked parcels", () => {
         .where("provider", "=", provider.info.id)
         .where("kind", "=", "tracking")
         .executeTakeFirst();
-      const creatable = provider.canTrack && acceptsEmptyConfig(provider);
+      // A fallback service is the user's own choice: never made on its own.
+      const creatable =
+        provider.canTrack && !provider.info.fallback && acceptsEmptyConfig(provider);
       expect(connection !== undefined, provider.info.id).toBe(creatable);
       expect(result.unlinkedCarriers.has(provider.info.id), provider.info.id).toBe(!creatable);
     }

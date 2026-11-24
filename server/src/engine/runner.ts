@@ -22,6 +22,7 @@ import {
   type HttpPolicy,
 } from "../provider/http.js";
 import { redactText } from "../log/redact.js";
+import { fallbackProviders, linkFallbacks } from "./fallback.js";
 import { KeyedMutex } from "./locks.js";
 import type { FailureKind } from "./policy.js";
 import type { LiveTargetOfParcel, Reconciler } from "./reconciler.js";
@@ -103,6 +104,24 @@ function classify(error: unknown): {
   return { kind: "transient", detail: "The last update failed; retrying later." };
 }
 
+interface TrackedParcel {
+  readonly id: string;
+  readonly tracking_number: string;
+  readonly carrier: string;
+}
+
+/** A fallback service's answers, each filed under the carrier of the parcel it was asked about. */
+function underParcelCarrier(result: FetchResult, tracked: readonly TrackedParcel[]): FetchResult {
+  const carrierOf = new Map(tracked.map((parcel) => [parcel.tracking_number, parcel.carrier]));
+  return {
+    ...result,
+    snapshots: result.snapshots.map((found) => {
+      const carrier = carrierOf.get(found.trackingNumber);
+      return carrier === undefined ? found : { ...found, carrier };
+    }),
+  };
+}
+
 /** Runs one connection: calls its provider and hands the result to the reconciler. */
 export class ConnectionRunner {
   #reports: Promise<void> = Promise.resolve();
@@ -145,6 +164,10 @@ export class ConnectionRunner {
       // Let this run's unknown-value reports land before its result is applied.
       await this.#reports;
       const summary = await this.deps.reconciler.ingest(row.id, result, asked);
+      if (row.kind === "tracking") {
+        // What this run did not find may now be due for a fallback service.
+        await linkFallbacks(this.deps.db, this.deps.registry, this.deps.clock);
+      }
       if (asked.length > 0) {
         // Counts only: the codes themselves never go to the log.
         log.info(
@@ -220,19 +243,43 @@ export class ConnectionRunner {
     if (tracked.length === 0) {
       return { result: { snapshots: [], complete: false }, asked: [] };
     }
-    const result = await provider.track(
+    const answer = await provider.track(
       base,
       config,
       secret,
       tracked.map((parcel) => parcel.tracking_number),
     );
+    // A fallback service answers for parcels of other carriers: filed under the parcel's own.
+    const result = provider.info.fallback ? underParcelCarrier(answer, tracked) : answer;
+    // Once a parcel is handed to a fallback service, that service's answers say whether it is
+    // found; its carrier's "not found" no longer does.
+    const handedOver = provider.info.fallback ? new Set<string>() : await this.#handedOver(tracked);
     const really = result.asked === undefined ? undefined : new Set(result.asked);
     return {
       result,
       asked: tracked
         .filter((parcel) => really === undefined || really.has(parcel.tracking_number))
+        .filter((parcel) => !handedOver.has(parcel.id))
         .map((parcel) => parcel.id),
     };
+  }
+
+  /** Parcels among `tracked` that a fallback tracking service also follows. */
+  async #handedOver(tracked: readonly { id: string }[]): Promise<Set<string>> {
+    const providers = fallbackProviders(this.deps.registry);
+    if (tracked.length === 0 || providers.length === 0) return new Set();
+    const rows = await this.deps.db
+      .selectFrom("parcel_connections")
+      .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
+      .select("parcel_connections.parcel_id")
+      .where(
+        "parcel_connections.parcel_id",
+        "in",
+        tracked.map((parcel) => parcel.id),
+      )
+      .where("connections.provider", "in", providers)
+      .execute();
+    return new Set(rows.map((row) => row.parcel_id));
   }
 
   #prepare(
@@ -269,12 +316,12 @@ export class ConnectionRunner {
     return { base, config, secret };
   }
 
-  async #trackedParcels(connectionId: string): Promise<{ id: string; tracking_number: string }[]> {
+  async #trackedParcels(connectionId: string): Promise<TrackedParcel[]> {
     return (
       this.deps.db
         .selectFrom("parcel_connections")
         .innerJoin("parcels", "parcels.id", "parcel_connections.parcel_id")
-        .select(["parcels.id", "parcels.tracking_number"])
+        .select(["parcels.id", "parcels.tracking_number", "parcels.carrier"])
         .where("parcel_connections.connection_id", "=", connectionId)
         .where("parcels.delivered", "=", 0)
         // Marked delivered by hand: the owner closed it, so the carrier is not asked any more.

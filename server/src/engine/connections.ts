@@ -4,6 +4,7 @@ import type { SecretBox } from "../crypto/secrets.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema } from "../mail/types.js";
+import { linkFallbacks } from "./fallback.js";
 import {
   linkUntrackedParcels,
   trackingConnectionIn,
@@ -274,6 +275,11 @@ export class ConnectionService {
       trackingConnectionIn(this.db, this.registry, this.clock),
       options,
     );
+  }
+
+  /** Hands parcels no carrier follows or finds to the fallback services; see `fallback.ts`. */
+  async linkFallbacks(): Promise<number> {
+    return linkFallbacks(this.db, this.registry, this.clock);
   }
 
   /**

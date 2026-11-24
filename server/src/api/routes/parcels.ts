@@ -6,6 +6,7 @@ import { DuplicateParcelError } from "../../parcels/service.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
+import { fallbackCarrier } from "../../engine/fallback.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
 
 const idParams = z.object({ id: z.uuid() });
@@ -103,12 +104,17 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       const { tracking_number: trackingNumber, direction, label } = request.body;
-      const carrier = request.body.carrier ?? detectCarrier(trackingNumber, null);
+      // No built-in carrier recognises the number: a fallback tracking service, if added.
+      const carrier =
+        request.body.carrier ??
+        detectCarrier(trackingNumber, null) ??
+        (await fallbackCarrier(services.db, services.registry));
       if (carrier === undefined) {
         throw new ApiError(
           400,
           "carrier_not_detected",
-          "The carrier could not be detected from this tracking number. Choose one.",
+          "The carrier could not be detected from this tracking number. Choose one, or add a " +
+            "fallback tracking connection (Universal lookup, 17TRACK).",
         );
       }
       try {

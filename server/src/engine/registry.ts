@@ -61,6 +61,8 @@ export interface ProviderInfo {
   readonly imageHosts: readonly string[];
   /** Fixed time between runs, or null for the adaptive schedule (see `CarrierProvider`). */
   readonly pollIntervalMs: number | null;
+  /** A fallback tracking service, not a carrier (see `CarrierProvider`). */
+  readonly fallback: boolean;
 }
 
 /**
@@ -213,6 +215,7 @@ export function register<Config, Secret>(
       secretSchema: provider.secretSchema,
       imageHosts: provider.imageHosts ?? [],
       pollIntervalMs: provider.pollIntervalMs ?? null,
+      fallback: provider.fallback === true,
     },
     http: provider.http,
     canFetchAccount: provider.fetchAccount !== undefined,

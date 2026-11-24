@@ -50,8 +50,9 @@ export function trackingConnectionIn(
     if (existing !== undefined) {
       return existing.id;
     }
-    if (!acceptsEmptyConfig(provider)) {
-      // GLS, Evri and others need a postcode or a country: the user has to add the connection.
+    if (provider.info.fallback || !acceptsEmptyConfig(provider)) {
+      // GLS, Evri and others need a postcode or a country, and a fallback service is the user's
+      // own choice (a service address, an API key): the user has to add the connection.
       return undefined;
     }
     const id = crypto.randomUUID();

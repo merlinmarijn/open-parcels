@@ -8,6 +8,7 @@ import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "./snapshot.j
 export * from "./errors.js";
 export * from "./kit/html.js";
 export * from "./kit/json.js";
+export * from "./kit/recheck.js";
 export * from "./kit/time.js";
 export * from "./kit/track.js";
 export * from "./rules.js";
@@ -101,6 +102,12 @@ export interface CarrierProvider<Config = unknown, Secret = unknown> {
   /** ISO 3166-1 alpha-2 codes, or `*` for worldwide. */
   readonly countries: readonly string[];
   readonly connectionKinds: readonly ProviderConnectionKind[];
+  /**
+   * A fallback tracking service (universal lookup, 17TRACK) rather than a carrier: consulted only
+   * for parcels no built-in carrier can follow, or that their carrier has not found for a day.
+   * Its answers are filed under the parcel's own carrier. Never linked automatically to a carrier.
+   */
+  readonly fallback?: boolean;
   /**
    * Hosts the image proxy may fetch this carrier's item pictures and delivery photos from; a
    * leading dot also allows subdomains (`.media-example.com`). Unset: the proxy fetches nothing.

@@ -108,6 +108,8 @@ async function followUntracked(
   const linked = await connections.linkUntracked(
     viaConnection === undefined ? {} : { viaConnection },
   );
+  // What no carrier follows goes to a fallback tracking service, when the user added one.
+  const handedOver = await connections.linkFallbacks();
   for (const connectionId of linked.connections) {
     await connections.requestRun(connectionId);
   }
@@ -120,7 +122,7 @@ async function followUntracked(
       "Parcels wait for a tracking connection: these carriers need settings, add the connection by hand.",
     );
   }
-  return linked.parcels > 0;
+  return linked.parcels > 0 || handedOver > 0;
 }
 
 /** The inbox interpreters, all reading one copy of the rules. */
