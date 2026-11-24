@@ -4,6 +4,7 @@ import { demoCarrier } from "../../src/carriers/demo/index.js";
 import { register } from "../../src/engine/registry.js";
 import { Geocoder, GeocodeError, isStopPrecise, type Place } from "../../src/geo/geocoder.js";
 import {
+  KEYS_PER_QUERY,
   LOOKUPS_PER_RUN,
   MISS_RETRY_MS,
   PlaceResolver,
@@ -220,6 +221,32 @@ describe("PlaceResolver", () => {
     expect((await resolver.runOnce()).looked).toBe(2);
     expect((await resolver.runOnce()).looked).toBe(0);
     expect(new Set(search.asked).size).toBe(names.length);
+  });
+
+  it("leaves archived parcels alone (OP-027)", async () => {
+    search.answers.set("Testtown", [TOWN]);
+    const id = await track([scan("2026-11-18T07:00:00Z", "Sorted", "in_transit", "Testtown")]);
+    await context.services.db
+      .updateTable("parcels")
+      .set({ archived_at: context.clock.now().toISOString() })
+      .where("id", "=", id)
+      .execute();
+    expect(await resolver.runOnce()).toEqual({ looked: 0, events: 0, parcels: 0 });
+    expect(search.asked).toEqual([]);
+  });
+
+  it("reads the cached names in slices, every slice counting (OP-027)", async () => {
+    const names = Array.from({ length: KEYS_PER_QUERY + 10 }, (_, i) => `Nowhere ${String(i)}`);
+    const at = (i: number) => new Date(Date.parse("2026-11-10T00:00:00Z") + i * 60_000);
+    await track(names.map((name, i) => scan(at(i).toISOString(), "Hop", null, name)));
+    // Every name is a recent miss: nothing is due for a lookup.
+    const now = context.clock.now().toISOString();
+    await context.services.db
+      .insertInto("places")
+      .values(names.map((name) => ({ key: name.toLowerCase(), candidates: "[]", looked_at: now })))
+      .execute();
+    expect((await resolver.runOnce()).looked).toBe(0);
+    expect(search.asked).toEqual([]);
   });
 
   it("records nothing while the service is down, and asks again next run", async () => {

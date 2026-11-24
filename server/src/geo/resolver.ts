@@ -39,6 +39,8 @@ export const MISS_RETRY_MS = 30 * 24 * 60 * 60 * 1000;
 /** Lookups per run: the geocoder spaces them a second apart, so a run takes a few seconds. */
 export const LOOKUPS_PER_RUN = 5;
 const RUN_INTERVAL_MS = 60_000;
+/** Names per `places` query, well under SQLite's limit of bound values per statement. */
+export const KEYS_PER_QUERY = 500;
 /** Longer than any carrier's place text; anything longer is not a place name. */
 const MAX_TEXT = 200;
 
@@ -110,15 +112,23 @@ export class PlaceResolver {
   async #run(): Promise<ResolveSummary> {
     const { db } = this.deps;
     // Every scan of the parcels that have one to place or to judge again: the others are context.
+    // Archived parcels are done; their history is not re-read every run.
     const events = await db
       .selectFrom("parcel_events")
       .select(["id", "parcel_id", "location_text", "latitude", "longitude", "geocoded"])
       .where("parcel_id", "in", (eb) =>
         eb
           .selectFrom("parcel_events")
-          .select("parcel_id")
-          .where("location_text", "is not", null)
-          .where((inner) => inner.or([inner("latitude", "is", null), inner("geocoded", "=", 1)])),
+          .innerJoin("parcels", "parcels.id", "parcel_events.parcel_id")
+          .select("parcel_events.parcel_id")
+          .where("parcels.archived_at", "is", null)
+          .where("parcel_events.location_text", "is not", null)
+          .where((inner) =>
+            inner.or([
+              inner("parcel_events.latitude", "is", null),
+              inner("parcel_events.geocoded", "=", 1),
+            ]),
+          ),
       )
       .orderBy("parcel_id")
       .orderBy("at")
@@ -150,11 +160,13 @@ export class PlaceResolver {
     texts: ReadonlyMap<string, string>,
   ): Promise<{ looked: number; known: Map<string, readonly Candidate[]> }> {
     const { db, clock } = this.deps;
-    const rows = await db
-      .selectFrom("places")
-      .selectAll()
-      .where("key", "in", [...texts.keys()])
-      .execute();
+    // In slices: SQLite allows a limited number of bound values per statement.
+    const keys = [...texts.keys()];
+    const rows = [];
+    for (let start = 0; start < keys.length; start += KEYS_PER_QUERY) {
+      const slice = keys.slice(start, start + KEYS_PER_QUERY);
+      rows.push(...(await db.selectFrom("places").selectAll().where("key", "in", slice).execute()));
+    }
     const known = new Map<string, readonly Candidate[]>();
     const retryBefore = addMs(clock.now(), -MISS_RETRY_MS).toISOString();
     for (const row of rows) {
