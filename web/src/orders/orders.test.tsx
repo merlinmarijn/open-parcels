@@ -4,6 +4,7 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import type { Order } from "../api/types";
 import { mockApi, parcel, renderApp, SIGNED_IN } from "../test/helpers";
 import { archiveExplanation } from "./OrderDetailPage";
+import { formatTotal } from "./parts";
 
 const ORDER_ID = "00000000-0000-4000-8000-0000000000f1";
 const PARCEL_ID = "00000000-0000-4000-8000-0000000000a1";
@@ -23,7 +24,7 @@ function order(overrides: Partial<Order> = {}): Order {
     archive_mode: "automatic",
     parcel_count: 2,
     delivered_count: 1,
-    total: { amount: 39.9, currency: "EUR" },
+    total: { amount: 39.9, currency: "EUR", partial: false },
     return_until: null,
     returns: [],
     items: [
@@ -187,5 +188,12 @@ describe("archive explanation", () => {
     expect(archiveExplanation(order())).toMatch(/once all its parcels are archived/);
     expect(archiveExplanation(order({ archived: true }))).toMatch(/all its parcels are archived/);
     expect(archiveExplanation(order({ archive_mode: "kept" }))).toMatch(/You restored/);
+  });
+});
+
+describe("an order total", () => {
+  it("says 'from' when some lines carry no price (OP-042)", () => {
+    expect(formatTotal({ amount: 5, currency: "EUR", partial: true })).toMatch(/^from /);
+    expect(formatTotal({ amount: 5, currency: "EUR", partial: false })).not.toMatch(/^from /);
   });
 });

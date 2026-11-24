@@ -2420,6 +2420,7 @@ export const GetApiV1Orders200ItemArchiveMode = {
 export type GetApiV1Orders200ItemTotal = {
   amount: number;
   currency: string;
+  partial: boolean;
 } | null;
 
 export type GetApiV1Orders200ItemItemsItem = {
@@ -2730,6 +2731,7 @@ export const GetApiV1OrdersId200ArchiveMode = {
 export type GetApiV1OrdersId200Total = {
   amount: number;
   currency: string;
+  partial: boolean;
 } | null;
 
 export type GetApiV1OrdersId200ItemsItem = {
@@ -3057,6 +3059,7 @@ export const PatchApiV1OrdersId200ArchiveMode = {
 export type PatchApiV1OrdersId200Total = {
   amount: number;
   currency: string;
+  partial: boolean;
 } | null;
 
 export type PatchApiV1OrdersId200ItemsItem = {

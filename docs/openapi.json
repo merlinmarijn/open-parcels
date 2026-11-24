@@ -4547,11 +4547,15 @@
                           },
                           "currency": {
                             "type": "string"
+                          },
+                          "partial": {
+                            "type": "boolean"
                           }
                         },
                         "required": [
                           "amount",
-                          "currency"
+                          "currency",
+                          "partial"
                         ],
                         "additionalProperties": false
                       },
@@ -5085,11 +5089,15 @@
                         },
                         "currency": {
                           "type": "string"
+                        },
+                        "partial": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
                         "amount",
-                        "currency"
+                        "currency",
+                        "partial"
                       ],
                       "additionalProperties": false
                     },
@@ -5666,11 +5674,15 @@
                         },
                         "currency": {
                           "type": "string"
+                        },
+                        "partial": {
+                          "type": "boolean"
                         }
                       },
                       "required": [
                         "amount",
-                        "currency"
+                        "currency",
+                        "partial"
                       ],
                       "additionalProperties": false
                     },

@@ -71,13 +71,17 @@ export function OrderBadges({ order }: { readonly order: Order }): ReactNode {
 
 export function formatTotal(total: Order["total"]): string | null {
   if (total === null) return null;
+  let amount: string;
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency: total.currency }).format(
-      total.amount,
-    );
+    amount = new Intl.NumberFormat(undefined, {
+      style: "currency",
+      currency: total.currency,
+    }).format(total.amount);
   } catch {
-    return total.amount.toFixed(2);
+    amount = total.amount.toFixed(2);
   }
+  // Some lines have no price: the order cost at least this much.
+  return total.partial ? `from ${amount}` : amount;
 }
 
 /** "Placed 3 days ago · 2 items · 39,90 €" */

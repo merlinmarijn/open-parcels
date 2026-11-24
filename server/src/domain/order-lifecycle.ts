@@ -98,10 +98,13 @@ export function inView(view: OrderView, status: OrderStatus, archived: boolean):
   }
 }
 
-/** Sum of the lines that carry a price, when they all use one currency. */
+/**
+ * Sum of the lines that carry a price, when they all use one currency. `partial` says some lines
+ * have no price, so the order cost at least this much.
+ */
 export function orderTotal(
   items: readonly { price: number | null; quantity: number | null; currency: string | null }[],
-): { amount: number; currency: string } | null {
+): { amount: number; currency: string; partial: boolean } | null {
   const priced = items.filter((item) => item.price !== null && item.currency !== null);
   const currency = priced[0]?.currency ?? null;
   if (currency === null || priced.some((item) => item.currency !== currency)) return null;
@@ -109,7 +112,7 @@ export function orderTotal(
     (sum, item) => sum + Math.round((item.price ?? 0) * 100) * (item.quantity ?? 1),
     0,
   );
-  return { amount: cents / 100, currency };
+  return { amount: cents / 100, currency, partial: priced.length < items.length };
 }
 
 const isoDateTime = z.iso.datetime({ offset: true });
@@ -147,7 +150,14 @@ export const orderSchema = z.object({
   archive_mode: z.enum(ARCHIVE_MODES),
   parcel_count: z.number().int().nonnegative(),
   delivered_count: z.number().int().nonnegative(),
-  total: z.object({ amount: z.number(), currency: z.string() }).nullable(),
+  total: z
+    .object({
+      amount: z.number(),
+      currency: z.string(),
+      /** Some lines carry no price: the order cost at least `amount`. */
+      partial: z.boolean(),
+    })
+    .nullable(),
   items: z.array(orderItemSchema),
   /** Last day of the shop's return window, as it lists it; null when unknown. */
   return_until: z.iso.date().nullable(),

@@ -78,7 +78,13 @@ describe("order total", () => {
         { price: 0.1, quantity: null, currency: "EUR" },
         { price: null, quantity: 1, currency: null },
       ]),
-    ).toEqual({ amount: 20.08, currency: "EUR" });
+    ).toEqual({ amount: 20.08, currency: "EUR", partial: true });
+    // A line without a price makes the sum a lower bound, said so instead of hidden (OP-042).
+    expect(orderTotal([{ price: 5, quantity: 1, currency: "EUR" }])).toEqual({
+      amount: 5,
+      currency: "EUR",
+      partial: false,
+    });
   });
 
   it("gives none for mixed currencies or no prices", () => {
