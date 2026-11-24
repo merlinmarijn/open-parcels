@@ -1,0 +1,69 @@
+# Glossary
+
+One word for every concept, used the same way in code identifiers, API fields, database columns,
+events, the web UI, Home Assistant, the website and every document. Chosen by the owner on
+2026-11-24.
+
+- **Use only the term in the first column** in the app, the API and the docs.
+- The **alternatives** column is for communication only (owners, contributors, agents): it says what
+  people may call the thing, so you can map their words to ours. Never use an alternative in the
+  app, the API, code or docs.
+- Carrier-specific words (Packstation, PaketShop, shipment in a carrier's API) may appear only as
+  display labels or inside a provider's code that maps that carrier's own API.
+- When a new concept appears, add it here first, then use it. Reviews check new code and text
+  against this file.
+
+| Term | Meaning | Alternatives (communication only, never in app/API/docs) |
+| --- | --- | --- |
+| Provider | Installable package that talks to one carrier, shop or other service (e.g. the Amazon provider, the DHL provider) | plugin, plug-in, integration, connector, carrier module |
+| Connection | One configured use of a provider: a signed-in account, a keyless tracking setup or a mailbox (e.g. "Amazon.de · Bluscream", "DHL tracking") | source, account, link, instance |
+| Parcel | One physical box or envelope travelling under one tracking number | shipment, package, consignment, Sendung, Paket |
+| Tracking number | The code that identifies a parcel at its carrier (may contain letters) | barcode, tracking code, parcel number, tracking id, Sendungsnummer |
+| Carrier | The company that transports a parcel (DHL, Hermes, DPD) | courier company, delivery company, shipping company, Paketdienst, Zusteller (company) |
+| Courier | The person or vehicle doing the final delivery, shown on the live map | driver, delivery person, Fahrer, Zusteller (person) |
+| Shop | The business you ordered from (Amazon, Reichelt, AliExpress) | store, merchant, retailer, vendor, Händler, Laden |
+| Seller | The third-party merchant behind an order on a marketplace shop, when it differs from the shop | merchant, vendor, marketplace seller, Verkäufer |
+| Storefront | One country site of a shop (amazon.de, amazon.com) | marketplace, region, domain |
+| Event | One entry in a parcel's history ("handed to courier, Hamburg, 10:42"); a parcel's history is its list of events | scan, tracking event, status update, history entry, checkpoint |
+| Live event | A message on the server's event stream (SSE) that clients such as Home Assistant receive; say "live event" wherever it could be confused with a parcel event | stream event, outbox event, SSE message, notification |
+| Home Assistant event | An event on Home Assistant's bus fired by the integration (open_parcels_*); always named with "Home Assistant" | HA event, bus event |
+| Inbox | A connection to an e-mail account folder that open-parcels reads (IMAP) | mailbox, mail source, mail account, Postfach |
+| Email | One message in an inbox ("shipping email", "return email"); write "email" without a hyphen | mail, message, e-mail, Nachricht |
+| Action | A button or command a provider offers on a connection ("Import history", "Open account page") | button, command, operation, task |
+| Job | The long-running, resumable work an action starts, with progress and cancel | task, run, background task, process |
+| Built-in (tier) | A provider shipped inside the open-parcels image | core, bundled, internal, first-party |
+| Verified (tier) | A provider listed and reviewed in the open-parcels registry, pinned per version | official, reviewed, trusted |
+| Custom (tier) | A provider the user added from any git URL or archive | manual, private, user-added |
+| Community (tier) | A provider found by the `open-parcels-provider` topic search, not reviewed | public, third-party, unverified |
+| Expected delivery | When a parcel is expected to arrive: a day or a range (from–to). UI: "Expected delivery" where there is room, "ETA" in tight spaces (table columns, badges) | delivery window, eta, planned, forecast, arrival, Zustellzeitraum |
+| Pickup point | Umbrella for any place to collect or drop off a parcel (also the drop-off places of returns). Kinds: locker, parcel shop, post office. Carrier names (Packstation, PaketShop, Amazon Locker) appear only as display labels | service point, parcel shop, access point, collection point, drop-off point, Packstation, PaketShop, Filiale |
+| Locker | Kind of pickup point: an automated locker (DHL Packstation, Amazon Locker, InPost) | packstation, parcel locker, Automat |
+| Parcel shop | Kind of pickup point: a shop that accepts and hands out parcels (Hermes PaketShop, DPD Pickup shop) | PaketShop, partner shop, Annahmestelle |
+| Post office | Kind of pickup point run by the postal carrier (DHL/Deutsche Post Filiale) | Filiale, branch |
+| Item | One thing you bought: a line of an order or a thing in a parcel (name, picture, quantity, price) | product, article, line, order line, Artikel |
+| Contents | Free-text description of what is in a parcel, when a carrier or sender provides it (e.g. Hermes "description") | description, content, Inhalt |
+| Sign in | Authorising a connection at its carrier or shop ("Sign in to DHL", "Sign in again"); noun: sign-in | log in, login, authenticate, link account, connect |
+| Log in | Entering the web UI with the reader or admin password; noun: login | sign in, authenticate, unlock |
+| Archive | A parcel or order kept in the database but out of the default lists (automatic after delivery, or by hand) | done, hide, close, Archiv |
+| Removed | State of a parcel its carrier or shop no longer lists while it was not yet delivered | vanished, gone, dropped, lost |
+| Hidden | Not shown anywhere because every connection that reported it is disabled; comes back when one is enabled | suppressed, filtered, invisible |
+| Delete | Gone from the database for good (by hand, Clear data, Data page) | remove, erase, purge, Löschen |
+| Receiving / Sending | Direction of a parcel: receiving = coming to you, sending = going from you (returns create a sending parcel). UI: "Receiving", "Sending" | incoming, outgoing, inbound, outbound, sent |
+| Order | One purchase at a shop, with its items and parcels. Status words use the participle form (ordered, shipped, delivered, …) | purchase, Bestellung |
+| Return | Sending items back to a shop: return-by date, pickup points, cost, label, the sending parcel. Status words: requested, returning, returned, refunded, rejected, cancelled, expired | Rücksendung, Retoure, RMA |
+| Refund | Money a shop pays back, with or without a return. Status word: refunded | reimbursement, Erstattung, credit |
+
+## Renames this implies
+
+The first pass over all code, docs and websites brings everything in line (`tasks/TODO.md` §3).
+Renames that cross a public boundary keep the old name working for at least one release:
+
+| Old | New | Where | Compatibility |
+| --- | --- | --- | --- |
+| plugin, plug-in | provider | code, docs | internal only |
+| source | connection | API (`/api/v1/sources`), DB, UI, events (`source.*`), HA devices | old API paths and event names kept as aliases for one release; DB via migration; HA entities keep their ids |
+| barcode | tracking number (`tracking_number`) | API fields, DB, UI | API returns both fields for one release |
+| direction `incoming` / `outgoing` | `receiving` / `sending` | API, DB, UI, HA sensors | API accepts and returns both for one release; HA sensor entity ids kept |
+| mailbox, mail | inbox, email | UI, docs, code | internal and UI only |
+| eta, planned_from/to, forecast | expected delivery (UI), `expected_from` / `expected_to` (API) | API, UI, calendar | API returns both for one release |
+| history entry, scan | event | UI, docs | outbox/SSE messages become "live events" in docs and UI text |
