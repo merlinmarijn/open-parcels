@@ -47,6 +47,9 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
   and `delivered`.
 - `digital` on orders: orders of digital stores (Steam, GOG, Humble, Fanatical, Eneba, GAMIVO,
   Instant Gaming, MMOGA) are delivered when bought and never wait for a parcel.
+- Order totals as the emails state them (rules 2.0.0-dev.12): an order's `total` is the shop's
+  stated total, else a payment receipt's until the shop states one, else the sum of its priced
+  lines (migration `0021-order-totals`). Boykisser.gg order confirmations.
 - Live event `order.created` when an email starts an order; its data is the order like
   `order.updated` (without parcels).
 
