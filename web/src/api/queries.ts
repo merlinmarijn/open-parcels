@@ -182,7 +182,8 @@ export function useUpdateParcel(id: string) {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (body: PatchApiV1ParcelsIdBody) => patchApiV1ParcelsId(id, body),
-    // Edits show at once; a refused one puts the page back as it was.
+    // Edits show at once; a refused one reloads the parcel from the server. Restoring a snapshot
+    // instead would also undo another edit that succeeded while this one was pending.
     onMutate: async (body) => {
       await client.cancelQueries({ queryKey: keys.parcel(id) });
       const previous = client.getQueryData<ParcelDetail>(keys.parcel(id));
@@ -201,13 +202,8 @@ export function useUpdateParcel(id: string) {
               }),
         });
       }
-      return { previous };
     },
-    onError: (_error, _body, context) => {
-      if (context?.previous !== undefined) {
-        client.setQueryData(keys.parcel(id), context.previous);
-      }
-    },
+    onError: () => client.invalidateQueries({ queryKey: keys.parcel(id) }),
     onSuccess: (parcel) => {
       client.setQueryData(keys.parcel(id), parcel);
       return invalidateParcelViews(client);

@@ -72,6 +72,18 @@ describe("editing a parcel in place", () => {
     expect(screen.queryByText("Delivered", { selector: ".badge, .status-badge" })).toBeNull();
   });
 
+  it("says why Mark delivered was refused and shows the server's state again (OP-148)", async () => {
+    routes(() => ({ status: 500, body: { error: "internal", message: "Not now." } }));
+    const user = userEvent.setup();
+    renderApp(`/parcels/${ID}`);
+    await user.click(await screen.findByRole("button", { name: "Mark delivered" }));
+    expect(await screen.findByText("Not now.", {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(await screen.findByRole("button", { name: "Mark delivered" })).toHaveAttribute(
+      "aria-pressed",
+      "false",
+    );
+  });
+
   it("lets a keyboard user reach Cancel without saving the label (OP-155)", async () => {
     const calls = routes((body) => ({ body: { ...BASE, ...(body as object) } }));
     const user = userEvent.setup();

@@ -221,6 +221,7 @@ function Header({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
       <div className="detail-head-actions">
         <ParcelActions parcel={parcel} />
       </div>
+      <ErrorNotice error={update.error} />
     </div>
   );
 }
