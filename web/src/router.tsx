@@ -5,8 +5,6 @@ import {
   type RouterHistory,
 } from "@tanstack/react-router";
 import { lazy, type ReactNode } from "react";
-import { StatusPage } from "./admin/StatusPage";
-import { TokensPage } from "./admin/TokensPage";
 import { NotFoundPage } from "./layout/NotFoundPage";
 import { Shell } from "./layout/Shell";
 import { OrderDetailPage } from "./orders/OrderDetailPage";
@@ -14,12 +12,23 @@ import { OrdersPage } from "./orders/OrdersPage";
 import { ParcelDetailPage } from "./parcels/ParcelDetailPage";
 import { ParcelsPage } from "./parcels/ParcelsPage";
 import { ReturnsPage } from "./returns/ReturnsPage";
-import { SettingsPage } from "./settings/SettingsPage";
-import { ConnectionsPage } from "./connections/ConnectionsPage";
 
-// Leaflet and FullCalendar are large; load them only when their tab opens.
+// Leaflet and FullCalendar are large; load them only when their tab opens. The settings page shows
+// a map preview and the admin pages are rarely opened, so they stay out of the first load too.
 const MapPage = lazy(() => import("./map/MapPage"));
 const CalendarPage = lazy(() => import("./calendar/CalendarPage"));
+const SettingsPage = lazy(() =>
+  import("./settings/SettingsPage").then((m) => ({ default: m.SettingsPage })),
+);
+const ConnectionsPage = lazy(() =>
+  import("./connections/ConnectionsPage").then((m) => ({ default: m.ConnectionsPage })),
+);
+const TokensPage = lazy(() =>
+  import("./admin/TokensPage").then((m) => ({ default: m.TokensPage })),
+);
+const StatusPage = lazy(() =>
+  import("./admin/StatusPage").then((m) => ({ default: m.StatusPage })),
+);
 
 const rootRoute = createRootRoute({ component: Shell, notFoundComponent: NotFoundPage });
 

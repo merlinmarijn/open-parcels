@@ -12,27 +12,36 @@ import {
   Van,
 } from "lucide-react";
 import type { ReactNode } from "react";
-import { renderToString } from "react-dom/server";
+import { flushSync } from "react-dom";
+import { createRoot } from "react-dom/client";
 
 export type LatLng = [number, number];
 
 export function createDivIcon(iconNode: ReactNode, color: string, containerSize = 32): L.DivIcon {
-  const html = renderToString(
-    <div
-      style={{
-        color,
-        display: "flex",
-        alignItems: "center",
-        justifyContent: "center",
-        width: `${containerSize}px`,
-        height: `${containerSize}px`,
-        boxSizing: "border-box",
-        filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.6))",
-      }}
-    >
-      {iconNode}
-    </div>,
-  );
+  // Rendered once into a detached element: react-dom/server would add React's server renderer to
+  // the bundle just for these icons.
+  const container = document.createElement("div");
+  const root = createRoot(container);
+  flushSync(() => {
+    root.render(
+      <div
+        style={{
+          color,
+          display: "flex",
+          alignItems: "center",
+          justifyContent: "center",
+          width: `${containerSize}px`,
+          height: `${containerSize}px`,
+          boxSizing: "border-box",
+          filter: "drop-shadow(0px 2px 4px rgba(0,0,0,0.6))",
+        }}
+      >
+        {iconNode}
+      </div>,
+    );
+  });
+  const html = container.innerHTML;
+  root.unmount();
   return L.divIcon({
     html,
     className: "custom-leaflet-icon",
