@@ -14,7 +14,7 @@ const LIST = "GET cmacwabackend.azurewebsites.net/api/Awbs/AwbList";
 const TOKEN =
   "POST mycargus.b2clogin.com/myCargus.onmicrosoft.com/B2C_1A_ACCOUNTLINK_SUSI_WEB/oauth2/v2.0/token";
 const SECRET = { username: "user@example.com", password: madeUp("pass") };
-const CONFIG = { phone: "+40 700 000 000" };
+const CONFIG = { phone: "+40 000 000 000" };
 
 const trace = (events: { date: string; event: string }[], statusMessage = "In warehouse") => ({
   awbBarcode: AWB,
@@ -36,9 +36,9 @@ describe("Cargus request headers", () => {
   });
 
   it("hides the phone digits among noise in the portal key", () => {
-    const key = portalPhoneKey("+40700000000");
+    const key = portalPhoneKey("+40012345678");
     expect(key.length).toBeGreaterThan(60);
-    expect(key).not.toContain("40700000000");
+    expect(key).not.toContain("40012345678");
   });
 });
 

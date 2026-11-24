@@ -65,7 +65,7 @@ describe("redaction", () => {
   it("removes secret keys at any depth and scrubs text values", () => {
     const redacted = "[redacted]";
     const value = redactValue({
-      user: { password: OWNER_PASSWORD, note: "mail a@b.de" },
+      user: { password: OWNER_PASSWORD, note: "mail a@example.invalid" },
       list: [{ refresh_token: "x" }],
     });
     expect(value).toEqual({

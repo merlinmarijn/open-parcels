@@ -61,7 +61,7 @@ describe("private address detection", () => {
     for (const address of [
       "10.0.0.1",
       "127.0.0.1",
-      "192.168.2.11",
+      "192.168.0.10",
       "172.16.5.4",
       "169.254.1.1",
       "100.100.1.10",
@@ -116,10 +116,10 @@ describe("image proxy", () => {
 
   it("refuses hosts that resolve to private addresses, also after a redirect", async () => {
     const internal = proxy(() => Promise.resolve(response(200, { "content-type": "image/png" })), {
-      "nas.example.invalid": ["192.168.2.11"],
+      "internal.example.invalid": ["192.168.0.10"],
     });
     const [token, signature] = parts(
-      internal.instance.pathFor("https://nas.example.invalid/a.png"),
+      internal.instance.pathFor("https://internal.example.invalid/a.png"),
     );
     await expect(internal.instance.get(token, signature)).rejects.toMatchObject({
       statusCode: 502,
@@ -129,10 +129,10 @@ describe("image proxy", () => {
       (url) =>
         Promise.resolve(
           url.hostname === "cdn.example.invalid"
-            ? response(302, { location: "https://nas.example.invalid/x.png" })
+            ? response(302, { location: "https://internal.example.invalid/x.png" })
             : response(200, { "content-type": "image/png" }),
         ),
-      { "nas.example.invalid": ["10.0.0.5"] },
+      { "internal.example.invalid": ["10.0.0.5"] },
     );
     const [rToken, rSignature] = parts(
       redirecting.instance.pathFor("https://cdn.example.invalid/a.png"),
