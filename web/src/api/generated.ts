@@ -2454,6 +2454,8 @@ export const GetApiV1Orders200ItemStatus = {
   partly_delivered: "partly_delivered",
   delivered: "delivered",
   problem: "problem",
+  cancelled: "cancelled",
+  refunded: "refunded",
 } as const;
 
 export type GetApiV1Orders200ItemArchiveMode =
@@ -2739,6 +2741,7 @@ export type GetApiV1Orders200Item = {
   /** @nullable */
   placed_at: string | null;
   status: GetApiV1Orders200ItemStatus;
+  digital: boolean;
   archived: boolean;
   /** @nullable */
   archived_at: string | null;
@@ -2777,6 +2780,8 @@ export const GetApiV1OrdersId200Status = {
   partly_delivered: "partly_delivered",
   delivered: "delivered",
   problem: "problem",
+  cancelled: "cancelled",
+  refunded: "refunded",
 } as const;
 
 export type GetApiV1OrdersId200ArchiveMode =
@@ -3062,6 +3067,7 @@ export type GetApiV1OrdersId200 = {
   /** @nullable */
   placed_at: string | null;
   status: GetApiV1OrdersId200Status;
+  digital: boolean;
   archived: boolean;
   /** @nullable */
   archived_at: string | null;
@@ -3117,6 +3123,8 @@ export const PatchApiV1OrdersId200Status = {
   partly_delivered: "partly_delivered",
   delivered: "delivered",
   problem: "problem",
+  cancelled: "cancelled",
+  refunded: "refunded",
 } as const;
 
 export type PatchApiV1OrdersId200ArchiveMode =
@@ -3402,6 +3410,7 @@ export type PatchApiV1OrdersId200 = {
   /** @nullable */
   placed_at: string | null;
   status: PatchApiV1OrdersId200Status;
+  digital: boolean;
   archived: boolean;
   /** @nullable */
   archived_at: string | null;
@@ -5178,7 +5187,7 @@ export const getGetApiV1OrdersUrl = (params?: GetApiV1OrdersParams) => {
 };
 
 /**
- * An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), `partly_shipped`, `shipped`, `partly_delivered`, `delivered`, or `problem` (a parcel not yet delivered reports a problem or is returning). Archiving is automatic (`archive_mode: automatic`): an order is archived once all its parcels are archived, and parcels archive themselves after the retention window (`archiveAfterDays`) once delivered; an order that never got a parcel is archived 30 days after it was placed. The owner can archive by hand (`archived`) or keep an order out of the archive (`kept`). `view`: `open` (default; not delivered, not archived), `delivered` (all parcels delivered, not archived), `archived`, or `all`. Pages of `limit` orders (default 100) from `offset`; when another page follows, the response carries the `X-Next-Offset` header.
+ * An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), `partly_shipped`, `shipped`, `partly_delivered`, `delivered`, or `problem` (a parcel not yet delivered reports a problem or is returning); and from the shop's emails: `cancelled` (nothing of it arrived), `refunded` (money back without a return), and for an order without parcels `shipped` or `delivered` as the shop reports it. `digital` orders (shops of digital goods) are delivered when bought. Cancelled and refunded orders are archived. Archiving is automatic (`archive_mode: automatic`): an order is archived once all its parcels are archived, and parcels archive themselves after the retention window (`archiveAfterDays`) once delivered; an order that never got a parcel is archived 30 days after it was placed. The owner can archive by hand (`archived`) or keep an order out of the archive (`kept`). `view`: `open` (default; not delivered, not archived), `delivered` (all parcels delivered, not archived), `archived`, or `all`. Pages of `limit` orders (default 100) from `offset`; when another page follows, the response carries the `X-Next-Offset` header.
  * @summary List orders with their items and parcels, newest first.
  */
 export const getApiV1Orders = async (
@@ -5196,7 +5205,7 @@ export const getGetApiV1OrdersIdUrl = (id: string) => {
 };
 
 /**
- * An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), `partly_shipped`, `shipped`, `partly_delivered`, `delivered`, or `problem` (a parcel not yet delivered reports a problem or is returning). Archiving is automatic (`archive_mode: automatic`): an order is archived once all its parcels are archived, and parcels archive themselves after the retention window (`archiveAfterDays`) once delivered; an order that never got a parcel is archived 30 days after it was placed. The owner can archive by hand (`archived`) or keep an order out of the archive (`kept`).
+ * An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), `partly_shipped`, `shipped`, `partly_delivered`, `delivered`, or `problem` (a parcel not yet delivered reports a problem or is returning); and from the shop's emails: `cancelled` (nothing of it arrived), `refunded` (money back without a return), and for an order without parcels `shipped` or `delivered` as the shop reports it. `digital` orders (shops of digital goods) are delivered when bought. Cancelled and refunded orders are archived. Archiving is automatic (`archive_mode: automatic`): an order is archived once all its parcels are archived, and parcels archive themselves after the retention window (`archiveAfterDays`) once delivered; an order that never got a parcel is archived 30 days after it was placed. The owner can archive by hand (`archived`) or keep an order out of the archive (`kept`).
  * @summary One order with its items and parcels (status and location).
  */
 export const getApiV1OrdersId = async (

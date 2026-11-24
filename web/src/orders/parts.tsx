@@ -15,6 +15,8 @@ export const ORDER_STATUS_LABELS: Readonly<Record<OrderStatus, string>> = {
   partly_delivered: "Partly delivered",
   delivered: "Delivered",
   problem: "Problem",
+  cancelled: "Cancelled",
+  refunded: "Refunded",
 };
 
 /** The parcel status whose colour an order status borrows. */
@@ -25,6 +27,8 @@ const STATUS_COLOUR: Readonly<Record<OrderStatus, ParcelStatus>> = {
   partly_delivered: "out_for_delivery",
   delivered: "delivered",
   problem: "problem",
+  cancelled: "unknown",
+  refunded: "unknown",
 };
 
 /** The list's tabs, with what each one holds. */
@@ -101,7 +105,11 @@ export function orderSummary(order: Order): string {
 
 export function OrderProgress({ order }: { readonly order: Order }): ReactNode {
   if (order.parcel_count === 0) {
-    return <div className="eta-label">No parcel known yet</div>;
+    return (
+      <div className="eta-label">
+        {order.digital ? "Digital order, no parcel" : noParcelText(order.status)}
+      </div>
+    );
   }
   return (
     <div>
@@ -182,4 +190,21 @@ export function OrderParcels({ order }: { readonly order: Order }): ReactNode {
       })}
     </ul>
   );
+}
+
+/** What an order without parcels says where the parcels would be. */
+export function noParcelText(status: OrderStatus): string {
+  switch (status) {
+    case "cancelled":
+    case "refunded":
+      return "No parcel";
+    case "shipped":
+    case "delivered":
+      return "No tracked parcel";
+    case "ordered":
+    case "partly_shipped":
+    case "partly_delivered":
+    case "problem":
+      return "No parcel known yet";
+  }
 }

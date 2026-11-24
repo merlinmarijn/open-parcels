@@ -19,6 +19,7 @@ function order(overrides: Partial<Order> = {}): Order {
     display_name: "demo_shop DEMO-1001",
     placed_at: "2026-11-15T10:00:00.000Z",
     status: "partly_delivered",
+    digital: false,
     archived: false,
     archived_at: null,
     archive_mode: "automatic",

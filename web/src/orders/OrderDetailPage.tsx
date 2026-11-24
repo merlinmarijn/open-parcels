@@ -10,7 +10,7 @@ import { formatDateTime } from "../lib/format";
 import { InlineTitle, useCanEdit } from "../parcels/InlineEdit";
 import { ItemList } from "../parcels/ItemList";
 import { formatDay, ReturnCard } from "../returns/parts";
-import { OrderBadges, OrderParcels, OrderProgress, orderSummary } from "./parts";
+import { noParcelText, OrderBadges, OrderParcels, OrderProgress, orderSummary } from "./parts";
 
 /** Says in words why the order is (or is not) in the archive. */
 export function archiveExplanation(order: Order): string {
@@ -20,6 +20,11 @@ export function archiveExplanation(order: Order): string {
     case "kept":
       return "You restored this order, so it stays out of the archive even once all its parcels are archived.";
     case "automatic":
+      if (order.status === "cancelled" || order.status === "refunded") {
+        return order.archived
+          ? `Archived automatically: the order was ${order.status}.`
+          : `Archived automatically once ${order.status}.`;
+      }
       return order.archived
         ? "Archived automatically: all its parcels are archived."
         : "Archived automatically once all its parcels are archived. Delivered parcels are archived after the retention period.";
@@ -184,7 +189,9 @@ export function OrderDetailPage({ orderId }: { readonly orderId: string }): Reac
           <section className="detail-section" aria-labelledby="order-parcels-title">
             <h2 id="order-parcels-title">Parcels</h2>
             {order.parcels.length === 0 ? (
-              <p className="muted">No parcel known yet.</p>
+              <p className="muted">
+                {order.digital ? "Digital order, no parcel" : noParcelText(order.status)}.
+              </p>
             ) : (
               <OrderParcels order={order} />
             )}
