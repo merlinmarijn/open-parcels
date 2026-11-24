@@ -36,6 +36,8 @@ import { eltaCourier } from "../carriers/elta_courier/index.js";
 import { evri } from "../carriers/evri/index.js";
 import { fanCourier } from "../carriers/fan_courier/index.js";
 import { fedex } from "../carriers/fedex/index.js";
+import { seventeenTrack } from "../carriers/seventeen_track/index.js";
+import { universalLookup } from "../carriers/universal_lookup/index.js";
 import { genikiTaxydromiki } from "../carriers/geniki_taxydromiki/index.js";
 import { gls } from "../carriers/gls/index.js";
 import { gobolt } from "../carriers/gobolt/index.js";
@@ -166,6 +168,7 @@ export const BUILTIN_CARRIERS: readonly RegisteredProvider[] = [
   register(purolator),
   register(quickpac),
   register(sameday),
+  register(seventeenTrack),
   register(seur),
   register(shopeeXpress),
   register(slovakParcelService),
@@ -179,6 +182,7 @@ export const BUILTIN_CARRIERS: readonly RegisteredProvider[] = [
   register(trunkrs),
   register(ukrposhta),
   register(uniuni),
+  register(universalLookup),
   register(ups),
   register(usps),
   register(vintedGo),
