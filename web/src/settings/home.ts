@@ -1,4 +1,5 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
+import { useMemo } from "react";
 import {
   deleteApiV1SettingsHome,
   getApiV1Geocode,
@@ -24,13 +25,16 @@ export function useHome(): { readonly home: Home | null; readonly loading: boole
     staleTime: 5 * 60_000,
   });
   const home = query.data?.home;
-  return {
-    home:
+  // The same object until the stored home changes, so maps derived from it are not redrawn on
+  // every render (OP-149).
+  const value = useMemo<Home | null>(
+    () =>
       home === null || home === undefined
         ? null
         : { point: [home.latitude, home.longitude], label: home.label },
-    loading: query.isPending,
-  };
+    [home],
+  );
+  return { home: value, loading: query.isPending };
 }
 
 export function useSaveHome() {
