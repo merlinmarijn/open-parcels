@@ -13,16 +13,8 @@ already fixed. Still open, by audit group:
 
 | Group | Open | Note |
 |---|---|---|
-| 9 | OP-130 (partly) | only the order-shop repair appends events; revival, barcode repair and mail clean-up do not |
-| 12 | OP-085, OP-086 | non-refusals read as "sign in again"; no once-per-run renewal in five plug-ins |
-| 14 | OP-063, OP-064 | orders paged in memory; web caps at 1,000 parcels / 500 orders |
-| 15 | OP-148 | four parcel mutations per page, silent "Mark delivered" failure |
-| 18 | OP-005 (partly), OP-010, OP-022, OP-042 | CSP is on `index.html` only; no `nosniff` on JSON/static |
 | 17, 19–24 | all ids | none fixed yet |
 
-- [ ] OP-005, OP-010, OP-022, OP-042: remaining hardening and lifecycle items
-- [ ] OP-149, OP-151, OP-152, OP-154, OP-150, OP-153, OP-157, OP-038, OP-043, OP-073, OP-061,
-      OP-041, OP-044: web correctness
 - [ ] OP-072, OP-077, OP-158, OP-047, OP-045, OP-046, OP-076: build, styles and tooling
 - [ ] OP-034, OP-039, OP-030, OP-031, OP-033, OP-027, OP-028, OP-029, OP-068: scheduler, live
       tracking, resolver and token writes
@@ -50,6 +42,11 @@ already fixed. Still open, by audit group:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
+- [ ] Consistency pass against `docs/glossary.md`: bring all code identifiers, API fields, DB
+      columns, events, web UI text, docs, README, website, org profile, Home Assistant integration
+      and app to the glossary terms; renames that cross a public boundary keep the old names
+      working for one release as listed in the glossary's Renames table. Do this before the
+      provider rewrite starts.
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
 - [ ] Provider sandbox (child process with Node permission model, broker for HTTP, secrets per call)

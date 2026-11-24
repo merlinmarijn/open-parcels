@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- Orders: only the page's orders are built, the view is decided from the order rows and their
+  parcels' states; the web reads every page instead of stopping at 1,000 parcels / 500 orders
+  (OP-063, OP-064, `3ebf2ea`)
+- Hardening and lifecycle: base images pinned by digest and `sharp` exactly (OP-010, `0fccb4f`),
+  `nosniff` on every answer (OP-005, `e7c9f18`), an expected delivery the carrier withdrew is
+  cleared (OP-022, `dad0d1d`), an order total with unpriced items says "from" (OP-042, `9a3750c`)
+- Glossary: one word for every concept, the owner's choices (`docs/glossary.md`, `6d72b58`)
 - Audit leftovers of groups 9, 12 and 15: only real refusals ask for a new sign-in and one
   renewal per run (OP-085, OP-086, `cfefd66`); start-up repairs fire events (OP-130, `77e5369`);
   a refused parcel edit is shown and reloads the parcel (OP-148, `3b5277c`)
