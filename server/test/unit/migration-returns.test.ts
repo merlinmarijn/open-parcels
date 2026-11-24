@@ -34,7 +34,7 @@ describe("migration 0018-returns", () => {
         values ('s-1', 'demo_shop', 'shop', 'Demo shop', '{}', 'ok', 't', 't')
       `.execute(raw);
 
-      expect(await migrateToLatest(db)).toEqual(["0018-returns"]);
+      expect(await migrateToLatest(db)).toEqual(["0018-returns", "0019-glossary-names"]);
 
       const order = await db.selectFrom("orders").select("return_until").executeTakeFirst();
       expect(order).toEqual({ return_until: null });
@@ -63,8 +63,8 @@ describe("migration 0018-returns", () => {
         })
         .execute();
       await db
-        .insertInto("return_sources")
-        .values({ return_id: "r-1", source_id: "s-1" })
+        .insertInto("return_connections")
+        .values({ return_id: "r-1", connection_id: "s-1" })
         .execute();
       await db
         .insertInto("return_items")
@@ -73,7 +73,7 @@ describe("migration 0018-returns", () => {
       // Deleting the order takes its returns, their links and items with it.
       await db.deleteFrom("orders").where("id", "=", "o-1").execute();
       expect(await db.selectFrom("returns").selectAll().execute()).toEqual([]);
-      expect(await db.selectFrom("return_sources").selectAll().execute()).toEqual([]);
+      expect(await db.selectFrom("return_connections").selectAll().execute()).toEqual([]);
       expect(await db.selectFrom("return_items").selectAll().execute()).toEqual([]);
     } finally {
       // Windows cannot delete an open database file; close it even when an assertion fails.

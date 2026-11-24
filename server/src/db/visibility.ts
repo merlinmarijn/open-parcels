@@ -2,8 +2,8 @@ import type { ExpressionBuilder, SqlBool, Expression } from "kysely";
 import type { Database } from "./schema.js";
 
 /**
- * A parcel shows unless every source it came from is disabled. One without any source (an old
- * import, or added by hand before tracking ran) always shows. Disabling a source hides its data
+ * A parcel shows unless every connection it came from is disabled. One without any connection (an old
+ * import, or added by hand before tracking ran) always shows. Disabling a connection hides its data
  * everywhere the owner looks; enabling it again brings everything back unchanged.
  */
 export function parcelVisible(eb: ExpressionBuilder<Database, "parcels">): Expression<SqlBool> {
@@ -11,15 +11,15 @@ export function parcelVisible(eb: ExpressionBuilder<Database, "parcels">): Expre
     eb.not(
       eb.exists(
         eb
-          .selectFrom("parcel_sources as vis_ps")
+          .selectFrom("parcel_connections as vis_ps")
           .select("vis_ps.parcel_id")
           .whereRef("vis_ps.parcel_id", "=", "parcels.id"),
       ),
     ),
     eb.exists(
       eb
-        .selectFrom("parcel_sources as vis_ps")
-        .innerJoin("sources as vis_s", "vis_s.id", "vis_ps.source_id")
+        .selectFrom("parcel_connections as vis_ps")
+        .innerJoin("connections as vis_s", "vis_s.id", "vis_ps.connection_id")
         .select("vis_ps.parcel_id")
         .whereRef("vis_ps.parcel_id", "=", "parcels.id")
         .where("vis_s.state", "!=", "disabled"),
@@ -27,21 +27,21 @@ export function parcelVisible(eb: ExpressionBuilder<Database, "parcels">): Expre
   ]);
 }
 
-/** The same rule for orders, over `order_sources`. */
+/** The same rule for orders, over `order_connections`. */
 export function orderVisible(eb: ExpressionBuilder<Database, "orders">): Expression<SqlBool> {
   return eb.or([
     eb.not(
       eb.exists(
         eb
-          .selectFrom("order_sources as vis_os")
+          .selectFrom("order_connections as vis_os")
           .select("vis_os.order_id")
           .whereRef("vis_os.order_id", "=", "orders.id"),
       ),
     ),
     eb.exists(
       eb
-        .selectFrom("order_sources as vis_os")
-        .innerJoin("sources as vis_s", "vis_s.id", "vis_os.source_id")
+        .selectFrom("order_connections as vis_os")
+        .innerJoin("connections as vis_s", "vis_s.id", "vis_os.connection_id")
         .select("vis_os.order_id")
         .whereRef("vis_os.order_id", "=", "orders.id")
         .where("vis_s.state", "!=", "disabled"),
@@ -49,7 +49,7 @@ export function orderVisible(eb: ExpressionBuilder<Database, "orders">): Express
   ]);
 }
 
-/** The same rule for returns, over `return_sources`; the order must show too. */
+/** The same rule for returns, over `return_connections`; the order must show too. */
 export function returnVisible(eb: ExpressionBuilder<Database, "returns">): Expression<SqlBool> {
   return eb.and([
     eb.exists(
@@ -64,15 +64,15 @@ export function returnVisible(eb: ExpressionBuilder<Database, "returns">): Expre
       eb.not(
         eb.exists(
           eb
-            .selectFrom("return_sources as vis_rs")
+            .selectFrom("return_connections as vis_rs")
             .select("vis_rs.return_id")
             .whereRef("vis_rs.return_id", "=", "returns.id"),
         ),
       ),
       eb.exists(
         eb
-          .selectFrom("return_sources as vis_rs")
-          .innerJoin("sources as vis_s", "vis_s.id", "vis_rs.source_id")
+          .selectFrom("return_connections as vis_rs")
+          .innerJoin("connections as vis_s", "vis_s.id", "vis_rs.connection_id")
           .select("vis_rs.return_id")
           .whereRef("vis_rs.return_id", "=", "returns.id")
           .where("vis_s.state", "!=", "disabled"),

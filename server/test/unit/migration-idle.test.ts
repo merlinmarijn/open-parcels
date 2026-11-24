@@ -76,10 +76,11 @@ describe("migration 0009-idle-source-state", () => {
         "0016-manual-at",
         "0017-join-indexes",
         "0018-returns",
+        "0019-glossary-names",
       ]);
 
       const rows = await sql<{ id: string; state: string; state_detail: string | null }>`
-        select id, state, state_detail from sources order by id
+        select id, state, state_detail from connections order by id
       `.execute(raw);
       expect(rows.rows).toEqual([
         { id: "broken", state: "error", state_detail: "Boom." },
@@ -87,16 +88,18 @@ describe("migration 0009-idle-source-state", () => {
         { id: "fresh", state: "ok", state_detail: "Not run yet." },
         { id: "idle", state: "idle", state_detail: "Public tracking off: nothing to look up." },
       ]);
-      // The rebuild did not cascade into rows that point at a source.
+      // The rebuild did not cascade into rows that point at a connection.
       const attempts = await sql`select id from sign_in_attempts`.execute(raw);
       expect(attempts.rows).toHaveLength(1);
       // Foreign keys are back on and still enforced.
       const fk = await sql<{ foreign_keys: number }>`pragma foreign_keys`.execute(raw);
       expect(fk.rows[0]?.foreign_keys).toBe(1);
-      await sql`delete from sources where id = 'fine'`.execute(raw);
+      await sql`delete from connections where id = 'fine'`.execute(raw);
       expect((await sql`select id from sign_in_attempts`.execute(raw)).rows).toHaveLength(0);
       // The constraint still rejects unknown states.
-      await expect(insertSource(raw, "bad", "sleepy", null)).rejects.toThrow(/CHECK/);
+      await expect(
+        sql`update connections set state = 'sleepy' where id = 'idle'`.execute(raw),
+      ).rejects.toThrow(/CHECK/);
     } finally {
       await db.destroy();
     }

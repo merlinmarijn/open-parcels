@@ -51,16 +51,17 @@ describe("migration 0015-order-sources", () => {
         "0016-manual-at",
         "0017-join-indexes",
         "0018-returns",
+        "0019-glossary-names",
       ]);
 
       const links = await db
-        .selectFrom("order_sources")
-        .select(["order_id", "source_id"])
+        .selectFrom("order_connections")
+        .select(["order_id", "connection_id"])
         .orderBy("order_id")
         .execute();
       expect(links).toEqual([
-        { order_id: "o-named", source_id: "s-shop" },
-        { order_id: "o-parcel", source_id: "s-track" },
+        { order_id: "o-named", connection_id: "s-shop" },
+        { order_id: "o-parcel", connection_id: "s-track" },
       ]);
     } finally {
       // Windows cannot delete an open database file; close it even when an assertion fails.

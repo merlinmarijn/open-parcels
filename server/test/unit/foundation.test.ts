@@ -82,9 +82,9 @@ describe("redaction", () => {
 describe("secrets", () => {
   it("round-trips and binds ciphertext to its associated data", () => {
     const box = new SecretBox(randomBytes(32));
-    const blob = box.encryptJson({ user: "a", password: "b" }, "source:1:secret");
-    expect(box.decryptJson(blob, "source:1:secret")).toEqual({ user: "a", password: "b" });
-    expect(() => box.decrypt(blob, "source:2:secret")).toThrow(DecryptionError);
+    const blob = box.encryptJson({ user: "a", password: "b" }, "connection:1:secret");
+    expect(box.decryptJson(blob, "connection:1:secret")).toEqual({ user: "a", password: "b" });
+    expect(() => box.decrypt(blob, "connection:2:secret")).toThrow(DecryptionError);
   });
 
   it("fails loudly with another key instead of returning garbage", () => {
@@ -186,6 +186,7 @@ describe("migrations", () => {
         "0016-manual-at",
         "0017-join-indexes",
         "0018-returns",
+        "0019-glossary-names",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
     } finally {

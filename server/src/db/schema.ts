@@ -48,12 +48,12 @@ export interface SettingTable {
   updated_at: Timestamp;
 }
 
-export interface SourceTable {
+export interface ConnectionTable {
   id: string;
-  plugin: string;
+  provider: string;
   kind: "account" | "tracking" | "shop" | "mail";
   label: string;
-  /** JSON, non-secret plug-in configuration. */
+  /** JSON, non-secret provider configuration. */
   config: string;
   secret_blob: Buffer | null;
   session_blob: Buffer | null;
@@ -65,7 +65,7 @@ export interface SourceTable {
   next_run_at: Timestamp | null;
   last_run_at: Timestamp | null;
   last_ok_at: Timestamp | null;
-  /** 1 when the app made this keyless tracking source on its own; see migration 0006. */
+  /** 1 when the app made this keyless tracking connection on its own; see migration 0006. */
   auto_created: Generated<number>;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -94,14 +94,14 @@ export interface OrderTable {
 export interface ParcelTable {
   id: string;
   carrier: string;
-  barcode: string;
-  direction: "incoming" | "outgoing";
+  tracking_number: string;
+  direction: "receiving" | "sending";
   status: string;
   raw_status: string | null;
   delivered: Bool;
   delivered_at: Timestamp | null;
-  planned_from: Timestamp | null;
-  planned_to: Timestamp | null;
+  expected_from: Timestamp | null;
+  expected_to: Timestamp | null;
   pickup: Bool;
   pickup_point: string | null;
   url: string | null;
@@ -136,20 +136,20 @@ export interface ParcelTable {
   lookup_checked_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
 }
 
-export interface ParcelSourceTable {
+export interface ParcelConnectionTable {
   parcel_id: string;
-  source_id: string;
+  connection_id: string;
   external_ref: string | null;
   role: "primary" | "handoff" | "mail";
   last_seen_at: Timestamp;
-  /** First time a complete listing of this source lacked the parcel; null while it is listed. */
+  /** First time a complete listing of this connection lacked the parcel; null while it is listed. */
   missing_since: ColumnType<Timestamp | null, Timestamp | null | undefined>;
 }
 
-/** Which sources reported an order. See migration 0015. */
-export interface OrderSourceTable {
+/** Which connections reported an order. See migration 0015. */
+export interface OrderConnectionTable {
   order_id: string;
-  source_id: string;
+  connection_id: string;
 }
 
 /** One return of an order. See migration 0018. */
@@ -177,9 +177,9 @@ export interface ReturnTable {
   updated_at: Timestamp;
 }
 
-export interface ReturnSourceTable {
+export interface ReturnConnectionTable {
   return_id: string;
-  source_id: string;
+  connection_id: string;
 }
 
 export interface ReturnItemTable {
@@ -193,7 +193,7 @@ export interface ReturnItemTable {
 export interface ParcelEventTable {
   id: Generated<number>;
   parcel_id: string;
-  source_id: string | null;
+  connection_id: string | null;
   at: Timestamp;
   status: string | null;
   raw_status: string;
@@ -209,7 +209,7 @@ export interface ParcelEventTable {
 
 export interface ParcelRawTable {
   parcel_id: string;
-  source_id: string;
+  connection_id: string;
   fetched_at: Timestamp;
   payload: string;
 }
@@ -268,7 +268,7 @@ export interface OutboxTable {
 }
 
 export interface UnknownVocabTable {
-  plugin: string;
+  provider: string;
   kind: string;
   key: string;
   first_seen_at: Timestamp;
@@ -287,9 +287,9 @@ export interface ImageCacheTable {
 
 export interface SignInAttemptTable {
   id: string;
-  source_id: string;
+  connection_id: string;
   flow: string;
-  /** Encrypted JSON {state, step}; the AAD binds it to the attempt and the source. */
+  /** Encrypted JSON {state, step}; the AAD binds it to the attempt and the connection. */
   blob: Buffer;
   failures: Generated<number>;
   created_at: Timestamp;
@@ -305,13 +305,13 @@ export interface Database {
   settings: SettingTable;
   /** OPENPARCELS_* values saved in the UI; same shape as `settings`. See migration 0011. */
   setting_overrides: SettingTable;
-  sources: SourceTable;
+  connections: ConnectionTable;
   orders: OrderTable;
   parcels: ParcelTable;
-  parcel_sources: ParcelSourceTable;
-  order_sources: OrderSourceTable;
+  parcel_connections: ParcelConnectionTable;
+  order_connections: OrderConnectionTable;
   returns: ReturnTable;
-  return_sources: ReturnSourceTable;
+  return_connections: ReturnConnectionTable;
   return_items: ReturnItemTable;
   parcel_events: ParcelEventTable;
   order_items: OrderItemTable;
@@ -328,6 +328,6 @@ export interface Database {
 export type ParcelRow = Selectable<ParcelTable>;
 export type NewParcelRow = Insertable<ParcelTable>;
 export type ParcelUpdate = Updateable<ParcelTable>;
-export type SourceRow = Selectable<SourceTable>;
+export type ConnectionRow = Selectable<ConnectionTable>;
 export type ApiTokenRow = Selectable<ApiTokenTable>;
 export type OutboxRow = Selectable<OutboxTable>;
