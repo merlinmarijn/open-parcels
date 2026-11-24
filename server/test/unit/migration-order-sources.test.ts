@@ -52,6 +52,7 @@ describe("migration 0015-order-sources", () => {
         "0017-join-indexes",
         "0018-returns",
         "0019-glossary-names",
+        "0020-ha-import-markers",
       ]);
 
       const links = await db

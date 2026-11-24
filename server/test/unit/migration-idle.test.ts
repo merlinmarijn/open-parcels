@@ -77,6 +77,7 @@ describe("migration 0009-idle-source-state", () => {
         "0017-join-indexes",
         "0018-returns",
         "0019-glossary-names",
+        "0020-ha-import-markers",
       ]);
 
       const rows = await sql<{ id: string; state: string; state_detail: string | null }>`

@@ -20,6 +20,7 @@ import * as m0016 from "./migrations/0016-manual-at.js";
 import * as m0017 from "./migrations/0017-join-indexes.js";
 import * as m0018 from "./migrations/0018-returns.js";
 import * as m0019 from "./migrations/0019-glossary-names.js";
+import * as m0020 from "./migrations/0020-ha-import-markers.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -46,6 +47,7 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0017-join-indexes": m0017,
   "0018-returns": m0018,
   "0019-glossary-names": m0019,
+  "0020-ha-import-markers": m0020,
 };
 
 const staticProvider: MigrationProvider = {

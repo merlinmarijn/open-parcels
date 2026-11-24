@@ -34,7 +34,11 @@ describe("migration 0018-returns", () => {
         values ('s-1', 'demo_shop', 'shop', 'Demo shop', '{}', 'ok', 't', 't')
       `.execute(raw);
 
-      expect(await migrateToLatest(db)).toEqual(["0018-returns", "0019-glossary-names"]);
+      expect(await migrateToLatest(db)).toEqual([
+        "0018-returns",
+        "0019-glossary-names",
+        "0020-ha-import-markers",
+      ]);
 
       const order = await db.selectFrom("orders").select("return_until").executeTakeFirst();
       expect(order).toEqual({ return_until: null });

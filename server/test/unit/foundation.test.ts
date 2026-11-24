@@ -187,6 +187,7 @@ describe("migrations", () => {
         "0017-join-indexes",
         "0018-returns",
         "0019-glossary-names",
+        "0020-ha-import-markers",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
     } finally {

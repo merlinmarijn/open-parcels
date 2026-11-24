@@ -69,23 +69,11 @@ class DryRunRollback extends Error {
 export const markerKey = (entryId: string): string => `ha_import:${entryId}`;
 
 /** `adopted`: the entry was mapped onto a connection that existed before; it is never rewritten. */
-/** Markers written before 2.0.0-dev name the connection `sourceId`; read them unchanged. */
-function legacyMarker(value: unknown): unknown {
-  if (typeof value !== "object" || value === null || "connectionId" in value) {
-    return value;
-  }
-  const { sourceId, ...rest } = value as Record<string, unknown>;
-  return { ...rest, connectionId: sourceId };
-}
-
-const markerSchema = z.preprocess(
-  legacyMarker,
-  z.object({
-    connectionId: z.string(),
-    credentials: z.string(),
-    adopted: z.boolean().optional(),
-  }),
-);
+const markerSchema = z.object({
+  connectionId: z.string(),
+  credentials: z.string(),
+  adopted: z.boolean().optional(),
+});
 type Marker = z.infer<typeof markerSchema>;
 
 const credentialsJson = (plan: ConnectionPlan): string =>
