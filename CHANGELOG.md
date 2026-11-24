@@ -34,6 +34,22 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
 
 ### Added
 
+- **Orders from order emails.** Inbox connections now act on the rules' order emails
+  (`order_placed`, `order_confirmed`, `order_shipped`, `order_delivered`, `order_cancelled`):
+  confirmations of AliExpress, Temu, eBay, MediaMarkt, Mindfactory, reichelt, Netto Online,
+  Rasppishop, KSP, Shopify shops and the digital stores start an order with its items and date,
+  later emails move it on, and an order email's tracking numbers are filed under its order.
+  Orders merge by shop and order number; a PayPal receipt that quotes a shop's reference joins
+  that shop's order (whichever email comes first) and keeps its own order only while no shop
+  claims the number. Shops on Shopify are named after the sender, so two shops' `#1042` differ.
+- Order statuses `cancelled` (nothing of it arrived) and `refunded` (money back without a
+  return); both archive the order. An order without parcels takes the shop's word for `shipped`
+  and `delivered`.
+- `digital` on orders: orders of digital stores (Steam, GOG, Humble, Fanatical, Eneba, GAMIVO,
+  Instant Gaming, MMOGA) are delivered when bought and never wait for a parcel.
+- Live event `order.created` when an email starts an order; its data is the order like
+  `order.updated` (without parcels).
+
 - `expected_days` on parcels (and orders' parcels): the expected delivery as local days
   (`YYYY-MM-DD`, server time zone) when it is whole days, else null. The web UI shows these days
   instead of guessing from the times in the browser's zone (OP-044).
