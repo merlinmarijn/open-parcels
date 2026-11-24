@@ -19,6 +19,7 @@ export const EVENT_TYPES = [
   "connection.state_changed",
   "connection.run_finished",
   "connection.removed",
+  "order.created",
   "order.updated",
   "order.deleted",
   "return.created",

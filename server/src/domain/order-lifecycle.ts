@@ -6,14 +6,20 @@ import {
   DIRECTIONS,
   type ParcelStatus,
 } from "./parcel.js";
+import type { ReportedOrderStatus } from "./order.js";
 import { returnSchema } from "./return.js";
 
 /**
- * Where an order stands, derived from its parcels in this one place:
+ * Where an order stands, derived in this one place from its parcels and what the shop's emails
+ * reported (`orders.status`):
  * - `ordered`: no parcel yet, or none has left the shop (registered or unknown);
  * - `partly_shipped` / `shipped`: some / all parcels are on their way;
  * - `partly_delivered` / `delivered`: some / all parcels have arrived;
- * - `problem`: a parcel that has not arrived reports a problem or is going back.
+ * - `problem`: a parcel that has not arrived reports a problem or is going back;
+ * - `cancelled`: the shop cancelled it and nothing of it arrived;
+ * - `refunded`: the money came back without a return.
+ * An order without parcels takes the shop's word: shipped or delivered (a shop delivering itself,
+ * digital goods, which are delivered when they are bought).
  */
 export const ORDER_STATUSES = [
   "ordered",
@@ -22,6 +28,8 @@ export const ORDER_STATUSES = [
   "partly_delivered",
   "delivered",
   "problem",
+  "cancelled",
+  "refunded",
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
 export const orderStatusSchema = z.enum(ORDER_STATUSES);
@@ -46,7 +54,22 @@ export interface ParcelState {
   readonly archived_at: string | null;
 }
 
-export function orderStatus(parcels: readonly ParcelState[]): OrderStatus {
+/** Statuses that close an order: it is archived without waiting for parcels. */
+const CLOSED: ReadonlySet<OrderStatus> = new Set(["cancelled", "refunded"]);
+
+export function orderStatus(
+  parcels: readonly ParcelState[],
+  reported: ReportedOrderStatus | null = null,
+): OrderStatus {
+  if (reported === "refunded") return "refunded";
+  if (reported === "cancelled" && !parcels.some((parcel) => parcel.delivered)) return "cancelled";
+  if (parcels.length === 0) {
+    return reported === "shipped" || reported === "delivered" ? reported : "ordered";
+  }
+  return parcelStatus(parcels);
+}
+
+function parcelStatus(parcels: readonly ParcelState[]): OrderStatus {
   if (parcels.some((parcel) => !parcel.delivered && TROUBLE.has(parcel.status))) return "problem";
   const delivered = parcels.filter((parcel) => parcel.delivered).length;
   if (parcels.length > 0 && delivered === parcels.length) return "delivered";
@@ -67,11 +90,21 @@ export function orderArchivedAt(
   mode: "archived" | "kept" | null,
   archivedByHand: string | null,
   parcels: readonly ParcelState[],
-  placedAt: string | null = null,
-  now: Date = new Date(),
+  {
+    placedAt = null,
+    now = new Date(),
+    closed = null,
+  }: {
+    readonly placedAt?: string | null;
+    readonly now?: Date;
+    /** The order's status and when it last changed: cancelled or refunded close it. */
+    readonly closed?: { readonly status: OrderStatus; readonly at: string } | null;
+  } = {},
 ): string | null {
   if (mode === "archived") return archivedByHand;
   if (mode === "kept") return null;
+  // A cancelled or refunded order has nothing left to wait for.
+  if (closed !== null && CLOSED.has(closed.status)) return closed.at;
   if (parcels.length === 0) {
     if (placedAt === null) return null;
     const due = new Date(Date.parse(placedAt) + PARCELLESS_ARCHIVE_DAYS * 86_400_000);
@@ -147,6 +180,8 @@ export const orderSchema = z.object({
   /** When the order was placed, as the shop said; null when unknown. */
   placed_at: z.string().nullable(),
   status: orderStatusSchema,
+  /** Sold by a shop of digital goods: there is no parcel to wait for. */
+  digital: z.boolean(),
   archived: z.boolean(),
   archived_at: z.string().nullable(),
   archive_mode: z.enum(ARCHIVE_MODES),

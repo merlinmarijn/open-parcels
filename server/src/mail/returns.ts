@@ -1,6 +1,6 @@
-import { parseMail, type MailParseResult, type Rules } from "open-parcels-rules";
+import type { MailParseResult, Rules } from "open-parcels-rules";
 import { returnSnapshot, type ReturnSnapshot } from "../provider/snapshot.js";
-import { carrierFor, orderOf, senderDomain } from "./interpret.js";
+import { carrierFor, orderOf, parseEmail, senderDomain, senderName } from "./interpret.js";
 import {
   mailLines,
   mentionsReturn,
@@ -34,19 +34,12 @@ function tracking(
  */
 export function createReturnInterpreter(rules: Rules, timeZone: string): MailReturnInterpreter {
   return (mail: MailInput): readonly ReturnSnapshot[] => {
-    const results = parseMail(rules, {
-      from: mail.from,
-      subject: mail.subject,
-      ...(mail.text === null ? {} : { text: mail.text }),
-      ...(mail.html === null ? {} : { html: mail.html }),
-      ...(mail.date === null ? {} : { date: mail.date }),
-      timeZone,
-    });
+    const results = parseEmail(rules, mail, timeZone);
     const domain = senderDomain(mail.from);
     const reports: ReturnSnapshot[] = [];
     for (const result of results) {
       if (result.kind !== "return") continue;
-      const order = orderOf(result.ruleId, result.orderNumbers[0], domain);
+      const order = orderOf(result.ruleId, result.orderNumbers[0], domain, senderName(mail.from));
       if (order === null) continue;
       const lines = mailLines(mail.text, mail.html);
       const status = readStatus(result.event, mail.subject, lines);

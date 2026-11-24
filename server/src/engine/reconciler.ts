@@ -17,7 +17,11 @@ import { foldParcel } from "./fold.js";
 import { scrubRaw } from "./raw-scrub.js";
 import { withSafeLinks } from "./links.js";
 import { writeOrderItems } from "./order-items.js";
+import { createOrder, findOrder } from "./order-rows.js";
 import { applyReturns } from "./returns.js";
+import { applyOrders } from "./orders.js";
+import { OrderService } from "../orders/service.js";
+import { ReturnService } from "../returns/service.js";
 import { maskIdentifiers, recordUnknown, type UnknownValue } from "./vocab.js";
 
 /** A parcel missing from every complete listing for this long, undelivered, counts as removed. */
@@ -277,6 +281,24 @@ export class Reconciler {
     const unknown: UnknownValue[] = [];
     await this.db.transaction().execute(async (trx) => {
       const seen = new Set<string>();
+      const trackParcel = async (parcel: ParcelSnapshot): Promise<string> =>
+        (await this.#applySnapshot(trx, connection, withSafeLinks(normalisedCodes(parcel))))
+          .parcelId;
+      const env = {
+        clock: this.clock,
+        timeZone: this.timeZone,
+        trackParcel,
+        orderView: (inner: Trx, id: string) =>
+          new OrderService(
+            inner,
+            this.bus,
+            this.clock,
+            this.presentation,
+            new ReturnService(inner, this.clock, this.timeZone),
+          ).get(id),
+      };
+      // Orders first, so an order an email starts is announced as created before its parcels.
+      summary.events += await applyOrders(trx, env, connection.id, result.orders ?? []);
       for (const reported of result.snapshots) {
         const snapshot = withSafeLinks(normalisedCodes(utcSnapshot(reported)));
         const value = connection.kind === "mail" ? unmappedMail(snapshot) : null;
@@ -298,10 +320,6 @@ export class Reconciler {
         await this.#markMissing(trx, connectionId, seen);
       }
       summary.found = await this.#recordLookup(trx, asked, seen);
-      const trackParcel = async (parcel: ParcelSnapshot): Promise<string> =>
-        (await this.#applySnapshot(trx, connection, withSafeLinks(normalisedCodes(parcel))))
-          .parcelId;
-      const env = { clock: this.clock, timeZone: this.timeZone, trackParcel };
       summary.events += await applyReturns(trx, env, connection.id, result.returns ?? []);
     });
     await this.bus.notify();
@@ -645,12 +663,7 @@ export class Reconciler {
     if (snapshot.order === null) {
       return null;
     }
-    const existing = await trx
-      .selectFrom("orders")
-      .select(["id", "deleted_at"])
-      .where("shop", "=", snapshot.order.shop)
-      .where("order_number", "=", snapshot.order.orderNumber)
-      .executeTakeFirst();
+    const existing = await findOrder(trx, snapshot.order);
     // The owner deleted the order: its parcels stay tracked, without it.
     if (existing !== undefined && existing.deleted_at !== null) {
       return null;
@@ -680,21 +693,10 @@ export class Reconciler {
       }
       return existing.id;
     }
-    const id = crypto.randomUUID();
-    await trx
-      .insertInto("orders")
-      .values({
-        id,
-        shop: snapshot.order.shop,
-        order_number: snapshot.order.orderNumber,
-        placed_at: snapshot.order.placedAt,
-        return_until: snapshot.order.returnUntil ?? null,
-        status: null,
-        created_at: now,
-        updated_at: now,
-      })
-      .execute();
-    return id;
+    return createOrder(trx, snapshot.order, now, {
+      placedAt: snapshot.order.placedAt,
+      returnUntil: snapshot.order.returnUntil ?? null,
+    });
   }
 
   async #writeRelated(

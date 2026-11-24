@@ -3,7 +3,7 @@ import type { Clock } from "../clock.js";
 import type { HttpPolicy, ProviderHttp } from "./http.js";
 import type { LiveReading, LiveTarget } from "./live.js";
 import type { SignInFlow } from "./sign-in.js";
-import type { ParcelSnapshot, ReturnSnapshot } from "./snapshot.js";
+import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "./snapshot.js";
 
 export * from "./errors.js";
 export * from "./kit/html.js";
@@ -57,6 +57,8 @@ export interface FetchResult {
   readonly snapshots: readonly ParcelSnapshot[];
   /** Returns the connection reported. They never count towards `complete`: a return is never "gone". */
   readonly returns?: readonly ReturnSnapshot[];
+  /** Orders the connection reported without a parcel (order emails). Never count towards `complete`. */
+  readonly orders?: readonly OrderSnapshot[];
   /**
    * True when the list is everything the connection currently has. Only complete results let the
    * reconciler conclude that a missing parcel is gone. Ignored for tracking connections: a lookup

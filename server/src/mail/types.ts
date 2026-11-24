@@ -1,5 +1,5 @@
 import { z } from "zod";
-import type { ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
+import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 
 /** Provider id of inbox connections. Mail is handled by the core, not by a carrier provider. */
 export const MAIL_PROVIDER = "imap";
@@ -64,6 +64,9 @@ export type MailInterpreter = (mail: MailInput) => readonly ParcelSnapshot[];
 
 /** Turns a return or refund mail into return reports, also from the shared rules. */
 export type MailReturnInterpreter = (mail: MailInput) => readonly ReturnSnapshot[];
+
+/** Turns an order email (confirmation, update, receipt) into order reports. */
+export type MailOrderInterpreter = (mail: MailInput) => readonly OrderSnapshot[];
 
 export interface FetchedMessage {
   readonly uid: number;

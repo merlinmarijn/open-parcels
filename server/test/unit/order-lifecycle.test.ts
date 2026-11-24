@@ -48,11 +48,11 @@ describe("order archiving", () => {
 
   it("archives an order that never got a parcel 30 days after it was placed", () => {
     const now = new Date("2026-03-01T00:00:00Z");
-    expect(orderArchivedAt(null, null, [], "2026-01-01T00:00:00Z", now)).toBe(
+    expect(orderArchivedAt(null, null, [], { placedAt: "2026-01-01T00:00:00Z", now })).toBe(
       "2026-01-31T00:00:00.000Z",
     );
-    expect(orderArchivedAt(null, null, [], "2026-02-15T00:00:00Z", now)).toBeNull();
-    expect(orderArchivedAt("kept", null, [], "2026-01-01T00:00:00Z", now)).toBeNull();
+    expect(orderArchivedAt(null, null, [], { placedAt: "2026-02-15T00:00:00Z", now })).toBeNull();
+    expect(orderArchivedAt("kept", null, [], { placedAt: "2026-01-01T00:00:00Z", now })).toBeNull();
   });
 
   it("lets the owner's choice win", () => {
@@ -95,5 +95,25 @@ describe("order total", () => {
       ]),
     ).toBeNull();
     expect(orderTotal([])).toBeNull();
+  });
+});
+
+describe("order status with what the shop reported", () => {
+  it.each([
+    [[], null, "ordered"],
+    [[], "shipped", "shipped"],
+    [[], "delivered", "delivered"],
+    [[parcel("in_transit")], "delivered", "shipped"],
+    [[parcel("in_transit")], "cancelled", "cancelled"],
+    [[parcel("delivered")], "cancelled", "delivered"],
+    [[parcel("delivered")], "refunded", "refunded"],
+  ] as const)("%j reported %s is %s", (parcels, reported, expected) => {
+    expect(orderStatus(parcels, reported)).toBe(expected);
+  });
+
+  it("archives a cancelled or refunded order at once, unless the owner keeps it", () => {
+    const closed = { status: "cancelled", at: "2026-11-17T09:00:00.000Z" } as const;
+    expect(orderArchivedAt(null, null, [parcel("in_transit")], { closed })).toBe(closed.at);
+    expect(orderArchivedAt("kept", null, [], { closed })).toBeNull();
   });
 });

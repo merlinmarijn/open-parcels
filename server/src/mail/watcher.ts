@@ -7,7 +7,7 @@ import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
-import type { ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
+import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 import {
   MAIL_PROVIDER,
   mailConfigSchema,
@@ -19,6 +19,7 @@ import {
   type MailConfig,
   type MailInput,
   type MailInterpreter,
+  type MailOrderInterpreter,
   type MailReturnInterpreter,
   type MailProgress,
   type MailSecret,
@@ -42,6 +43,8 @@ export interface MailWatcherDeps {
   readonly interpret: MailInterpreter;
   /** Return and refund mails; unset in tests that only look at parcels. */
   readonly interpretReturns?: MailReturnInterpreter;
+  /** Order emails without a parcel (confirmations, receipts, cancellations); unset likewise. */
+  readonly interpretOrders?: MailOrderInterpreter;
   /** Links parcels found in mail to their carrier's tracking connection, so they get polled. */
   readonly followUp: (connectionId: string) => Promise<void>;
 }
@@ -68,7 +71,17 @@ function addressText(value: AddressObject | AddressObject[] | undefined): string
     return "";
   }
   const list = Array.isArray(value) ? value : [value];
-  return list.flatMap((entry) => entry.value.map((address) => address.address ?? "")).join(", ");
+  // "Name <address>" keeps the display name, which names the shop on platforms that send for
+  // many shops from one address.
+  return list
+    .flatMap((entry) =>
+      entry.value.map((address) =>
+        address.name === ""
+          ? (address.address ?? "")
+          : `${address.name} <${address.address ?? ""}>`,
+      ),
+    )
+    .join(", ");
 }
 
 /** A Date header this far ahead of now is a sender's wrong clock, not a time to trust. */
@@ -304,6 +317,7 @@ export class MailWatcher {
   ): Promise<void> {
     const snapshots: ParcelSnapshot[] = [];
     const returns: ReturnSnapshot[] = [];
+    const orders: OrderSnapshot[] = [];
     // Built on a copy and committed only once the mails are stored: a failed batch is read again
     // on the next sync, whatever else runs on the connection in between.
     let progress = connection.progress;
@@ -333,11 +347,17 @@ export class MailWatcher {
         );
         snapshots.push(...this.#interpret(connectionId, mail, this.deps.interpret));
         returns.push(...this.#interpret(connectionId, mail, this.deps.interpretReturns));
+        orders.push(...this.#interpret(connectionId, mail, this.deps.interpretOrders));
       }
       progress = { ...progress, [folder]: { uidValidity, lastUid } };
     }
-    if (snapshots.length > 0 || returns.length > 0) {
-      await this.deps.reconciler.ingest(connectionId, { snapshots, returns, complete: false });
+    if (snapshots.length > 0 || returns.length > 0 || orders.length > 0) {
+      await this.deps.reconciler.ingest(connectionId, {
+        snapshots,
+        returns,
+        orders,
+        complete: false,
+      });
       await this.deps.followUp(connectionId);
     }
     connection.progress = progress;

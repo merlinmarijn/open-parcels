@@ -3,41 +3,91 @@ import {
   detectTrackingNumbers,
   mapStatus,
   parseMail,
+  type MailEvent,
   type MailParseResult,
   type Rules,
 } from "open-parcels-rules";
-import { isPlausibleOrder, shopFromDomain } from "../domain/order.js";
+import {
+  isHostedShop,
+  PAYMENT_SHOPS,
+  isPlausibleOrder,
+  shopFromDomain,
+  shopFromName,
+  shopOfRule,
+  type ReportedOrderStatus,
+} from "../domain/order.js";
 import type { ParcelStatus } from "../domain/parcel.js";
 import { redactText } from "../log/redact.js";
-import { snapshot, type ParcelSnapshot } from "../provider/snapshot.js";
-import type { MailInput, MailInterpreter } from "./types.js";
-
-/** Shop id from a rule id such as `parcel-amazon` or `order-otto`. */
-function shopOf(ruleId: string): string | null {
-  const match = /^(?:parcel|order|return|dunning)-([a-z0-9]+)/.exec(ruleId);
-  return match?.[1] ?? null;
-}
+import { snapshot, type OrderSnapshot, type ParcelSnapshot } from "../provider/snapshot.js";
+import type { MailInput, MailInterpreter, MailOrderInterpreter } from "./types.js";
 
 /**
- * The order a mail belongs to. A rule's shop is trusted only when the order number fits that
- * shop's format; otherwise the mail came from another shop that merely mentioned it, and the
- * sender's domain names the shop.
+ * The order an email belongs to. A rule's shop is trusted only when the order number fits that
+ * shop's format; otherwise the email came from another shop that merely mentioned it, and the
+ * sender's domain names the shop. A platform that sends for many shops (Shopify) names the shop
+ * after the sender's display name.
  */
 export function orderOf(
   ruleId: string,
   orderNumber: string | undefined,
   domain: string | undefined,
+  senderName: string | null = null,
 ): { shop: string; orderNumber: string; placedAt: null } | null {
-  const ruled = shopOf(ruleId);
+  const ruled = shopOfRule(ruleId);
   if (ruled === null || orderNumber === undefined) {
     return null;
   }
-  const shop = isPlausibleOrder(ruled, orderNumber) ? ruled : shopFromDomain(domain);
+  const shop = isHostedShop(ruled)
+    ? (shopFromName(senderName) ?? ruled)
+    : isPlausibleOrder(ruled, orderNumber)
+      ? ruled
+      : shopFromDomain(domain);
   return shop === null ? null : { shop, orderNumber, placedAt: null };
 }
 
 export function senderDomain(from: string): string | undefined {
   return /@([^>\s]+)>?\s*$/.exec(from)?.[1]?.toLowerCase();
+}
+
+/** The display name of a From header (`Example Store <shop@example.com>`), or null. */
+export function senderName(from: string): string | null {
+  const name = /^\s*"?([^"<]*?)"?\s*</.exec(from)?.[1]?.trim() ?? "";
+  return name === "" ? null : name;
+}
+
+/** The rules' results for an email, in the server's time zone. */
+export function parseEmail(rules: Rules, mail: MailInput, timeZone: string): MailParseResult[] {
+  return [
+    ...parseMail(rules, {
+      from: mail.from,
+      subject: mail.subject,
+      ...(mail.text === null ? {} : { text: mail.text }),
+      ...(mail.html === null ? {} : { html: mail.html }),
+      ...(mail.date === null ? {} : { date: mail.date }),
+      timeZone,
+    }),
+  ];
+}
+
+/**
+ * The order an order email names, for parcel results of the same email that name none: an eBay
+ * update with the order number in one result and the carrier's tracking number in another.
+ */
+function emailOrder(
+  results: readonly MailParseResult[],
+  from: string,
+): { shop: string; orderNumber: string; placedAt: null } | null {
+  for (const result of results) {
+    if (result.kind !== "order") continue;
+    const order = orderOf(
+      result.ruleId,
+      result.orderNumbers[0],
+      senderDomain(from),
+      senderName(from),
+    );
+    if (order !== null && !PAYMENT_SHOPS.has(order.shop)) return order;
+  }
+  return null;
 }
 
 /** The carrier of a tracking number in a mail: the rule's, else the best detected match. */
@@ -104,23 +154,19 @@ export function subjectAsStatus(subject: string, carriesPickupCode: boolean): st
  */
 export function createMailInterpreter(rules: Rules, timeZone: string): MailInterpreter {
   return (mail: MailInput): readonly ParcelSnapshot[] => {
-    const results = parseMail(rules, {
-      from: mail.from,
-      subject: mail.subject,
-      ...(mail.text === null ? {} : { text: mail.text }),
-      ...(mail.html === null ? {} : { html: mail.html }),
-      ...(mail.date === null ? {} : { date: mail.date }),
-      timeZone,
-    });
+    const results = parseEmail(rules, mail, timeZone);
     const domain = senderDomain(mail.from);
     const at = (mail.date ?? new Date()).toISOString();
     const id = mailId(mail);
+    const fromOrderEmail = emailOrder(results, mail.from);
     const snapshots: ParcelSnapshot[] = [];
     for (const result of results) {
       if (result.kind !== "parcel") {
         continue;
       }
-      const order = orderOf(result.ruleId, result.orderNumbers[0], domain);
+      const order =
+        orderOf(result.ruleId, result.orderNumbers[0], domain, senderName(mail.from)) ??
+        fromOrderEmail;
       for (const trackingNumber of result.trackingNumbers) {
         const carrier = carrierFor(rules, result, trackingNumber, domain);
         if (carrier === null) {
@@ -154,5 +200,40 @@ export function createMailInterpreter(rules: Rules, timeZone: string): MailInter
       }
     }
     return snapshots;
+  };
+}
+
+/** What an order email's event says, in the order's status words; null for other events. */
+const ORDER_EVENTS: Partial<Record<MailEvent, ReportedOrderStatus>> = {
+  order_placed: "ordered",
+  order_confirmed: "ordered",
+  order_shipped: "shipped",
+  order_delivered: "delivered",
+  order_cancelled: "cancelled",
+};
+
+/**
+ * Turns order emails (the shared rules' `order` kind) into order reports: confirmations,
+ * shipping and delivery notices without a tracking number, cancellations, and payment receipts
+ * that quote the shop's reference. An email needs an order number; one without is skipped.
+ */
+export function createOrderInterpreter(rules: Rules, timeZone: string): MailOrderInterpreter {
+  return (mail: MailInput): readonly OrderSnapshot[] => {
+    const domain = senderDomain(mail.from);
+    const name = senderName(mail.from);
+    const reports: OrderSnapshot[] = [];
+    for (const result of parseEmail(rules, mail, timeZone)) {
+      if (result.kind !== "order") continue;
+      const order = orderOf(result.ruleId, result.orderNumbers[0], domain, name);
+      if (order === null) continue;
+      reports.push({
+        order: { shop: order.shop, orderNumber: order.orderNumber },
+        status: result.event === undefined ? null : (ORDER_EVENTS[result.event] ?? null),
+        at: mail.date?.toISOString() ?? null,
+        items: result.items ?? [],
+        payment: PAYMENT_SHOPS.has(order.shop),
+      });
+    }
+    return reports;
   };
 }

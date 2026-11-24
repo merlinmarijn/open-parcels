@@ -27,7 +27,7 @@ import { EventBus } from "./events/bus.js";
 import { ImageProxy } from "./images/proxy.js";
 import { loadRules } from "open-parcels-rules";
 import { imapClientFactory } from "./mail/imap-client.js";
-import { createMailInterpreter } from "./mail/interpret.js";
+import { createMailInterpreter, createOrderInterpreter } from "./mail/interpret.js";
 import { createReturnInterpreter } from "./mail/returns.js";
 import { ReturnService } from "./returns/service.js";
 import type { MailboxClientFactory, MailInterpreter } from "./mail/types.js";
@@ -121,6 +121,16 @@ async function followUntracked(
     );
   }
   return linked.parcels > 0;
+}
+
+/** The inbox interpreters, all reading one copy of the rules. */
+function mailInterpreters(timeZone: string, interpret: MailInterpreter | undefined) {
+  const rules = loadRules();
+  return {
+    interpret: interpret ?? createMailInterpreter(rules, timeZone),
+    interpretReturns: createReturnInterpreter(rules, timeZone),
+    interpretOrders: createOrderInterpreter(rules, timeZone),
+  };
 }
 
 /** A random id per installation, stored once; it spreads polling of different installs apart. */
@@ -294,8 +304,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     clock,
     logger,
     clientFactory: deps.mailClientFactory ?? imapClientFactory,
-    interpret: deps.mailInterpreter ?? createMailInterpreter(loadRules(), deps.config.timeZone),
-    interpretReturns: createReturnInterpreter(loadRules(), deps.config.timeZone),
+    ...mailInterpreters(deps.config.timeZone, deps.mailInterpreter),
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();

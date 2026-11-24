@@ -11,7 +11,10 @@ const idParams = z.object({ id: z.uuid() });
 const LIFECYCLE =
   "An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), " +
   "`partly_shipped`, `shipped`, `partly_delivered`, `delivered`, or `problem` (a parcel not yet " +
-  "delivered reports a problem or is returning). Archiving is automatic (`archive_mode: " +
+  "delivered reports a problem or is returning); and from the shop's emails: `cancelled` " +
+  "(nothing of it arrived), `refunded` (money back without a return), and for an order without " +
+  "parcels `shipped` or `delivered` as the shop reports it. `digital` orders (shops of digital " +
+  "goods) are delivered when bought. Cancelled and refunded orders are archived. Archiving is automatic (`archive_mode: " +
   "automatic`): an order is archived once all its parcels are archived, and parcels archive " +
   "themselves after the retention window (`archiveAfterDays`) once delivered; an order that " +
   "never got a parcel is archived 30 days after it was placed. The owner can " +

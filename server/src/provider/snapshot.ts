@@ -1,3 +1,4 @@
+import type { ReportedOrderStatus } from "../domain/order.js";
 import type { Direction, ParcelStatus } from "../domain/parcel.js";
 import type { DropOffOption, RefundStatus, ReturnStatus } from "../domain/return.js";
 import type { LiveTarget } from "./live.js";
@@ -124,6 +125,25 @@ export interface ReturnSnapshot {
    * can be for a cancelled order) only updates a return already known.
    */
   readonly mayCreate: boolean;
+}
+
+/**
+ * What a connection knows about one order without a parcel to carry it: an order email's
+ * confirmation, shipping or delivery notice, cancellation, or a payment receipt.
+ */
+export interface OrderSnapshot {
+  readonly order: { readonly shop: string; readonly orderNumber: string };
+  /** What the report says happened; null when it says nothing about where the order stands. */
+  readonly status: ReportedOrderStatus | null;
+  /** When the report was made (the email's date); dates the order when nothing else does. */
+  readonly at: string | null;
+  /** Item titles, added to the order's lines where they are new. */
+  readonly items: readonly string[];
+  /**
+   * A payment service's receipt quoting the shop's reference: the shop is not known, so the
+   * report joins the order with this number at whichever shop has it.
+   */
+  readonly payment: boolean;
 }
 
 /** Fills the optional parts of a return report, so connections only spell out what they know. */

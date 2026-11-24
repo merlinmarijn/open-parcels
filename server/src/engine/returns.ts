@@ -6,6 +6,8 @@ import { appendEvent } from "../events/bus.js";
 import { snapshot, type ParcelSnapshot, type ReturnSnapshot } from "../provider/snapshot.js";
 import { loadReturns, localDay } from "../returns/repository.js";
 import { safeUrl } from "./links.js";
+import { createOrder, findOrder } from "./order-rows.js";
+import { markRefunded, type OrderEnv } from "./orders.js";
 
 type Trx = Transaction<Database>;
 type ReturnRow = ReturnTable;
@@ -13,7 +15,7 @@ type ReturnRow = ReturnTable;
 /** Statuses after which a report without the shop's id starts a new return instead. */
 const CLOSED = new Set(["refunded", "rejected", "cancelled"]);
 
-export interface ReturnEnv {
+export interface ReturnEnv extends OrderEnv {
   readonly clock: Clock;
   /** The server's zone: return-by days are its local days. */
   readonly timeZone: string;
@@ -27,31 +29,13 @@ async function orderFor(
   report: ReturnSnapshot,
   now: string,
 ): Promise<{ id: string } | null> {
-  const existing = await trx
-    .selectFrom("orders")
-    .select(["id", "deleted_at"])
-    .where("shop", "=", report.order.shop)
-    .where("order_number", "=", report.order.orderNumber)
-    .executeTakeFirst();
+  const existing = await findOrder(trx, report.order);
   if (existing !== undefined) {
     // The owner deleted the order: what belonged to it is not brought back.
     return existing.deleted_at === null ? { id: existing.id } : null;
   }
   if (!report.mayCreate) return null;
-  const id = crypto.randomUUID();
-  await trx
-    .insertInto("orders")
-    .values({
-      id,
-      shop: report.order.shop,
-      order_number: report.order.orderNumber,
-      placed_at: null,
-      status: null,
-      created_at: now,
-      updated_at: now,
-    })
-    .execute();
-  return { id };
+  return { id: await createOrder(trx, report.order, now) };
 }
 
 /**
@@ -161,12 +145,17 @@ async function applyReturn(
   env: ReturnEnv,
   connectionId: string,
   report: ReturnSnapshot,
-): Promise<{ id: string; events: number } | null> {
+): Promise<{ id: string | null; events: number } | null> {
   const now = isoNow(env.clock);
   const order = await orderFor(trx, report, now);
   if (order === null) return null;
   const row = await findReturn(trx, order.id, report);
-  if (row === undefined && !report.mayCreate) return null;
+  if (row === undefined && !report.mayCreate) {
+    // Money back with no return to file it under: the order itself is refunded.
+    return report.refund?.status === "issued"
+      ? { id: null, events: await markRefunded(trx, env, order.id) }
+      : null;
+  }
   await trx
     .insertInto("order_connections")
     .values({ order_id: order.id, connection_id: connectionId })

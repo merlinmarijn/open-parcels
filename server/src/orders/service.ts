@@ -8,8 +8,11 @@ import {
   orderStatus,
   orderTotal,
   type Order,
+  type OrderStatus,
   type OrderView,
+  type ParcelState as OrderParcelState,
 } from "../domain/order-lifecycle.js";
+import { asReportedOrderStatus, isDigitalShop } from "../domain/order.js";
 import type { OrderItem, Parcel } from "../domain/parcel.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import {
@@ -44,15 +47,23 @@ interface OrderParts {
   readonly returns: Return[];
 }
 
-function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Date): Order {
-  const status = orderStatus(parcels);
-  const archivedAt = orderArchivedAt(
-    row.archive_mode,
-    row.archived_at,
-    parcels,
-    row.placed_at ?? row.created_at,
+/** Status and archive time of an order row with its parcels' states. */
+function orderState(
+  row: OrderRow,
+  parcels: readonly OrderParcelState[],
+  now: Date,
+): { status: OrderStatus; archivedAt: string | null } {
+  const status = orderStatus(parcels, asReportedOrderStatus(row.status));
+  const archivedAt = orderArchivedAt(row.archive_mode, row.archived_at, parcels, {
+    placedAt: row.placed_at ?? row.created_at,
     now,
-  );
+    closed: { status, at: row.updated_at },
+  });
+  return { status, archivedAt };
+}
+
+function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Date): Order {
+  const { status, archivedAt } = orderState(row, parcels, now);
   return {
     id: row.id,
     shop: row.shop,
@@ -61,6 +72,7 @@ function toOrder(row: OrderRow, { items, parcels, returns }: OrderParts, now: Da
     display_name: row.label ?? `${row.shop} ${row.order_number}`,
     placed_at: row.placed_at,
     status,
+    digital: isDigitalShop(row.shop),
     archived: archivedAt !== null,
     archived_at: archivedAt,
     archive_mode: row.archive_mode ?? "automatic",
@@ -127,15 +139,8 @@ export class OrderService {
     const now = this.clock.now();
     const shown = rows
       .filter((row) => {
-        const parcels = states.get(row.id) ?? [];
-        const archivedAt = orderArchivedAt(
-          row.archive_mode,
-          row.archived_at,
-          parcels,
-          row.placed_at ?? row.created_at,
-          now,
-        );
-        return inView(filter.view, orderStatus(parcels), archivedAt !== null);
+        const { status, archivedAt } = orderState(row, states.get(row.id) ?? [], now);
+        return inView(filter.view, status, archivedAt !== null);
       })
       .sort((a, b) => newest(b).localeCompare(newest(a)) || a.id.localeCompare(b.id));
     return {
