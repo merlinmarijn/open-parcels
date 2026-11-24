@@ -1,7 +1,7 @@
 import { mkdtemp, rm, stat, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   availableLayers,
   BUILTIN_LAYERS,
@@ -113,6 +113,51 @@ describe("tile proxy", () => {
     refuse = true;
     await expect(proxy.get("osm", 1, 1, 1)).resolves.toMatchObject({ body: PNG, cached: true });
     await expect(proxy.get("osm", 1, 0, 0)).rejects.toMatchObject({ statusCode: 502 });
+  });
+
+  it("serves a stale tile at once and refreshes it behind, pausing the layer after a failure (OP-028)", async () => {
+    let calls = 0;
+    let upstream: () => Promise<Response> = () => Promise.resolve(png());
+    let now = Date.now();
+    const proxy = new TileProxy({
+      cacheDir: dir,
+      userAgent: "t",
+      now: () => now,
+      fetchImpl: () => {
+        calls += 1;
+        return upstream();
+      },
+    });
+    await proxy.get("osm", 1, 1, 1);
+    const file = path.join(dir, "osm", "1", "1", "1.png");
+    const old = new Date(now - 30 * 24 * 60 * 60 * 1000);
+    await utimes(file, old, old);
+
+    // A tile server that never answers does not hold up the stale tile.
+    upstream = () => new Promise<Response>(() => undefined);
+    await expect(proxy.get("osm", 1, 1, 1)).resolves.toMatchObject({ body: PNG, cached: true });
+    await vi.waitFor(() => {
+      expect(calls).toBe(2);
+    });
+
+    const other = path.join(dir, "osm", "1", "0", "0.png");
+    upstream = () => Promise.resolve(png());
+    await proxy.get("osm", 1, 0, 0);
+    await utimes(other, old, old);
+    upstream = () => Promise.reject(new Error("unreachable"));
+    await expect(proxy.get("osm", 1, 0, 0)).resolves.toMatchObject({ cached: true });
+    await vi.waitFor(async () => {
+      await proxy.get("osm", 1, 0, 0);
+      expect(calls).toBe(4);
+    });
+    // The failed refresh pauses the layer: stale tiles are served without asking.
+    await proxy.get("osm", 1, 0, 0);
+    expect(calls).toBe(4);
+    now += 11 * 60 * 1000;
+    await proxy.get("osm", 1, 0, 0);
+    await vi.waitFor(() => {
+      expect(calls).toBe(5);
+    });
   });
 
   it("stops reading an endless tile at the cap instead of buffering it (OP-004)", async () => {

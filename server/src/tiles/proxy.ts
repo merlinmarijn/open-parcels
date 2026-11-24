@@ -19,6 +19,8 @@ const FRESH_MS = 7 * 24 * 60 * 60 * 1000;
 const MAX_UPSTREAM = 2;
 const MAX_TILE_BYTES = 1024 * 1024;
 const TIMEOUT_MS = 15_000;
+/** After a failed refresh of a stale tile, the layer's stale tiles are served without asking. */
+const REFRESH_BACKOFF_MS = 10 * 60 * 1000;
 
 export class TileError extends Error {
   override readonly name = "TileError";
@@ -67,6 +69,9 @@ export class TileProxy {
   #active = 0;
   readonly #waiting: (() => void)[] = [];
   readonly #inflight = new Map<string, Promise<Tile>>();
+  readonly #refreshing = new Set<string>();
+  /** Per layer cache key: no stale tile is refreshed before this time. */
+  readonly #refreshAfter = new Map<string, number>();
 
   constructor(options: TileProxyOptions) {
     this.#options = options;
@@ -107,23 +112,36 @@ export class TileProxy {
     );
     const now = this.#options.now?.() ?? Date.now();
     const cached = await readCached(file);
-    if (cached !== null && now - cached.mtimeMs < FRESH_MS) {
-      return { body: cached.body, cached: true, contentType };
-    }
-    try {
+    if (cached === null) {
       const body = await this.#fetchUpstream(layer, z, x, y);
-      await mkdir(path.dirname(file), { recursive: true });
-      const temporary = `${file}.${String(process.pid)}.tmp`;
-      await writeFile(temporary, body);
-      await rename(temporary, file);
+      await storeTile(file, body);
       return { body, cached: false, contentType };
-    } catch (error) {
-      // A stale tile beats a broken map while the tile server is unreachable or refusing.
-      if (cached !== null) {
-        return { body: cached.body, cached: true, contentType };
-      }
-      throw error;
     }
+    if (now - cached.mtimeMs >= FRESH_MS) {
+      // A stale tile is served at once and refreshed behind it, so a tile server that is down
+      // never makes the map wait for its time-out.
+      this.#refresh(layer, file, [z, x, y], now);
+    }
+    return { body: cached.body, cached: true, contentType };
+  }
+
+  #refresh(
+    layer: TileLayerDef,
+    file: string,
+    [z, x, y]: readonly [number, number, number],
+    now: number,
+  ): void {
+    if (this.#refreshing.has(file) || now < (this.#refreshAfter.get(layer.cacheKey) ?? 0)) {
+      return;
+    }
+    this.#refreshing.add(file);
+    void this.#fetchUpstream(layer, z, x, y)
+      .then((body) => storeTile(file, body))
+      .catch(() => {
+        // The stale copy stays in use; the layer is not asked again for a while.
+        this.#refreshAfter.set(layer.cacheKey, now + REFRESH_BACKOFF_MS);
+      })
+      .finally(() => this.#refreshing.delete(file));
   }
 
   async #fetchUpstream(layer: TileLayerDef, z: number, x: number, y: number): Promise<Buffer> {
@@ -204,6 +222,13 @@ export class TileProxy {
       next();
     }
   }
+}
+
+async function storeTile(file: string, body: Buffer): Promise<void> {
+  await mkdir(path.dirname(file), { recursive: true });
+  const temporary = `${file}.${String(process.pid)}.tmp`;
+  await writeFile(temporary, body);
+  await rename(temporary, file);
 }
 
 async function listTiles(root: string): Promise<{ path: string; size: number; mtimeMs: number }[]> {
