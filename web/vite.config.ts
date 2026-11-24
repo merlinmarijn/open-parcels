@@ -35,5 +35,8 @@ export default defineConfig({
     environment: "jsdom",
     setupFiles: ["./src/test/setup.ts"],
     css: false,
+    // A skipped test reports green while proving nothing; treat .only leftovers as failures.
+    allowOnly: false,
+    passWithNoTests: false,
   },
 });
