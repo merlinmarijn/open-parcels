@@ -24,6 +24,13 @@ export interface ParcelFilter {
   readonly offset?: number;
 }
 
+/** What an order's status and archiving are derived from (see `order-lifecycle.ts`). */
+export interface OrderParcelState {
+  readonly status: ParcelStatus;
+  readonly delivered: boolean;
+  readonly archived_at: string | null;
+}
+
 /** Parcels per page when no limit is given. */
 export const PARCEL_PAGE_DEFAULT = 500;
 
@@ -33,7 +40,7 @@ function asStatus(value: string | null): ParcelStatus | null {
     : null;
 }
 
-function groupBy<T>(rows: readonly T[], key: (row: T) => string): Map<string, T[]> {
+export function groupBy<T>(rows: readonly T[], key: (row: T) => string): Map<string, T[]> {
   const groups = new Map<string, T[]>();
   for (const row of rows) {
     const id = key(row);
@@ -289,6 +296,37 @@ export class ParcelRepository {
       orderId: row.order_id ?? "",
       parcel: this.#toParcel(row, related),
     }));
+  }
+
+  /**
+   * The effective status, delivered flag and archive time of every visible parcel that belongs to
+   * an order, grouped by order: all an order list needs to place an order in a view, without
+   * loading the parcels' related rows.
+   */
+  async statesByOrder(): Promise<Map<string, OrderParcelState[]>> {
+    const rows = await this.db
+      .selectFrom("parcels")
+      .select(["order_id", "status", "manual_status", "delivered", "archived_at"])
+      .where("order_id", "is not", null)
+      .where(parcelVisible)
+      .execute();
+    const byOrder = new Map<string, OrderParcelState[]>();
+    for (const row of rows) {
+      if (row.order_id === null) continue;
+      const manual = asStatus(row.manual_status);
+      const state: OrderParcelState = {
+        status: effectiveStatus({
+          status: asStatus(row.status) ?? "unknown",
+          manual_status: manual,
+        }),
+        delivered: effectiveDelivered(row.delivered === 1, manual),
+        archived_at: row.archived_at,
+      };
+      const list = byOrder.get(row.order_id);
+      if (list === undefined) byOrder.set(row.order_id, [state]);
+      else list.push(state);
+    }
+    return byOrder;
   }
 
   async findIdByBarcode(carrier: string, barcode: string): Promise<string | undefined> {

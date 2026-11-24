@@ -12,7 +12,12 @@ import {
 } from "../domain/order-lifecycle.js";
 import type { OrderItem, Parcel } from "../domain/parcel.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
-import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
+import {
+  groupBy,
+  ParcelRepository,
+  RAW_PRESENTATION,
+  type Presentation,
+} from "../parcels/repository.js";
 import type { Return } from "../domain/return.js";
 import type { ReturnService } from "../returns/service.js";
 
@@ -103,20 +108,37 @@ export class OrderService {
     this.#parcels = new ParcelRepository(db, presentation);
   }
 
-  /** Orders in the view, newest first; `more` says another page follows. */
+  /**
+   * Orders in the view, newest first; `more` says another page follows. The view is decided from
+   * the orders' rows and their parcels' states alone (the same functions a built order uses), so
+   * only the page's orders are built with their lines, parcels and returns.
+   */
   async list(filter: OrderFilter): Promise<{ orders: Order[]; more: boolean }> {
-    const rows = await this.db
-      .selectFrom("orders")
-      .selectAll()
-      .where("deleted_at", "is", null)
-      .where(orderVisible)
-      .execute();
-    const all = await this.#build(rows);
-    const shown = all
-      .filter((order) => inView(filter.view, order.status, order.archived))
+    const [rows, states] = await Promise.all([
+      this.db
+        .selectFrom("orders")
+        .selectAll()
+        .where("deleted_at", "is", null)
+        .where(orderVisible)
+        .execute(),
+      this.#parcels.statesByOrder(),
+    ]);
+    const now = this.clock.now();
+    const shown = rows
+      .filter((row) => {
+        const parcels = states.get(row.id) ?? [];
+        const archivedAt = orderArchivedAt(
+          row.archive_mode,
+          row.archived_at,
+          parcels,
+          row.placed_at ?? row.created_at,
+          now,
+        );
+        return inView(filter.view, orderStatus(parcels), archivedAt !== null);
+      })
       .sort((a, b) => newest(b).localeCompare(newest(a)) || a.id.localeCompare(b.id));
     return {
-      orders: shown.slice(filter.offset, filter.offset + filter.limit),
+      orders: await this.#build(shown.slice(filter.offset, filter.offset + filter.limit)),
       more: shown.length > filter.offset + filter.limit,
     };
   }
@@ -209,23 +231,24 @@ export class OrderService {
       this.returns?.byOrders(ids) ?? Promise.resolve([]),
     ]);
     const now = this.clock.now();
+    const linesOf = groupBy(lines, (line) => line.order_id);
+    const parcelsOf = groupBy(parcels, (entry) => entry.orderId);
+    const returnsOf = groupBy(returns, (entry) => entry.order_id);
     return rows.map((row) =>
       toOrder(
         row,
         {
-          items: lines
-            .filter((line) => line.order_id === row.id)
-            .map((line) => ({
-              title: line.title,
-              image_url: this.presentation.imagePath(line.image_ref),
-              url: line.url,
-              quantity: line.quantity,
-              price: line.price,
-              currency: line.currency,
-              parcel_id: line.parcel_id,
-            })),
-          parcels: parcels.filter((entry) => entry.orderId === row.id).map((entry) => entry.parcel),
-          returns: returns.filter((entry) => entry.order_id === row.id),
+          items: (linesOf.get(row.id) ?? []).map((line) => ({
+            title: line.title,
+            image_url: this.presentation.imagePath(line.image_ref),
+            url: line.url,
+            quantity: line.quantity,
+            price: line.price,
+            currency: line.currency,
+            parcel_id: line.parcel_id,
+          })),
+          parcels: (parcelsOf.get(row.id) ?? []).map((entry) => entry.parcel),
+          returns: returnsOf.get(row.id) ?? [],
         },
         now,
       ),
@@ -234,6 +257,6 @@ export class OrderService {
 }
 
 /** Sorted by when the order was placed, else when it was first seen. */
-function newest(order: Order): string {
+function newest(order: OrderRow): string {
   return order.placed_at ?? order.created_at;
 }

@@ -65,13 +65,40 @@ export const keys = {
   data: ["data"] as const,
 };
 
+/**
+ * Every page of a paged list: the server says a full page may have more after it, so pages are
+ * read until one comes back short. Lists are searched and counted in the browser, so a list cut
+ * at one page would quietly miss parcels or orders.
+ */
+export async function allPages<T>(
+  limit: number,
+  page: (offset: number) => Promise<readonly T[]>,
+): Promise<T[]> {
+  const all: T[] = [];
+  for (let offset = 0; ; offset += limit) {
+    const rows = await page(offset);
+    all.push(...rows);
+    if (rows.length < limit) return all;
+  }
+}
+
+/** The server's largest pages for these lists. */
+const PARCEL_PAGE = 1000;
+const ORDER_PAGE = 500;
+
 export function useParcels(includeArchived: boolean) {
   return useQuery({
     queryKey: keys.parcelList(includeArchived),
     queryFn: ({ signal }) =>
-      getApiV1Parcels(
-        { limit: 1000, ...(includeArchived ? { include_archived: "true" } : {}) },
-        { signal },
+      allPages(PARCEL_PAGE, (offset) =>
+        getApiV1Parcels(
+          {
+            limit: PARCEL_PAGE,
+            offset,
+            ...(includeArchived ? { include_archived: "true" } : {}),
+          },
+          { signal },
+        ),
       ),
     // Switching "Include archived" keeps showing the current list until the other one arrives.
     placeholderData: keepPreviousData,
@@ -227,7 +254,10 @@ export function useDeleteParcel() {
 export function useOrders(view: OrderView) {
   return useQuery({
     queryKey: keys.orderList(view),
-    queryFn: ({ signal }) => getApiV1Orders({ view, limit: 500 }, { signal }),
+    queryFn: ({ signal }) =>
+      allPages(ORDER_PAGE, (offset) =>
+        getApiV1Orders({ view, limit: ORDER_PAGE, offset }, { signal }),
+      ),
     placeholderData: keepPreviousData,
   });
 }

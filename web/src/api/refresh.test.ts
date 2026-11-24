@@ -1,7 +1,7 @@
 import { QueryClient } from "@tanstack/react-query";
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { throttled } from "./events";
-import { invalidateParcelViews } from "./queries";
+import { allPages, invalidateParcelViews } from "./queries";
 
 describe("refreshing after a parcel edit", () => {
   it("refreshes the calendar and the orders too, not only the lists", async () => {
@@ -50,5 +50,18 @@ describe("list refreshes for live updates", () => {
     lists.cancel();
     vi.advanceTimersByTime(120_000);
     expect(refresh).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("reading a paged list", () => {
+  it("reads pages until one comes back short, so no list stops at one page (OP-064)", async () => {
+    const rows = Array.from({ length: 5 }, (_, index) => index);
+    const offsets: number[] = [];
+    const all = await allPages(2, (offset) => {
+      offsets.push(offset);
+      return Promise.resolve(rows.slice(offset, offset + 2));
+    });
+    expect(all).toEqual(rows);
+    expect(offsets).toEqual([0, 2, 4]);
   });
 });

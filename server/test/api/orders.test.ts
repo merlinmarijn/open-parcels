@@ -35,6 +35,18 @@ async function list(view: string): Promise<Order[]> {
   return response.json<Order[]>();
 }
 
+async function onePage(
+  view: string,
+  offset: string,
+): Promise<{ orders: Order[]; next: string | null }> {
+  const response = await app.inject({
+    url: `/api/v1/orders?view=${view}&limit=1&offset=${offset}`,
+    headers,
+  });
+  const next = response.headers["x-next-offset"];
+  return { orders: response.json<Order[]>(), next: typeof next === "string" ? next : null };
+}
+
 async function demoOrder(): Promise<Order> {
   const order = (await list("all")).find((entry) => entry.order_number === "DEMO-1001");
   if (order === undefined) throw new Error("no demo order");
@@ -124,6 +136,20 @@ describe("orders API", () => {
     expect((await list("all")).map((entry) => entry.order_number)).not.toContain("DEMO-1001");
     const again = await app.inject({ url: `/api/v1/parcels/${parcelId}`, headers });
     expect(again.json<{ order: unknown }>().order).toBeNull();
+  });
+
+  it("pages a view one order at a time, built and sorted as the whole list (OP-063)", async () => {
+    for (const view of ["all", "open", "archived"]) {
+      const whole = await list(view);
+      const paged: Order[] = [];
+      for (let offset: string | null = "0"; offset !== null;) {
+        const page = await onePage(view, offset);
+        paged.push(...page.orders);
+        offset = page.next;
+      }
+      expect(paged).toEqual(whole);
+    }
+    expect((await list("all")).length).toBeGreaterThan(1);
   });
 
   it("answers 404 for unknown orders", async () => {
