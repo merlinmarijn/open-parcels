@@ -23,6 +23,7 @@ export default defineConfig({
       "/api": { target: API_TARGET, changeOrigin: false },
       "/img": { target: API_TARGET },
       "/ical": { target: API_TARGET },
+      "/tiles": { target: API_TARGET },
     },
   },
   build: {
