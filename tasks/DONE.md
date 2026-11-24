@@ -4,6 +4,20 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- Migrate, don't keep legacy code (owner decision): the glossary rename's one-release aliases are
+  gone (`/api/v1/sources`, `plugin`, `source_kinds`, `sources`/`source_id`, `barcode`,
+  `planned_*`, `legacy_direction`, old-named live events, `positionAt`, `/sources` redirect;
+  `53148a0`), Home Assistant import markers migrated (0020, `2367cbd`), rule in AGENT.md, glossary
+  and changelog (`862cb55`)
+- Orders from order emails (TODO §4 order emails, §5 shop emails of rules dev.11): confirmations,
+  shipping and delivery notices, cancellations, refunds without a return, digital orders, PayPal
+  receipts merged into the shop's order, Shopify shops by sender, `order.created`
+  (`ffb09f8`, web `3ed764e`, `256e7fe`)
+- Rules 2.0.0-dev.13 (email API names, released from open-parcels-rules `d0e95c7`) with order
+  totals from emails (shop's total wins over PayPal's, migration 0021) and Boykisser.gg
+  (`938fde4`, `ef643c1`)
+- Fallback services: engine hand-over (`a730d6e`), Universal lookup (`a09a5e8`), 17TRACK with the
+  user's API key (`fdb9eb4`), README, glossary and changelog (`4b8686d`)
 - Glossary pass in the server repo (TODO §3 first item, with OP-044): migration 0019 (sources →
   connections, barcode → tracking_number, planned → expected, incoming/outgoing →
   receiving/sending; `e32802c`), API with the old names kept for one release (`/api/v1/sources`

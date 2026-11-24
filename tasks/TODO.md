@@ -95,20 +95,20 @@ already fixed. Still open, by audit group:
 - [ ] Move return detail reading (deadline, drop-off, cost) from the server into the rules/providers
 - [ ] Verify the Amazon return-window parsing on a live account run
 - [ ] Re-read old emails on demand so past returns appear (part of "Clear data" / history import)
-- [ ] Order emails: the server acts only on parcel and return emails. Order events from the rules
-      (`order_placed`, `order_confirmed`, `order_shipped`, `order_delivered` (rules 2.0.0-dev.11),
-      `order_cancelled`) are ignored; at least `order_delivered` should mark an order without a
-      parcel delivered (a test pins today's ignoring: `server/test/mail/order-events.test.ts`)
+- [ ] PayPal refund emails name no order number (rule `return-paypal`): match them to orders by
+      amount and payee, or have the rules extract the shop's reference
+- [ ] Order emails whose shipping part has a tracking number but no carrier the rules detect are
+      dropped; with a fallback service they could become parcels filed under it
 
 ## 5. New connections (from the email backup inventory)
 
-- [ ] Use the shop emails of rules 2.0.0-dev.11 (AliExpress, PayPal receipts, eBay, Temu,
-      MediaMarkt, Mindfactory, reichelt, Netto, Rasppishop, KSP, digital stores): needs the order
-      emails item in §4, since order-only emails create nothing yet
 - [ ] Berrybase, sertronics.shop: order history where offered, else email rules
-- [ ] boykisser.gg and Banggood: need sample emails before rules can be written
-- [ ] Order totals: needs a rule field in open-parcels-rules
-- [ ] 17track as a fallback tracking connection
+- [ ] Banggood: needs sample emails before rules can be written
+- [ ] Fallback services on a private network: the HTTP layer refuses non-public addresses, so a
+      universal-lookup service on the LAN cannot be used; decide on an opt-in per connection
+- [ ] Unkeyed fingerprints of Home Assistant import markers (written before keyed ones) are still
+      recognised (`legacyFingerprint`); they cannot be migrated without the HA credentials, so
+      drop the fallback once no install has such markers
 
 ## 6. Home Assistant integration (open-parcels-ha)
 
