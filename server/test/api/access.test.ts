@@ -34,7 +34,7 @@ import {
 
 const NEW_PASSWORD = ["a", "brand", "new", "admin", "secret"].join(" ");
 const ENV_ADMIN = ["admin", "from", "the", "environment"].join(" ");
-const BARCODE = { carrier: "dhl", barcode: "00340434000000000001" };
+const TRACKING_NUMBER = { carrier: "dhl", tracking_number: "00340434000000000001" };
 
 let context: TestContext | undefined;
 afterEach(async () => {
@@ -114,7 +114,11 @@ describe("reading without OPENPARCELS_PASSWORD", () => {
       role: "reader",
       reader_required: false,
     });
-    const write = await app.inject({ method: "POST", url: "/api/v1/parcels", payload: BARCODE });
+    const write = await app.inject({
+      method: "POST",
+      url: "/api/v1/parcels",
+      payload: TRACKING_NUMBER,
+    });
     expect(write.statusCode).toBe(401);
     // Admin-only reads stay closed.
     expect((await app.inject("/api/v1/tokens")).statusCode).toBe(403);
@@ -144,7 +148,7 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers: headersOf(reader),
-      payload: BARCODE,
+      payload: TRACKING_NUMBER,
     });
     expect(write.statusCode).toBe(403);
     expect(write.json()).toMatchObject({ error: "admin_required" });
@@ -266,7 +270,11 @@ describe("percent-encoded paths (OP-001)", () => {
     const { ctx, app } = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
     await signIn(ctx, app);
     expect((await app.inject("/%61pi/v1/parcels")).statusCode).toBe(401);
-    const write = await app.inject({ method: "POST", url: "/%61pi/v1/parcels", payload: BARCODE });
+    const write = await app.inject({
+      method: "POST",
+      url: "/%61pi/v1/parcels",
+      payload: TRACKING_NUMBER,
+    });
     expect(write.statusCode).toBe(401);
   });
 
@@ -336,7 +344,7 @@ describe("writes", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers: { cookie: owner.cookie },
-      payload: BARCODE,
+      payload: TRACKING_NUMBER,
     });
     expect(response.json()).toMatchObject({ error: "csrf" });
   });
@@ -362,7 +370,7 @@ describe("API tokens", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers: bearer(write),
-      payload: BARCODE,
+      payload: TRACKING_NUMBER,
     });
     expect(created.statusCode).toBe(201);
     // A write token (the Home Assistant integration's) still cannot manage tokens.
@@ -388,7 +396,7 @@ describe("Home Assistant ingress", () => {
       method: "POST",
       url: "/api/v1/parcels",
       remoteAddress: HA_INGRESS_ADDRESS,
-      payload: BARCODE,
+      payload: TRACKING_NUMBER,
     });
     expect(created.statusCode).toBe(201);
   });
@@ -522,7 +530,7 @@ describe("upgrading from the single owner password", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: BARCODE,
+      payload: TRACKING_NUMBER,
     });
     expect(created.statusCode).toBe(201);
     expect((await signInWith(app, OWNER_PASSWORD)).role).toBe("admin");

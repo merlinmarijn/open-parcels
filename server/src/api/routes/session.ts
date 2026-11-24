@@ -14,15 +14,15 @@ const passwordSchema = z
   .max(256);
 
 const sessionStateSchema = z.object({
-  authenticated: z.boolean().describe("Signed in, or a token or Home Assistant ingress."),
+  authenticated: z.boolean().describe("Logged in, or a token or Home Assistant ingress."),
   method: z.enum(["ingress", "token", "session", "anonymous"]).nullable(),
   role: z
     .enum(ROLES)
     .nullable()
-    .describe("What the caller may do; reader when reading is open. Null: must sign in first."),
+    .describe("What the caller may do; reader when reading is open. Null: must log in first."),
   scopes: z.array(z.enum(SCOPES)),
   csrf_token: z.string().nullable(),
-  reader_required: z.boolean().describe("OPENPARCELS_PASSWORD is set: reading needs a sign-in."),
+  reader_required: z.boolean().describe("OPENPARCELS_PASSWORD is set: reading needs a login."),
   setup_required: z.boolean(),
   reader_password_notice: z
     .boolean()
@@ -54,7 +54,7 @@ async function startSession(
 
 /**
  * Behind a reverse proxy that is not in OPENPARCELS_TRUST_PROXY every visitor shares the proxy's
- * address, so one person's wrong passwords block everyone's sign-in. Said once in the log.
+ * address, so one person's wrong passwords block everyone's login. Said once in the log.
  */
 function proxyWarning(services: Services): (request: FastifyRequest) => void {
   let warned = false;
@@ -63,7 +63,7 @@ function proxyWarning(services: Services): (request: FastifyRequest) => void {
     if (request.ip !== request.socket.remoteAddress) return;
     warned = true;
     services.logger.warn(
-      "Sign-ins arrive through a proxy that OPENPARCELS_TRUST_PROXY does not list: every visitor shares its address for the sign-in throttle. Add the proxy's address to OPENPARCELS_TRUST_PROXY.",
+      "Logins arrive through a proxy that OPENPARCELS_TRUST_PROXY does not list: every visitor shares its address for the login throttle. Add the proxy's address to OPENPARCELS_TRUST_PROXY.",
     );
   };
 }
@@ -233,7 +233,7 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
       schema: {
         tags: ["session"],
         summary:
-          "Sign in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).",
+          "Log in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).",
         security: [],
         body: z.object({ password: z.string().max(256) }),
         response: {
@@ -249,7 +249,7 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
       const role = await services.access.roleFor(request.body.password);
       if (role === null) {
         throttle.recordFailure(request.ip);
-        services.logger.info({ ip: request.ip }, "A sign-in failed.");
+        services.logger.info({ ip: request.ip }, "A login failed.");
         throw new ApiError(401, "wrong_password", "That password is not correct.");
       }
       throttle.reset(request.ip);
@@ -262,8 +262,8 @@ export function registerSessionRoutes(app: TypedApp, services: Services): void {
     {
       schema: {
         tags: ["session"],
-        summary: "Sign out of this browser session.",
-        // Anyone may sign out, readers included; it only ends the caller's own session.
+        summary: "Log out of this browser session.",
+        // Anyone may log out, readers included; it only ends the caller's own session.
         security: [],
         response: { 204: z.null() },
       },

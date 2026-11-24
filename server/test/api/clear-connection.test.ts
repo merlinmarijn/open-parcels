@@ -8,22 +8,22 @@ import { createTestContext, signIn, type TestContext } from "../helpers.js";
 let context: TestContext;
 let app: App;
 let headers: Record<string, string>;
-let shopSource: string;
+let shopConnection: string;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  const source = await context.services.sources.create({
-    plugin: "demo_shop",
+  const connection = await context.services.connections.create({
+    provider: "demo_shop",
     kind: "shop",
     label: "Demo shop",
     config: {},
     secret: null,
   });
-  shopSource = source.id;
-  await context.services.runner.run(source.id);
+  shopConnection = connection.id;
+  await context.services.runner.run(connection.id);
 });
 afterEach(async () => {
   await context.close();
@@ -40,27 +40,30 @@ interface Counts {
   shared: number;
 }
 
-describe("clearing a source", () => {
+describe("clearing a connection", () => {
   it("counts first, then removes what only it reported and imports it again", async () => {
     const before = await orders();
     expect(before.length).toBeGreaterThan(0);
 
-    const preview = await app.inject({ url: `/api/v1/sources/${shopSource}/data`, headers });
+    const preview = await app.inject({
+      url: `/api/v1/connections/${shopConnection}/data`,
+      headers,
+    });
     expect(preview.statusCode).toBe(200);
     const counts = preview.json<Counts>();
     expect(counts.orders).toBe(before.length);
     expect(counts.parcels).toBeGreaterThan(0);
 
-    // Disabled, so the cleared source does not run again inside the test.
+    // Disabled, so the cleared connection does not run again inside the test.
     await app.inject({
       method: "PATCH",
-      url: `/api/v1/sources/${shopSource}`,
+      url: `/api/v1/connections/${shopConnection}`,
       headers,
       payload: { enabled: false },
     });
     const cleared = await app.inject({
       method: "POST",
-      url: `/api/v1/sources/${shopSource}/clear`,
+      url: `/api/v1/connections/${shopConnection}/clear`,
       headers,
     });
     expect(cleared.statusCode).toBe(200);
@@ -70,8 +73,8 @@ describe("clearing a source", () => {
     expect(await db.selectFrom("orders").select("id").execute()).toEqual([]);
     expect(
       await db
-        .selectFrom("parcel_sources")
-        .where("source_id", "=", shopSource)
+        .selectFrom("parcel_connections")
+        .where("connection_id", "=", shopConnection)
         .selectAll()
         .execute(),
     ).toEqual([]);
@@ -79,14 +82,14 @@ describe("clearing a source", () => {
     expect(types).toContain("order.deleted");
     expect(types).toContain("parcel.deleted");
 
-    // The source and its sign-in stay; a run imports everything again.
+    // The connection and its sign-in stay; a run imports everything again.
     await app.inject({
       method: "PATCH",
-      url: `/api/v1/sources/${shopSource}`,
+      url: `/api/v1/connections/${shopConnection}`,
       headers,
       payload: { enabled: true },
     });
-    await context.services.runner.run(shopSource);
+    await context.services.runner.run(shopConnection);
     expect((await orders()).map((order) => order.order_number).sort()).toEqual(
       before.map((order) => order.order_number).sort(),
     );
@@ -95,7 +98,7 @@ describe("clearing a source", () => {
   it("needs the admin", async () => {
     const response = await app.inject({
       method: "POST",
-      url: `/api/v1/sources/${shopSource}/clear`,
+      url: `/api/v1/connections/${shopConnection}/clear`,
     });
     expect(response.statusCode).toBe(401);
   });

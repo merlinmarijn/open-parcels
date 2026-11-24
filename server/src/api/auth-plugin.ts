@@ -95,7 +95,7 @@ async function resolveAuth(
 }
 
 /**
- * A check that the credential this request came with is still valid: the session not signed out
+ * A check that the credential this request came with is still valid: the session not logged out
  * or expired, the token not revoked, reading still open. Long-lived responses (the event stream)
  * call it to end themselves when their access ends.
  */
@@ -140,9 +140,9 @@ function checkCsrf(request: FastifyRequest, auth: AuthContext): void {
 }
 
 /**
- * Routes anyone may call: those that declare `security: []` in their schema (sign-in, setup,
+ * Routes anyone may call: those that declare `security: []` in their schema (login, setup,
  * health, the secret calendar feed) and the web UI's own files, which hold no data and must load
- * so the sign-in page can show. Decided from the route that matched, never from the raw URL alone:
+ * so the login page can show. Decided from the route that matched, never from the raw URL alone:
  * the router decodes the path, so `/%61pi/v1/...` reaches an API route while its raw URL does
  * not look like one.
  */
@@ -155,7 +155,7 @@ function isPublicRoute(request: FastifyRequest): boolean {
 
 /**
  * The access rule for every route, so new routes are covered without opting in: reading needs a
- * reader sign-in when OPENPARCELS_PASSWORD is set (else nothing), anything else needs the admin.
+ * reader login when OPENPARCELS_PASSWORD is set (else nothing), anything else needs the admin.
  */
 function checkAccess(request: FastifyRequest): void {
   if (request.is404 || isPublicRoute(request)) return;
@@ -166,7 +166,7 @@ function checkAccess(request: FastifyRequest): void {
   throw new ApiError(
     403,
     "admin_required",
-    "Only the admin may change anything. Sign in with the admin password.",
+    "Only the admin may change anything. Log in with the admin password.",
   );
 }
 

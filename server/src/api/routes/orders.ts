@@ -114,7 +114,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
         summary: "Delete an order; its parcels are kept and unlinked.",
         description:
           "The order's lines go and its parcels stay tracked without it. The shop and order " +
-          "number are remembered, so a shop source listing the order again does not re-create " +
+          "number are remembered, so a shop connection listing the order again does not re-create " +
           "it. Fires `order.deleted`.",
         params: idParams,
         response: { 204: z.null(), 404: errorBodySchema },

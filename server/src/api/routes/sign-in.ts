@@ -1,7 +1,7 @@
 import type { FastifyReply } from "fastify";
 import { z } from "zod";
 import { SignInError, type AttemptView, type SignInErrorCode } from "../../engine/sign-in.js";
-import type { SignInStep } from "../../plugin/api.js";
+import type { SignInStep } from "../../provider/api.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
@@ -96,7 +96,7 @@ const STATUS: Readonly<Record<SignInErrorCode, number>> = {
   sign_in_unavailable: 503,
   sign_in_captcha: 503,
   no_sign_in: 400,
-  invalid_source: 400,
+  invalid_connection: 400,
   not_found: 404,
 };
 
@@ -163,7 +163,7 @@ function failWith(reply: FastifyReply | null) {
 
 /**
  * Sign-in. Interactive flows run as attempts: start one, answer each step, poll while it waits for
- * an approval on another device. The plug-in's state stays encrypted on the server. The old
+ * an approval on another device. The provider's state stays encrypted on the server. The old
  * `start`/`finish` pair still drives a pasted-link flow in one call each.
  */
 export function registerSignInRoutes(app: TypedApp, services: Services): void {
@@ -171,12 +171,12 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
   const { signIn } = services;
 
   app.get(
-    "/api/v1/sources/:id/sign-in/flows",
+    "/api/v1/connections/:id/sign-in/flows",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "The ways this source can sign in, the default first.",
+        tags: ["connections"],
+        summary: "The ways this connection can sign in, the default first.",
         params: idParams,
         response: { 200: z.array(flowSchema), 404: errorBodySchema },
       },
@@ -192,12 +192,13 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
   );
 
   app.post(
-    "/api/v1/sources/:id/sign-in/attempts",
+    "/api/v1/connections/:id/sign-in/attempts",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Start an interactive sign-in. Replaces an unfinished one for the same source.",
+        tags: ["connections"],
+        summary:
+          "Start an interactive sign-in. Replaces an unfinished one for the same connection.",
         params: idParams,
         body: z.object({ flow: z.string().max(64).optional() }).default({}),
         response: { 200: attemptSchema, ...errors },
@@ -208,11 +209,11 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
   );
 
   app.post(
-    "/api/v1/sources/:id/sign-in/attempts/:attempt/continue",
+    "/api/v1/connections/:id/sign-in/attempts/:attempt/continue",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
+        tags: ["connections"],
         summary: "Answer the current step. A refused code keeps the step for another try.",
         params: attemptParams,
         body: z.object({ input: z.record(z.string().max(64), z.string().max(8192)) }),
@@ -230,11 +231,11 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
   );
 
   app.post(
-    "/api/v1/sources/:id/sign-in/attempts/:attempt/poll",
+    "/api/v1/connections/:id/sign-in/attempts/:attempt/poll",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
+        tags: ["connections"],
         summary:
           "Check an approval step. Refused (429) when called faster than the step's interval; " +
           "fails with sign_in_timeout after its timeout.",
@@ -253,11 +254,11 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
   );
 
   app.delete(
-    "/api/v1/sources/:id/sign-in/attempts/:attempt",
+    "/api/v1/connections/:id/sign-in/attempts/:attempt",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
+        tags: ["connections"],
         summary: "Cancel an unfinished sign-in.",
         params: attemptParams,
         response: { 204: z.null(), 404: errorBodySchema },
@@ -280,11 +281,11 @@ function registerPastedRoutes(app: TypedApp, services: Services): void {
   const { signIn } = services;
 
   app.post(
-    "/api/v1/sources/:id/sign-in/start",
+    "/api/v1/connections/:id/sign-in/start",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
+        tags: ["connections"],
         summary: "Start a pasted-link sign-in: returns the address to open in your browser.",
         params: idParams,
         response: {
@@ -305,18 +306,18 @@ function registerPastedRoutes(app: TypedApp, services: Services): void {
       }
       throw new ApiError(
         400,
-        "invalid_source",
-        "This source does not sign in with a pasted link; use the sign-in attempts.",
+        "invalid_connection",
+        "This connection does not sign in with a pasted link; use the sign-in attempts.",
       );
     },
   );
 
   app.post(
-    "/api/v1/sources/:id/sign-in/finish",
+    "/api/v1/connections/:id/sign-in/finish",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
+        tags: ["connections"],
         summary: "Finish a pasted-link sign-in with the address the browser ended on.",
         params: idParams,
         body: z.object({ pasted: z.string().min(1).max(8192) }),

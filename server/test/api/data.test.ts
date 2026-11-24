@@ -10,18 +10,18 @@ let app: App;
 let headers: Record<string, string>;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  const source = await context.services.sources.create({
-    plugin: "demo_shop",
+  const connection = await context.services.connections.create({
+    provider: "demo_shop",
     kind: "shop",
     label: "Demo shop",
     config: {},
     secret: null,
   });
-  await context.services.runner.run(source.id);
+  await context.services.runner.run(connection.id);
 });
 afterEach(async () => {
   await context.close();
@@ -108,7 +108,9 @@ describe("data page", () => {
     const after = await summary();
     expect(after.parcels).toBe(0);
     expect(after.orders).toBe(0);
-    expect(await context.services.db.selectFrom("sources").select("id").execute()).toHaveLength(1);
+    expect(await context.services.db.selectFrom("connections").select("id").execute()).toHaveLength(
+      1,
+    );
   });
 
   it("needs the admin", async () => {

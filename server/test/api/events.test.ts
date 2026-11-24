@@ -77,11 +77,11 @@ async function readMessages(response: Response, count: number): Promise<SseMessa
   return messages;
 }
 
-async function track(barcode: string): Promise<void> {
+async function track(trackingNumber: string): Promise<void> {
   const response = await fetch(`${baseUrl}/api/v1/parcels`, {
     method: "POST",
     headers: { authorization: `Bearer ${token}`, "content-type": "application/json" },
-    body: JSON.stringify({ carrier: "dhl", barcode }),
+    body: JSON.stringify({ carrier: "dhl", tracking_number: trackingNumber }),
   });
   expect(response.status).toBe(201);
 }
@@ -136,7 +136,7 @@ describe("SSE event stream", () => {
     expect(ready).toMatchObject({ event: "ready", id: "0", data: { seq: 0 } });
     expect(message?.event).toBe("parcel.registered");
     expect(message?.data).toMatchObject({
-      parcel: { barcode: "00340434000000000001", status: "registered" },
+      parcel: { tracking_number: "00340434000000000001", status: "registered" },
     });
   });
 
@@ -161,10 +161,10 @@ describe("SSE event stream", () => {
     await track("00340434000000000004");
     const messages = await pending;
     controller.abort();
-    const barcodes = messages.map(
-      (message) => (message.data as { parcel: { barcode: string } }).parcel.barcode,
+    const trackingNumbers = messages.map(
+      (message) => (message.data as { parcel: { tracking_number: string } }).parcel.tracking_number,
     );
-    expect(barcodes).toEqual([
+    expect(trackingNumbers).toEqual([
       "00340434000000000002",
       "00340434000000000003",
       "00340434000000000004",

@@ -19,19 +19,19 @@ afterEach(async () => {
 });
 
 async function parcelWithWindow(
-  barcode: string,
+  trackingNumber: string,
   from: string | null,
   to: string | null,
 ): Promise<string> {
   const parcel = await context.services.parcels.create({
     carrier: "dhl",
-    barcode,
-    direction: "incoming",
-    label: `Parcel ${barcode}`,
+    trackingNumber,
+    direction: "receiving",
+    label: `Parcel ${trackingNumber}`,
   });
   await context.services.db
     .updateTable("parcels")
-    .set({ planned_from: from, planned_to: to })
+    .set({ expected_from: from, expected_to: to })
     .where("id", "=", parcel.id)
     .execute();
   return parcel.id;
@@ -79,7 +79,7 @@ describe("calendar entries", () => {
 
     await context.services.db
       .updateTable("parcels")
-      .set({ planned_from: "2026-11-20T16:15:00Z", planned_to: "2026-11-20T18:15:00Z" })
+      .set({ expected_from: "2026-11-20T16:15:00Z", expected_to: "2026-11-20T18:15:00Z" })
       .where("id", "=", id)
       .execute();
     const [narrowed] = await calendar("2026-11-18T00:00:00Z", "2026-11-30T00:00:00Z");
@@ -94,8 +94,8 @@ describe("calendar entries", () => {
     await parcelWithWindow("00340434000000000002", "2026-11-17T10:00:00Z", "2026-11-17T12:00:00Z");
     const delivered = await context.services.parcels.create({
       carrier: "dhl",
-      barcode: "00340434000000000003",
-      direction: "incoming",
+      trackingNumber: "00340434000000000003",
+      direction: "receiving",
       label: null,
     });
     await context.services.db
@@ -192,8 +192,8 @@ describe("archived parcels", () => {
   it("keep their delivery in the calendar and the feed; archived undelivered ones do not show", async () => {
     const delivered = await context.services.parcels.create({
       carrier: "dhl",
-      barcode: "00340434000000000011",
-      direction: "incoming",
+      trackingNumber: "00340434000000000011",
+      direction: "receiving",
       label: "Archived delivery",
     });
     const lost = await parcelWithWindow(

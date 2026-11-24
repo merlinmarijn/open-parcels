@@ -8,7 +8,7 @@ let app: App;
 let headers: Record<string, string>;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [fakePost(new FakeWorld())] });
+  context = await createTestContext({ providers: [fakePost(new FakeWorld())] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
@@ -19,7 +19,7 @@ afterEach(async () => {
 
 const credentials = { username: "user@example.invalid", password: ["made", "up"].join("-") };
 
-describe("carriers and sources API", () => {
+describe("carriers and connections API", () => {
   it("lists installed carriers with their form schema", async () => {
     const carriers = (await app.inject({ url: "/api/v1/carriers", headers })).json<
       { id: string; sign_in: string; config_schema: unknown }[]
@@ -33,47 +33,47 @@ describe("carriers and sources API", () => {
     for (const type of ["application/octet-stream", "application/json", undefined]) {
       const response = await app.inject({
         method: "POST",
-        url: `/api/v1/sources/${missing}/sync`,
+        url: `/api/v1/connections/${missing}/sync`,
         headers: type === undefined ? headers : { ...headers, "content-type": type },
       });
       expect(response.statusCode).toBe(404);
     }
     const junk = await app.inject({
       method: "POST",
-      url: `/api/v1/sources/${missing}/sync`,
+      url: `/api/v1/connections/${missing}/sync`,
       headers: { ...headers, "content-type": "application/octet-stream" },
       payload: Buffer.from("x"),
     });
     expect(junk.statusCode).toBe(415);
   });
 
-  it("creates a source without ever returning its sign-in data", async () => {
+  it("creates a connection without ever returning its sign-in data", async () => {
     const created = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
-      payload: { plugin: "fakepost", kind: "account", label: "Mine", secret: credentials },
+      payload: { provider: "fakepost", kind: "account", label: "Mine", secret: credentials },
     });
     expect(created.statusCode).toBe(201);
     expect(created.body).not.toContain("example.invalid");
     expect(created.json()).toMatchObject({ has_secret: true, state: "ok" });
-    const listed = await app.inject({ url: "/api/v1/sources", headers });
+    const listed = await app.inject({ url: "/api/v1/connections", headers });
     expect(listed.body).not.toContain("made-up");
   });
 
-  it("rejects unknown plug-ins and kinds the plug-in does not offer", async () => {
+  it("rejects unknown providers and kinds the provider does not offer", async () => {
     const unknown = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
-      payload: { plugin: "nope", kind: "account", label: "x" },
+      payload: { provider: "nope", kind: "account", label: "x" },
     });
     expect(unknown.statusCode).toBe(400);
     const wrongKind = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers,
-      payload: { plugin: "fakepost", kind: "shop", label: "x" },
+      payload: { provider: "fakepost", kind: "shop", label: "x" },
     });
     expect(wrongKind.statusCode).toBe(400);
   });
@@ -82,16 +82,16 @@ describe("carriers and sources API", () => {
     const id = (
       await app.inject({
         method: "POST",
-        url: "/api/v1/sources",
+        url: "/api/v1/connections",
         headers,
-        payload: { plugin: "fakepost", kind: "account", label: "Mine", secret: credentials },
+        payload: { provider: "fakepost", kind: "account", label: "Mine", secret: credentials },
       })
     ).json<{ id: string }>().id;
     expect(
       (
         await app.inject({
           method: "PATCH",
-          url: `/api/v1/sources/${id}`,
+          url: `/api/v1/connections/${id}`,
           headers,
           payload: { enabled: false },
         })
@@ -101,7 +101,7 @@ describe("carriers and sources API", () => {
       (
         await app.inject({
           method: "PATCH",
-          url: `/api/v1/sources/${id}`,
+          url: `/api/v1/connections/${id}`,
           headers,
           payload: { enabled: true, label: "Renamed" },
         })
@@ -111,32 +111,34 @@ describe("carriers and sources API", () => {
       (
         await app.inject({
           method: "PUT",
-          url: `/api/v1/sources/${id}/secret`,
+          url: `/api/v1/connections/${id}/secret`,
           headers,
           payload: { secret: credentials },
         })
       ).statusCode,
     ).toBe(204);
-    // Sign-in data that does not fit the plug-in is refused before it is stored.
+    // Sign-in data that does not fit the provider is refused before it is stored.
     const malformed = await app.inject({
       method: "PUT",
-      url: `/api/v1/sources/${id}/secret`,
+      url: `/api/v1/connections/${id}/secret`,
       headers,
       payload: { secret: { unexpected: 1 } },
     });
     expect(malformed.statusCode).toBe(400);
-    expect(malformed.json()).toMatchObject({ error: "invalid_source" });
+    expect(malformed.json()).toMatchObject({ error: "invalid_connection" });
     expect(
-      (await app.inject({ method: "POST", url: `/api/v1/sources/${id}/sync`, headers })).statusCode,
+      (await app.inject({ method: "POST", url: `/api/v1/connections/${id}/sync`, headers }))
+        .statusCode,
     ).toBe(202);
     expect(
-      (await app.inject({ method: "DELETE", url: `/api/v1/sources/${id}`, headers })).statusCode,
+      (await app.inject({ method: "DELETE", url: `/api/v1/connections/${id}`, headers }))
+        .statusCode,
     ).toBe(204);
-    expect((await app.inject({ url: "/api/v1/sources", headers })).json()).toEqual([]);
+    expect((await app.inject({ url: "/api/v1/connections", headers })).json()).toEqual([]);
   });
 
   it("signs in with a pasted link and stores the result encrypted", async () => {
-    const shopContext = await createTestContext({ plugins: [fakeShop(new FakeWorld())] });
+    const shopContext = await createTestContext({ providers: [fakeShop(new FakeWorld())] });
     try {
       const shopApp = await shopContext.app();
       const session = await signIn(shopContext, shopApp);
@@ -144,15 +146,15 @@ describe("carriers and sources API", () => {
       const id = (
         await shopApp.inject({
           method: "POST",
-          url: "/api/v1/sources",
+          url: "/api/v1/connections",
           headers: h,
-          payload: { plugin: "fakeshop", kind: "shop", label: "Shop" },
+          payload: { provider: "fakeshop", kind: "shop", label: "Shop" },
         })
       ).json<{ id: string }>().id;
 
       const early = await shopApp.inject({
         method: "POST",
-        url: `/api/v1/sources/${id}/sign-in/finish`,
+        url: `/api/v1/connections/${id}/sign-in/finish`,
         headers: h,
         payload: { pasted: "https://x.invalid/?code=1" },
       });
@@ -160,27 +162,27 @@ describe("carriers and sources API", () => {
 
       const start = await shopApp.inject({
         method: "POST",
-        url: `/api/v1/sources/${id}/sign-in/start`,
+        url: `/api/v1/connections/${id}/sign-in/start`,
         headers: h,
       });
       expect(start.json()).toEqual({ url: "https://shop.example.invalid/sign-in?state=s1" });
       const bad = await shopApp.inject({
         method: "POST",
-        url: `/api/v1/sources/${id}/sign-in/finish`,
+        url: `/api/v1/connections/${id}/sign-in/finish`,
         headers: h,
         payload: { pasted: "https://shop.example.invalid/done" },
       });
       expect(bad.json()).toMatchObject({ error: "sign_in_failed" });
       const good = await shopApp.inject({
         method: "POST",
-        url: `/api/v1/sources/${id}/sign-in/finish`,
+        url: `/api/v1/connections/${id}/sign-in/finish`,
         headers: h,
         payload: { pasted: "https://shop.example.invalid/done?code=abc" },
       });
       expect(good.statusCode).toBe(204);
-      expect((await shopContext.services.sources.get(id))?.hasSecret).toBe(true);
+      expect((await shopContext.services.connections.get(id))?.hasSecret).toBe(true);
       const row = await shopContext.services.db
-        .selectFrom("sources")
+        .selectFrom("connections")
         .select("secret_blob")
         .where("id", "=", id)
         .executeTakeFirstOrThrow();
@@ -190,7 +192,7 @@ describe("carriers and sources API", () => {
     }
   });
 
-  it("needs the admin scope to change sources", async () => {
+  it("needs the admin scope to change connections", async () => {
     const token = (
       await app.inject({
         method: "POST",
@@ -201,9 +203,9 @@ describe("carriers and sources API", () => {
     ).json<{ token: string }>().token;
     const response = await app.inject({
       method: "POST",
-      url: "/api/v1/sources",
+      url: "/api/v1/connections",
       headers: { authorization: `Bearer ${token}` },
-      payload: { plugin: "fakepost", kind: "account", label: "x" },
+      payload: { provider: "fakepost", kind: "account", label: "x" },
     });
     expect(response.statusCode).toBe(403);
   });

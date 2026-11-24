@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { legacyTwin } from "../../events/legacy.js";
 import type { OutboxEvent } from "../../events/types.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
@@ -7,8 +8,16 @@ import { credentialCheck, requireScope } from "../auth-plugin.js";
 /** Comment lines keep proxies (and Home Assistant ingress) from closing an idle stream. */
 const HEARTBEAT_MS = 25_000;
 
+/**
+ * One live event; a renamed one is followed by its deprecated twin under the old name, without
+ * an `id` so the client's last event id stays the same.
+ */
 function formatEvent(event: OutboxEvent): string {
-  return `id: ${event.seq}\nevent: ${event.type}\ndata: ${JSON.stringify(event.payload)}\n\n`;
+  const current = `id: ${event.seq}\nevent: ${event.type}\ndata: ${JSON.stringify(event.payload)}\n\n`;
+  const twin = legacyTwin(event);
+  return twin === undefined
+    ? current
+    : `${current}event: ${twin.type}\ndata: ${JSON.stringify(twin.payload)}\n\n`;
 }
 
 function parseLastEventId(
@@ -31,17 +40,21 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
       preHandler: requireScope("read"),
       schema: {
         tags: ["events"],
-        summary: "Server-Sent Events stream of parcel and source events.",
+        summary: "Server-Sent Events stream of live events about parcels, orders and connections.",
         description:
-          "Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. " +
-          "Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. " +
-          "A connection without one starts with `ready` (its `id` is the current sequence). When the " +
+          "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. " +
+          "Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. " +
+          "A stream without one starts with `ready` (its `id` is the current sequence). When the " +
           "given id is newer than any event or older than what is kept, `resync` (also carrying the " +
           "current sequence as `id`) tells the client to reload everything over REST. " +
           "`parcel.live_position` messages carry the courier's position while on the road until " +
           "the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and " +
           "`stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, " +
-          "the same value as `position_at`, is still sent for one release and will be removed.",
+          "the same value as `position_at`, is still sent for one release and will be removed. " +
+          "**Deprecated:** each `connection.*` live event and `parcel.sending_registered` / " +
+          "`parcel.sending_delivered` is followed, for one release, by the same live event under its " +
+          "old name (`source.*`, `parcel.outgoing_registered`, `parcel.outgoing_delivered`), without " +
+          "an `id` and with `source` (carrying `plugin`) next to `connection` in its data.",
         querystring: z.object({ last_event_id: z.coerce.number().int().nonnegative().optional() }),
       },
     },

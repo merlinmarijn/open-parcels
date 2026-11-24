@@ -21,7 +21,7 @@ let headers: Record<string, string>;
 
 beforeEach(async () => {
   world = new VerifyWorld();
-  context = await createTestContext({ plugins: [fakeVerify(world)] });
+  context = await createTestContext({ providers: [fakeVerify(world)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
@@ -31,12 +31,12 @@ afterEach(async () => {
   await context.close();
 });
 
-async function newSource(config: Record<string, unknown> = {}): Promise<string> {
+async function newConnection(config: Record<string, unknown> = {}): Promise<string> {
   const response = await app.inject({
     method: "POST",
-    url: "/api/v1/sources",
+    url: "/api/v1/connections",
     headers,
-    payload: { plugin: "fakeverify", kind: "account", label: "Account", config },
+    payload: { provider: "fakeverify", kind: "account", label: "Account", config },
   });
   return response.json<{ id: string }>().id;
 }
@@ -52,7 +52,7 @@ function post(url: string, payload: Record<string, unknown> = {}) {
 
 async function start(id: string, flow?: string): Promise<StepBody> {
   const response = await post(
-    `/api/v1/sources/${id}/sign-in/attempts`,
+    `/api/v1/connections/${id}/sign-in/attempts`,
     flow === undefined ? {} : { flow },
   );
   expect(response.statusCode).toBe(200);
@@ -60,7 +60,7 @@ async function start(id: string, flow?: string): Promise<StepBody> {
 }
 
 function answer(id: string, attempt: string, input: Record<string, string>) {
-  return post(`/api/v1/sources/${id}/sign-in/attempts/${attempt}/continue`, { input });
+  return post(`/api/v1/connections/${id}/sign-in/attempts/${attempt}/continue`, { input });
 }
 
 /** Signs in through the form and picks a method; returns the attempt and its step. */
@@ -76,10 +76,10 @@ async function upToMethod(id: string, method: string): Promise<StepBody> {
 
 describe("interactive sign-in", () => {
   it("lists flows per kind and configuration, and in the carrier list", async () => {
-    const a = await newSource();
-    const b = await newSource({ variant: "b" });
+    const a = await newConnection();
+    const b = await newConnection({ variant: "b" });
     const flows = async (id: string) =>
-      (await app.inject({ url: `/api/v1/sources/${id}/sign-in/flows`, headers }))
+      (await app.inject({ url: `/api/v1/connections/${id}/sign-in/flows`, headers }))
         .json<{ id: string }[]>()
         .map((flow) => flow.id);
     expect(await flows(a)).toEqual(["verify"]);
@@ -100,12 +100,12 @@ describe("interactive sign-in", () => {
       redirect_prefix: null,
       resume_url: null,
     });
-    const wrong = await post(`/api/v1/sources/${a}/sign-in/attempts`, { flow: "variant_b" });
+    const wrong = await post(`/api/v1/connections/${a}/sign-in/attempts`, { flow: "variant_b" });
     expect(wrong.json()).toMatchObject({ error: "no_sign_in" });
   });
 
   it("walks form, method choice and a texted code; a network error keeps the step", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const otp = await upToMethod(id, "sms");
     expect(otp.step).toEqual({ kind: "otp_code", channel: "sms", destination: "+31 6 ** 01" });
 
@@ -121,13 +121,13 @@ describe("interactive sign-in", () => {
     expect(done.json()).toEqual({ status: "done" });
     // Neither the network error nor the refused code started the sign-in over.
     expect(world.starts).toBe(1);
-    expect((await context.services.sources.get(id))?.hasSecret).toBe(true);
+    expect((await context.services.connections.get(id))?.hasSecret).toBe(true);
     const gone = await answer(id, otp.attempt_id, { code: "123456" });
     expect(gone.json()).toMatchObject({ error: "sign_in_expired" });
   });
 
   it("takes an emailed link or code", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const link = await upToMethod(id, "email");
     expect(link.step).toEqual({ kind: "email_link", destination: "u***@example.invalid" });
     expect((await answer(id, link.attempt_id, { code: " 123456 " })).json()).toEqual({
@@ -136,7 +136,7 @@ describe("interactive sign-in", () => {
   });
 
   it("checks the input against the step", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const first = await start(id);
     const missing = await answer(id, first.attempt_id, { username: USER });
     expect(missing.json()).toMatchObject({ error: "sign_in_failed" });
@@ -145,14 +145,14 @@ describe("interactive sign-in", () => {
     expect(unknown.json()).toMatchObject({ error: "sign_in_failed" });
     expect(world.continues).toBe(1);
     const notWaiting = await post(
-      `/api/v1/sources/${id}/sign-in/attempts/${first.attempt_id}/poll`,
+      `/api/v1/connections/${id}/sign-in/attempts/${first.attempt_id}/poll`,
     );
     expect(notWaiting.statusCode).toBe(409);
   });
 
-  it("keeps the state encrypted and bound to its source", async () => {
-    const id = await newSource();
-    const other = await newSource();
+  it("keeps the state encrypted and bound to its connection", async () => {
+    const id = await newConnection();
+    const other = await newConnection();
     const first = await start(id);
     await answer(id, first.attempt_id, { username: USER, password: TYPED });
     const row = await context.services.db
@@ -165,7 +165,7 @@ describe("interactive sign-in", () => {
   });
 
   it("drops tampered state", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const first = await start(id);
     const row = await context.services.db
       .selectFrom("sign_in_attempts")
@@ -182,7 +182,7 @@ describe("interactive sign-in", () => {
   });
 
   it("expires an unanswered step", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const first = await start(id);
     context.clock.advance(16 * 60_000);
     const late = await answer(id, first.attempt_id, { username: USER, password: TYPED });
@@ -190,7 +190,7 @@ describe("interactive sign-in", () => {
   });
 
   it("drops the attempt after too many refused codes", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const otp = await upToMethod(id, "sms");
     for (let attempt = 0; attempt < 4; attempt += 1) {
       expect((await answer(id, otp.attempt_id, { code: "1" })).json()).toMatchObject({
@@ -203,7 +203,7 @@ describe("interactive sign-in", () => {
   });
 
   it("polls an approval at the step's pace and finishes when approved", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const waiting = await upToMethod(id, "app");
     expect(waiting.step).toEqual({
       kind: "await_approval",
@@ -211,7 +211,7 @@ describe("interactive sign-in", () => {
       poll_interval_seconds: 5,
       timeout_seconds: 60,
     });
-    const url = `/api/v1/sources/${id}/sign-in/attempts/${waiting.attempt_id}/poll`;
+    const url = `/api/v1/connections/${id}/sign-in/attempts/${waiting.attempt_id}/poll`;
     const early = await post(url);
     expect(early.statusCode).toBe(429);
     expect(early.headers["retry-after"]).toBe("5");
@@ -228,9 +228,9 @@ describe("interactive sign-in", () => {
   });
 
   it("times an approval out", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const waiting = await upToMethod(id, "app");
-    const url = `/api/v1/sources/${id}/sign-in/attempts/${waiting.attempt_id}/poll`;
+    const url = `/api/v1/connections/${id}/sign-in/attempts/${waiting.attempt_id}/poll`;
     for (let poll = 0; poll < 3; poll += 1) {
       context.clock.advance(5_000);
       expect((await post(url)).statusCode).toBe(200);
@@ -243,7 +243,7 @@ describe("interactive sign-in", () => {
   });
 
   it("never hands back a step of an attempt cancelled while the carrier answered", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const first = await start(id);
     world.duringContinue = async () => {
       await context.services.db.deleteFrom("sign_in_attempts").execute();
@@ -253,7 +253,7 @@ describe("interactive sign-in", () => {
   });
 
   it("counts every failed try in the stored row, not in a copy read before the call", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const otp = await upToMethod(id, "sms");
     // Another failure lands while this try's carrier call runs.
     world.duringContinue = async () => {
@@ -271,9 +271,9 @@ describe("interactive sign-in", () => {
   });
 
   it("cancels an attempt", async () => {
-    const id = await newSource();
+    const id = await newConnection();
     const first = await start(id);
-    const url = `/api/v1/sources/${id}/sign-in/attempts/${first.attempt_id}`;
+    const url = `/api/v1/connections/${id}/sign-in/attempts/${first.attempt_id}`;
     expect((await app.inject({ method: "DELETE", url, headers })).statusCode).toBe(204);
     expect((await app.inject({ method: "DELETE", url, headers })).statusCode).toBe(404);
   });

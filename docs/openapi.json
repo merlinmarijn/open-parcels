@@ -128,7 +128,7 @@
                   "properties": {
                     "authenticated": {
                       "type": "boolean",
-                      "description": "Signed in, or a token or Home Assistant ingress."
+                      "description": "Logged in, or a token or Home Assistant ingress."
                     },
                     "method": {
                       "nullable": true,
@@ -142,7 +142,7 @@
                     },
                     "role": {
                       "nullable": true,
-                      "description": "What the caller may do; reader when reading is open. Null: must sign in first.",
+                      "description": "What the caller may do; reader when reading is open. Null: must log in first.",
                       "type": "string",
                       "enum": [
                         "reader",
@@ -166,7 +166,7 @@
                     },
                     "reader_required": {
                       "type": "boolean",
-                      "description": "OPENPARCELS_PASSWORD is set: reading needs a sign-in."
+                      "description": "OPENPARCELS_PASSWORD is set: reading needs a login."
                     },
                     "setup_required": {
                       "type": "boolean"
@@ -194,7 +194,7 @@
         }
       },
       "post": {
-        "summary": "Sign in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).",
+        "summary": "Log in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).",
         "tags": [
           "session"
         ],
@@ -299,7 +299,7 @@
         }
       },
       "delete": {
-        "summary": "Sign out of this browser session.",
+        "summary": "Log out of this browser session.",
         "tags": [
           "session"
         ],
@@ -1741,6 +1741,9 @@
                       "carrier": {
                         "type": "string"
                       },
+                      "tracking_number": {
+                        "type": "string"
+                      },
                       "barcode": {
                         "type": "string"
                       },
@@ -1777,6 +1780,39 @@
                         "type": "string",
                         "format": "date-time",
                         "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "expected_from": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "expected_to": {
+                        "nullable": true,
+                        "type": "string",
+                        "format": "date-time",
+                        "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                      },
+                      "expected_days": {
+                        "nullable": true,
+                        "type": "object",
+                        "properties": {
+                          "from": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "to": {
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          }
+                        },
+                        "required": [
+                          "from",
+                          "to"
+                        ],
+                        "additionalProperties": false
                       },
                       "planned_from": {
                         "nullable": true,
@@ -1866,6 +1902,13 @@
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                       },
                       "direction": {
+                        "type": "string",
+                        "enum": [
+                          "receiving",
+                          "sending"
+                        ]
+                      },
+                      "legacy_direction": {
                         "type": "string",
                         "enum": [
                           "incoming",
@@ -2206,11 +2249,17 @@
                         ],
                         "additionalProperties": false
                       },
-                      "sources": {
+                      "connections": {
                         "type": "array",
                         "items": {
                           "type": "object",
                           "properties": {
+                            "connection_id": {
+                              "type": "string"
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
                             "source_id": {
                               "type": "string"
                             },
@@ -2244,6 +2293,64 @@
                             }
                           },
                           "required": [
+                            "connection_id",
+                            "provider",
+                            "source_id",
+                            "plugin",
+                            "label",
+                            "kind",
+                            "role",
+                            "last_seen_at"
+                          ],
+                          "additionalProperties": false
+                        }
+                      },
+                      "sources": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "connection_id": {
+                              "type": "string"
+                            },
+                            "provider": {
+                              "type": "string"
+                            },
+                            "source_id": {
+                              "type": "string"
+                            },
+                            "plugin": {
+                              "type": "string"
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "account",
+                                "tracking",
+                                "shop",
+                                "mail"
+                              ]
+                            },
+                            "role": {
+                              "type": "string",
+                              "enum": [
+                                "primary",
+                                "handoff",
+                                "mail"
+                              ]
+                            },
+                            "last_seen_at": {
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            }
+                          },
+                          "required": [
+                            "connection_id",
+                            "provider",
                             "source_id",
                             "plugin",
                             "label",
@@ -2298,6 +2405,7 @@
                     },
                     "required": [
                       "carrier",
+                      "tracking_number",
                       "barcode",
                       "sender",
                       "receiver",
@@ -2305,6 +2413,9 @@
                       "raw_status",
                       "delivered",
                       "delivered_at",
+                      "expected_from",
+                      "expected_to",
+                      "expected_days",
                       "planned_from",
                       "planned_to",
                       "pickup",
@@ -2313,6 +2424,7 @@
                       "url",
                       "id",
                       "direction",
+                      "legacy_direction",
                       "label",
                       "display_name",
                       "manual_status",
@@ -2324,6 +2436,7 @@
                       "location",
                       "last_scan",
                       "order",
+                      "connections",
                       "sources",
                       "lookup",
                       "first_seen_at",
@@ -2338,10 +2451,11 @@
         }
       },
       "post": {
-        "summary": "Start tracking a code. Without a carrier it is detected from the code.",
+        "summary": "Start tracking a tracking number. Without a carrier it is detected from the number.",
         "tags": [
           "parcels"
         ],
+        "description": "**Deprecated for one release:** `barcode` instead of `tracking_number`, and the directions `incoming` and `outgoing` instead of `receiving` and `sending`.",
         "requestBody": {
           "required": true,
           "content": {
@@ -2354,15 +2468,22 @@
                     "minLength": 1,
                     "maxLength": 64
                   },
+                  "tracking_number": {
+                    "type": "string",
+                    "minLength": 4,
+                    "maxLength": 64
+                  },
                   "barcode": {
                     "type": "string",
                     "minLength": 4,
                     "maxLength": 64
                   },
                   "direction": {
-                    "default": "incoming",
+                    "default": "receiving",
                     "type": "string",
                     "enum": [
+                      "receiving",
+                      "sending",
                       "incoming",
                       "outgoing"
                     ]
@@ -2373,10 +2494,7 @@
                     "type": "string",
                     "maxLength": 120
                   }
-                },
-                "required": [
-                  "barcode"
-                ]
+                }
               }
             }
           }
@@ -2390,6 +2508,9 @@
                   "type": "object",
                   "properties": {
                     "carrier": {
+                      "type": "string"
+                    },
+                    "tracking_number": {
                       "type": "string"
                     },
                     "barcode": {
@@ -2428,6 +2549,39 @@
                       "type": "string",
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_from": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_to": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_days": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ],
+                      "additionalProperties": false
                     },
                     "planned_from": {
                       "nullable": true,
@@ -2517,6 +2671,13 @@
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "direction": {
+                      "type": "string",
+                      "enum": [
+                        "receiving",
+                        "sending"
+                      ]
+                    },
+                    "legacy_direction": {
                       "type": "string",
                       "enum": [
                         "incoming",
@@ -2857,11 +3018,17 @@
                       ],
                       "additionalProperties": false
                     },
-                    "sources": {
+                    "connections": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
                           "source_id": {
                             "type": "string"
                           },
@@ -2895,6 +3062,64 @@
                           }
                         },
                         "required": [
+                          "connection_id",
+                          "provider",
+                          "source_id",
+                          "plugin",
+                          "label",
+                          "kind",
+                          "role",
+                          "last_seen_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "type": "string"
+                          },
+                          "plugin": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "primary",
+                              "handoff",
+                              "mail"
+                            ]
+                          },
+                          "last_seen_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "connection_id",
+                          "provider",
                           "source_id",
                           "plugin",
                           "label",
@@ -2949,6 +3174,7 @@
                   },
                   "required": [
                     "carrier",
+                    "tracking_number",
                     "barcode",
                     "sender",
                     "receiver",
@@ -2956,6 +3182,9 @@
                     "raw_status",
                     "delivered",
                     "delivered_at",
+                    "expected_from",
+                    "expected_to",
+                    "expected_days",
                     "planned_from",
                     "planned_to",
                     "pickup",
@@ -2964,6 +3193,7 @@
                     "url",
                     "id",
                     "direction",
+                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -2975,6 +3205,7 @@
                     "location",
                     "last_scan",
                     "order",
+                    "connections",
                     "sources",
                     "lookup",
                     "first_seen_at",
@@ -3067,6 +3298,9 @@
                     "carrier": {
                       "type": "string"
                     },
+                    "tracking_number": {
+                      "type": "string"
+                    },
                     "barcode": {
                       "type": "string"
                     },
@@ -3103,6 +3337,39 @@
                       "type": "string",
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_from": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_to": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_days": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ],
+                      "additionalProperties": false
                     },
                     "planned_from": {
                       "nullable": true,
@@ -3192,6 +3459,13 @@
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "direction": {
+                      "type": "string",
+                      "enum": [
+                        "receiving",
+                        "sending"
+                      ]
+                    },
+                    "legacy_direction": {
                       "type": "string",
                       "enum": [
                         "incoming",
@@ -3532,11 +3806,17 @@
                       ],
                       "additionalProperties": false
                     },
-                    "sources": {
+                    "connections": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
                           "source_id": {
                             "type": "string"
                           },
@@ -3570,6 +3850,64 @@
                           }
                         },
                         "required": [
+                          "connection_id",
+                          "provider",
+                          "source_id",
+                          "plugin",
+                          "label",
+                          "kind",
+                          "role",
+                          "last_seen_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "type": "string"
+                          },
+                          "plugin": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "primary",
+                              "handoff",
+                              "mail"
+                            ]
+                          },
+                          "last_seen_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "connection_id",
+                          "provider",
                           "source_id",
                           "plugin",
                           "label",
@@ -3624,6 +3962,7 @@
                   },
                   "required": [
                     "carrier",
+                    "tracking_number",
                     "barcode",
                     "sender",
                     "receiver",
@@ -3631,6 +3970,9 @@
                     "raw_status",
                     "delivered",
                     "delivered_at",
+                    "expected_from",
+                    "expected_to",
+                    "expected_days",
                     "planned_from",
                     "planned_to",
                     "pickup",
@@ -3639,6 +3981,7 @@
                     "url",
                     "id",
                     "direction",
+                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -3650,6 +3993,7 @@
                     "location",
                     "last_scan",
                     "order",
+                    "connections",
                     "sources",
                     "lookup",
                     "first_seen_at",
@@ -3749,6 +4093,9 @@
                     "carrier": {
                       "type": "string"
                     },
+                    "tracking_number": {
+                      "type": "string"
+                    },
                     "barcode": {
                       "type": "string"
                     },
@@ -3785,6 +4132,39 @@
                       "type": "string",
                       "format": "date-time",
                       "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_from": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_to": {
+                      "nullable": true,
+                      "type": "string",
+                      "format": "date-time",
+                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                    },
+                    "expected_days": {
+                      "nullable": true,
+                      "type": "object",
+                      "properties": {
+                        "from": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        },
+                        "to": {
+                          "type": "string",
+                          "format": "date",
+                          "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                        }
+                      },
+                      "required": [
+                        "from",
+                        "to"
+                      ],
+                      "additionalProperties": false
                     },
                     "planned_from": {
                       "nullable": true,
@@ -3874,6 +4254,13 @@
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
                     "direction": {
+                      "type": "string",
+                      "enum": [
+                        "receiving",
+                        "sending"
+                      ]
+                    },
+                    "legacy_direction": {
                       "type": "string",
                       "enum": [
                         "incoming",
@@ -4214,11 +4601,17 @@
                       ],
                       "additionalProperties": false
                     },
-                    "sources": {
+                    "connections": {
                       "type": "array",
                       "items": {
                         "type": "object",
                         "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
                           "source_id": {
                             "type": "string"
                           },
@@ -4252,6 +4645,64 @@
                           }
                         },
                         "required": [
+                          "connection_id",
+                          "provider",
+                          "source_id",
+                          "plugin",
+                          "label",
+                          "kind",
+                          "role",
+                          "last_seen_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "sources": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "connection_id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "source_id": {
+                            "type": "string"
+                          },
+                          "plugin": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "role": {
+                            "type": "string",
+                            "enum": [
+                              "primary",
+                              "handoff",
+                              "mail"
+                            ]
+                          },
+                          "last_seen_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "connection_id",
+                          "provider",
                           "source_id",
                           "plugin",
                           "label",
@@ -4306,6 +4757,7 @@
                   },
                   "required": [
                     "carrier",
+                    "tracking_number",
                     "barcode",
                     "sender",
                     "receiver",
@@ -4313,6 +4765,9 @@
                     "raw_status",
                     "delivered",
                     "delivered_at",
+                    "expected_from",
+                    "expected_to",
+                    "expected_days",
                     "planned_from",
                     "planned_to",
                     "pickup",
@@ -4321,6 +4776,7 @@
                     "url",
                     "id",
                     "direction",
+                    "legacy_direction",
                     "label",
                     "display_name",
                     "manual_status",
@@ -4332,6 +4788,7 @@
                     "location",
                     "last_scan",
                     "order",
+                    "connections",
                     "sources",
                     "lookup",
                     "first_seen_at",
@@ -4830,10 +5287,20 @@
                             "carrier": {
                               "type": "string"
                             },
+                            "tracking_number": {
+                              "type": "string"
+                            },
                             "barcode": {
                               "type": "string"
                             },
                             "direction": {
+                              "type": "string",
+                              "enum": [
+                                "receiving",
+                                "sending"
+                              ]
+                            },
+                            "legacy_direction": {
                               "type": "string",
                               "enum": [
                                 "incoming",
@@ -4864,6 +5331,39 @@
                               "type": "string",
                               "format": "date-time",
                               "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "expected_from": {
+                              "nullable": true,
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "expected_to": {
+                              "nullable": true,
+                              "type": "string",
+                              "format": "date-time",
+                              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                            },
+                            "expected_days": {
+                              "nullable": true,
+                              "type": "object",
+                              "properties": {
+                                "from": {
+                                  "type": "string",
+                                  "format": "date",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                },
+                                "to": {
+                                  "type": "string",
+                                  "format": "date",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                }
+                              },
+                              "required": [
+                                "from",
+                                "to"
+                              ],
+                              "additionalProperties": false
                             },
                             "planned_from": {
                               "nullable": true,
@@ -4946,12 +5446,17 @@
                           "required": [
                             "id",
                             "carrier",
+                            "tracking_number",
                             "barcode",
                             "direction",
+                            "legacy_direction",
                             "display_name",
                             "status",
                             "delivered",
                             "delivered_at",
+                            "expected_from",
+                            "expected_to",
+                            "expected_days",
                             "planned_from",
                             "planned_to",
                             "archived_at",
@@ -5372,10 +5877,20 @@
                           "carrier": {
                             "type": "string"
                           },
+                          "tracking_number": {
+                            "type": "string"
+                          },
                           "barcode": {
                             "type": "string"
                           },
                           "direction": {
+                            "type": "string",
+                            "enum": [
+                              "receiving",
+                              "sending"
+                            ]
+                          },
+                          "legacy_direction": {
                             "type": "string",
                             "enum": [
                               "incoming",
@@ -5406,6 +5921,39 @@
                             "type": "string",
                             "format": "date-time",
                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_from": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_to": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_days": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              },
+                              "to": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              }
+                            },
+                            "required": [
+                              "from",
+                              "to"
+                            ],
+                            "additionalProperties": false
                           },
                           "planned_from": {
                             "nullable": true,
@@ -5488,12 +6036,17 @@
                         "required": [
                           "id",
                           "carrier",
+                          "tracking_number",
                           "barcode",
                           "direction",
+                          "legacy_direction",
                           "display_name",
                           "status",
                           "delivered",
                           "delivered_at",
+                          "expected_from",
+                          "expected_to",
+                          "expected_days",
                           "planned_from",
                           "planned_to",
                           "archived_at",
@@ -5957,10 +6510,20 @@
                           "carrier": {
                             "type": "string"
                           },
+                          "tracking_number": {
+                            "type": "string"
+                          },
                           "barcode": {
                             "type": "string"
                           },
                           "direction": {
+                            "type": "string",
+                            "enum": [
+                              "receiving",
+                              "sending"
+                            ]
+                          },
+                          "legacy_direction": {
                             "type": "string",
                             "enum": [
                               "incoming",
@@ -5991,6 +6554,39 @@
                             "type": "string",
                             "format": "date-time",
                             "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_from": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_to": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_days": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              },
+                              "to": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              }
+                            },
+                            "required": [
+                              "from",
+                              "to"
+                            ],
+                            "additionalProperties": false
                           },
                           "planned_from": {
                             "nullable": true,
@@ -6073,12 +6669,17 @@
                         "required": [
                           "id",
                           "carrier",
+                          "tracking_number",
                           "barcode",
                           "direction",
+                          "legacy_direction",
                           "display_name",
                           "status",
                           "delivered",
                           "delivered_at",
+                          "expected_from",
+                          "expected_to",
+                          "expected_days",
                           "planned_from",
                           "planned_to",
                           "archived_at",
@@ -6153,7 +6754,7 @@
         "tags": [
           "orders"
         ],
-        "description": "The order's lines go and its parcels stay tracked without it. The shop and order number are remembered, so a shop source listing the order again does not re-create it. Fires `order.deleted`.",
+        "description": "The order's lines go and its parcels stay tracked without it. The shop and order number are remembered, so a shop connection listing the order again does not re-create it. Fires `order.deleted`.",
         "parameters": [
           {
             "schema": {
@@ -6215,7 +6816,7 @@
         "tags": [
           "returns"
         ],
-        "description": "A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.",
+        "description": "A return is something sent back to a shop, per order. Connections (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every connection that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.",
         "parameters": [
           {
             "schema": {
@@ -6448,7 +7049,7 @@
         "tags": [
           "returns"
         ],
-        "description": "A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.",
+        "description": "A return is something sent back to a shop, per order. Connections (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every connection that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.",
         "parameters": [
           {
             "schema": {
@@ -6695,9 +7296,9 @@
     },
     "/api/v1/carriers": {
       "get": {
-        "summary": "Installed carrier plug-ins and how to set them up.",
+        "summary": "Installed carrier providers and how to set them up.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "responses": {
           "200": {
@@ -6719,6 +7320,17 @@
                         "type": "array",
                         "items": {
                           "type": "string"
+                        }
+                      },
+                      "connection_kinds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "account",
+                            "tracking",
+                            "shop"
+                          ]
                         }
                       },
                       "source_kinds": {
@@ -6769,7 +7381,7 @@
                             },
                             "conditional": {
                               "type": "boolean",
-                              "description": "Applies only to some configurations; ask the source's own flow list."
+                              "description": "Applies only to some configurations; ask the connection's own flow list."
                             }
                           },
                           "required": [
@@ -6781,10 +7393,10 @@
                           ],
                           "additionalProperties": false
                         },
-                        "description": "Every sign-in flow of the plug-in. Interactive ones run as sign-in attempts."
+                        "description": "Every sign-in flow of the provider. Interactive ones run as sign-in attempts."
                       },
                       "config_schema": {
-                        "description": "JSON Schema of the source configuration form."
+                        "description": "JSON Schema of the connection configuration form."
                       },
                       "secret_schema": {
                         "description": "JSON Schema of the sign-in data for credentials and api_key flows: field names only, never values."
@@ -6794,6 +7406,7 @@
                       "id",
                       "name",
                       "countries",
+                      "connection_kinds",
                       "source_kinds",
                       "sign_in",
                       "sign_in_flows",
@@ -6809,11 +7422,11 @@
         }
       }
     },
-    "/api/v1/sources": {
+    "/api/v1/connections": {
       "get": {
-        "summary": "Carrier accounts, shops, tracking sources and mailboxes.",
+        "summary": "Carrier accounts, shops, tracking connections and inboxes.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "responses": {
           "200": {
@@ -6829,6 +7442,9 @@
                         "type": "string",
                         "format": "uuid",
                         "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "provider": {
+                        "type": "string"
                       },
                       "plugin": {
                         "type": "string"
@@ -6879,6 +7495,7 @@
                     },
                     "required": [
                       "id",
+                      "provider",
                       "plugin",
                       "kind",
                       "label",
@@ -6899,9 +7516,9 @@
         }
       },
       "post": {
-        "summary": "Add a source. Sign-in data is encrypted at rest and never returned.",
+        "summary": "Add a connection. Sign-in data is encrypted at rest and never returned.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -6910,7 +7527,13 @@
               "schema": {
                 "type": "object",
                 "properties": {
+                  "provider": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 64
+                  },
                   "plugin": {
+                    "description": "Deprecated: the old name of `provider`, accepted for one release.",
                     "type": "string",
                     "minLength": 1,
                     "maxLength": 64
@@ -6923,7 +7546,7 @@
                       "shop",
                       "mail"
                     ],
-                    "description": "Mailboxes use the plug-in \"imap\" with config {host, port, secure, allowPlaintext, folders, initialDays}."
+                    "description": "Inboxes use the provider \"imap\" with config {host, port, secure, allowPlaintext, folders, initialDays}."
                   },
                   "label": {
                     "type": "string",
@@ -6938,7 +7561,6 @@
                   }
                 },
                 "required": [
-                  "plugin",
                   "kind",
                   "label"
                 ]
@@ -6958,6 +7580,9 @@
                       "type": "string",
                       "format": "uuid",
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "provider": {
+                      "type": "string"
                     },
                     "plugin": {
                       "type": "string"
@@ -7008,6 +7633,7 @@
                   },
                   "required": [
                     "id",
+                    "provider",
                     "plugin",
                     "kind",
                     "label",
@@ -7052,11 +7678,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}": {
+    "/api/v1/connections/{id}": {
       "patch": {
-        "summary": "Rename, reconfigure, enable or disable a source.",
+        "summary": "Rename, reconfigure, enable or disable a connection.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -7104,6 +7730,9 @@
                       "format": "uuid",
                       "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
                     },
+                    "provider": {
+                      "type": "string"
+                    },
                     "plugin": {
                       "type": "string"
                     },
@@ -7153,6 +7782,7 @@
                   },
                   "required": [
                     "id",
+                    "provider",
                     "plugin",
                     "kind",
                     "label",
@@ -7222,9 +7852,9 @@
         }
       },
       "delete": {
-        "summary": "Remove a source and its stored sign-in.",
+        "summary": "Remove a connection and its stored sign-in.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -7281,11 +7911,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/secret": {
+    "/api/v1/connections/{id}/secret": {
       "put": {
-        "summary": "Replace the sign-in data (credentials or API key) and run the source.",
+        "summary": "Replace the sign-in data (credentials or API key) and run the connection.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -7383,13 +8013,13 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sync": {
+    "/api/v1/connections/{id}/sync": {
       "post": {
-        "summary": "Run a source now.",
+        "summary": "Run a connection now.",
         "tags": [
-          "sources"
+          "connections"
         ],
-        "description": "While the source backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `source_backing_off` with `Retry-After`.",
+        "description": "While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.",
         "parameters": [
           {
             "schema": {
@@ -7470,11 +8100,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/data": {
+    "/api/v1/connections/{id}/data": {
       "get": {
-        "summary": "Count what clearing a source would remove.",
+        "summary": "Count what clearing a connection would remove.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -7500,19 +8130,19 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Parcels only this source reported."
+                      "description": "Parcels only this connection reported."
                     },
                     "orders": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Orders only this source reported."
+                      "description": "Orders only this connection reported."
                     },
                     "shared": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Parcels and orders other sources also reported; they stay, unlinked from it."
+                      "description": "Parcels and orders other connections also reported; they stay, unlinked from it."
                     }
                   },
                   "required": [
@@ -7553,13 +8183,13 @@
         }
       }
     },
-    "/api/v1/sources/{id}/clear": {
+    "/api/v1/connections/{id}/clear": {
       "post": {
-        "summary": "Remove everything a source imported, so it syncs again from scratch.",
+        "summary": "Remove everything a connection imported, so it syncs again from scratch.",
         "tags": [
-          "sources"
+          "connections"
         ],
-        "description": "Parcels and orders only this source reported are deleted with their history and items; ones other sources also reported stay. A mailbox reads its mails again. The source and its sign-in are kept, and an enabled source runs again at once.",
+        "description": "Parcels and orders only this connection reported are deleted with their history and items; ones other connections also reported stay. An inbox reads its mails again. The connection and its sign-in are kept, and an enabled connection runs again at once.",
         "parameters": [
           {
             "schema": {
@@ -7584,19 +8214,19 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Parcels only this source reported."
+                      "description": "Parcels only this connection reported."
                     },
                     "orders": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Orders only this source reported."
+                      "description": "Orders only this connection reported."
                     },
                     "shared": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Parcels and orders other sources also reported; they stay, unlinked from it."
+                      "description": "Parcels and orders other connections also reported; they stay, unlinked from it."
                     }
                   },
                   "required": [
@@ -7670,13 +8300,13 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Tracking scans (parcel history rows)."
+                      "description": "Tracking events (parcel history rows)."
                     },
                     "raw_payloads": {
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Raw carrier answers kept for diagnosing plug-ins."
+                      "description": "Raw carrier answers kept for diagnosing providers."
                     },
                     "events": {
                       "type": "integer",
@@ -7740,7 +8370,7 @@
         "tags": [
           "data"
         ],
-        "description": "`archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: \"DELETE\"`. Sources, sign-ins and settings stay.",
+        "description": "`archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: \"DELETE\"`. Connections, sign-ins and settings stay.",
         "requestBody": {
           "required": true,
           "content": {
@@ -7877,7 +8507,7 @@
                       "type": "integer",
                       "minimum": -9007199254740991,
                       "maximum": 9007199254740991,
-                      "description": "Other rows removed (scans, raw payloads)."
+                      "description": "Other rows removed (events, raw payloads)."
                     },
                     "bytes": {
                       "type": "integer",
@@ -7931,11 +8561,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/flows": {
+    "/api/v1/connections/{id}/sign-in/flows": {
       "get": {
-        "summary": "The ways this source can sign in, the default first.",
+        "summary": "The ways this connection can sign in, the default first.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -8035,11 +8665,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/attempts": {
+    "/api/v1/connections/{id}/sign-in/attempts": {
       "post": {
-        "summary": "Start an interactive sign-in. Replaces an unfinished one for the same source.",
+        "summary": "Start an interactive sign-in. Replaces an unfinished one for the same connection.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -8463,11 +9093,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/attempts/{attempt}/continue": {
+    "/api/v1/connections/{id}/sign-in/attempts/{attempt}/continue": {
       "post": {
         "summary": "Answer the current step. A refused code keeps the step for another try.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -8906,11 +9536,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/attempts/{attempt}/poll": {
+    "/api/v1/connections/{id}/sign-in/attempts/{attempt}/poll": {
       "post": {
         "summary": "Check an approval step. Refused (429) when called faster than the step's interval; fails with sign_in_timeout after its timeout.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -9327,11 +9957,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/attempts/{attempt}": {
+    "/api/v1/connections/{id}/sign-in/attempts/{attempt}": {
       "delete": {
         "summary": "Cancel an unfinished sign-in.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -9398,11 +10028,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/start": {
+    "/api/v1/connections/{id}/sign-in/start": {
       "post": {
         "summary": "Start a pasted-link sign-in: returns the address to open in your browser.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "parameters": [
           {
@@ -9514,11 +10144,11 @@
         }
       }
     },
-    "/api/v1/sources/{id}/sign-in/finish": {
+    "/api/v1/connections/{id}/sign-in/finish": {
       "post": {
         "summary": "Finish a pasted-link sign-in with the address the browser ended on.",
         "tags": [
-          "sources"
+          "connections"
         ],
         "requestBody": {
           "required": true,
@@ -9687,9 +10317,13 @@
                         "type": "string",
                         "description": "For a return: its carrier, else a drop-off option's, else the shop."
                       },
-                      "barcode": {
+                      "tracking_number": {
                         "type": "string",
                         "description": "For a return: the order number."
+                      },
+                      "barcode": {
+                        "type": "string",
+                        "description": "Deprecated: the same as `tracking_number`, sent for one release."
                       },
                       "status": {
                         "type": "string"
@@ -9756,6 +10390,7 @@
                       "order_id",
                       "title",
                       "carrier",
+                      "tracking_number",
                       "barcode",
                       "status",
                       "kind",
@@ -10122,7 +10757,7 @@
     },
     "/api/v1/diagnostics": {
       "get": {
-        "summary": "Redacted state of sources, parcels, live tracking and unknown carrier values.",
+        "summary": "Redacted state of connections, parcels, live tracking and unknown carrier values.",
         "tags": [
           "status"
         ],
@@ -10140,11 +10775,11 @@
     },
     "/api/v1/events": {
       "get": {
-        "summary": "Server-Sent Events stream of parcel and source events.",
+        "summary": "Server-Sent Events stream of live events about parcels, orders and connections.",
         "tags": [
           "events"
         ],
-        "description": "Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed.",
+        "description": "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed. **Deprecated:** each `connection.*` live event and `parcel.sending_registered` / `parcel.sending_delivered` is followed, for one release, by the same live event under its old name (`source.*`, `parcel.outgoing_registered`, `parcel.outgoing_delivered`), without an `id` and with `source` (carrying `plugin`) next to `connection` in its data.",
         "parameters": [
           {
             "schema": {

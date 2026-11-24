@@ -6,65 +6,65 @@ import { errorBodySchema, notFound } from "../errors.js";
 
 const idParams = z.object({ id: z.uuid() });
 
-/** Counting and clearing what a source imported ("Clear data" on its card). */
-export function registerSourceDataRoutes(app: TypedApp, services: Services): void {
+/** Counting and clearing what a connection imported ("Clear data" on its card). */
+export function registerConnectionDataRoutes(app: TypedApp, services: Services): void {
   const admin = requireScope("admin");
 
   const dataCounts = z.object({
-    parcels: z.number().int().describe("Parcels only this source reported."),
-    orders: z.number().int().describe("Orders only this source reported."),
+    parcels: z.number().int().describe("Parcels only this connection reported."),
+    orders: z.number().int().describe("Orders only this connection reported."),
     shared: z
       .number()
       .int()
-      .describe("Parcels and orders other sources also reported; they stay, unlinked from it."),
+      .describe("Parcels and orders other connections also reported; they stay, unlinked from it."),
   });
 
   app.get(
-    "/api/v1/sources/:id/data",
+    "/api/v1/connections/:id/data",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Count what clearing a source would remove.",
+        tags: ["connections"],
+        summary: "Count what clearing a connection would remove.",
         params: idParams,
         response: { 200: dataCounts, 404: errorBodySchema },
       },
     },
     async (request) => {
-      if ((await services.sources.get(request.params.id)) === undefined) {
-        throw notFound("The source");
+      if ((await services.connections.get(request.params.id)) === undefined) {
+        throw notFound("The connection");
       }
-      return services.parcels.countSourceData(request.params.id);
+      return services.parcels.countConnectionData(request.params.id);
     },
   );
 
   app.post(
-    "/api/v1/sources/:id/clear",
+    "/api/v1/connections/:id/clear",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Remove everything a source imported, so it syncs again from scratch.",
+        tags: ["connections"],
+        summary: "Remove everything a connection imported, so it syncs again from scratch.",
         description:
-          "Parcels and orders only this source reported are deleted with their history and " +
-          "items; ones other sources also reported stay. A mailbox reads its mails again. The " +
-          "source and its sign-in are kept, and an enabled source runs again at once.",
+          "Parcels and orders only this connection reported are deleted with their history and " +
+          "items; ones other connections also reported stay. An inbox reads its mails again. The " +
+          "connection and its sign-in are kept, and an enabled connection runs again at once.",
         params: idParams,
         response: { 200: dataCounts, 404: errorBodySchema },
       },
     },
     async (request) => {
-      const source = await services.sources.get(request.params.id);
-      if (source === undefined) {
-        throw notFound("The source");
+      const connection = await services.connections.get(request.params.id);
+      if (connection === undefined) {
+        throw notFound("The connection");
       }
-      const counts = await services.parcels.clearSourceData(source.id);
-      if (source.state !== "disabled") {
-        if (source.kind === "mail") {
-          await services.mail.disconnect(source.id);
-          await services.mail.connect(source.id);
+      const counts = await services.parcels.clearConnectionData(connection.id);
+      if (connection.state !== "disabled") {
+        if (connection.kind === "mail") {
+          await services.mail.disconnect(connection.id);
+          await services.mail.connect(connection.id);
         } else {
-          await services.sources.requestRun(source.id);
+          await services.connections.requestRun(connection.id);
           services.scheduler.wake();
         }
       }

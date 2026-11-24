@@ -4,7 +4,7 @@ import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
 import type { Order } from "../../src/domain/order-lifecycle.js";
 import type { Return } from "../../src/domain/return.js";
 import { register } from "../../src/engine/registry.js";
-import { returnSnapshot, type ReturnSnapshot } from "../../src/plugin/snapshot.js";
+import { returnSnapshot, type ReturnSnapshot } from "../../src/provider/snapshot.js";
 import { createTestContext, signIn, type TestContext } from "../helpers.js";
 
 /** Made-up returns; the fake clock reads 2026-11-18. */
@@ -13,28 +13,32 @@ const ORDER = { shop: "example-shop.de", orderNumber: "RET-0001" };
 let context: TestContext;
 let app: App;
 let headers: Record<string, string>;
-let sourceId: string;
+let connectionId: string;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  const source = await context.services.sources.create({
-    plugin: "demo_shop",
+  const connection = await context.services.connections.create({
+    provider: "demo_shop",
     kind: "shop",
     label: "Example shop",
     config: {},
     secret: null,
   });
-  sourceId = source.id;
+  connectionId = connection.id;
 });
 afterEach(async () => {
   await context.close();
 });
 
 async function report(...returns: ReturnSnapshot[]): Promise<void> {
-  await context.services.reconciler.ingest(sourceId, { snapshots: [], returns, complete: false });
+  await context.services.reconciler.ingest(connectionId, {
+    snapshots: [],
+    returns,
+    complete: false,
+  });
 }
 
 const requested = returnSnapshot({
@@ -106,13 +110,16 @@ describe("returns API", () => {
   });
 
   it("tracks the return's parcel as an outgoing parcel", async () => {
-    await report({ ...requested, tracking: { carrier: "dhl", barcode: "00340000000000000099" } });
+    await report({
+      ...requested,
+      tracking: { carrier: "dhl", trackingNumber: "00340000000000000099" },
+    });
     const [entry] = await list();
     const parcel = await app.inject({ url: `/api/v1/parcels/${entry?.parcel_id ?? ""}`, headers });
     expect(parcel.statusCode).toBe(200);
-    expect(parcel.json<{ direction: string; barcode: string }>()).toMatchObject({
-      direction: "outgoing",
-      barcode: "00340000000000000099",
+    expect(parcel.json<{ direction: string; tracking_number: string }>()).toMatchObject({
+      direction: "sending",
+      tracking_number: "00340000000000000099",
     });
   });
 
@@ -130,16 +137,16 @@ describe("returns API", () => {
     expect(entry?.status).toBe("expired");
   });
 
-  it("hides returns while their only source is disabled", async () => {
+  it("hides returns while their only connection is disabled", async () => {
     await report(requested);
-    await context.services.sources.updateSettings(sourceId, { enabled: false });
+    await context.services.connections.updateSettings(connectionId, { enabled: false });
     expect(await list("all")).toEqual([]);
     const entries = await context.services.calendar.entries(
       new Date("2026-11-01T00:00:00Z"),
       new Date("2026-12-31T00:00:00Z"),
     );
     expect(entries.filter((entry) => entry.kind === "return_by")).toEqual([]);
-    await context.services.sources.updateSettings(sourceId, { enabled: true });
+    await context.services.connections.updateSettings(connectionId, { enabled: true });
     expect(await list("all")).toHaveLength(1);
   });
 });

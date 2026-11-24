@@ -50,7 +50,7 @@ const RANK: Readonly<Record<ReturnStatus, number>> = {
   cancelled: 6,
 };
 
-/** The stored status after a source reported `next`. */
+/** The stored status after a connection reported `next`. */
 export function nextReturnStatus(
   current: ReturnStatus | null,
   next: ReturnStatus | null,

@@ -17,18 +17,19 @@ export function registerDiagnosticsRoutes(app: TypedApp, services: Services): vo
       preHandler: requireScope("admin"),
       schema: {
         tags: ["status"],
-        summary: "Redacted state of sources, parcels, live tracking and unknown carrier values.",
+        summary:
+          "Redacted state of connections, parcels, live tracking and unknown carrier values.",
         response: { 200: z.unknown() },
       },
     },
     async () => {
       const db = services.db;
-      const [sources, statusCounts, unknown, outbox, liveSessions] = await Promise.all([
+      const [connections, statusCounts, unknown, outbox, liveSessions] = await Promise.all([
         db
-          .selectFrom("sources")
+          .selectFrom("connections")
           .select([
             "id",
-            "plugin",
+            "provider",
             "kind",
             "state",
             "state_detail",
@@ -66,11 +67,11 @@ export function registerDiagnosticsRoutes(app: TypedApp, services: Services): vo
         uptime_seconds: Math.round((services.clock.now().getTime() - startedAt.getTime()) / 1000),
         time_zone: services.config.timeZone,
         node: process.version,
-        plugins: services.registry.list().map((plugin) => ({
-          id: plugin.info.id,
-          source_kinds: plugin.info.sourceKinds,
+        providers: services.registry.list().map((provider) => ({
+          id: provider.info.id,
+          connection_kinds: provider.info.connectionKinds,
         })),
-        sources,
+        connections,
         parcels: statusCounts,
         unknown_values: unknown,
         outbox_events: outbox?.count ?? 0,

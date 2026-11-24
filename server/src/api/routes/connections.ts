@@ -1,6 +1,6 @@
 import { z } from "zod";
-import { InvalidSourceConfigError, type SignInFlowInfo } from "../../engine/registry.js";
-import type { SourceView } from "../../engine/sources.js";
+import { InvalidConnectionConfigError, type SignInFlowInfo } from "../../engine/registry.js";
+import type { ConnectionView } from "../../engine/connections.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
@@ -20,8 +20,10 @@ export function waitText(seconds: number): string {
   return `${String(Math.ceil(minutes / 60))} hours`;
 }
 
-const sourceSchema = z.object({
+const connectionSchema = z.object({
   id: z.uuid(),
+  provider: z.string(),
+  /** Deprecated: the same as `provider`, sent for one release. */
   plugin: z.string(),
   kind: z.enum(["account", "tracking", "shop", "mail"]),
   label: z.string(),
@@ -40,6 +42,8 @@ const carrierSchema = z.object({
   id: z.string(),
   name: z.string(),
   countries: z.array(z.string()),
+  connection_kinds: z.array(z.enum(["account", "tracking", "shop"])),
+  /** Deprecated: the same as `connection_kinds`, sent for one release. */
   source_kinds: z.array(z.enum(["account", "tracking", "shop"])),
   sign_in: z
     .string()
@@ -53,11 +57,11 @@ const carrierSchema = z.object({
         kinds: z.array(z.enum(["account", "tracking", "shop"])),
         conditional: z
           .boolean()
-          .describe("Applies only to some configurations; ask the source's own flow list."),
+          .describe("Applies only to some configurations; ask the connection's own flow list."),
       }),
     )
-    .describe("Every sign-in flow of the plug-in. Interactive ones run as sign-in attempts."),
-  config_schema: z.unknown().describe("JSON Schema of the source configuration form."),
+    .describe("Every sign-in flow of the provider. Interactive ones run as sign-in attempts."),
+  config_schema: z.unknown().describe("JSON Schema of the connection configuration form."),
   secret_schema: z
     .unknown()
     .describe(
@@ -65,10 +69,11 @@ const carrierSchema = z.object({
     ),
 });
 
-function toBody(view: SourceView): z.infer<typeof sourceSchema> {
+function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
   return {
     id: view.id,
-    plugin: view.plugin,
+    provider: view.provider,
+    plugin: view.provider,
     kind: view.kind,
     label: view.label,
     config: view.config,
@@ -81,7 +86,7 @@ function toBody(view: SourceView): z.infer<typeof sourceSchema> {
   };
 }
 
-/** A flow as the carrier list shows it; per-flow fields come from the source's own flow list. */
+/** A flow as the carrier list shows it; per-flow fields come from the connection's own flow list. */
 function flowSummary(flow: SignInFlowInfo): z.infer<typeof carrierSchema>["sign_in_flows"][number] {
   return {
     id: flow.id,
@@ -93,75 +98,94 @@ function flowSummary(flow: SignInFlowInfo): z.infer<typeof carrierSchema>["sign_
 }
 
 function asBadRequest(error: unknown): never {
-  if (error instanceof InvalidSourceConfigError) {
-    throw new ApiError(400, "invalid_source", error.message);
+  if (error instanceof InvalidConnectionConfigError) {
+    throw new ApiError(400, "invalid_connection", error.message);
   }
   throw error;
 }
 
-export function registerSourceRoutes(app: TypedApp, services: Services): void {
+/** The installed carrier providers, as the "Add a connection" form needs them. */
+function registerCarrierRoutes(app: TypedApp, services: Services): void {
   const read = requireScope("read");
-  const admin = requireScope("admin");
-
   app.get(
     "/api/v1/carriers",
     {
       preHandler: read,
       schema: {
-        tags: ["sources"],
-        summary: "Installed carrier plug-ins and how to set them up.",
+        tags: ["connections"],
+        summary: "Installed carrier providers and how to set them up.",
         response: { 200: z.array(carrierSchema) },
       },
     },
     () =>
-      services.registry.list().map((plugin) => ({
-        id: plugin.info.id,
-        name: plugin.info.name,
-        countries: [...plugin.info.countries],
-        source_kinds: [...plugin.info.sourceKinds],
-        sign_in: plugin.info.signIn,
-        sign_in_flows: plugin.info.signInFlows.map(flowSummary),
-        config_schema: z.toJSONSchema(plugin.info.configSchema, { unrepresentable: "any" }),
-        secret_schema: z.toJSONSchema(plugin.info.secretSchema, { unrepresentable: "any" }),
+      services.registry.list().map((provider) => ({
+        id: provider.info.id,
+        name: provider.info.name,
+        countries: [...provider.info.countries],
+        connection_kinds: [...provider.info.connectionKinds],
+        source_kinds: [...provider.info.connectionKinds],
+        sign_in: provider.info.signIn,
+        sign_in_flows: provider.info.signInFlows.map(flowSummary),
+        config_schema: z.toJSONSchema(provider.info.configSchema, { unrepresentable: "any" }),
+        secret_schema: z.toJSONSchema(provider.info.secretSchema, { unrepresentable: "any" }),
       })),
   );
+}
+
+export function registerConnectionRoutes(app: TypedApp, services: Services): void {
+  registerCarrierRoutes(app, services);
+  const read = requireScope("read");
+  const admin = requireScope("admin");
 
   app.get(
-    "/api/v1/sources",
+    "/api/v1/connections",
     {
       preHandler: read,
       schema: {
-        tags: ["sources"],
-        summary: "Carrier accounts, shops, tracking sources and mailboxes.",
-        response: { 200: z.array(sourceSchema) },
+        tags: ["connections"],
+        summary: "Carrier accounts, shops, tracking connections and inboxes.",
+        response: { 200: z.array(connectionSchema) },
       },
     },
-    async () => (await services.sources.list()).map(toBody),
+    async () => (await services.connections.list()).map(toBody),
   );
 
   app.post(
-    "/api/v1/sources",
+    "/api/v1/connections",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Add a source. Sign-in data is encrypted at rest and never returned.",
+        tags: ["connections"],
+        summary: "Add a connection. Sign-in data is encrypted at rest and never returned.",
         body: z.object({
-          plugin: z.string().min(1).max(64),
+          provider: z.string().min(1).max(64).optional(),
+          plugin: z
+            .string()
+            .min(1)
+            .max(64)
+            .optional()
+            .describe("Deprecated: the old name of `provider`, accepted for one release."),
           kind: z
             .enum(["account", "tracking", "shop", "mail"])
             .describe(
-              'Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.',
+              'Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.',
             ),
           label: z.string().min(1).max(80),
           config: z.unknown().default({}),
           secret: z.unknown().default(null),
         }),
-        response: { 201: sourceSchema, 400: errorBodySchema },
+        response: { 201: connectionSchema, 400: errorBodySchema },
       },
     },
     async (request, reply) => {
-      const created = await services.sources.create(request.body).catch(asBadRequest);
+      const { plugin, provider, ...rest } = request.body;
+      const chosen = provider ?? plugin;
+      if (chosen === undefined) {
+        throw new ApiError(400, "invalid_connection", "Name the provider of the connection.");
+      }
+      const created = await services.connections
+        .create({ ...rest, provider: chosen })
+        .catch(asBadRequest);
       if (created.kind === "mail") {
         await services.mail.connect(created.id);
       }
@@ -171,24 +195,24 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
   );
 
   app.patch(
-    "/api/v1/sources/:id",
+    "/api/v1/connections/:id",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Rename, reconfigure, enable or disable a source.",
+        tags: ["connections"],
+        summary: "Rename, reconfigure, enable or disable a connection.",
         params: idParams,
         body: z.object({
           label: z.string().min(1).max(80).optional(),
           config: z.unknown().optional(),
           enabled: z.boolean().optional(),
         }),
-        response: { 200: sourceSchema, 400: errorBodySchema, 404: errorBodySchema },
+        response: { 200: connectionSchema, 400: errorBodySchema, 404: errorBodySchema },
       },
     },
     async (request) => {
       const body = request.body;
-      const updated = await services.sources
+      const updated = await services.connections
         .updateSettings(request.params.id, {
           ...(body.label === undefined ? {} : { label: body.label }),
           ...(body.config === undefined ? {} : { config: body.config }),
@@ -201,10 +225,10 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
           : services.mail.connect(updated.id));
       }
       if (updated === undefined) {
-        throw notFound("The source");
+        throw notFound("The connection");
       }
       if (body.enabled === true) {
-        // Enabling makes the source due at once; without a wake the run waited for the next
+        // Enabling makes the connection due at once; without a wake the run waited for the next
         // timer, up to minutes, while the card claimed it was due "just now".
         services.scheduler.wake();
       }
@@ -213,27 +237,27 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
   );
 
   app.put(
-    "/api/v1/sources/:id/secret",
+    "/api/v1/connections/:id/secret",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Replace the sign-in data (credentials or API key) and run the source.",
+        tags: ["connections"],
+        summary: "Replace the sign-in data (credentials or API key) and run the connection.",
         params: idParams,
         body: z.object({ secret: z.unknown() }),
         response: { 204: z.null(), 400: errorBodySchema, 404: errorBodySchema },
       },
     },
     async (request, reply) => {
-      if ((await services.sources.get(request.params.id)) === undefined) {
-        throw notFound("The source");
+      if ((await services.connections.get(request.params.id)) === undefined) {
+        throw notFound("The connection");
       }
-      // Checked against the plug-in's own schema before anything is stored.
-      await services.sources
+      // Checked against the provider's own schema before anything is stored.
+      await services.connections
         .checkSecret(request.params.id, request.body.secret)
         .catch(asBadRequest);
-      await services.sources.setSecret(request.params.id, request.body.secret);
-      if ((await services.sources.get(request.params.id))?.kind === "mail") {
+      await services.connections.setSecret(request.params.id, request.body.secret);
+      if ((await services.connections.get(request.params.id))?.kind === "mail") {
         await services.mail.connect(request.params.id);
       }
       services.scheduler.wake();
@@ -242,24 +266,24 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
   );
 
   app.post(
-    "/api/v1/sources/:id/sync",
+    "/api/v1/connections/:id/sync",
     {
       preHandler: requireScope("write"),
       schema: {
-        tags: ["sources"],
-        summary: "Run a source now.",
+        tags: ["connections"],
+        summary: "Run a connection now.",
         description:
-          "While the source backs off (a captcha pause or the carrier's rate limit) the run is " +
-          "not brought forward: the answer is 429 `source_backing_off` with `Retry-After`.",
+          "While the connection backs off (a captcha pause or the carrier's rate limit) the run is " +
+          "not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.",
         params: idParams,
         response: { 202: z.null(), 404: errorBodySchema, 429: errorBodySchema },
       },
     },
     async (request, reply) => {
-      if ((await services.sources.get(request.params.id)) === undefined) {
-        throw notFound("The source");
+      if ((await services.connections.get(request.params.id)) === undefined) {
+        throw notFound("The connection");
       }
-      const { deferredUntil } = await services.sources.requestRun(request.params.id);
+      const { deferredUntil } = await services.connections.requestRun(request.params.id);
       if (deferredUntil !== null) {
         const seconds = Math.max(
           1,
@@ -268,8 +292,8 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
         void reply.header("retry-after", String(seconds));
         throw new ApiError(
           429,
-          "source_backing_off",
-          `The carrier asked us to wait; this source runs again in ${waitText(seconds)}.`,
+          "connection_backing_off",
+          `The carrier asked us to wait; this connection runs again in ${waitText(seconds)}.`,
         );
       }
       services.scheduler.wake();
@@ -278,20 +302,20 @@ export function registerSourceRoutes(app: TypedApp, services: Services): void {
   );
 
   app.delete(
-    "/api/v1/sources/:id",
+    "/api/v1/connections/:id",
     {
       preHandler: admin,
       schema: {
-        tags: ["sources"],
-        summary: "Remove a source and its stored sign-in.",
+        tags: ["connections"],
+        summary: "Remove a connection and its stored sign-in.",
         params: idParams,
         response: { 204: z.null(), 404: errorBodySchema },
       },
     },
     async (request, reply) => {
       await services.mail.disconnect(request.params.id);
-      if (!(await services.sources.delete(request.params.id))) {
-        throw notFound("The source");
+      if (!(await services.connections.delete(request.params.id))) {
+        throw notFound("The connection");
       }
       return reply.code(204).send(null);
     },

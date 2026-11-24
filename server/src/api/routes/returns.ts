@@ -7,14 +7,14 @@ import { requireScope } from "../auth-plugin.js";
 import { errorBodySchema, notFound } from "../errors.js";
 
 const ABOUT =
-  "A return is something sent back to a shop, per order. Sources (a shop account, return and " +
+  "A return is something sent back to a shop, per order. Connections (a shop account, return and " +
   "refund mails) create and update it; `status` goes `requested`, `label_created`, " +
   "`dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A " +
   "return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` " +
   "lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, " +
   "or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking " +
   "number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every " +
-  "source that reported them, or their order, is disabled. Changes fire `return.created` and " +
+  "connection that reported them, or their order, is disabled. Changes fire `return.created` and " +
   "`return.updated`.";
 
 export function registerReturnRoutes(app: TypedApp, services: Services): void {

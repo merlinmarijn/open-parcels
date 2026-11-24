@@ -8,22 +8,22 @@ import { createTestContext, signIn, type TestContext } from "../helpers.js";
 let context: TestContext;
 let app: App;
 let headers: Record<string, string>;
-let shopSource: string;
+let shopConnection: string;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  const source = await context.services.sources.create({
-    plugin: "demo_shop",
+  const connection = await context.services.connections.create({
+    provider: "demo_shop",
     kind: "shop",
     label: "Demo shop",
     config: {},
     secret: null,
   });
-  shopSource = source.id;
-  await context.services.runner.run(source.id);
+  shopConnection = connection.id;
+  await context.services.runner.run(connection.id);
 });
 afterEach(async () => {
   await context.close();
@@ -44,14 +44,14 @@ async function parcelIds(): Promise<string[]> {
 async function setEnabled(enabled: boolean): Promise<void> {
   const response = await app.inject({
     method: "PATCH",
-    url: `/api/v1/sources/${shopSource}`,
+    url: `/api/v1/connections/${shopConnection}`,
     headers,
     payload: { enabled },
   });
   expect(response.statusCode).toBe(200);
 }
 
-describe("disabled sources", () => {
+describe("disabled connections", () => {
   it("hide their orders and parcels everywhere until enabled again", async () => {
     const before = await orders();
     const order = before.find((entry) => entry.order_number === "DEMO-1001");
@@ -76,12 +76,12 @@ describe("disabled sources", () => {
     expect(await parcelIds()).toEqual(expect.arrayContaining(shopParcels));
   });
 
-  it("links every order to the source that reported it", async () => {
+  it("links every order to the connection that reported it", async () => {
     const links = await context.services.db
-      .selectFrom("order_sources")
-      .select(["order_id", "source_id"])
+      .selectFrom("order_connections")
+      .select(["order_id", "connection_id"])
       .execute();
     expect(links.length).toBeGreaterThan(0);
-    expect(links.every((link) => link.source_id === shopSource)).toBe(true);
+    expect(links.every((link) => link.connection_id === shopConnection)).toBe(true);
   });
 });

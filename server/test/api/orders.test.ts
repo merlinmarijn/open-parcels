@@ -8,22 +8,22 @@ import { createTestContext, signIn, type TestContext } from "../helpers.js";
 let context: TestContext;
 let app: App;
 let headers: Record<string, string>;
-let shopSource: string;
+let shopConnection: string;
 
 beforeEach(async () => {
-  context = await createTestContext({ plugins: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  const source = await context.services.sources.create({
-    plugin: "demo_shop",
+  const connection = await context.services.connections.create({
+    provider: "demo_shop",
     kind: "shop",
     label: "Demo shop",
     config: {},
     secret: null,
   });
-  shopSource = source.id;
-  await context.services.runner.run(source.id);
+  shopConnection = connection.id;
+  await context.services.runner.run(connection.id);
 });
 afterEach(async () => {
   await context.close();
@@ -132,7 +132,7 @@ describe("orders API", () => {
     expect(parcel.statusCode).toBe(200);
     expect(parcel.json<{ order: unknown }>().order).toBeNull();
 
-    await context.services.runner.run(shopSource);
+    await context.services.runner.run(shopConnection);
     expect((await list("all")).map((entry) => entry.order_number)).not.toContain("DEMO-1001");
     const again = await app.inject({ url: `/api/v1/parcels/${parcelId}`, headers });
     expect(again.json<{ order: unknown }>().order).toBeNull();

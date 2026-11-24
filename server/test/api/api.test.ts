@@ -133,7 +133,7 @@ describe("sessions", () => {
 
   it("requires the CSRF token for state-changing requests made with a cookie", async () => {
     const session = await signIn(context, app);
-    const payload = { carrier: "dhl", barcode: "00340434000000000001" };
+    const payload = { carrier: "dhl", tracking_number: "00340434000000000001" };
     const withoutCsrf = await app.inject({
       method: "POST",
       url: "/api/v1/parcels",
@@ -158,7 +158,7 @@ describe("sessions", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers: { cookie: session.cookie, "x-csrf-token": session.csrf },
-      payload: { carrier: "dhl", barcode: "00340434000000000001" },
+      payload: { carrier: "dhl", tracking_number: "00340434000000000001" },
     });
     expect(response.statusCode).toBe(401);
   });
@@ -188,7 +188,7 @@ describe("API tokens", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers: { authorization: `Bearer ${readOnly}` },
-      payload: { carrier: "dhl", barcode: "00340434000000000001" },
+      payload: { carrier: "dhl", tracking_number: "00340434000000000001" },
     });
     expect(denied.statusCode).toBe(403);
   });
@@ -240,7 +240,7 @@ describe("Home Assistant ingress", () => {
       method: "POST",
       url: "/api/v1/parcels",
       remoteAddress: HA_INGRESS_ADDRESS,
-      payload: { carrier: "dhl", barcode: "00340434000000000001" },
+      payload: { carrier: "dhl", tracking_number: "00340434000000000001" },
     });
     expect(response.statusCode).toBe(401);
   });
@@ -255,7 +255,7 @@ describe("parcels", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { barcode: "1Z999AA10123456784" },
+      payload: { tracking_number: "1Z999AA10123456784" },
     });
     expect(detected.statusCode).toBe(201);
     expect(detected.json<{ carrier: string }>().carrier).toBe("ups");
@@ -264,7 +264,7 @@ describe("parcels", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { barcode: "NOFORMAT0001" },
+      payload: { tracking_number: "NOFORMAT0001" },
     });
     expect(unknown.statusCode).toBe(400);
     expect(unknown.json<{ error: string }>().error).toBe("carrier_not_detected");
@@ -277,7 +277,7 @@ describe("parcels", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { carrier: "dhl", barcode: "00340434000000000001", label: "Socks" },
+      payload: { carrier: "dhl", tracking_number: "00340434000000000001", label: "Socks" },
     });
     expect(created.statusCode).toBe(201);
     const parcel = created.json<{
@@ -293,7 +293,7 @@ describe("parcels", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { carrier: "dhl", barcode: "00340434000000000001" },
+      payload: { carrier: "dhl", tracking_number: "00340434000000000001" },
     });
     expect(duplicate.statusCode).toBe(409);
 
@@ -347,14 +347,14 @@ describe("parcels", () => {
     );
   });
 
-  it("uses the outgoing event pair for outgoing parcels", async () => {
+  it("uses the sending event pair for sending parcels", async () => {
     const session = await signIn(context, app);
     const headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
     const created = await app.inject({
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { carrier: "hermes", barcode: "H0000000000000000001", direction: "outgoing" },
+      payload: { carrier: "hermes", tracking_number: "H0000000000000000001", direction: "sending" },
     });
     const id = created.json<{ id: string }>().id;
     await app.inject({
@@ -363,10 +363,7 @@ describe("parcels", () => {
       headers,
       payload: { manual_status: "delivered" },
     });
-    expect(await outboxTypes()).toEqual([
-      "parcel.outgoing_registered",
-      "parcel.outgoing_delivered",
-    ]);
+    expect(await outboxTypes()).toEqual(["parcel.sending_registered", "parcel.sending_delivered"]);
   });
 
   it("pages through the list, each parcel exactly once", async () => {
@@ -377,7 +374,7 @@ describe("parcels", () => {
         method: "POST",
         url: "/api/v1/parcels",
         headers,
-        payload: { carrier: "hermes", barcode: `H000000000000000000${String(n)}` },
+        payload: { carrier: "hermes", tracking_number: `H000000000000000000${String(n)}` },
       });
     }
     const seen: string[] = [];
@@ -401,7 +398,7 @@ describe("parcels", () => {
       method: "POST",
       url: "/api/v1/parcels",
       headers,
-      payload: { carrier: "", barcode: "1" },
+      payload: { carrier: "", tracking_number: "1" },
     });
     expect(bad.statusCode).toBe(400);
     expect(bad.json<{ error: string }>().error).toBe("invalid_request");
@@ -417,7 +414,7 @@ describe("parcels", () => {
         method: "POST",
         url: "/api/v1/parcels",
         headers,
-        payload: { carrier: "dpd", barcode: "00000000000001" },
+        payload: { carrier: "dpd", tracking_number: "00000000000001" },
       })
     ).json<{ id: string }>().id;
     await app.inject({

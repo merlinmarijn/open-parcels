@@ -15,8 +15,8 @@ afterEach(async () => {
   context = undefined;
 });
 
-async function setUp(plugins = [fakePost(new FakeWorld())]) {
-  context = await createTestContext({ plugins });
+async function setUp(providers = [fakePost(new FakeWorld())]) {
+  context = await createTestContext({ providers });
   const app = await context.app();
   const session = await signIn(context, app);
   return { context, app, headers: { cookie: session.cookie, "x-csrf-token": session.csrf } };
@@ -121,7 +121,7 @@ describe("SSE replay", () => {
 
   async function appendEvents(ctx: TestContext, count: number): Promise<void> {
     const rows = Array.from({ length: count }, (_, index) => ({
-      type: "source.run_finished",
+      type: "order.updated",
       parcel_id: null,
       payload: JSON.stringify({ n: index }),
       created_at: ctx.clock.now().toISOString(),
@@ -159,15 +159,15 @@ describe("SSE replay", () => {
     expect(stale).toEqual({ id: "3", event: "resync", data: { seq: 3, reason: "expired" } });
     // Right at the edge of retention is still a normal replay.
     const [replayed] = await readEvents(await open(2), 1);
-    expect(replayed).toMatchObject({ id: "3", event: "source.run_finished" });
+    expect(replayed).toMatchObject({ id: "3", event: "order.updated" });
   });
 });
 
 describe("manual sync", () => {
   it("is refused with 429 and Retry-After while the carrier's wait runs", async () => {
     const { context: ctx, app, headers } = await setUp();
-    const source = await ctx.services.sources.create({
-      plugin: "fakepost",
+    const connection = await ctx.services.connections.create({
+      provider: "fakepost",
       kind: "tracking",
       label: "t",
       config: {},
@@ -175,28 +175,28 @@ describe("manual sync", () => {
     });
     const until = new Date(ctx.clock.now().getTime() + 6 * 60 * 60_000).toISOString();
     await ctx.services.db
-      .updateTable("sources")
+      .updateTable("connections")
       .set({ backoff_until: until, next_run_at: until })
-      .where("id", "=", source.id)
+      .where("id", "=", connection.id)
       .execute();
     const response = await app.inject({
       method: "POST",
-      url: `/api/v1/sources/${source.id}/sync`,
+      url: `/api/v1/connections/${connection.id}/sync`,
       headers,
     });
     expect(response.statusCode).toBe(429);
     expect(response.headers["retry-after"]).toBe("21600");
     expect(response.json()).toMatchObject({
-      error: "source_backing_off",
+      error: "connection_backing_off",
       message: expect.stringContaining("6 hours") as unknown,
     });
-    const row = await ctx.services.sources.get(source.id);
+    const row = await ctx.services.connections.get(connection.id);
     expect(row?.nextRunAt).toBe(until);
 
     ctx.clock.advance(6 * 60 * 60_000 + 1000);
     const later = await app.inject({
       method: "POST",
-      url: `/api/v1/sources/${source.id}/sync`,
+      url: `/api/v1/connections/${connection.id}/sync`,
       headers,
     });
     expect(later.statusCode).toBe(202);
@@ -209,14 +209,14 @@ describe("interactive sign-in under load", () => {
     const { context: ctx, app, headers } = await setUp([fakeVerify(world)]);
     const post = (url: string, payload: Record<string, unknown> = {}) =>
       app.inject({ method: "POST", url, headers, payload });
-    const source = (
-      await post("/api/v1/sources", { plugin: "fakeverify", kind: "account", label: "A" })
+    const connection = (
+      await post("/api/v1/connections", { provider: "fakeverify", kind: "account", label: "A" })
     ).json<{ id: string }>().id;
-    const attempt = (await post(`/api/v1/sources/${source}/sign-in/attempts`)).json<{
+    const attempt = (await post(`/api/v1/connections/${connection}/sign-in/attempts`)).json<{
       attempt_id: string;
     }>().attempt_id;
     const answer = (input: Record<string, string>) =>
-      post(`/api/v1/sources/${source}/sign-in/attempts/${attempt}/continue`, { input });
+      post(`/api/v1/connections/${connection}/sign-in/attempts/${attempt}/continue`, { input });
     await answer({ username: "made-up-user", password: ["a", "b"].join("-") });
     await answer({ choice: "sms" });
     return { ctx, world, answer, attempt };

@@ -23,12 +23,12 @@ afterEach(async () => {
   await context.close();
 });
 
-async function parcel(barcode: string, columns: Record<string, string | number | null>) {
+async function parcel(trackingNumber: string, columns: Record<string, string | number | null>) {
   const created = await context.services.parcels.create({
     carrier: "dhl",
-    barcode,
-    direction: "incoming",
-    label: `Parcel ${barcode}`,
+    trackingNumber,
+    direction: "receiving",
+    label: `Parcel ${trackingNumber}`,
   });
   if (Object.keys(columns).length > 0) {
     await context.services.db
@@ -57,21 +57,21 @@ async function calendar(): Promise<Entry[]> {
   return response.json<Entry[]>();
 }
 
-describe("enabling a source", () => {
+describe("enabling a connection", () => {
   it("wakes the scheduler, so the run it is due for happens now", async () => {
     await context.close();
-    context = await createTestContext({ plugins: [fakePost(new FakeWorld())] });
+    context = await createTestContext({ providers: [fakePost(new FakeWorld())] });
     app = await context.app();
     const session = await signIn(context, app);
     headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-    const source = await context.services.sources.create({
-      plugin: "fakepost",
+    const connection = await context.services.connections.create({
+      provider: "fakepost",
       kind: "tracking",
       label: "Made-up tracking",
       config: {},
       secret: null,
     });
-    const url = `/api/v1/sources/${source.id}`;
+    const url = `/api/v1/connections/${connection.id}`;
     const off = await app.inject({ method: "PATCH", url, headers, payload: { enabled: false } });
     expect(off.statusCode).toBe(200);
     const wake = vi.spyOn(context.services.scheduler, "wake");
@@ -110,8 +110,8 @@ describe("date-only calendar entries", () => {
       delivered_at: "2026-11-17T13:05:00.000Z",
     });
     const day = await parcel("00340434000000000203", {
-      planned_from: "2026-11-19T23:00:00.000Z",
-      planned_to: null,
+      expected_from: "2026-11-19T23:00:00.000Z",
+      expected_to: null,
     });
     const entries = await calendar();
     expect(entries.find((entry) => entry.parcel_id === timed)).toMatchObject({
@@ -128,8 +128,8 @@ describe("date-only calendar entries", () => {
 
   it("show a parcel delivered by hand as delivered, never as still expected", async () => {
     const id = await parcel("00340434000000000204", {
-      planned_from: "2026-11-20T09:00:00.000Z",
-      planned_to: "2026-11-20T12:00:00.000Z",
+      expected_from: "2026-11-20T09:00:00.000Z",
+      expected_to: "2026-11-20T12:00:00.000Z",
       manual_status: "delivered",
     });
     expect((await calendar()).filter((entry) => entry.parcel_id === id)).toEqual([]);
@@ -257,7 +257,7 @@ describe("shop attribution", () => {
       .execute();
   }
 
-  it("merges a misfiled order into its twin with its items and source links (OP-122)", async () => {
+  it("merges a misfiled order into its twin with its items and connection links (OP-122)", async () => {
     const twin = await order("example-shop.de", "1234567");
     await item(twin, 0, "Made-up lamp");
     const misfiled = await order("amazon", "1234567");
@@ -268,12 +268,12 @@ describe("shop attribution", () => {
       label: "example-shop.de",
     });
     const now = context.clock.now().toISOString();
-    const sourceId = crypto.randomUUID();
+    const connectionId = crypto.randomUUID();
     await context.services.db
-      .insertInto("sources")
+      .insertInto("connections")
       .values({
-        id: sourceId,
-        plugin: "example-shop",
+        id: connectionId,
+        provider: "example-shop",
         kind: "shop",
         label: "Made-up shop",
         config: "{}",
@@ -290,8 +290,8 @@ describe("shop attribution", () => {
       })
       .execute();
     await context.services.db
-      .insertInto("order_sources")
-      .values({ order_id: misfiled, source_id: sourceId })
+      .insertInto("order_connections")
+      .values({ order_id: misfiled, connection_id: connectionId })
       .execute();
 
     expect(await repairOrderShops(context.services.db, context.clock)).toBe(1);
@@ -307,7 +307,7 @@ describe("shop attribution", () => {
       { order_id: twin, position: 1, title: "Made-up kettle" },
       { order_id: twin, position: 2, title: "Made-up mug" },
     ]);
-    const links = await db.selectFrom("order_sources").select("order_id").execute();
+    const links = await db.selectFrom("order_connections").select("order_id").execute();
     expect(links).toEqual([{ order_id: twin }]);
     const moved = await db
       .selectFrom("parcels")

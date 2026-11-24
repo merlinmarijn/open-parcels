@@ -12,8 +12,8 @@ const summarySchema = z.object({
   parcels: z.number().int(),
   archived_parcels: z.number().int(),
   orders: z.number().int(),
-  scans: z.number().int().describe("Tracking scans (parcel history rows)."),
-  raw_payloads: z.number().int().describe("Raw carrier answers kept for diagnosing plug-ins."),
+  scans: z.number().int().describe("Tracking events (parcel history rows)."),
+  raw_payloads: z.number().int().describe("Raw carrier answers kept for diagnosing providers."),
   events: z.number().int().describe("Rows in the replay log for live clients."),
   database_bytes: z.number().int(),
   cache_bytes: z.object({
@@ -35,7 +35,7 @@ const clearBody = z.discriminatedUnion("what", [
 const clearedSchema = z.object({
   parcels: z.number().int(),
   orders: z.number().int(),
-  rows: z.number().int().describe("Other rows removed (scans, raw payloads)."),
+  rows: z.number().int().describe("Other rows removed (events, raw payloads)."),
   bytes: z.number().int().describe("Bytes freed from a cache."),
   backup: z.string().nullable().describe("Database backup written before deleting everything."),
 });
@@ -70,7 +70,7 @@ export function registerDataRoutes(app: TypedApp, services: Services): void {
           "before the date, then orders placed before it with no parcel left. `raw_payloads`, " +
           "`archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched " +
           `again when needed). \`everything\`: all parcels and orders after a database backup; ` +
-          `needs \`confirm: "${EVERYTHING_CONFIRMATION}"\`. Sources, sign-ins and settings stay.`,
+          `needs \`confirm: "${EVERYTHING_CONFIRMATION}"\`. Connections, sign-ins and settings stay.`,
         body: clearBody,
         response: { 200: clearedSchema, 400: errorBodySchema },
       },

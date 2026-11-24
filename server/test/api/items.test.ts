@@ -24,22 +24,22 @@ async function png(): Promise<Buffer> {
 beforeEach(async () => {
   const picture = await png();
   context = await createTestContext({
-    plugins: [register(demoCarrier), register(demoShop)],
+    providers: [register(demoCarrier), register(demoShop)],
     fetchImpl: () =>
       Promise.resolve(new Response(picture, { headers: { "content-type": "image/png" } })),
   });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
-  for (const plugin of ["demo_shop", "demo"] as const) {
-    const source = await context.services.sources.create({
-      plugin,
-      kind: plugin === "demo" ? "account" : "shop",
-      label: plugin,
+  for (const provider of ["demo_shop", "demo"] as const) {
+    const connection = await context.services.connections.create({
+      provider,
+      kind: provider === "demo" ? "account" : "shop",
+      label: provider,
       config: {},
       secret: null,
     });
-    await context.services.runner.run(source.id);
+    await context.services.runner.run(connection.id);
   }
 });
 afterEach(async () => {
@@ -48,18 +48,20 @@ afterEach(async () => {
 
 interface ParcelBody {
   id: string;
-  barcode: string;
+  tracking_number: string;
   display_name: string;
   items: { title: string }[];
   order: { order_number: string; items: { title: string; parcel_id: string | null }[] } | null;
 }
 
-async function parcel(barcode: string): Promise<ParcelBody> {
+async function parcel(trackingNumber: string): Promise<ParcelBody> {
   const list = (await app.inject({ url: "/api/v1/parcels?limit=50", headers })).json<
     ParcelBody[] | { items: ParcelBody[] }
   >();
-  const found = (Array.isArray(list) ? list : list.items).find((p) => p.barcode === barcode);
-  if (found === undefined) throw new Error(`no ${barcode}`);
+  const found = (Array.isArray(list) ? list : list.items).find(
+    (p) => p.tracking_number === trackingNumber,
+  );
+  if (found === undefined) throw new Error(`no ${trackingNumber}`);
   return (await app.inject({ url: `/api/v1/parcels/${found.id}`, headers })).json<ParcelBody>();
 }
 

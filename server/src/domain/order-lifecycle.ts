@@ -121,13 +121,23 @@ const isoDateTime = z.iso.datetime({ offset: true });
 export const orderParcelSchema = z.object({
   id: z.uuid(),
   carrier: z.string(),
+  tracking_number: z.string(),
+  /** Deprecated: the same as `tracking_number`, sent for one release. */
   barcode: z.string(),
   direction: z.enum(DIRECTIONS),
+  /** Deprecated: `direction` as `incoming` or `outgoing`, sent for one release. */
+  legacy_direction: z.enum(["incoming", "outgoing"]),
   display_name: z.string(),
   status: parcelStatusSchema,
   delivered: z.boolean(),
   delivered_at: isoDateTime.nullable(),
+  expected_from: isoDateTime.nullable(),
+  expected_to: isoDateTime.nullable(),
+  /** As on the parcel: the expected delivery as local days when it is whole days. */
+  expected_days: z.object({ from: z.iso.date(), to: z.iso.date() }).nullable(),
+  /** Deprecated: the same as `expected_from`, sent for one release. */
   planned_from: isoDateTime.nullable(),
+  /** Deprecated: the same as `expected_to`, sent for one release. */
   planned_to: isoDateTime.nullable(),
   archived_at: isoDateTime.nullable(),
   location: locationSchema.nullable(),

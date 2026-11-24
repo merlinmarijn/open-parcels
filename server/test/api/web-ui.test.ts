@@ -28,7 +28,7 @@ describe("web UI serving", () => {
 
   it("serves index.html at / and for client-side routes", async () => {
     const app = await ctx.app({ webDir });
-    for (const url of ["/", "/parcels/abc", "/sources?x=1"]) {
+    for (const url of ["/", "/parcels/abc", "/connections?x=1"]) {
       const response = await app.inject({ url, headers: HTML });
       expect(response.statusCode).toBe(200);
       expect(response.body).toContain('<base href="/">');
