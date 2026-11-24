@@ -15,13 +15,10 @@ already fixed. Still open, by audit group:
 |---|---|---|
 | 17, 19–24 | all ids | none fixed yet |
 
-- [ ] OP-072, OP-077, OP-158, OP-047, OP-045, OP-046, OP-076: build, styles and tooling
-- [ ] OP-034, OP-039, OP-030, OP-031, OP-033, OP-027, OP-028, OP-029, OP-068: scheduler, live
-      tracking, resolver and token writes
-- [ ] OP-025, OP-065, OP-066, OP-069, OP-136, OP-137: migrations, start-up repairs, entrypoint,
-      deployment drift
-- [ ] OP-070, OP-142, OP-071, OP-162, OP-163, OP-164: missing and toothless tests
-- [ ] OP-078, OP-075, OP-143, OP-015, OP-014, OP-079, OP-121: docs, fixtures, third-party terms
+- [ ] OP-070, OP-142, OP-071, OP-163: missing tests (OP-162 and OP-164 shipped; the new web tests
+      cover OP-149, OP-153 and OP-073 only)
+- [ ] OP-079: confirm the OSM tile, OpenTopoMap, EOX and Nominatim terms, document them in `docs/`,
+      and decide on place lookup and the default map layer (owner decision)
 - [ ] OP-048 … OP-161 cheap clean-ups (group 24 of the audit order)
 
 ## 2. Production readiness

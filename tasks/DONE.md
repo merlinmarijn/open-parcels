@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- TODO §1 remainder: build, styles and tooling OP-045 (`8d58625`), OP-046 (`d5bc19c`), OP-047
+  (`6f7a5ff`), OP-072 (`a37b133`), OP-076 (`b640936`), OP-077 (`1d875fa`), OP-158 (`03cb315`);
+  scheduler and live tracking OP-034 (`d9f6e0d`), OP-039 and OP-031 (`a6ae9b0`), OP-030
+  (`2e1c366`), OP-033 (`95dfdb3`); resolver, tiles, images, tokens OP-027, OP-028, OP-029, OP-068;
+  migrations and deployment OP-025, OP-065, OP-066, OP-069, OP-136, OP-137; tests OP-162
+  (`8236b21`), OP-164 (`a873065`), OP-149 (`170bb92`), OP-153 (`03134e7`), OP-073 (`7e84afe`);
+  fixtures OP-014 and OP-121 (`c5b4d63`); docs OP-143, OP-015, OP-075, OP-078 (`eca0df8`)
 - Migrate, don't keep legacy code (owner decision): the glossary rename's one-release aliases are
   gone (`/api/v1/sources`, `plugin`, `source_kinds`, `sources`/`source_id`, `barcode`,
   `planned_*`, `legacy_direction`, old-named live events, `positionAt`, `/sources` redirect;
