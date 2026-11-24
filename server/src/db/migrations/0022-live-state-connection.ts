@@ -1,4 +1,5 @@
 import { sql, type Kysely } from "kysely";
+import { inTransaction } from "../atomic.js";
 
 /**
  * A stored courier-map session names the connection that follows it, so after a restart only that
@@ -7,6 +8,12 @@ import { sql, type Kysely } from "kysely";
  * connection's next full poll starts a running session again.
  */
 export async function up(db: Kysely<unknown>): Promise<void> {
+  await inTransaction(db, async () => {
+    await recreate(db);
+  });
+}
+
+async function recreate(db: Kysely<unknown>): Promise<void> {
   await db.schema.dropTable("live_state").execute();
   await db.schema
     .createTable("live_state")

@@ -2,6 +2,7 @@ import { mkdtempSync, readFileSync, rmSync, statSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { randomBytes } from "node:crypto";
+import { sql } from "kysely";
 import { afterEach, describe, expect, it } from "vitest";
 import { hashPassword, humanCode, verifyPassword } from "../../src/auth/crypto.js";
 import { LoginThrottle } from "../../src/auth/throttle.js";
@@ -12,6 +13,7 @@ import {
   SecretBox,
   SecretKeyError,
 } from "../../src/crypto/secrets.js";
+import { inTransaction } from "../../src/db/atomic.js";
 import { migrateToLatest, openDatabase } from "../../src/db/database.js";
 import { redactText, redactValue } from "../../src/log/redact.js";
 import { FakeClock, OWNER_PASSWORD } from "../helpers.js";
@@ -192,9 +194,31 @@ describe("migrations", () => {
         "0022-live-state-connection",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
+      // Every table rebuild kept its references whole (OP-025).
+      expect((await sql`pragma foreign_key_check`.execute(db)).rows).toEqual([]);
     } finally {
       // Windows cannot delete an open database file; close it even when an assertion fails.
       await db.destroy();
+    }
+  });
+});
+
+describe("inTransaction", () => {
+  it("leaves nothing behind when a step of a migration fails (OP-025)", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "op-atomic-"));
+    const { db } = openDatabase(path.join(dir, "test.db"));
+    try {
+      await expect(
+        inTransaction(db, async () => {
+          await sql`create table half (id integer)`.execute(db);
+          throw new Error("disk full");
+        }),
+      ).rejects.toThrow("disk full");
+      const tables = await sql`select name from sqlite_master where name = 'half'`.execute(db);
+      expect(tables.rows).toEqual([]);
+    } finally {
+      await db.destroy();
+      rmSync(dir, { recursive: true, force: true });
     }
   });
 });
