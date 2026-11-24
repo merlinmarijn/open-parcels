@@ -35,6 +35,14 @@ describe("web UI serving", () => {
     }
   });
 
+  it("marks every answer nosniff, not only the page (OP-005)", async () => {
+    const app = await ctx.app({ webDir });
+    for (const url of ["/assets/app-1234.js", "/api/v1/health/live", "/api/v1/nothing-here"]) {
+      const response = await app.inject({ url });
+      expect(response.headers["x-content-type-options"]).toBe("nosniff");
+    }
+  });
+
   it("sends a strict content security policy with the page", async () => {
     const app = await ctx.app({ webDir });
     const response = await app.inject({ url: "/", headers: HTML });

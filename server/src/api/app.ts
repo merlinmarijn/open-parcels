@@ -143,6 +143,11 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
   app.setValidatorCompiler(validatorCompiler);
   app.setSerializerCompiler(serializerCompiler);
   acceptEmptyBodies(app);
+  // Every answer, JSON, feeds and static assets included, keeps its declared type (OP-005).
+  app.addHook("onSend", (_request, reply, payload, done) => {
+    void reply.header("x-content-type-options", "nosniff");
+    done(null, payload);
+  });
   app.setErrorHandler((error: FastifyError, _request, reply) => {
     const { status, body } = handleError(error, services);
     return reply.code(status).send(body);
