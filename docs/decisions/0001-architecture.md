@@ -282,7 +282,7 @@ There is one owner per container, so tables carry no user column.
 
 | Table | Key fields | Notes |
 |---|---|---|
-| `owner` | password_hash (scrypt), created_at | A single row, created by the setup page on first start |
+| `owner` | password_hash (scrypt), created_at | A single row holding the admin password, set by the setup page; the reader password is `OPENPARCELS_PASSWORD` (§2.7) |
 | `api_tokens` | id, name, hash (SHA-256), scopes, last_used_at, expires_at | The token value is shown once |
 | `connections` | id, provider, kind (account/tracking/shop/mail), label, config (JSON), secret_blob (AES-GCM), session_blob (AES-GCM), state (ok/needs_sign_in/error/disabled), backoff fields, last_ok_at | One row per sign-in or inbox |
 | `parcels` | id (UUID), carrier, tracking_number, direction, status, raw_status, delivered, delivered_at, expected_from, expected_to, expected_days, pickup, pickup_point, url, sender, receiver, weight, dimensions, label, order_id, manual_status, manual_until, first_seen_at, last_seen_at, removed_at, archived_at | Unique on (carrier, tracking number). Nothing ever overwrites a manual override |
@@ -522,12 +522,12 @@ shape only, holds no data, and clients and code generators fetch it before they 
 Assistant Pi is aarch64, and HA apps support only amd64 and aarch64.
 
 - It is published to Docker Hub as `bluscream1/open-parcels` and to GHCR as
-  `ghcr.io/bluscream/open-parcels`.
+  `ghcr.io/open-parcels/open-parcels`.
 - It listens on port 3000, unchanged, so the existing Unraid mapping 4000→3000 keeps working.
 
 **Builds run locally** with `docker buildx` and QEMU, because workflows don't run under this
-account. A `workflow_dispatch` workflow is kept for anyone who forks the repo. Its automatic
-triggers are commented out, with the reason written above them.
+account. The repository has no workflow. One added later keeps only `workflow_dispatch` live; its
+automatic triggers stay commented out, with the reason written above them.
 
 **Unraid:** the template is updated with the new variables, the healthcheck and `/data`.
 
@@ -557,16 +557,17 @@ universal-lookup service's carriers are the next connection to mine.
 
 ## 3. Migrating the existing data
 
-The deployed `/mnt/user/appdata/openparcels/data.db` uses the UUID schema. It holds 409 orders,
-69 parcels, 296 events, 4 credentials and 5 settings.
+The existing database of the pre-rewrite server uses the UUID schema. The README's "Migrating"
+section has the commands for each kind of install.
 
-1. **Back up** `/mnt/user/appdata/openparcels` before anything else.
-2. **Run the importer as a dry run.** `openparcels import-legacy <path> --dry-run` reads both
-   old schema variants and reports what it would do. Without `--dry-run` it writes everything in
-   one transaction:
+1. **Back up** the old data folder before anything else.
+2. **Run the importer as a dry run.** `node server/dist/tools/import-legacy.js <path> --dry-run`
+   reads both old schema variants and reports what it would do. Without `--dry-run` it writes
+   everything in one transaction:
    - orders become `orders`;
    - parcels become `parcels`, with courier names normalised to provider ids and old statuses
-     mapped (`arriving` → `out_for_delivery`, and so on);
+     mapped (`arriving` → `in_transit`, because it covered today and later days; the first poll
+     after the import corrects it);
    - `is_manual_status` becomes `manual_status`;
    - events become `parcel_events`. Courier-position rows from the old live scraper are dropped;
    - an empty or generic courier (`china`, `17track`, `unknown`) is resolved from the code by the
@@ -586,6 +587,10 @@ The deployed `/mnt/user/appdata/openparcels/data.db` uses the UUID schema. It ho
 3. **Keep the old file** read-only as `data.legacy.db`.
 4. **Verify against a copy.** Run the import on a copy, compare the counts, and only then replace
    the container.
+5. **Restart** open-parcels after a real import, so it picks up the new connections and inboxes.
+
+`node server/dist/tools/import-ha.js <core.config_entries | -> [--dry-run]` imports the Home
+Assistant parcel suite's config entries as signed-in connections in the same way.
 
 ## 4. Roadmap
 

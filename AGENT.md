@@ -14,7 +14,7 @@ what this service is, the stack, the data model, the API and event contract, and
 | `server/` | The backend: Fastify API, engine, carrier providers (TypeScript, Node 26) |
 | `server/src/carriers/` | Carrier providers. They may import only the provider API; ESLint enforces it |
 | `server/test/` | vitest suites: `unit/`, `api/`, and recorded made-up fixtures |
-| `web/` | The web UI (React + Vite). Still the pre-rewrite frontend until phase 6 |
+| `web/` | The web UI (React + Vite) |
 | `docs/decisions/` | Decision records |
 | `Dockerfile`, `docker-compose.yml`, `unraid/` | Packaging |
 
@@ -51,5 +51,6 @@ npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc
   reads two shapes of stored data. Stored data is migrated once (a database migration), or by a
   documented manual step in `CHANGELOG.md` where that makes more sense. Our own clients (Home
   Assistant integration and app, extension) are updated in lockstep.
-- **GitHub Actions never run under this account.** Workflows keep only `workflow_dispatch` active;
-  automatic triggers stay commented out, with the reason written above them.
+- **GitHub Actions never run under this account.** The repository has no workflow; one added later
+  keeps only `workflow_dispatch` active, its automatic triggers commented out with the reason
+  written above them.

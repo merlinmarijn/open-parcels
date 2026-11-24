@@ -102,6 +102,23 @@ Tailnet visitors reach the app through `tailscale serve` on 127.0.0.1, so the im
 visitor's own address.
 Set `OPENPARCELS_PUBLIC_URL` to the tailnet address so links point there.
 
+## Migrating
+
+Two one-time tools carry data over from earlier setups. Both read the server's own `OPENPARCELS_*`
+environment (data directory, encryption key), so run them inside the open-parcels container, and
+both accept `--dry-run`, which works on a temporary copy and changes nothing.
+
+- **The pre-rewrite open-parcels database:** copy the old `data.db` into the data volume, then
+  run `node server/dist/tools/import-legacy.js /data/old.db --dry-run`, and again without
+  `--dry-run`. Its IMAP inboxes come over only when the old encryption key is set as
+  `OPENPARCELS_LEGACY_KEY` in the container's environment; it is never taken from the command line.
+- **The Home Assistant parcel suite:** `node server/dist/tools/import-ha.js - --dry-run` reads
+  Home Assistant's `.storage/core.config_entries` from stdin (or a path instead of `-`).
+
+With Docker Compose, prefix the command with `docker compose exec -T open-parcels`; on Unraid,
+with `docker exec -i open-parcels` (or use the container's console). Restart open-parcels after a
+real import, so it picks up the new connections and inboxes. Back up the data folder first.
+
 ## Development
 
 ```sh
