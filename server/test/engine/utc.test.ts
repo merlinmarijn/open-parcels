@@ -3,6 +3,7 @@ import { mergeParcel, type ParcelState } from "../../src/engine/merge.js";
 import { fingerprint } from "../../src/engine/reconciler.js";
 import { rewriteOffsetTimes } from "../../src/engine/utc-repair.js";
 import { toUtc } from "../../src/engine/utc.js";
+import { createServices, repairOnStart } from "../../src/services.js";
 import { FakeWorld, fakePost, scan, snapshot } from "../fakes/carriers.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -154,5 +155,36 @@ describe("stored times", () => {
         }),
       },
     ]);
+  });
+
+  it("are repaired by the start-up repairs, not by building the services (OP-065)", async () => {
+    const { services } = context;
+    const now = context.clock.now().toISOString();
+    await services.db
+      .insertInto("parcels")
+      .values({
+        id: "00000000-0000-4000-8000-000000000092",
+        carrier: "fakepost",
+        tracking_number: "FP9004",
+        direction: "receiving",
+        status: "in_transit",
+        raw_status: "Moving",
+        status_at: "2026-11-18T14:30:00+01:00",
+        delivered: 0,
+        pickup: 0,
+        label: null,
+        first_seen_at: now,
+        last_seen_at: now,
+        updated_at: now,
+      })
+      .execute();
+    const statusAt = async () =>
+      (await services.db.selectFrom("parcels").select("status_at").executeTakeFirstOrThrow())
+        .status_at;
+    // Tools such as the OpenAPI export build the services and change nothing.
+    const rebuilt = await createServices({ ...services, providers: [fakePost(post)] });
+    expect(await statusAt()).toBe("2026-11-18T14:30:00+01:00");
+    await repairOnStart(rebuilt);
+    expect(await statusAt()).toBe("2026-11-18T13:30:00.000Z");
   });
 });

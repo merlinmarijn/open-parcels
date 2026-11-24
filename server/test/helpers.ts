@@ -11,7 +11,7 @@ import { migrateToLatest, openDatabase } from "../src/db/database.js";
 import type { RegisteredProvider } from "../src/engine/registry.js";
 import type { MailboxClientFactory, MailInterpreter } from "../src/mail/types.js";
 import type { FetchLike } from "../src/provider/http.js";
-import { createServices, type Services } from "../src/services.js";
+import { createServices, repairOnStart, type Services } from "../src/services.js";
 
 /** A clock tests can move forward by hand. */
 export class FakeClock implements Clock {
@@ -77,6 +77,8 @@ export async function createTestContext(options: TestOptions = {}): Promise<Test
       : { mailClientFactory: options.mailClientFactory }),
     ...(options.mailInterpreter === undefined ? {} : { mailInterpreter: options.mailInterpreter }),
   });
+  // As `main` does before it listens.
+  await repairOnStart(services);
   const apps: App[] = [];
   return {
     services,

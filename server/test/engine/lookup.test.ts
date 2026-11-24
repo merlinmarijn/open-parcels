@@ -1,5 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
-import { createServices } from "../../src/services.js";
+import { createServices, repairOnStart } from "../../src/services.js";
 import { applyRetention } from "../../src/engine/retention.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 import { FakeWorld, fakePost, snapshot } from "../fakes/carriers.js";
@@ -206,14 +206,16 @@ describe("tracking connections never remove parcels", () => {
       .execute();
 
     const restart = async () =>
-      createServices({
-        config: context.services.config,
-        db: context.services.db,
-        logger: context.services.logger,
-        clock: context.clock,
-        secrets: context.services.secrets,
-        providers: [fakePost(post)],
-      });
+      repairOnStart(
+        await createServices({
+          config: context.services.config,
+          db: context.services.db,
+          logger: context.services.logger,
+          clock: context.clock,
+          secrets: context.services.secrets,
+          providers: [fakePost(post)],
+        }),
+      );
     await restart();
     await restart();
 
@@ -262,14 +264,16 @@ describe("startup repair", () => {
       .execute();
 
     const restart = async () =>
-      createServices({
-        config: context.services.config,
-        db: context.services.db,
-        logger: context.services.logger,
-        clock: context.clock,
-        secrets: context.services.secrets,
-        providers: [fakePost(post)],
-      });
+      repairOnStart(
+        await createServices({
+          config: context.services.config,
+          db: context.services.db,
+          logger: context.services.logger,
+          clock: context.clock,
+          secrets: context.services.secrets,
+          providers: [fakePost(post)],
+        }),
+      );
     await restart();
     await restart();
 

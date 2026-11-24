@@ -16,7 +16,7 @@ import {
   supervisedEnvironment,
 } from "./ha/supervisor.js";
 import { createLogger } from "./log/logger.js";
-import { createServices, type Services } from "./services.js";
+import { createServices, repairOnStart, type Services } from "./services.js";
 
 const MAINTENANCE_INTERVAL_MS = 60 * 60 * 1000;
 const FIRST_MAINTENANCE_DELAY_MS = 60 * 1000;
@@ -68,6 +68,7 @@ async function main(): Promise<void> {
   }
 
   // Before listening, so no client loads the state it is about to change.
+  await repairOnStart(services);
   const cleanup = await cleanupMailFalsePositives(db, systemClock, loadRules());
   if (cleanup.ran) {
     logger.info(
