@@ -20,7 +20,6 @@ already fixed. Still open, by audit group:
 | 18 | OP-005 (partly), OP-010, OP-022, OP-042 | CSP is on `index.html` only; no `nosniff` on JSON/static |
 | 17, 19–24 | all ids | none fixed yet |
 
-- [ ] OP-063, OP-064: order paging in the database instead of memory; no silent 1,000/500 caps
 - [ ] OP-005, OP-010, OP-022, OP-042: remaining hardening and lifecycle items
 - [ ] OP-149, OP-151, OP-152, OP-154, OP-150, OP-153, OP-157, OP-038, OP-043, OP-073, OP-061,
       OP-041, OP-044: web correctness
@@ -51,7 +50,6 @@ already fixed. Still open, by audit group:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
-- [ ] Turn the proposal into `docs/decisions/0002-providers.md` with the owner's decisions
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
 - [ ] Provider sandbox (child process with Node permission model, broker for HTTP, secrets per call)
@@ -70,7 +68,7 @@ already fixed. Still open, by audit group:
 
 ## 4. Returns follow-ups
 
-- [ ] Rules: `payments-messages@amazon.*` "Refund on order …" mails (22 unread in the backup)
+- [ ] Ship rules 2.0.0-dev.10 to the server (carries the Amazon "Refund on order …" mail rule)
 - [ ] Return mails of other shops (generic rules), PayPal refunds matched to orders
 - [ ] Move return detail reading (deadline, drop-off, cost) from the server into the rules/providers
 - [ ] Verify the Amazon return-window parsing on a live account run
@@ -88,29 +86,28 @@ already fixed. Still open, by audit group:
 - [ ] Returns: sensor and attributes, calendar entries with drop-off and cost lines
 - [ ] Source actions as buttons/services once the server has them
 - [ ] Remaining low findings HA-009 … HA-032
-- [ ] Publish a GitHub release for HACS users (tag v0.4.0 exists)
 
 ## 7. Home Assistant app (open-parcels-ha-apps)
 
-- [ ] AP-016: use the published image instead of building from source on the HA host
-- [ ] AP-010, AP-011: one options mapping (server's supervised mode) and option precedence
+- [ ] AP-011: option precedence
 - [ ] AP-008: consistent database backups (backup mode or SQLite backup before HA backups)
 - [ ] Bump to every server release automatically (script)
 
 ## 8. Browser extension (open-parcels-extension)
 
-- [ ] EX-001: deliver captured sign-in URLs only to the approved open-parcels origin
-- [ ] EX-002, EX-007, EX-012: one pending-request map, rate-limit approval windows
-- [ ] EX-006, EX-010: persistent timeouts across service-worker restarts
-- [ ] EX-016: testable background logic with tests
-- [ ] EX-003, EX-014, EX-015: approval prompt shows what is captured; no plain-http origins
-- [ ] EX-004, EX-005: dynamic content scripts; decide on HA ingress support
+- [ ] Server follow-ups of extension 0.2.0: `docs/extension-protocol.md` (bridge only on sites
+      enabled from the toolbar; enable + per-request approval with Allow once / Always allow /
+      Deny and a 10-minute cool-down after Deny; cancel reasons `busy` and `error`; main-frame
+      watching, results only to the requesting origin; stored state = approval choices, refused
+      hosts, storage.session)
+- [ ] `web/src/sources/OpenUrlStep.tsx`: "installed? click the extension's button and choose Enable
+      on this site" hint, CANCEL_REASONS texts for `busy` and `error`, and inside the Home
+      Assistant ingress frame a hint to open the web UI in its own tab
 - [ ] Signed releases; store publishing (walk the owner through it)
 
 ## 9. Website and org profile
 
-- [ ] Remaining WS and GH low findings; docs for returns, Data page, Tailscale, geocoding switch
-- [ ] Issue forms with a "no personal data" checkbox, CODE_OF_CONDUCT, SUPPORT, PR template
+- [ ] Remaining WS and GH low findings
 
 ## 10. Owner actions
 

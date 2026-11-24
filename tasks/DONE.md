@@ -4,6 +4,22 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- Audit leftovers of groups 9, 12 and 15: only real refusals ask for a new sign-in and one
+  renewal per run (OP-085, OP-086, `cfefd66`); start-up repairs fire events (OP-130, `77e5369`);
+  a refused parcel edit is shown and reloads the parcel (OP-148, `3b5277c`)
+- "Now" audit ids verified against `main`; the open ones are listed in `TODO.md` §1 (`6ad61d2`)
+- Decision record 0002, installable providers with trust tiers (`4bdd26b`)
+- open-parcels-ha v0.4.0 released for HACS users
+- open-parcels-ha-apps: prebuilt image `bluscream1/open-parcels-ha-app` (amd64 + arm64) instead of
+  building on the host (AP-016), `run.sh` removed and the options read by the server's supervised
+  mode (AP-010); app 2.0.0-dev.20261124.2 on server `10d7e31` (open-parcels-ha-apps `5bc9001`)
+- open-parcels-extension 0.2.0: EX-001…004, EX-006…018 and EX-020 fixed; EX-005 documented as not
+  supported (Home Assistant ingress shares its origin) (open-parcels-extension `c770dc6`)
+- Org profile: issue forms with a personal-data check, PR template, SUPPORT, CODE_OF_CONDUCT
+  (open-parcels/.github `4d2d154`); website pages for returns, the Data page, privacy and
+  Tailscale (open-parcels.github.io `0a0ac40`)
+- Rules: Amazon "Refund on order …" mails (open-parcels-rules `603a404`; reaches the server with
+  the next rules release)
 - Returns: return records per order (deadline, drop-off options, free or cost, label, refund,
   return parcel), Amazon return window, Amazon return mails, `/api/v1/returns`, `return.*` events,
   "Return by" calendar/ICS entries, Returns page and order section; never on the map (`10d7e31`)
