@@ -21,13 +21,6 @@ const TIME_FORMAT = {
   meridiem: UI_HOUR12 ? "short" : false,
 } as const;
 
-function initialRange(): { from: string; to: string } {
-  const now = new Date();
-  const from = new Date(now.getFullYear(), now.getMonth() - 1, 20);
-  const to = new Date(now.getFullYear(), now.getMonth() + 1, 10);
-  return { from: from.toISOString(), to: to.toISOString() };
-}
-
 /** Short names for the address (`?view=week`) and FullCalendar's view ids. */
 const VIEWS = {
   month: "dayGridMonth",
@@ -58,8 +51,10 @@ export default function CalendarPage(): ReactNode {
     view: VIEWS[pickOne(viewParam, VIEW_NAMES, "month")],
     date: dateParam !== null && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : undefined,
   }));
-  const [range, setRange] = useState(initialRange);
-  const calendar = useCalendar(range.from, range.to);
+  // Set by FullCalendar once it knows the shown range, so the first request already asks for the
+  // right months (OP-153).
+  const [range, setRange] = useState<{ from: string; to: string } | null>(null);
+  const calendar = useCalendar(range);
   const carriers = useCarriers();
   const navigate = useNavigate();
 
@@ -76,7 +71,7 @@ export default function CalendarPage(): ReactNode {
 
   const onDates = (arg: DatesSetArg): void => {
     const next = { from: arg.start.toISOString(), to: arg.end.toISOString() };
-    if (next.from !== range.from || next.to !== range.to) {
+    if (next.from !== range?.from || next.to !== range.to) {
       setRange(next);
     }
     const name = viewName(arg.view.type);

@@ -155,10 +155,14 @@ export function useTokens() {
   return query;
 }
 
-export function useCalendar(from: string, to: string) {
+/** The calendar's entries in a range; nothing is asked before the range is known (OP-153). */
+export function useCalendar(range: { readonly from: string; readonly to: string } | null) {
+  const from = range?.from ?? "";
+  const to = range?.to ?? "";
   return useQuery({
     queryKey: keys.calendar(from, to),
     queryFn: ({ signal }) => getApiV1Calendar({ from, to }, { signal }),
+    enabled: range !== null,
   });
 }
 

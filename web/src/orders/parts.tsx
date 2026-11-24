@@ -52,6 +52,8 @@ export const ORDER_VIEW_TABS: readonly {
       "Orders whose parcels are all archived, orders that never got a parcel 30 days after " +
       "they were placed, and orders you archived yourself. Open one to bring it back.",
   },
+  // Reachable from the page, not only by address (OP-153).
+  { view: "all", label: "All", help: "Every order, open, delivered and archived." },
 ];
 
 export function OrderStatusBadge({ status }: { readonly status: OrderStatus }): ReactNode {
