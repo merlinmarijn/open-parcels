@@ -29,8 +29,8 @@ already fixed. Still open, by audit group:
 - [ ] Real accounts (per-user) or a documented single-household model; decide and document
 - [ ] Backups: built-in scheduled database backup with retention, and a documented restore
 - [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
-- [ ] Observability: structured status page covering every source, mailbox, scheduler and event
-      stream; health endpoint covers sources in error
+- [ ] Observability: structured status page covering every connection, inbox, scheduler and event
+      stream; health endpoint covers connections in error
 - [ ] Rate-limit and failure behaviour reviewed for every carrier (no carrier may be hammered)
 - [ ] Internationalisation of the web UI (at least English and German), dates in the user's locale
 - [ ] Accessibility pass (keyboard, screen reader, contrast) on every page
@@ -42,6 +42,27 @@ already fixed. Still open, by audit group:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
+- [ ] Glossary pass in the other repos (the server repo is done, see `DONE.md`; the server keeps
+      the old names for one release, `CHANGELOG.md`):
+  - open-parcels-ha: read `/api/v1/connections`, `tracking_number`, `expected_from`/`expected_to`
+    (and `expected_days` for whole-day dates in sensors and the calendar), `direction`
+    `receiving`/`sending` (today `!= "outgoing"` counts sending parcels as receiving), live events
+    `connection.*` and `parcel.sending_registered`/`_delivered` (`const.py`); send
+    `tracking_number` and `receiving`/`sending` in `add_parcel`; rename the `barcode` attribute to
+    `tracking_number` (old one kept a release), source devices/buttons/translations to
+    connections (entity and device ids kept), Home Assistant event names with "sending"; texts:
+    Inbox, email, Log in (web UI) vs Sign in (carrier)
+  - open-parcels-ha-apps: option descriptions, translations, DOCS/README and changelog text
+    (connection, provider, inbox, email, Log in); nothing API-facing
+  - open-parcels-extension: README, store texts and UI strings (provider, connection, Sign in);
+    the page/extension `postMessage` field `source` is DOM protocol and stays
+  - website (open-parcels.github.io): guides, carrier list and API examples (`/api/v1/connections`,
+    `tracking_number`, `expected_from`), providers not plug-ins, connections not sources, inbox,
+    email, tracking number, Receiving/Sending, Log in vs Sign in
+  - .github org profile: README terms (provider, connection, email, tracking number)
+  - open-parcels-rules (another agent is on it): docs "mail" → "email" where it means a message;
+    `MAIL_SOURCES` (subject/text/html) names parts of an email, not a connection, so a rename to
+    "parts" avoids the clash; `trackingNumbers` already fits
 - [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
       declared hosts
 - [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
@@ -54,7 +75,8 @@ already fixed. Still open, by audit group:
       and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
       everywhere, no hard-coded colours.
 - [ ] Provider sandbox (child process with Node permission model, broker for HTTP, secrets per call)
-- [ ] Source actions and jobs (buttons on source cards, progress, cancel, resume, HA buttons)
+- [ ] Connection actions and jobs (buttons on connection cards, progress, cancel, resume, HA
+      buttons)
 - [ ] Amazon "Import history" job (all years, resumable, conservative pacing, imported history kept)
 - [ ] Mail routing: mailboxes dispatch matching mails to providers' `parseMail` (sender domain +
       DKIM check, global switch on by default)
@@ -72,14 +94,21 @@ already fixed. Still open, by audit group:
 - [ ] Return mails of other shops (generic rules), PayPal refunds matched to orders
 - [ ] Move return detail reading (deadline, drop-off, cost) from the server into the rules/providers
 - [ ] Verify the Amazon return-window parsing on a live account run
-- [ ] Re-read old mail on demand so past returns appear (part of "Clear data" / history import)
+- [ ] Re-read old emails on demand so past returns appear (part of "Clear data" / history import)
+- [ ] Order emails: the server acts only on parcel and return emails. Order events from the rules
+      (`order_placed`, `order_confirmed`, `order_shipped`, `order_delivered` (rules 2.0.0-dev.11),
+      `order_cancelled`) are ignored; at least `order_delivered` should mark an order without a
+      parcel delivered (a test pins today's ignoring: `server/test/mail/order-events.test.ts`)
 
-## 5. New sources (from the mail backup inventory)
+## 5. New connections (from the email backup inventory)
 
-- [ ] Reichelt, Berrybase, boykisser.gg (order history where offered, else mail)
-- [ ] AliExpress (578 mails), PayPal (purchase receipts), eBay, Temu, MediaMarkt, Mindfactory,
-      sertronics.shop, Steam / Humble / GOG / Instant Gaming / gamivo / mmoga (digital orders)
-- [ ] 17track as a fallback tracking source
+- [ ] Use the shop emails of rules 2.0.0-dev.11 (AliExpress, PayPal receipts, eBay, Temu,
+      MediaMarkt, Mindfactory, reichelt, Netto, Rasppishop, KSP, digital stores): needs the order
+      emails item in §4, since order-only emails create nothing yet
+- [ ] Berrybase, sertronics.shop: order history where offered, else email rules
+- [ ] boykisser.gg and Banggood: need sample emails before rules can be written
+- [ ] Order totals: needs a rule field in open-parcels-rules
+- [ ] 17track as a fallback tracking connection
 
 ## 6. Home Assistant integration (open-parcels-ha)
 
@@ -106,6 +135,6 @@ already fixed. Still open, by audit group:
 
 ## 10. Owner actions
 
-- [ ] Hermes password once in the Hermes source
-- [ ] DHL API key (approved?) into the DHL source
+- [ ] Hermes password once in the Hermes connection
+- [ ] DHL API key (approved?) into the DHL connection
 - [ ] Make `ghcr.io/open-parcels/open-parcels` public

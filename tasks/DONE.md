@@ -4,6 +4,18 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-24
 
+- Glossary pass in the server repo (TODO §3 first item, with OP-044): migration 0019 (sources →
+  connections, barcode → tracking_number, planned → expected, incoming/outgoing →
+  receiving/sending; `e32802c`), API with the old names kept for one release (`/api/v1/sources`
+  paths, `barcode`, `planned_*`, `legacy_direction`, `sources`/`plugin`/`source_kinds`, old-named
+  live event twins; `cf60b56`), `expected_days` for whole-day expected deliveries (OP-044,
+  `daa51ca`), code identifiers and texts (`1315582`), web UI (`457bc87`), lint boundary
+  (`371c662`), README, agent notes, decision records and `CHANGELOG.md` (`c52a191`). The other
+  repos' share is listed in TODO §3
+- Rules 2.0.0-dev.11 on the server: order, shipping and return emails for AliExpress, PayPal
+  receipts (matched by shop reference), Steam, Humble, GOG, Instant Gaming, GAMIVO, MMOGA, Eneba,
+  Fanatical, eBay, Temu, MediaMarkt, Mindfactory, reichelt, Netto, Rasppishop and KSP; the new
+  `order_delivered` event is ignored like every order event for now (TODO §4) (`486eac6`)
 - Web correctness: route map redraws only on change (OP-149, `8eb9ab1`); settings editor, secrets
   and reader password (OP-152, `29ed45b`); sign-in loose ends, extension 0.2.0 hints for enabling
   it, `busy`/`error` reasons and the Home Assistant frame (OP-154, OP-038, `a57d551`); split orders
