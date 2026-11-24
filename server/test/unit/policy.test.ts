@@ -123,6 +123,18 @@ describe("poll scheduling", () => {
     expect(night?.toISOString()).toBe("2026-11-19T05:00:00.000Z");
   });
 
+  it("adds the stagger after the midnight and 06:00 anchors (OP-034)", () => {
+    const active = [{ status: "in_transit" as const, expectedFrom: null }];
+    const late = nextRunAfterSuccess(
+      context("2026-11-18T22:30:00Z", { staggerMinutes: 4, active }),
+    );
+    expect(late?.toISOString()).toBe("2026-11-18T23:04:00.000Z");
+    const night = nextRunAfterSuccess(
+      context("2026-11-18T23:04:00Z", { staggerMinutes: 4, active }),
+    );
+    expect(night?.toISOString()).toBe("2026-11-19T05:04:00.000Z");
+  });
+
   it("polls through the night when the quiet window is switched off", () => {
     const night = nextRunAfterSuccess(
       context("2026-11-18T23:00:00Z", {

@@ -45,10 +45,12 @@ function isHot(parcel: ActiveParcel, now: Date): boolean {
 
 /**
  * Moves a run that would fall in the quiet window to its catch-up anchor: 06:00 when the night
- * has started, otherwise local midnight (one catch-up run right before the window).
- * Anchored runs get no stagger.
+ * has started, otherwise local midnight (one catch-up run right before the window). The stagger
+ * goes after the anchor too, so installs and connections do not all poll at 00:00 and 06:00 sharp.
  */
-function respectQuietWindow(now: Date, target: Date, timeZone: string): Date {
+function respectQuietWindow(now: Date, target: Date, context: PollContext): Date {
+  const { timeZone } = context;
+  const stagger = context.staggerMinutes * MINUTE;
   const local = localParts(target, timeZone);
   if (local.hour < QUIET_START_HOUR || local.hour >= QUIET_END_HOUR) {
     return target;
@@ -56,9 +58,10 @@ function respectQuietWindow(now: Date, target: Date, timeZone: string): Date {
   const nowLocal = localParts(now, timeZone);
   const nightStarted = nowLocal.hour >= QUIET_START_HOUR && nowLocal.hour < QUIET_END_HOUR;
   if (nightStarted) {
-    return zonedTime({ ...nowLocal, hour: QUIET_END_HOUR, minute: 0 }, timeZone);
+    const end = zonedTime({ ...nowLocal, hour: QUIET_END_HOUR, minute: 0 }, timeZone);
+    return new Date(end.getTime() + stagger);
   }
-  return nextLocalMidnight(now, timeZone);
+  return new Date(nextLocalMidnight(now, timeZone).getTime() + stagger);
 }
 
 /** When to poll next after a successful run; null means stop until something changes. */
@@ -80,7 +83,7 @@ export function nextRunAfterSuccess(context: PollContext): Date | null {
   if (!context.quietWindow) {
     return target;
   }
-  return respectQuietWindow(now, target, context.timeZone);
+  return respectQuietWindow(now, target, context);
 }
 
 export type FailureKind =
