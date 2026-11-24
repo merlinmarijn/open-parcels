@@ -9,10 +9,10 @@ import type {
   GetApiV1Returns200Item,
   GetApiV1ReturnsView,
   GetApiV1Session200,
-  GetApiV1Sources200Item,
-  GetApiV1SourcesIdSignInFlows200Item,
+  GetApiV1Connections200Item,
+  GetApiV1ConnectionsIdSignInFlows200Item,
   GetApiV1Tokens200Item,
-  PostApiV1SourcesIdSignInAttemptsAttemptContinue200,
+  PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200,
 } from "./generated";
 
 export type Session = GetApiV1Session200;
@@ -21,10 +21,10 @@ export type ParcelDetail = GetApiV1ParcelsId200;
 export type ParcelStatus = Parcel["status"];
 export type LookupState = Parcel["lookup"]["state"];
 export type Carrier = GetApiV1Carriers200Item;
-export type Source = GetApiV1Sources200Item;
-export type SourceState = Source["state"];
-export type SignInFlow = GetApiV1SourcesIdSignInFlows200Item;
-export type SignInResult = PostApiV1SourcesIdSignInAttemptsAttemptContinue200;
+export type Connection = GetApiV1Connections200Item;
+export type ConnectionState = Connection["state"];
+export type SignInFlow = GetApiV1ConnectionsIdSignInFlows200Item;
+export type SignInResult = PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200;
 export type SignInStepResult = Extract<SignInResult, { status: "step" }>;
 export type SignInStep = SignInStepResult["step"];
 export type ApiToken = GetApiV1Tokens200Item;

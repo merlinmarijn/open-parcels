@@ -93,6 +93,7 @@ describe("return deadlines in the calendar", () => {
       order_id: ORDER_ID,
       title: "Example kettle",
       carrier: "dhl",
+      tracking_number: "RET-0001",
       barcode: "RET-0001",
       status: "requested",
       kind: "return_by",

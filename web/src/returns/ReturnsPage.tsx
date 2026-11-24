@@ -16,7 +16,7 @@ const TABS: readonly { readonly view: ReturnView; readonly label: string }[] = [
 const VIEWS: readonly ReturnView[] = TABS.map((tab) => tab.view);
 
 const EMPTY: Readonly<Record<ReturnView, string>> = {
-  open: "No open returns. A return you start at a shop shows up here once its account or a return mail reports it.",
+  open: "No open returns. A return you start at a shop shows up here once its account or a return email reports it.",
   closed: "No refunded, rejected, cancelled or expired returns.",
   all: "No returns yet.",
 };

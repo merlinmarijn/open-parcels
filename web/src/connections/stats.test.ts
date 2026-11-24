@@ -1,18 +1,18 @@
 import { describe, expect, it } from "vitest";
 import type { Parcel } from "../api/types";
-import { statsBySource } from "./SourcesPage";
+import { statsByConnection } from "./ConnectionsPage";
 
-function parcel(sources: string[], delivered: boolean, archived = false): Parcel {
+function parcel(connections: string[], delivered: boolean, archived = false): Parcel {
   return {
-    sources: sources.map((source_id) => ({ source_id })),
+    connections: connections.map((connection_id) => ({ connection_id })),
     delivered,
     archived_at: archived ? "2026-01-01T00:00:00Z" : null,
   } as unknown as Parcel;
 }
 
-describe("parcels per source", () => {
-  it("counts each parcel once per source: on the way, delivered and all", () => {
-    const stats = statsBySource([
+describe("parcels per connection", () => {
+  it("counts each parcel once per connection: on the way, delivered and all", () => {
+    const stats = statsByConnection([
       parcel(["a", "a"], false),
       parcel(["a", "b"], true),
       parcel(["b"], false, true),

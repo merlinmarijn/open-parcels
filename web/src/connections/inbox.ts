@@ -1,10 +1,10 @@
 import type { SignInFlow } from "../api/types";
 import type { JsonSchema } from "./schema";
 
-/** Mailboxes are not a carrier plug-in, so their forms mirror the server's mail schemas here. */
-export const MAIL_PLUGIN = "imap";
+/** Inboxes are not a carrier provider, so their forms mirror the server's mail schemas here. */
+export const INBOX_PROVIDER = "imap";
 
-export const MAIL_CONFIG_SCHEMA: JsonSchema = {
+export const INBOX_CONFIG_SCHEMA: JsonSchema = {
   type: "object",
   required: ["host"],
   properties: {
@@ -34,7 +34,7 @@ export const MAIL_CONFIG_SCHEMA: JsonSchema = {
   },
 };
 
-export const MAIL_SECRET_SCHEMA: JsonSchema = {
+export const INBOX_SECRET_SCHEMA: JsonSchema = {
   type: "object",
   required: ["username", "password"],
   properties: {
@@ -43,7 +43,7 @@ export const MAIL_SECRET_SCHEMA: JsonSchema = {
   },
 };
 
-export const MAIL_FLOWS: SignInFlow[] = [
+export const INBOX_FLOWS: SignInFlow[] = [
   {
     id: "credentials",
     label: "User name and password",

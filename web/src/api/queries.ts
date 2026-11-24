@@ -13,7 +13,7 @@ import { useEffect } from "react";
 import {
   deleteApiV1OrdersId,
   deleteApiV1ParcelsId,
-  deleteApiV1SourcesId,
+  deleteApiV1ConnectionsId,
   deleteApiV1TokensId,
   getApiV1Calendar,
   getApiV1Carriers,
@@ -25,24 +25,24 @@ import {
   getApiV1Returns,
   getApiV1Parcels,
   getApiV1ParcelsId,
-  getApiV1Sources,
-  getApiV1SourcesIdData,
+  getApiV1Connections,
+  getApiV1ConnectionsIdData,
   getApiV1Tokens,
   patchApiV1OrdersId,
   patchApiV1ParcelsId,
-  patchApiV1SourcesId,
+  patchApiV1ConnectionsId,
   postApiV1DataClear,
   postApiV1Parcels,
-  postApiV1Sources,
-  postApiV1SourcesIdClear,
-  postApiV1SourcesIdSync,
+  postApiV1Connections,
+  postApiV1ConnectionsIdClear,
+  postApiV1ConnectionsIdSync,
   postApiV1Tokens,
   type PatchApiV1OrdersIdBody,
   type PostApiV1DataClearBody,
   type PatchApiV1ParcelsIdBody,
-  type PatchApiV1SourcesIdBody,
+  type PatchApiV1ConnectionsIdBody,
   type PostApiV1ParcelsBody,
-  type PostApiV1SourcesBody,
+  type PostApiV1ConnectionsBody,
   type PostApiV1TokensBody,
 } from "./generated";
 import type { OrderView, ParcelDetail, ReturnView } from "./types";
@@ -56,7 +56,7 @@ export const keys = {
   order: (id: string) => ["orders", "one", id] as const,
   returns: ["returns"] as const,
   returnList: (view: ReturnView) => ["returns", "list", { view }] as const,
-  sources: ["sources"] as const,
+  connections: ["connections"] as const,
   carriers: ["carriers"] as const,
   tokens: ["tokens"] as const,
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
@@ -120,8 +120,11 @@ export function useCarriers() {
   });
 }
 
-export function useSources() {
-  return useQuery({ queryKey: keys.sources, queryFn: ({ signal }) => getApiV1Sources({ signal }) });
+export function useConnections() {
+  return useQuery({
+    queryKey: keys.connections,
+    queryFn: ({ signal }) => getApiV1Connections({ signal }),
+  });
 }
 
 /** Tokens are used by other clients, so "last used" changes without any event: re-read it. */
@@ -224,7 +227,7 @@ export function useUpdateParcel(id: string) {
           ...(body.label === undefined
             ? {}
             : // Without a label the server names it (code or item names); the code until it answers.
-              { label: body.label, display_name: body.label ?? previous.barcode }),
+              { label: body.label, display_name: body.label ?? previous.tracking_number }),
           ...(body.manual_status === undefined
             ? {}
             : {
@@ -313,44 +316,44 @@ export function useDeleteOrder() {
   });
 }
 
-export function useAddSource() {
+export function useAddConnection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (body: PostApiV1SourcesBody) => postApiV1Sources(body),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+    mutationFn: (body: PostApiV1ConnectionsBody) => postApiV1Connections(body),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
   });
 }
 
-export function useUpdateSource() {
+export function useUpdateConnection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: ({ id, body }: { id: string; body: PatchApiV1SourcesIdBody }) =>
-      patchApiV1SourcesId(id, body),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+    mutationFn: ({ id, body }: { id: string; body: PatchApiV1ConnectionsIdBody }) =>
+      patchApiV1ConnectionsId(id, body),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
   });
 }
 
-export function useDeleteSource() {
+export function useDeleteConnection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => deleteApiV1SourcesId(id),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+    mutationFn: (id: string) => deleteApiV1ConnectionsId(id),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
   });
 }
 
-/** What clearing a source would remove, read right before asking the owner. */
-export function sourceDataCounts(id: string) {
-  return getApiV1SourcesIdData(id);
+/** What clearing a connection would remove, read right before asking the owner. */
+export function connectionDataCounts(id: string) {
+  return getApiV1ConnectionsIdData(id);
 }
 
-/** Removes everything a source imported; parcels, orders and the calendar reload after. */
-export function useClearSource() {
+/** Removes everything a connection imported; parcels, orders and the calendar reload after. */
+export function useClearConnection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => postApiV1SourcesIdClear(id),
+    mutationFn: (id: string) => postApiV1ConnectionsIdClear(id),
     onSuccess: async () => {
       await Promise.all([
-        client.invalidateQueries({ queryKey: keys.sources }),
+        client.invalidateQueries({ queryKey: keys.connections }),
         client.invalidateQueries({ queryKey: keys.parcels }),
         client.invalidateQueries({ queryKey: keys.orders }),
         client.invalidateQueries({ queryKey: ["calendar"] }),
@@ -376,11 +379,11 @@ export function useClearData() {
   });
 }
 
-export function useSyncSource() {
+export function useSyncConnection() {
   const client = useQueryClient();
   return useMutation({
-    mutationFn: (id: string) => postApiV1SourcesIdSync(id),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.sources }),
+    mutationFn: (id: string) => postApiV1ConnectionsIdSync(id),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
   });
 }
 

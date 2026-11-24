@@ -18,12 +18,12 @@ describe("sign-in step renderer", () => {
     const { onSubmit, user } = setup({
       kind: "form",
       fields: [
-        { name: "email", label: "E-mail", type: "email" },
+        { name: "email", label: "Email", type: "email" },
         { name: "pw", label: "Password", type: "password" },
       ],
     });
     expect(screen.getByLabelText("Password")).toHaveAttribute("type", "password");
-    await user.type(screen.getByLabelText("E-mail"), "someone@example.invalid");
+    await user.type(screen.getByLabelText("Email"), "someone@example.invalid");
     await user.type(screen.getByLabelText("Password"), TYPED);
     await user.click(screen.getByRole("button", { name: "Continue" }));
     expect(onSubmit).toHaveBeenCalledWith({ email: "someone@example.invalid", pw: TYPED });

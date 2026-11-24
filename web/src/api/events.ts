@@ -15,21 +15,21 @@ const PARCEL_EVENTS = [
   "parcel.status_changed",
   "parcel.delivered",
   "parcel.delivery_time_changed",
-  "parcel.outgoing_registered",
-  "parcel.outgoing_delivered",
+  "parcel.sending_registered",
+  "parcel.sending_delivered",
   "parcel.live_updated",
   "parcel.location_changed",
   "parcel.removed",
   "parcel.deleted",
 ] as const;
 
-/** Source events: added, renamed, a state change, a finished run (run times, counts), a removal. */
-const SOURCE_EVENTS = [
-  "source.added",
-  "source.updated",
-  "source.state_changed",
-  "source.run_finished",
-  "source.removed",
+/** Live events about connections: added, renamed, a state change, a finished run (run times, counts), a removal. */
+const CONNECTION_EVENTS = [
+  "connection.added",
+  "connection.updated",
+  "connection.state_changed",
+  "connection.run_finished",
+  "connection.removed",
 ] as const;
 
 /** An order renamed, (un)archived by hand, or deleted. */
@@ -164,7 +164,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
     if (!enabled || typeof EventSource === "undefined") {
       return undefined;
     }
-    const source = new EventSource(apiUrl("/api/v1/events"), { withCredentials: true });
+    const stream = new EventSource(apiUrl("/api/v1/events"), { withCredentials: true });
     const refreshLists = (): void => {
       void client.invalidateQueries({ queryKey: keys.parcels });
       void client.invalidateQueries({ queryKey: ["calendar"] });
@@ -186,19 +186,19 @@ export function useLiveUpdates(enabled: boolean): LiveState {
         void client.invalidateQueries({ queryKey: keys.parcel(id) });
       }
     };
-    const onSource = (): void => {
-      void client.invalidateQueries({ queryKey: keys.sources });
+    const onConnection = (): void => {
+      void client.invalidateQueries({ queryKey: keys.connections });
       // A run may have changed parcels without a parcel event (lookup state, last seen), and a
-      // removed source takes its links with it.
+      // removed connection takes its links with it.
       void client.invalidateQueries({ queryKey: keys.parcels });
     };
     let reopen: ReturnType<typeof setTimeout> | undefined;
-    source.onopen = () => {
+    stream.onopen = () => {
       closedRuns.current = 0;
       setState("live");
     };
-    source.onerror = () => {
-      if (source.readyState !== EventSource.CLOSED) {
+    stream.onerror = () => {
+      if (stream.readyState !== EventSource.CLOSED) {
         setState("connecting");
         return;
       }
@@ -213,13 +213,13 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       }, wait);
     };
     for (const type of PARCEL_EVENTS) {
-      source.addEventListener(type, onParcel);
+      stream.addEventListener(type, onParcel);
     }
-    for (const type of SOURCE_EVENTS) {
-      source.addEventListener(type, onSource);
+    for (const type of CONNECTION_EVENTS) {
+      stream.addEventListener(type, onConnection);
     }
     // A changed setting (home, how parcels are named) changes every parcel's view.
-    source.addEventListener("settings.updated", () => {
+    stream.addEventListener("settings.updated", () => {
       void client.invalidateQueries({ queryKey: settingsKey });
       void client.invalidateQueries({ queryKey: keys.parcels });
     });
@@ -233,7 +233,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: keys.parcels });
     };
     for (const type of ORDER_EVENTS) {
-      source.addEventListener(type, onOrder);
+      stream.addEventListener(type, onOrder);
     }
     const onReturn = (): void => {
       void client.invalidateQueries({ queryKey: keys.returns });
@@ -241,13 +241,13 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: ["calendar"] });
     };
     for (const type of RETURN_EVENTS) {
-      source.addEventListener(type, onReturn);
+      stream.addEventListener(type, onReturn);
     }
     // The server could not replay what was missed (too old, or a reset database): reload all.
     const onResync = (): void => {
       void client.invalidateQueries();
     };
-    source.addEventListener("resync", onResync);
+    stream.addEventListener("resync", onResync);
     const onPosition = (event: MessageEvent<string>): void => {
       const message = parseLivePosition(event.data);
       if (message === null) return;
@@ -255,11 +255,11 @@ export function useLiveUpdates(enabled: boolean): LiveState {
         parcel === undefined ? undefined : withLivePosition(parcel, message),
       );
     };
-    source.addEventListener("parcel.live_position", onPosition);
+    stream.addEventListener("parcel.live_position", onPosition);
     return () => {
       liveLists.cancel();
       clearTimeout(reopen);
-      source.close();
+      stream.close();
     };
   }, [client, enabled, generation]);
 

@@ -5,7 +5,7 @@ import { mockApi, parcel, renderApp, SIGNED_IN } from "../test/helpers";
 
 /* Every value is made up. */
 const ID = "00000000-0000-4000-8000-0000000000e1";
-const BASE = { ...parcel({ id: ID, label: "Desk lamp", status: "in_transit" }), sources: [] };
+const BASE = { ...parcel({ id: ID, label: "Desk lamp", status: "in_transit" }), connections: [] };
 
 /** A fake server that keeps what a successful PATCH answered. */
 function routes(patch: (body: unknown) => { status?: number; body: unknown }) {
@@ -28,7 +28,7 @@ describe("editing a parcel in place", () => {
   it("renames with the pencil and Enter, and Escape leaves it as it was", async () => {
     const calls = routes((body) => {
       const label = (body as { label?: string | null }).label ?? null;
-      return { body: { ...BASE, label, display_name: label ?? BASE.barcode } };
+      return { body: { ...BASE, label, display_name: label ?? BASE.tracking_number } };
     });
     const user = userEvent.setup();
     renderApp(`/parcels/${ID}`);

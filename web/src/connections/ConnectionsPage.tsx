@@ -1,54 +1,60 @@
 import { Eraser, Mail, Pause, Pencil, Play, Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import {
-  sourceDataCounts,
+  connectionDataCounts,
   useCarriers,
-  useClearSource,
-  useDeleteSource,
+  useClearConnection,
+  useDeleteConnection,
   useParcels,
-  useSources,
-  useSyncSource,
-  useUpdateSource,
+  useConnections,
+  useSyncConnection,
+  useUpdateConnection,
 } from "../api/queries";
-import type { Carrier, Parcel, Source } from "../api/types";
+import type { Carrier, Parcel, Connection } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { useIsAdmin } from "../auth/session";
 import { ErrorNotice, ReadOnlyHint, Spinner } from "../components/ui";
 import { formatRelative } from "../lib/format";
-import { SourceStateBadge } from "../parcels/badges";
-import { MAIL_PLUGIN } from "./mail";
+import { ConnectionStateBadge } from "../parcels/badges";
+import { INBOX_PROVIDER } from "./inbox";
 import { SignInDialog } from "./SignInDialog";
-import { SourceDialog } from "./SourceDialog";
+import { ConnectionDialog } from "./ConnectionDialog";
 
-type Editing = { readonly mode: "add" } | { readonly mode: "edit"; readonly source: Source } | null;
+type Editing =
+  { readonly mode: "add" } | { readonly mode: "edit"; readonly connection: Connection } | null;
 
 /**
- * False when every sign-in flow the source's plug-in offers for its kind needs nothing (type
- * `none`), so a "Sign in" button would lead nowhere. Mailboxes always sign in; unknown plug-ins
- * and a source the server says needs a sign-in keep the button.
+ * False when every sign-in flow the connection's provider offers for its kind needs nothing (type
+ * `none`), so a "Sign in" button would lead nowhere. Inboxes always sign in; unknown providers
+ * and a connection the server says needs a sign-in keep the button.
  */
-export function canSignIn(source: Source, carriers: readonly Carrier[] | undefined): boolean {
-  if (source.plugin === MAIL_PLUGIN || source.state === "needs_sign_in") return true;
-  const carrier = carriers?.find((c) => c.id === source.plugin);
+export function canSignIn(
+  connection: Connection,
+  carriers: readonly Carrier[] | undefined,
+): boolean {
+  if (connection.provider === INBOX_PROVIDER || connection.state === "needs_sign_in") return true;
+  const carrier = carriers?.find((c) => c.id === connection.provider);
   if (carrier === undefined) return true;
   return carrier.sign_in_flows.some(
-    (flow) => flow.type !== "none" && (flow.kinds as readonly string[]).includes(source.kind),
+    (flow) => flow.type !== "none" && (flow.kinds as readonly string[]).includes(connection.kind),
   );
 }
 
-export interface SourceStats {
+export interface ConnectionStats {
   readonly active: number;
   readonly delivered: number;
   readonly total: number;
 }
 
-const NO_STATS: SourceStats = { active: 0, delivered: 0, total: 0 };
+const NO_STATS: ConnectionStats = { active: 0, delivered: 0, total: 0 };
 
-/** Parcels per source (archived included): on the way, delivered, and all it has found. */
-export function statsBySource(parcels: readonly Parcel[]): ReadonlyMap<string, SourceStats> {
-  const stats = new Map<string, SourceStats>();
+/** Parcels per connection (archived included): on the way, delivered, and all it has found. */
+export function statsByConnection(
+  parcels: readonly Parcel[],
+): ReadonlyMap<string, ConnectionStats> {
+  const stats = new Map<string, ConnectionStats>();
   for (const parcel of parcels) {
-    for (const ref of new Set(parcel.sources.map((entry) => entry.source_id))) {
+    for (const ref of new Set(parcel.connections.map((entry) => entry.connection_id))) {
       const current = stats.get(ref) ?? NO_STATS;
       stats.set(ref, {
         active: current.active + (parcel.delivered || parcel.archived_at !== null ? 0 : 1),
@@ -62,89 +68,91 @@ export function statsBySource(parcels: readonly Parcel[]): ReadonlyMap<string, S
 
 function Stat(props: { readonly label: string; readonly value: number | string }): ReactNode {
   return (
-    <div className="source-stat">
-      <span className="source-stat-value">{props.value}</span>
-      <span className="source-stat-label">{props.label}</span>
+    <div className="connection-stat">
+      <span className="connection-stat-value">{props.value}</span>
+      <span className="connection-stat-label">{props.label}</span>
     </div>
   );
 }
 
-function SourceRow(props: {
-  readonly source: Source;
-  readonly stats: SourceStats | undefined;
+function ConnectionRow(props: {
+  readonly connection: Connection;
+  readonly stats: ConnectionStats | undefined;
   readonly signIn: boolean;
   /** Readers see the card without its actions. */
   readonly admin: boolean;
   readonly onEdit: () => void;
   readonly onSignIn: () => void;
 }): ReactNode {
-  const { source } = props;
+  const { connection } = props;
   const stats = props.stats ?? NO_STATS;
   return (
-    <li className="card source-card">
-      <div className="source-head">
-        {source.plugin === MAIL_PLUGIN ? (
-          <span className="source-mail-icon" aria-hidden="true">
+    <li className="card connection-card">
+      <div className="connection-head">
+        {connection.provider === INBOX_PROVIDER ? (
+          <span className="connection-mail-icon" aria-hidden="true">
             <Mail size={18} />
           </span>
         ) : (
-          <CarrierLogo carrier={source.plugin} size={32} />
+          <CarrierLogo carrier={connection.provider} size={32} />
         )}
-        <div className="source-title">
-          <h2 title={source.label}>{source.label}</h2>
+        <div className="connection-title">
+          <h2 title={connection.label}>{connection.label}</h2>
           <span className="muted">
-            {source.plugin} · {source.kind}
+            {connection.provider} · {connection.kind}
           </span>
         </div>
-        <SourceStateBadge state={source.state} lastOkAt={source.last_ok_at} />
+        <ConnectionStateBadge state={connection.state} lastOkAt={connection.last_ok_at} />
       </div>
-      {source.state_detail === null ? null : (
-        <p className="muted source-detail">{source.state_detail}</p>
+      {connection.state_detail === null ? null : (
+        <p className="muted connection-detail">{connection.state_detail}</p>
       )}
-      <div className="source-stats">
+      <div className="connection-stats">
         <Stat label="on the way" value={stats.active} />
         <Stat label="delivered" value={stats.delivered} />
         <Stat label="parcels found" value={stats.total} />
       </div>
-      <dl className="source-times">
+      <dl className="connection-times">
         <dt>Last run</dt>
-        <dd>{formatRelative(source.last_run_at)}</dd>
+        <dd>{formatRelative(connection.last_run_at)}</dd>
         <dt>Last success</dt>
-        <dd>{formatRelative(source.last_ok_at)}</dd>
+        <dd>{formatRelative(connection.last_ok_at)}</dd>
         <dt>Next run</dt>
-        <dd>{source.next_run_at === null ? "—" : formatRelative(source.next_run_at)}</dd>
+        <dd>{connection.next_run_at === null ? "—" : formatRelative(connection.next_run_at)}</dd>
       </dl>
-      {props.admin ? <SourceActions {...props} /> : null}
+      {props.admin ? <ConnectionActions {...props} /> : null}
     </li>
   );
 }
 
-/** Sign in, sync, edit, pause and remove: the admin's controls on a source card. */
-function SourceActions(props: {
-  readonly source: Source;
+/** Sign in, sync, edit, pause and remove: the admin's controls on a connection card. */
+function ConnectionActions(props: {
+  readonly connection: Connection;
   readonly signIn: boolean;
   readonly onEdit: () => void;
   readonly onSignIn: () => void;
 }): ReactNode {
-  const { source } = props;
-  const sync = useSyncSource();
-  const update = useUpdateSource();
-  const remove = useDeleteSource();
-  const clear = useClearSource();
+  const { connection } = props;
+  const sync = useSyncConnection();
+  const update = useUpdateConnection();
+  const remove = useDeleteConnection();
+  const clear = useClearConnection();
   const [counting, setCounting] = useState(false);
-  const enabled = source.state !== "disabled";
+  const enabled = connection.state !== "disabled";
   return (
     <>
       <ErrorNotice error={sync.error ?? update.error ?? remove.error ?? clear.error} />
       <div className="actions">
-        {/* A disabled source neither runs nor signs in; enabling it comes first. */}
+        {/* A disabled connection neither runs nor signs in; enabling it comes first. */}
         {enabled && props.signIn ? (
           <button
             type="button"
-            className={source.state === "needs_sign_in" ? "button small primary" : "button small"}
+            className={
+              connection.state === "needs_sign_in" ? "button small primary" : "button small"
+            }
             onClick={props.onSignIn}
           >
-            {source.has_secret ? "Sign in again" : "Sign in"}
+            {connection.has_secret ? "Sign in again" : "Sign in"}
           </button>
         ) : null}
         {enabled ? (
@@ -153,13 +161,13 @@ function SourceActions(props: {
             className="button small"
             disabled={sync.isPending}
             onClick={() => {
-              sync.mutate(source.id);
+              sync.mutate(connection.id);
             }}
           >
             {sync.isPending ? "Syncing…" : "Sync now"}
           </button>
         ) : null}
-        <span className="source-icon-actions">
+        <span className="connection-icon-actions">
           <button
             type="button"
             className="icon-button"
@@ -176,7 +184,7 @@ function SourceActions(props: {
             title={enabled ? "Disable" : "Enable"}
             aria-pressed={!enabled}
             onClick={() => {
-              update.mutate({ id: source.id, body: { enabled: !enabled } });
+              update.mutate({ id: connection.id, body: { enabled: !enabled } });
             }}
           >
             {enabled ? (
@@ -189,22 +197,22 @@ function SourceActions(props: {
             type="button"
             className="icon-button"
             aria-label="Clear data"
-            title="Clear data: remove what this source imported, so it syncs again from scratch"
+            title="Clear data: remove what this connection imported, so it syncs again from scratch"
             disabled={counting || clear.isPending}
             onClick={() => {
               setCounting(true);
-              void sourceDataCounts(source.id)
+              void connectionDataCounts(connection.id)
                 .then((counts) => {
                   const shared =
                     counts.shared > 0
-                      ? ` ${String(counts.shared)} that other sources also reported stay.`
+                      ? ` ${String(counts.shared)} that other connections also reported stay.`
                       : "";
                   const question =
-                    `Clear the data of “${source.label}”? This deletes ${String(counts.parcels)} ` +
+                    `Clear the data of “${connection.label}”? This deletes ${String(counts.parcels)} ` +
                     `parcels and ${String(counts.orders)} orders only it reported.${shared} The ` +
-                    "source and its sign-in stay, and it syncs again from scratch.";
+                    "connection and its sign-in stay, and it syncs again from scratch.";
                   if (window.confirm(question)) {
-                    clear.mutate(source.id);
+                    clear.mutate(connection.id);
                   }
                 })
                 .finally(() => {
@@ -220,8 +228,8 @@ function SourceActions(props: {
             aria-label="Remove"
             title="Remove"
             onClick={() => {
-              if (window.confirm(`Remove “${source.label}” and its stored sign-in?`)) {
-                remove.mutate(source.id);
+              if (window.confirm(`Remove “${connection.label}” and its stored sign-in?`)) {
+                remove.mutate(connection.id);
               }
             }}
           >
@@ -233,27 +241,30 @@ function SourceActions(props: {
   );
 }
 
-export function SourcesPage(): ReactNode {
+export function ConnectionsPage(): ReactNode {
   const admin = useIsAdmin();
-  const sources = useSources();
+  const connections = useConnections();
   const carriers = useCarriers();
   const parcels = useParcels(true);
-  const stats = useMemo(() => statsBySource(parcels.data ?? []), [parcels.data]);
-  const list = sources.data ?? [];
-  const working = list.filter((source) => source.state === "ok" || source.state === "idle").length;
+  const stats = useMemo(() => statsByConnection(parcels.data ?? []), [parcels.data]);
+  const list = connections.data ?? [];
+  const working = list.filter(
+    (connection) => connection.state === "ok" || connection.state === "idle",
+  ).length;
   const attention = list.filter(
-    (source) => source.state !== "ok" && source.state !== "idle" && source.state !== "disabled",
+    (connection) =>
+      connection.state !== "ok" && connection.state !== "idle" && connection.state !== "disabled",
   ).length;
   const [editing, setEditing] = useState<Editing>(null);
-  const [signingIn, setSigningIn] = useState<Source | null>(null);
+  const [signingIn, setSigningIn] = useState<Connection | null>(null);
 
   return (
-    <section aria-labelledby="sources-title">
+    <section aria-labelledby="connections-title">
       <div className="page-header">
-        <h1 id="sources-title">Sources</h1>
+        <h1 id="connections-title">Connections</h1>
         {list.length === 0 ? null : (
-          <div className="source-summary">
-            <Stat label="sources" value={list.length} />
+          <div className="connection-summary">
+            <Stat label="connections" value={list.length} />
             <Stat label="working" value={working} />
             <Stat label="need attention" value={attention} />
             <Stat
@@ -272,57 +283,57 @@ export function SourcesPage(): ReactNode {
               setEditing({ mode: "add" });
             }}
           >
-            Add a source
+            Add a connection
           </button>
         ) : null}
       </div>
       {admin ? null : <ReadOnlyHint />}
-      <ErrorNotice error={sources.error} />
-      {sources.data === undefined ? (
-        sources.isPending ? (
+      <ErrorNotice error={connections.error} />
+      {connections.data === undefined ? (
+        connections.isPending ? (
           <Spinner />
         ) : null
-      ) : sources.data.length === 0 ? (
-        <p className="muted">No sources yet. Add a carrier account, a shop or a mailbox.</p>
+      ) : connections.data.length === 0 ? (
+        <p className="muted">No connections yet. Add a carrier account, a shop or an inbox.</p>
       ) : (
-        <ul className="plain-list source-grid">
-          {sources.data.map((source) => (
-            <SourceRow
-              key={source.id}
-              source={source}
-              stats={stats.get(source.id)}
-              signIn={canSignIn(source, carriers.data)}
+        <ul className="plain-list connection-grid">
+          {connections.data.map((connection) => (
+            <ConnectionRow
+              key={connection.id}
+              connection={connection}
+              stats={stats.get(connection.id)}
+              signIn={canSignIn(connection, carriers.data)}
               admin={admin}
               onEdit={() => {
-                setEditing({ mode: "edit", source });
+                setEditing({ mode: "edit", connection });
               }}
               onSignIn={() => {
-                setSigningIn(source);
+                setSigningIn(connection);
               }}
             />
           ))}
         </ul>
       )}
       {editing === null ? null : (
-        <SourceDialog
-          key={editing.mode === "edit" ? editing.source.id : "add"}
+        <ConnectionDialog
+          key={editing.mode === "edit" ? editing.connection.id : "add"}
           open
-          editing={editing.mode === "edit" ? editing.source : null}
+          editing={editing.mode === "edit" ? editing.connection : null}
           onClose={() => {
             setEditing(null);
           }}
-          onCreated={(source) => {
+          onCreated={(connection) => {
             setEditing(null);
-            // A new source that signs in and has nothing stored goes straight to its sign-in.
-            if (!source.has_secret && canSignIn(source, carriers.data)) {
-              setSigningIn(source);
+            // A new connection that signs in and has nothing stored goes straight to its sign-in.
+            if (!connection.has_secret && canSignIn(connection, carriers.data)) {
+              setSigningIn(connection);
             }
           }}
         />
       )}
       <SignInDialog
         key={signingIn?.id ?? "none"}
-        source={signingIn}
+        connection={signingIn}
         onClose={() => {
           setSigningIn(null);
         }}

@@ -35,7 +35,7 @@ function initials(name: string): string {
   return text.slice(0, 3);
 }
 
-/** The carrier's display name from the plug-in list, or its id. */
+/** The carrier's display name from the provider list, or its id. */
 export function useCarrierName(id: string): string {
   const carriers = useCarriers();
   return carriers.data?.find((carrier) => carrier.id === id)?.name ?? id;

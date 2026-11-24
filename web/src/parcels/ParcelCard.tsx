@@ -3,7 +3,7 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import type { Parcel } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
-import { formatRelative, formatWindow } from "../lib/format";
+import { formatRelative, formatExpected } from "../lib/format";
 import { LookupBadge, StatusBadge } from "./badges";
 
 /** The parcel's name as the server gives it (label, item names or tracking code per Settings). */
@@ -20,10 +20,10 @@ export function etaText(parcel: Parcel): string | null {
   if (typeof stops === "number") {
     return stops === 0 ? "Next stop" : `${stops} stops away`;
   }
-  if (parcel.planned_from === null && parcel.planned_to === null) {
+  if (parcel.expected_from === null && parcel.expected_to === null) {
     return null;
   }
-  return `Expected ${formatWindow(parcel.planned_from, parcel.planned_to)}`;
+  return `Expected ${formatExpected(parcel)}`;
 }
 
 export function ParcelCard({ parcel }: { readonly parcel: Parcel }): ReactNode {
@@ -34,7 +34,7 @@ export function ParcelCard({ parcel }: { readonly parcel: Parcel }): ReactNode {
       <div className="parcel-card-body">
         <div className="parcel-card-title">{parcelName(parcel)}</div>
         <div className="parcel-card-meta">
-          {parcel.raw_status ?? `${parcel.carrier} · ${parcel.barcode}`}
+          {parcel.raw_status ?? `${parcel.carrier} · ${parcel.tracking_number}`}
         </div>
         {eta === null ? null : <div className="parcel-card-eta">{eta}</div>}
       </div>

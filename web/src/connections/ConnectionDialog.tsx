@@ -1,63 +1,63 @@
 import { useMemo, useState, type SyntheticEvent, type ReactNode } from "react";
-import { useAddSource, useCarriers, useUpdateSource } from "../api/queries";
-import type { Carrier, Source } from "../api/types";
+import { useAddConnection, useCarriers, useUpdateConnection } from "../api/queries";
+import type { Carrier, Connection } from "../api/types";
 import { Dialog, ErrorNotice, Field } from "../components/ui";
-import { MAIL_CONFIG_SCHEMA, MAIL_PLUGIN } from "./mail";
+import { INBOX_CONFIG_SCHEMA, INBOX_PROVIDER } from "./inbox";
 import { SchemaFields } from "./SchemaForm";
 import { asSchema, cleanValues, initialValues, type FormValues, type JsonSchema } from "./schema";
 
-type Kind = Source["kind"];
+type Kind = Connection["kind"];
 
 const KIND_LABELS: Readonly<Record<Kind, string>> = {
   account: "Account (your parcels from the carrier)",
-  tracking: "Tracking (look up codes)",
+  tracking: "Tracking (look up tracking numbers)",
   shop: "Shop (orders)",
-  mail: "Mailbox",
+  mail: "Inbox",
 };
 
-function configSchema(plugin: string, carriers: readonly Carrier[]): JsonSchema {
-  return plugin === MAIL_PLUGIN
-    ? MAIL_CONFIG_SCHEMA
-    : asSchema(carriers.find((c) => c.id === plugin)?.config_schema);
+function configSchema(provider: string, carriers: readonly Carrier[]): JsonSchema {
+  return provider === INBOX_PROVIDER
+    ? INBOX_CONFIG_SCHEMA
+    : asSchema(carriers.find((c) => c.id === provider)?.config_schema);
 }
 
-function kindsOf(plugin: string, carriers: readonly Carrier[]): Kind[] {
-  return plugin === MAIL_PLUGIN
+function kindsOf(provider: string, carriers: readonly Carrier[]): Kind[] {
+  return provider === INBOX_PROVIDER
     ? ["mail"]
-    : [...(carriers.find((c) => c.id === plugin)?.source_kinds ?? [])];
+    : [...(carriers.find((c) => c.id === provider)?.connection_kinds ?? [])];
 }
 
-/** Adds a source (choose a carrier and kind first) or edits an existing one's label and config. */
-export function SourceDialog(props: {
+/** Adds a connection (choose a carrier and kind first) or edits an existing one's label and config. */
+export function ConnectionDialog(props: {
   readonly open: boolean;
-  readonly editing: Source | null;
+  readonly editing: Connection | null;
   readonly onClose: () => void;
-  readonly onCreated: (source: Source) => void;
+  readonly onCreated: (connection: Connection) => void;
 }): ReactNode {
   const carriers = useCarriers();
-  const add = useAddSource();
-  const update = useUpdateSource();
+  const add = useAddConnection();
+  const update = useUpdateConnection();
   const list = useMemo(
     () => [...(carriers.data ?? [])].sort((a, b) => a.name.localeCompare(b.name)),
     [carriers.data],
   );
   const editing = props.editing;
-  const [plugin, setPlugin] = useState(editing?.plugin ?? "");
-  const kinds = kindsOf(plugin, list);
+  const [provider, setProvider] = useState(editing?.provider ?? "");
+  const kinds = kindsOf(provider, list);
   const [kind, setKind] = useState<Kind | "">(editing?.kind ?? "");
   const effectiveKind = kind !== "" && kinds.includes(kind) ? kind : (kinds[0] ?? "");
-  const schema = configSchema(plugin, list);
+  const schema = configSchema(provider, list);
   const [label, setLabel] = useState(editing?.label ?? "");
   const [values, setValues] = useState<FormValues>(() =>
-    initialValues(configSchema(editing?.plugin ?? "", carriers.data ?? []), editing?.config),
+    initialValues(configSchema(editing?.provider ?? "", carriers.data ?? []), editing?.config),
   );
   const mutation = editing === null ? add : update;
 
-  const choosePlugin = (next: string): void => {
-    setPlugin(next);
+  const chooseProvider = (next: string): void => {
+    setProvider(next);
     setKind("");
     setValues(initialValues(configSchema(next, list), undefined));
-    const name = next === MAIL_PLUGIN ? "Mailbox" : list.find((c) => c.id === next)?.name;
+    const name = next === INBOX_PROVIDER ? "Inbox" : list.find((c) => c.id === next)?.name;
     if (label === "" && name !== undefined) {
       setLabel(name);
     }
@@ -73,12 +73,12 @@ export function SourceDialog(props: {
     if (effectiveKind === "") {
       return;
     }
-    add.mutate({ plugin, kind: effectiveKind, label, config }, { onSuccess: props.onCreated });
+    add.mutate({ provider, kind: effectiveKind, label, config }, { onSuccess: props.onCreated });
   };
 
   return (
     <Dialog
-      title={editing === null ? "Add a source" : `Edit ${editing.label}`}
+      title={editing === null ? "Add a connection" : `Edit ${editing.label}`}
       open={props.open}
       onClose={props.onClose}
       wide
@@ -86,20 +86,20 @@ export function SourceDialog(props: {
       <form onSubmit={submit} className="stack">
         {editing === null ? (
           <>
-            <Field label="Carrier, shop or mailbox">
+            <Field label="Carrier, shop or inbox">
               {(id) => (
                 <select
                   id={id}
                   required
-                  value={plugin}
+                  value={provider}
                   onChange={(e) => {
-                    choosePlugin(e.target.value);
+                    chooseProvider(e.target.value);
                   }}
                 >
                   <option value="" disabled>
                     Choose…
                   </option>
-                  <option value={MAIL_PLUGIN}>Mailbox (IMAP)</option>
+                  <option value={INBOX_PROVIDER}>Inbox (IMAP)</option>
                   {list.map((carrier) => (
                     <option key={carrier.id} value={carrier.id}>
                       {carrier.name}
@@ -143,11 +143,11 @@ export function SourceDialog(props: {
             />
           )}
         </Field>
-        {plugin === "" ? null : (
+        {provider === "" ? null : (
           <SchemaFields schema={schema} values={values} onChange={setValues} />
         )}
-        {editing === null && plugin !== "" ? (
-          <p className="muted">After adding it, sign in from the source list if it needs it.</p>
+        {editing === null && provider !== "" ? (
+          <p className="muted">After adding it, sign in from the connection list if it needs it.</p>
         ) : null}
         <ErrorNotice error={mutation.error} />
         <div className="actions">
@@ -157,9 +157,9 @@ export function SourceDialog(props: {
           <button
             type="submit"
             className="button primary"
-            disabled={mutation.isPending || plugin === ""}
+            disabled={mutation.isPending || provider === ""}
           >
-            {editing === null ? "Add source" : "Save"}
+            {editing === null ? "Add connection" : "Save"}
           </button>
         </div>
       </form>

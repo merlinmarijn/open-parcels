@@ -4,19 +4,19 @@ import userEvent from "@testing-library/user-event";
 import { useState } from "react";
 import { describe, expect, it, vi } from "vitest";
 import { createQueryClient } from "../api/client";
-import type { Source } from "../api/types";
+import type { Connection } from "../api/types";
 import { mockApi, type Recorded } from "../test/helpers";
 import { SignInDialog } from "./SignInDialog";
 
 /* Every value here is made up. */
 
-const SOURCE = {
+const CONNECTION = {
   id: "00000000-0000-4000-8000-0000000000s1",
-  plugin: "fakeverify",
+  provider: "fakeverify",
   kind: "account",
   label: "Test account",
-} as unknown as Source;
-const BASE = `/api/v1/sources/${SOURCE.id}/sign-in`;
+} as unknown as Connection;
+const BASE = `/api/v1/connections/${CONNECTION.id}/sign-in`;
 const ATTEMPT = "attempt-1";
 const step = (body: unknown) => ({
   body: { status: "step", attempt_id: ATTEMPT, expires_at: "2099-01-01T00:00:00.000Z", step: body },
@@ -55,7 +55,7 @@ function Harness(props: { readonly onClose: () => void }) {
         Opener
       </button>
       <SignInDialog
-        source={open ? SOURCE : null}
+        connection={open ? CONNECTION : null}
         onClose={() => {
           props.onClose();
           setOpen(false);

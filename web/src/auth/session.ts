@@ -29,14 +29,14 @@ export function useSession() {
 }
 
 /**
- * May change anything: signed in with the admin password, an admin token, or Home Assistant.
+ * May change anything: logged in with the admin password, an admin token, or Home Assistant.
  * Everyone else only reads, and the UI hides or disables its editing controls.
  */
 export function useIsAdmin(): boolean {
   return useSession().data?.role === "admin";
 }
 
-/** After setup or sign-in the server has set the cookie; ask again who we are. */
+/** After setup or login the server has set the cookie; ask again who we are. */
 function useSessionMutation<TInput>(call: (input: TInput) => Promise<{ csrf_token: string }>) {
   const client = useQueryClient();
   return useMutation({
@@ -101,7 +101,7 @@ export function useSignOut() {
       setCsrfToken(null);
       // Nothing of the signed-in session may stay on screen: unused data goes, and every query
       // still shown is reset (its observers see that at once) and asked again, the session
-      // first among them, so a reader password brings the sign-in page back.
+      // first among them, so a reader password brings the login page back.
       client.removeQueries({ type: "inactive" });
       await client.resetQueries();
     },

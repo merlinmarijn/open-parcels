@@ -2,10 +2,10 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useCallback, useEffect, useRef, useState } from "react";
 import { ApiError } from "../api/fetcher";
 import {
-  deleteApiV1SourcesIdSignInAttemptsAttempt,
-  postApiV1SourcesIdSignInAttempts,
-  postApiV1SourcesIdSignInAttemptsAttemptContinue,
-  postApiV1SourcesIdSignInAttemptsAttemptPoll,
+  deleteApiV1ConnectionsIdSignInAttemptsAttempt,
+  postApiV1ConnectionsIdSignInAttempts,
+  postApiV1ConnectionsIdSignInAttemptsAttemptContinue,
+  postApiV1ConnectionsIdSignInAttemptsAttemptPoll,
 } from "../api/generated";
 import { keys } from "../api/queries";
 import type { SignInResult, SignInStepResult } from "../api/types";
@@ -33,7 +33,7 @@ const TERMINAL = new Set(["sign_in_expired", "sign_in_timeout"]);
  * Drives one interactive sign-in: start, answer steps, poll approval steps at the server's
  * interval, cancel. Inputs are passed straight to the API and never kept.
  */
-export function useSignInAttempt(sourceId: string) {
+export function useSignInAttempt(connectionId: string) {
   const client = useQueryClient();
   const [state, setState] = useState<AttemptState>({ phase: "idle" });
   const [busy, setBusy] = useState(false);
@@ -47,7 +47,7 @@ export function useSignInAttempt(sourceId: string) {
       if (result.status === "done") {
         attemptRef.current = null;
         setState({ phase: "done" });
-        void client.invalidateQueries({ queryKey: keys.sources });
+        void client.invalidateQueries({ queryKey: keys.connections });
       } else {
         attemptRef.current = result.attempt_id;
         setState((previous) => ({
@@ -80,8 +80,8 @@ export function useSignInAttempt(sourceId: string) {
   );
 
   const start = useCallback(
-    (flow: string) => run(() => postApiV1SourcesIdSignInAttempts(sourceId, { flow })),
-    [run, sourceId],
+    (flow: string) => run(() => postApiV1ConnectionsIdSignInAttempts(connectionId, { flow })),
+    [run, connectionId],
   );
 
   const answer = useCallback(
@@ -91,10 +91,10 @@ export function useSignInAttempt(sourceId: string) {
         return Promise.resolve();
       }
       return run(() =>
-        postApiV1SourcesIdSignInAttemptsAttemptContinue(sourceId, attempt, { input }),
+        postApiV1ConnectionsIdSignInAttemptsAttemptContinue(connectionId, attempt, { input }),
       );
     },
-    [run, sourceId],
+    [run, connectionId],
   );
 
   const cancel = useCallback(() => {
@@ -103,9 +103,9 @@ export function useSignInAttempt(sourceId: string) {
     setState({ phase: "idle" });
     setError(null);
     if (attempt !== null) {
-      deleteApiV1SourcesIdSignInAttemptsAttempt(sourceId, attempt).catch(() => undefined);
+      deleteApiV1ConnectionsIdSignInAttemptsAttempt(connectionId, attempt).catch(() => undefined);
     }
-  }, [sourceId]);
+  }, [connectionId]);
 
   // Closing the dialog unmounts the sign-in: the attempt left open is cancelled on the server too.
   useEffect(
@@ -113,10 +113,10 @@ export function useSignInAttempt(sourceId: string) {
       const attempt = attemptRef.current;
       attemptRef.current = null;
       if (attempt !== null) {
-        deleteApiV1SourcesIdSignInAttemptsAttempt(sourceId, attempt).catch(() => undefined);
+        deleteApiV1ConnectionsIdSignInAttemptsAttempt(connectionId, attempt).catch(() => undefined);
       }
     },
-    [sourceId],
+    [connectionId],
   );
 
   // Approval steps: ask the server at its own interval until the step changes.
@@ -134,7 +134,7 @@ export function useSignInAttempt(sourceId: string) {
         if (stopped || attempt === null) {
           return;
         }
-        postApiV1SourcesIdSignInAttemptsAttemptPoll(sourceId, attempt).then(
+        postApiV1ConnectionsIdSignInAttemptsAttemptPoll(connectionId, attempt).then(
           (result) => {
             if (stopped) {
               return;
@@ -176,7 +176,7 @@ export function useSignInAttempt(sourceId: string) {
       stopped = true;
       clearTimeout(timer);
     };
-  }, [interval, sourceId, apply]);
+  }, [interval, connectionId, apply]);
 
   return { state, busy, error, start, answer, cancel };
 }

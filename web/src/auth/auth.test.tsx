@@ -6,7 +6,7 @@ import { mockApi, renderApp, SIGNED_IN } from "../test/helpers";
 // Made up for the test, built from parts so it never looks like a stored credential.
 const OWNER_PASSWORD = ["correct", "horse", "battery"].join("-");
 
-describe("first start and sign-in", () => {
+describe("first start and login", () => {
   it("sets the owner password with the setup code, then opens the app", async () => {
     let done = false;
     const calls = mockApi({
@@ -66,7 +66,7 @@ describe("first start and sign-in", () => {
     expect(calls.some((call) => call.path === "/api/v1/setup")).toBe(false);
   });
 
-  it("shows the server's message for a wrong password and signs in on the next try", async () => {
+  it("shows the server's message for a wrong password and logs in on the next try", async () => {
     let signedIn = false;
     mockApi({
       "GET /api/v1/session": () => ({
@@ -99,17 +99,17 @@ describe("first start and sign-in", () => {
     renderApp();
 
     await user.type(await screen.findByLabelText("Password"), "wrong-one");
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Log in" }));
     expect(await screen.findByRole("alert")).toHaveTextContent("not correct");
 
     await user.type(screen.getByLabelText("Password"), OWNER_PASSWORD);
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Log in" }));
     await waitFor(() => {
       expect(screen.getByRole("heading", { name: "Parcels" })).toBeInTheDocument();
     });
   });
 
-  it("opens read only without a reader password, with a Sign in for the admin", async () => {
+  it("opens read only without a reader password, with a Log in for the admin", async () => {
     let admin = false;
     const ANONYMOUS = {
       authenticated: false,
@@ -138,15 +138,15 @@ describe("first start and sign-in", () => {
     // Readers are not offered what they cannot do (OP-147).
     expect(screen.queryByRole("button", { name: /Track a parcel/ })).not.toBeInTheDocument();
 
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Log in" }));
     await user.type(await screen.findByLabelText("Password"), OWNER_PASSWORD);
-    await user.click(screen.getByRole("button", { name: "Sign in" }));
+    await user.click(screen.getByRole("button", { name: "Log in" }));
     expect(await screen.findByText("Admin")).toBeInTheDocument();
     expect(screen.getByRole("button", { name: "Add" })).toBeInTheDocument();
     expect(screen.getByRole("button", { name: /Track a parcel/ })).toBeInTheDocument();
   });
 
-  it("shows the sign-in page and none of the data after signing out (OP-144)", async () => {
+  it("shows the login page and none of the data after logging out (OP-144)", async () => {
     let signedIn = true;
     mockApi({
       "GET /api/v1/session": () => ({
@@ -169,13 +169,13 @@ describe("first start and sign-in", () => {
       "GET /api/v1/parcels": () =>
         signedIn
           ? { body: [] }
-          : { status: 401, body: { error: "unauthorized", message: "Sign in first." } },
+          : { status: 401, body: { error: "unauthorized", message: "Log in first." } },
     });
     const user = userEvent.setup();
     renderApp();
 
     expect(await screen.findByRole("heading", { name: "Parcels" })).toBeInTheDocument();
-    await user.click(screen.getByRole("button", { name: "Sign out" }));
+    await user.click(screen.getByRole("button", { name: "Log out" }));
     expect(await screen.findByLabelText("Password")).toBeInTheDocument();
     expect(screen.queryByRole("heading", { name: "Parcels" })).not.toBeInTheDocument();
     expect(screen.queryByText("Admin")).not.toBeInTheDocument();
@@ -206,7 +206,7 @@ describe("first start and sign-in", () => {
     ).toBe(true);
   });
 
-  it("needs no sign-in under Home Assistant ingress", async () => {
+  it("needs no login under Home Assistant ingress", async () => {
     mockApi({
       "GET /api/v1/session": () => ({
         body: { ...SIGNED_IN, method: "ingress", csrf_token: null, setup_required: true },
@@ -215,6 +215,6 @@ describe("first start and sign-in", () => {
     });
     renderApp();
     expect(await screen.findByRole("heading", { name: "Parcels" })).toBeInTheDocument();
-    expect(screen.queryByRole("button", { name: "Sign out" })).not.toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Log out" })).not.toBeInTheDocument();
   });
 });

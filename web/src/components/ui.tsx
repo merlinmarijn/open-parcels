@@ -44,7 +44,7 @@ export function Field(props: {
 export function ReadOnlyHint({ children }: { readonly children?: ReactNode }): ReactNode {
   return (
     <p className="muted read-only-hint">
-      {children ?? "Read only. Sign in as admin to change this."}
+      {children ?? "Read only. Log in as admin to change this."}
     </p>
   );
 }

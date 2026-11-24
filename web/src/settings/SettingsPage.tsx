@@ -223,7 +223,7 @@ function LabelSection(): ReactNode {
         <select
           value={save.isPending ? save.variables : mode}
           disabled={save.isPending || !admin}
-          title={admin ? undefined : "Sign in as admin to change this."}
+          title={admin ? undefined : "Log in as admin to change this."}
           onChange={(e) => {
             save.mutate(e.target.value as ParcelLabelMode);
           }}

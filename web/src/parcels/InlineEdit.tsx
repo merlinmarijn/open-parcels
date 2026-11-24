@@ -144,7 +144,7 @@ export function EditableTitle({ parcel }: { readonly parcel: ParcelDetail }): Re
       titleId="parcel-title"
       shown={parcel.display_name}
       label={parcel.label}
-      placeholder={parcel.barcode}
+      placeholder={parcel.tracking_number}
       error={update.error}
       onSave={(label) => {
         update.mutate({ label });

@@ -11,7 +11,7 @@ export function toCalendarEvent(entry: CalendarEntry, carrierName: string): Even
     entry.all_day && entry.start_date !== null && entry.end_date !== null
       ? { start: entry.start_date, end: entry.end_date, allDay: true }
       : { start: entry.start, end: entry.end, allDay: false };
-  // The title is the label, first item or barcode; the carrier is added here, once. A return's
+  // The title is the label, first item or tracking number; the carrier is added here, once. A return's
   // deadline says so and lists where to hand it in and what it costs.
   const title =
     entry.kind === "return_by"

@@ -56,7 +56,7 @@ export const GetApiV1Session200Method = {
 } as const;
 
 /**
- * What the caller may do; reader when reading is open. Null: must sign in first.
+ * What the caller may do; reader when reading is open. Null: must log in first.
  * @nullable
  */
 export type GetApiV1Session200Role =
@@ -77,19 +77,19 @@ export const GetApiV1Session200ScopesItem = {
 } as const;
 
 export type GetApiV1Session200 = {
-  /** Signed in, or a token or Home Assistant ingress. */
+  /** Logged in, or a token or Home Assistant ingress. */
   authenticated: boolean;
   /** @nullable */
   method: GetApiV1Session200Method;
   /**
-   * What the caller may do; reader when reading is open. Null: must sign in first.
+   * What the caller may do; reader when reading is open. Null: must log in first.
    * @nullable
    */
   role: GetApiV1Session200Role;
   scopes: GetApiV1Session200ScopesItem[];
   /** @nullable */
   csrf_token: string | null;
-  /** OPENPARCELS_PASSWORD is set: reading needs a sign-in. */
+  /** OPENPARCELS_PASSWORD is set: reading needs a login. */
   reader_required: boolean;
   setup_required: boolean;
   /** Show the admin that OPENPARCELS_PASSWORD is not set (anyone who reaches the server can read), until the admin dismisses it. */
@@ -701,6 +701,16 @@ export const GetApiV1Parcels200ItemStatus = {
 /**
  * @nullable
  */
+export type GetApiV1Parcels200ItemExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
+
+/**
+ * @nullable
+ */
 export type GetApiV1Parcels200ItemHistoryItemStatus =
   | (typeof GetApiV1Parcels200ItemHistoryItemStatus)[keyof typeof GetApiV1Parcels200ItemHistoryItemStatus]
   | null;
@@ -743,6 +753,14 @@ export type GetApiV1Parcels200ItemDirection =
   (typeof GetApiV1Parcels200ItemDirection)[keyof typeof GetApiV1Parcels200ItemDirection];
 
 export const GetApiV1Parcels200ItemDirection = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type GetApiV1Parcels200ItemLegacyDirection =
+  (typeof GetApiV1Parcels200ItemLegacyDirection)[keyof typeof GetApiV1Parcels200ItemLegacyDirection];
+
+export const GetApiV1Parcels200ItemLegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -968,6 +986,37 @@ export type GetApiV1Parcels200ItemOrder = {
   id: string;
 } | null;
 
+export type GetApiV1Parcels200ItemConnectionsItemKind =
+  (typeof GetApiV1Parcels200ItemConnectionsItemKind)[keyof typeof GetApiV1Parcels200ItemConnectionsItemKind];
+
+export const GetApiV1Parcels200ItemConnectionsItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type GetApiV1Parcels200ItemConnectionsItemRole =
+  (typeof GetApiV1Parcels200ItemConnectionsItemRole)[keyof typeof GetApiV1Parcels200ItemConnectionsItemRole];
+
+export const GetApiV1Parcels200ItemConnectionsItemRole = {
+  primary: "primary",
+  handoff: "handoff",
+  mail: "mail",
+} as const;
+
+export type GetApiV1Parcels200ItemConnectionsItem = {
+  connection_id: string;
+  provider: string;
+  source_id: string;
+  plugin: string;
+  label: string;
+  kind: GetApiV1Parcels200ItemConnectionsItemKind;
+  role: GetApiV1Parcels200ItemConnectionsItemRole;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  last_seen_at: string;
+};
+
 export type GetApiV1Parcels200ItemSourcesItemKind =
   (typeof GetApiV1Parcels200ItemSourcesItemKind)[keyof typeof GetApiV1Parcels200ItemSourcesItemKind];
 
@@ -988,6 +1037,8 @@ export const GetApiV1Parcels200ItemSourcesItemRole = {
 } as const;
 
 export type GetApiV1Parcels200ItemSourcesItem = {
+  connection_id: string;
+  provider: string;
   source_id: string;
   plugin: string;
   label: string;
@@ -1022,6 +1073,7 @@ export type GetApiV1Parcels200ItemLookup = {
 
 export type GetApiV1Parcels200Item = {
   carrier: string;
+  tracking_number: string;
   barcode: string;
   /** @nullable */
   sender: string | null;
@@ -1036,6 +1088,18 @@ export type GetApiV1Parcels200Item = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: GetApiV1Parcels200ItemExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -1055,6 +1119,7 @@ export type GetApiV1Parcels200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   direction: GetApiV1Parcels200ItemDirection;
+  legacy_direction: GetApiV1Parcels200ItemLegacyDirection;
   /** @nullable */
   label: string | null;
   display_name: string;
@@ -1076,6 +1141,7 @@ export type GetApiV1Parcels200Item = {
   last_scan: GetApiV1Parcels200ItemLastScan;
   /** @nullable */
   order: GetApiV1Parcels200ItemOrder;
+  connections: GetApiV1Parcels200ItemConnectionsItem[];
   sources: GetApiV1Parcels200ItemSourcesItem[];
   lookup: GetApiV1Parcels200ItemLookup;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
@@ -1088,6 +1154,8 @@ export type PostApiV1ParcelsBodyDirection =
   (typeof PostApiV1ParcelsBodyDirection)[keyof typeof PostApiV1ParcelsBodyDirection];
 
 export const PostApiV1ParcelsBodyDirection = {
+  receiving: "receiving",
+  sending: "sending",
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -1102,7 +1170,12 @@ export type PostApiV1ParcelsBody = {
    * @minLength 4
    * @maxLength 64
    */
-  barcode: string;
+  tracking_number?: string;
+  /**
+   * @minLength 4
+   * @maxLength 64
+   */
+  barcode?: string;
   direction?: PostApiV1ParcelsBodyDirection;
   /**
    * @maxLength 120
@@ -1124,6 +1197,16 @@ export const PostApiV1Parcels201Status = {
   problem: "problem",
   unknown: "unknown",
 } as const;
+
+/**
+ * @nullable
+ */
+export type PostApiV1Parcels201ExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
 
 /**
  * @nullable
@@ -1170,6 +1253,14 @@ export type PostApiV1Parcels201Direction =
   (typeof PostApiV1Parcels201Direction)[keyof typeof PostApiV1Parcels201Direction];
 
 export const PostApiV1Parcels201Direction = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type PostApiV1Parcels201LegacyDirection =
+  (typeof PostApiV1Parcels201LegacyDirection)[keyof typeof PostApiV1Parcels201LegacyDirection];
+
+export const PostApiV1Parcels201LegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -1394,6 +1485,37 @@ export type PostApiV1Parcels201Order = {
   id: string;
 } | null;
 
+export type PostApiV1Parcels201ConnectionsItemKind =
+  (typeof PostApiV1Parcels201ConnectionsItemKind)[keyof typeof PostApiV1Parcels201ConnectionsItemKind];
+
+export const PostApiV1Parcels201ConnectionsItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type PostApiV1Parcels201ConnectionsItemRole =
+  (typeof PostApiV1Parcels201ConnectionsItemRole)[keyof typeof PostApiV1Parcels201ConnectionsItemRole];
+
+export const PostApiV1Parcels201ConnectionsItemRole = {
+  primary: "primary",
+  handoff: "handoff",
+  mail: "mail",
+} as const;
+
+export type PostApiV1Parcels201ConnectionsItem = {
+  connection_id: string;
+  provider: string;
+  source_id: string;
+  plugin: string;
+  label: string;
+  kind: PostApiV1Parcels201ConnectionsItemKind;
+  role: PostApiV1Parcels201ConnectionsItemRole;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  last_seen_at: string;
+};
+
 export type PostApiV1Parcels201SourcesItemKind =
   (typeof PostApiV1Parcels201SourcesItemKind)[keyof typeof PostApiV1Parcels201SourcesItemKind];
 
@@ -1414,6 +1536,8 @@ export const PostApiV1Parcels201SourcesItemRole = {
 } as const;
 
 export type PostApiV1Parcels201SourcesItem = {
+  connection_id: string;
+  provider: string;
   source_id: string;
   plugin: string;
   label: string;
@@ -1448,6 +1572,7 @@ export type PostApiV1Parcels201Lookup = {
 
 export type PostApiV1Parcels201 = {
   carrier: string;
+  tracking_number: string;
   barcode: string;
   /** @nullable */
   sender: string | null;
@@ -1462,6 +1587,18 @@ export type PostApiV1Parcels201 = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: PostApiV1Parcels201ExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -1481,6 +1618,7 @@ export type PostApiV1Parcels201 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   direction: PostApiV1Parcels201Direction;
+  legacy_direction: PostApiV1Parcels201LegacyDirection;
   /** @nullable */
   label: string | null;
   display_name: string;
@@ -1502,6 +1640,7 @@ export type PostApiV1Parcels201 = {
   last_scan: PostApiV1Parcels201LastScan;
   /** @nullable */
   order: PostApiV1Parcels201Order;
+  connections: PostApiV1Parcels201ConnectionsItem[];
   sources: PostApiV1Parcels201SourcesItem[];
   lookup: PostApiV1Parcels201Lookup;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
@@ -1537,6 +1676,16 @@ export const GetApiV1ParcelsId200Status = {
   problem: "problem",
   unknown: "unknown",
 } as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1ParcelsId200ExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
 
 /**
  * @nullable
@@ -1583,6 +1732,14 @@ export type GetApiV1ParcelsId200Direction =
   (typeof GetApiV1ParcelsId200Direction)[keyof typeof GetApiV1ParcelsId200Direction];
 
 export const GetApiV1ParcelsId200Direction = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type GetApiV1ParcelsId200LegacyDirection =
+  (typeof GetApiV1ParcelsId200LegacyDirection)[keyof typeof GetApiV1ParcelsId200LegacyDirection];
+
+export const GetApiV1ParcelsId200LegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -1807,6 +1964,37 @@ export type GetApiV1ParcelsId200Order = {
   id: string;
 } | null;
 
+export type GetApiV1ParcelsId200ConnectionsItemKind =
+  (typeof GetApiV1ParcelsId200ConnectionsItemKind)[keyof typeof GetApiV1ParcelsId200ConnectionsItemKind];
+
+export const GetApiV1ParcelsId200ConnectionsItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type GetApiV1ParcelsId200ConnectionsItemRole =
+  (typeof GetApiV1ParcelsId200ConnectionsItemRole)[keyof typeof GetApiV1ParcelsId200ConnectionsItemRole];
+
+export const GetApiV1ParcelsId200ConnectionsItemRole = {
+  primary: "primary",
+  handoff: "handoff",
+  mail: "mail",
+} as const;
+
+export type GetApiV1ParcelsId200ConnectionsItem = {
+  connection_id: string;
+  provider: string;
+  source_id: string;
+  plugin: string;
+  label: string;
+  kind: GetApiV1ParcelsId200ConnectionsItemKind;
+  role: GetApiV1ParcelsId200ConnectionsItemRole;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  last_seen_at: string;
+};
+
 export type GetApiV1ParcelsId200SourcesItemKind =
   (typeof GetApiV1ParcelsId200SourcesItemKind)[keyof typeof GetApiV1ParcelsId200SourcesItemKind];
 
@@ -1827,6 +2015,8 @@ export const GetApiV1ParcelsId200SourcesItemRole = {
 } as const;
 
 export type GetApiV1ParcelsId200SourcesItem = {
+  connection_id: string;
+  provider: string;
   source_id: string;
   plugin: string;
   label: string;
@@ -1861,6 +2051,7 @@ export type GetApiV1ParcelsId200Lookup = {
 
 export type GetApiV1ParcelsId200 = {
   carrier: string;
+  tracking_number: string;
   barcode: string;
   /** @nullable */
   sender: string | null;
@@ -1875,6 +2066,18 @@ export type GetApiV1ParcelsId200 = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: GetApiV1ParcelsId200ExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -1894,6 +2097,7 @@ export type GetApiV1ParcelsId200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   direction: GetApiV1ParcelsId200Direction;
+  legacy_direction: GetApiV1ParcelsId200LegacyDirection;
   /** @nullable */
   label: string | null;
   display_name: string;
@@ -1915,6 +2119,7 @@ export type GetApiV1ParcelsId200 = {
   last_scan: GetApiV1ParcelsId200LastScan;
   /** @nullable */
   order: GetApiV1ParcelsId200Order;
+  connections: GetApiV1ParcelsId200ConnectionsItem[];
   sources: GetApiV1ParcelsId200SourcesItem[];
   lookup: GetApiV1ParcelsId200Lookup;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
@@ -1976,6 +2181,16 @@ export const PatchApiV1ParcelsId200Status = {
 /**
  * @nullable
  */
+export type PatchApiV1ParcelsId200ExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
+
+/**
+ * @nullable
+ */
 export type PatchApiV1ParcelsId200HistoryItemStatus =
   | (typeof PatchApiV1ParcelsId200HistoryItemStatus)[keyof typeof PatchApiV1ParcelsId200HistoryItemStatus]
   | null;
@@ -2018,6 +2233,14 @@ export type PatchApiV1ParcelsId200Direction =
   (typeof PatchApiV1ParcelsId200Direction)[keyof typeof PatchApiV1ParcelsId200Direction];
 
 export const PatchApiV1ParcelsId200Direction = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type PatchApiV1ParcelsId200LegacyDirection =
+  (typeof PatchApiV1ParcelsId200LegacyDirection)[keyof typeof PatchApiV1ParcelsId200LegacyDirection];
+
+export const PatchApiV1ParcelsId200LegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -2243,6 +2466,37 @@ export type PatchApiV1ParcelsId200Order = {
   id: string;
 } | null;
 
+export type PatchApiV1ParcelsId200ConnectionsItemKind =
+  (typeof PatchApiV1ParcelsId200ConnectionsItemKind)[keyof typeof PatchApiV1ParcelsId200ConnectionsItemKind];
+
+export const PatchApiV1ParcelsId200ConnectionsItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type PatchApiV1ParcelsId200ConnectionsItemRole =
+  (typeof PatchApiV1ParcelsId200ConnectionsItemRole)[keyof typeof PatchApiV1ParcelsId200ConnectionsItemRole];
+
+export const PatchApiV1ParcelsId200ConnectionsItemRole = {
+  primary: "primary",
+  handoff: "handoff",
+  mail: "mail",
+} as const;
+
+export type PatchApiV1ParcelsId200ConnectionsItem = {
+  connection_id: string;
+  provider: string;
+  source_id: string;
+  plugin: string;
+  label: string;
+  kind: PatchApiV1ParcelsId200ConnectionsItemKind;
+  role: PatchApiV1ParcelsId200ConnectionsItemRole;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
+  last_seen_at: string;
+};
+
 export type PatchApiV1ParcelsId200SourcesItemKind =
   (typeof PatchApiV1ParcelsId200SourcesItemKind)[keyof typeof PatchApiV1ParcelsId200SourcesItemKind];
 
@@ -2263,6 +2517,8 @@ export const PatchApiV1ParcelsId200SourcesItemRole = {
 } as const;
 
 export type PatchApiV1ParcelsId200SourcesItem = {
+  connection_id: string;
+  provider: string;
   source_id: string;
   plugin: string;
   label: string;
@@ -2297,6 +2553,7 @@ export type PatchApiV1ParcelsId200Lookup = {
 
 export type PatchApiV1ParcelsId200 = {
   carrier: string;
+  tracking_number: string;
   barcode: string;
   /** @nullable */
   sender: string | null;
@@ -2311,6 +2568,18 @@ export type PatchApiV1ParcelsId200 = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: PatchApiV1ParcelsId200ExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -2330,6 +2599,7 @@ export type PatchApiV1ParcelsId200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   direction: PatchApiV1ParcelsId200Direction;
+  legacy_direction: PatchApiV1ParcelsId200LegacyDirection;
   /** @nullable */
   label: string | null;
   display_name: string;
@@ -2351,6 +2621,7 @@ export type PatchApiV1ParcelsId200 = {
   last_scan: PatchApiV1ParcelsId200LastScan;
   /** @nullable */
   order: PatchApiV1ParcelsId200Order;
+  connections: PatchApiV1ParcelsId200ConnectionsItem[];
   sources: PatchApiV1ParcelsId200SourcesItem[];
   lookup: PatchApiV1ParcelsId200Lookup;
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
@@ -2571,6 +2842,14 @@ export type GetApiV1Orders200ItemParcelsItemDirection =
   (typeof GetApiV1Orders200ItemParcelsItemDirection)[keyof typeof GetApiV1Orders200ItemParcelsItemDirection];
 
 export const GetApiV1Orders200ItemParcelsItemDirection = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type GetApiV1Orders200ItemParcelsItemLegacyDirection =
+  (typeof GetApiV1Orders200ItemParcelsItemLegacyDirection)[keyof typeof GetApiV1Orders200ItemParcelsItemLegacyDirection];
+
+export const GetApiV1Orders200ItemParcelsItemLegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -2588,6 +2867,16 @@ export const GetApiV1Orders200ItemParcelsItemStatus = {
   problem: "problem",
   unknown: "unknown",
 } as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1Orders200ItemParcelsItemExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
 
 export type GetApiV1Orders200ItemParcelsItemLocationSource =
   (typeof GetApiV1Orders200ItemParcelsItemLocationSource)[keyof typeof GetApiV1Orders200ItemParcelsItemLocationSource];
@@ -2637,8 +2926,10 @@ export type GetApiV1Orders200ItemParcelsItem = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   carrier: string;
+  tracking_number: string;
   barcode: string;
   direction: GetApiV1Orders200ItemParcelsItemDirection;
+  legacy_direction: GetApiV1Orders200ItemParcelsItemLegacyDirection;
   display_name: string;
   status: GetApiV1Orders200ItemParcelsItemStatus;
   delivered: boolean;
@@ -2647,6 +2938,18 @@ export type GetApiV1Orders200ItemParcelsItem = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: GetApiV1Orders200ItemParcelsItemExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -2882,6 +3185,14 @@ export type GetApiV1OrdersId200ParcelsItemDirection =
   (typeof GetApiV1OrdersId200ParcelsItemDirection)[keyof typeof GetApiV1OrdersId200ParcelsItemDirection];
 
 export const GetApiV1OrdersId200ParcelsItemDirection = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type GetApiV1OrdersId200ParcelsItemLegacyDirection =
+  (typeof GetApiV1OrdersId200ParcelsItemLegacyDirection)[keyof typeof GetApiV1OrdersId200ParcelsItemLegacyDirection];
+
+export const GetApiV1OrdersId200ParcelsItemLegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -2899,6 +3210,16 @@ export const GetApiV1OrdersId200ParcelsItemStatus = {
   problem: "problem",
   unknown: "unknown",
 } as const;
+
+/**
+ * @nullable
+ */
+export type GetApiV1OrdersId200ParcelsItemExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
 
 export type GetApiV1OrdersId200ParcelsItemLocationSource =
   (typeof GetApiV1OrdersId200ParcelsItemLocationSource)[keyof typeof GetApiV1OrdersId200ParcelsItemLocationSource];
@@ -2948,8 +3269,10 @@ export type GetApiV1OrdersId200ParcelsItem = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   carrier: string;
+  tracking_number: string;
   barcode: string;
   direction: GetApiV1OrdersId200ParcelsItemDirection;
+  legacy_direction: GetApiV1OrdersId200ParcelsItemLegacyDirection;
   display_name: string;
   status: GetApiV1OrdersId200ParcelsItemStatus;
   delivered: boolean;
@@ -2958,6 +3281,18 @@ export type GetApiV1OrdersId200ParcelsItem = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: GetApiV1OrdersId200ParcelsItemExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -3210,6 +3545,14 @@ export type PatchApiV1OrdersId200ParcelsItemDirection =
   (typeof PatchApiV1OrdersId200ParcelsItemDirection)[keyof typeof PatchApiV1OrdersId200ParcelsItemDirection];
 
 export const PatchApiV1OrdersId200ParcelsItemDirection = {
+  receiving: "receiving",
+  sending: "sending",
+} as const;
+
+export type PatchApiV1OrdersId200ParcelsItemLegacyDirection =
+  (typeof PatchApiV1OrdersId200ParcelsItemLegacyDirection)[keyof typeof PatchApiV1OrdersId200ParcelsItemLegacyDirection];
+
+export const PatchApiV1OrdersId200ParcelsItemLegacyDirection = {
   incoming: "incoming",
   outgoing: "outgoing",
 } as const;
@@ -3227,6 +3570,16 @@ export const PatchApiV1OrdersId200ParcelsItemStatus = {
   problem: "problem",
   unknown: "unknown",
 } as const;
+
+/**
+ * @nullable
+ */
+export type PatchApiV1OrdersId200ParcelsItemExpectedDays = {
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  from: string;
+  /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$ */
+  to: string;
+} | null;
 
 export type PatchApiV1OrdersId200ParcelsItemLocationSource =
   (typeof PatchApiV1OrdersId200ParcelsItemLocationSource)[keyof typeof PatchApiV1OrdersId200ParcelsItemLocationSource];
@@ -3276,8 +3629,10 @@ export type PatchApiV1OrdersId200ParcelsItem = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
   carrier: string;
+  tracking_number: string;
   barcode: string;
   direction: PatchApiV1OrdersId200ParcelsItemDirection;
+  legacy_direction: PatchApiV1OrdersId200ParcelsItemLegacyDirection;
   display_name: string;
   status: PatchApiV1OrdersId200ParcelsItemStatus;
   delivered: boolean;
@@ -3286,6 +3641,18 @@ export type PatchApiV1OrdersId200ParcelsItem = {
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
    */
   delivered_at: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_from: string | null;
+  /**
+   * @nullable
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
+   */
+  expected_to: string | null;
+  /** @nullable */
+  expected_days: PatchApiV1OrdersId200ParcelsItemExpectedDays;
   /**
    * @nullable
    * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$
@@ -3615,6 +3982,15 @@ export type GetApiV1ReturnsId404 = {
   message: string;
 };
 
+export type GetApiV1Carriers200ItemConnectionKindsItem =
+  (typeof GetApiV1Carriers200ItemConnectionKindsItem)[keyof typeof GetApiV1Carriers200ItemConnectionKindsItem];
+
+export const GetApiV1Carriers200ItemConnectionKindsItem = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+} as const;
+
 export type GetApiV1Carriers200ItemSourceKindsItem =
   (typeof GetApiV1Carriers200ItemSourceKindsItem)[keyof typeof GetApiV1Carriers200ItemSourceKindsItem];
 
@@ -3648,7 +4024,7 @@ export type GetApiV1Carriers200ItemSignInFlowsItem = {
   label: string;
   type: GetApiV1Carriers200ItemSignInFlowsItemType;
   kinds: GetApiV1Carriers200ItemSignInFlowsItemKindsItem[];
-  /** Applies only to some configurations; ask the source's own flow list. */
+  /** Applies only to some configurations; ask the connection's own flow list. */
   conditional: boolean;
 };
 
@@ -3656,31 +4032,32 @@ export type GetApiV1Carriers200Item = {
   id: string;
   name: string;
   countries: string[];
+  connection_kinds: GetApiV1Carriers200ItemConnectionKindsItem[];
   source_kinds: GetApiV1Carriers200ItemSourceKindsItem[];
   /** Type of the default sign-in flow: none, credentials, api_key or interactive. */
   sign_in: string;
-  /** Every sign-in flow of the plug-in. Interactive ones run as sign-in attempts. */
+  /** Every sign-in flow of the provider. Interactive ones run as sign-in attempts. */
   sign_in_flows: GetApiV1Carriers200ItemSignInFlowsItem[];
-  /** JSON Schema of the source configuration form. */
+  /** JSON Schema of the connection configuration form. */
   config_schema: unknown;
   /** JSON Schema of the sign-in data for credentials and api_key flows: field names only, never values. */
   secret_schema: unknown;
 };
 
-export type GetApiV1Sources200ItemKind =
-  (typeof GetApiV1Sources200ItemKind)[keyof typeof GetApiV1Sources200ItemKind];
+export type GetApiV1Connections200ItemKind =
+  (typeof GetApiV1Connections200ItemKind)[keyof typeof GetApiV1Connections200ItemKind];
 
-export const GetApiV1Sources200ItemKind = {
+export const GetApiV1Connections200ItemKind = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
   mail: "mail",
 } as const;
 
-export type GetApiV1Sources200ItemState =
-  (typeof GetApiV1Sources200ItemState)[keyof typeof GetApiV1Sources200ItemState];
+export type GetApiV1Connections200ItemState =
+  (typeof GetApiV1Connections200ItemState)[keyof typeof GetApiV1Connections200ItemState];
 
-export const GetApiV1Sources200ItemState = {
+export const GetApiV1Connections200ItemState = {
   ok: "ok",
   idle: "idle",
   needs_sign_in: "needs_sign_in",
@@ -3688,16 +4065,17 @@ export const GetApiV1Sources200ItemState = {
   disabled: "disabled",
 } as const;
 
-export type GetApiV1Sources200Item = {
+export type GetApiV1Connections200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
+  provider: string;
   plugin: string;
-  kind: GetApiV1Sources200ItemKind;
+  kind: GetApiV1Connections200ItemKind;
   label: string;
   config: unknown;
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
-  state: GetApiV1Sources200ItemState;
+  state: GetApiV1Connections200ItemState;
   /** @nullable */
   state_detail: string | null;
   /** @nullable */
@@ -3709,26 +4087,32 @@ export type GetApiV1Sources200Item = {
 };
 
 /**
- * Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.
+ * Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.
  */
-export type PostApiV1SourcesBodyKind =
-  (typeof PostApiV1SourcesBodyKind)[keyof typeof PostApiV1SourcesBodyKind];
+export type PostApiV1ConnectionsBodyKind =
+  (typeof PostApiV1ConnectionsBodyKind)[keyof typeof PostApiV1ConnectionsBodyKind];
 
-export const PostApiV1SourcesBodyKind = {
+export const PostApiV1ConnectionsBodyKind = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
   mail: "mail",
 } as const;
 
-export type PostApiV1SourcesBody = {
+export type PostApiV1ConnectionsBody = {
   /**
    * @minLength 1
    * @maxLength 64
    */
-  plugin: string;
-  /** Mailboxes use the plug-in "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}. */
-  kind: PostApiV1SourcesBodyKind;
+  provider?: string;
+  /**
+   * Deprecated: the old name of `provider`, accepted for one release.
+   * @minLength 1
+   * @maxLength 64
+   */
+  plugin?: string;
+  /** Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}. */
+  kind: PostApiV1ConnectionsBodyKind;
   /**
    * @minLength 1
    * @maxLength 80
@@ -3738,20 +4122,20 @@ export type PostApiV1SourcesBody = {
   secret?: unknown;
 };
 
-export type PostApiV1Sources201Kind =
-  (typeof PostApiV1Sources201Kind)[keyof typeof PostApiV1Sources201Kind];
+export type PostApiV1Connections201Kind =
+  (typeof PostApiV1Connections201Kind)[keyof typeof PostApiV1Connections201Kind];
 
-export const PostApiV1Sources201Kind = {
+export const PostApiV1Connections201Kind = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
   mail: "mail",
 } as const;
 
-export type PostApiV1Sources201State =
-  (typeof PostApiV1Sources201State)[keyof typeof PostApiV1Sources201State];
+export type PostApiV1Connections201State =
+  (typeof PostApiV1Connections201State)[keyof typeof PostApiV1Connections201State];
 
-export const PostApiV1Sources201State = {
+export const PostApiV1Connections201State = {
   ok: "ok",
   idle: "idle",
   needs_sign_in: "needs_sign_in",
@@ -3759,16 +4143,17 @@ export const PostApiV1Sources201State = {
   disabled: "disabled",
 } as const;
 
-export type PostApiV1Sources201 = {
+export type PostApiV1Connections201 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
+  provider: string;
   plugin: string;
-  kind: PostApiV1Sources201Kind;
+  kind: PostApiV1Connections201Kind;
   label: string;
   config: unknown;
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
-  state: PostApiV1Sources201State;
+  state: PostApiV1Connections201State;
   /** @nullable */
   state_detail: string | null;
   /** @nullable */
@@ -3779,14 +4164,14 @@ export type PostApiV1Sources201 = {
   last_ok_at: string | null;
 };
 
-export type PostApiV1Sources400 = {
+export type PostApiV1Connections400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PatchApiV1SourcesIdBody = {
+export type PatchApiV1ConnectionsIdBody = {
   /**
    * @minLength 1
    * @maxLength 80
@@ -3796,20 +4181,20 @@ export type PatchApiV1SourcesIdBody = {
   enabled?: boolean;
 };
 
-export type PatchApiV1SourcesId200Kind =
-  (typeof PatchApiV1SourcesId200Kind)[keyof typeof PatchApiV1SourcesId200Kind];
+export type PatchApiV1ConnectionsId200Kind =
+  (typeof PatchApiV1ConnectionsId200Kind)[keyof typeof PatchApiV1ConnectionsId200Kind];
 
-export const PatchApiV1SourcesId200Kind = {
+export const PatchApiV1ConnectionsId200Kind = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
   mail: "mail",
 } as const;
 
-export type PatchApiV1SourcesId200State =
-  (typeof PatchApiV1SourcesId200State)[keyof typeof PatchApiV1SourcesId200State];
+export type PatchApiV1ConnectionsId200State =
+  (typeof PatchApiV1ConnectionsId200State)[keyof typeof PatchApiV1ConnectionsId200State];
 
-export const PatchApiV1SourcesId200State = {
+export const PatchApiV1ConnectionsId200State = {
   ok: "ok",
   idle: "idle",
   needs_sign_in: "needs_sign_in",
@@ -3817,16 +4202,17 @@ export const PatchApiV1SourcesId200State = {
   disabled: "disabled",
 } as const;
 
-export type PatchApiV1SourcesId200 = {
+export type PatchApiV1ConnectionsId200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
+  provider: string;
   plugin: string;
-  kind: PatchApiV1SourcesId200Kind;
+  kind: PatchApiV1ConnectionsId200Kind;
   label: string;
   config: unknown;
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
-  state: PatchApiV1SourcesId200State;
+  state: PatchApiV1ConnectionsId200State;
   /** @nullable */
   state_detail: string | null;
   /** @nullable */
@@ -3837,109 +4223,109 @@ export type PatchApiV1SourcesId200 = {
   last_ok_at: string | null;
 };
 
-export type PatchApiV1SourcesId400 = {
+export type PatchApiV1ConnectionsId400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PatchApiV1SourcesId404 = {
+export type PatchApiV1ConnectionsId404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type DeleteApiV1SourcesId404 = {
+export type DeleteApiV1ConnectionsId404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PutApiV1SourcesIdSecretBody = {
+export type PutApiV1ConnectionsIdSecretBody = {
   secret: unknown;
 };
 
-export type PutApiV1SourcesIdSecret400 = {
+export type PutApiV1ConnectionsIdSecret400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PutApiV1SourcesIdSecret404 = {
+export type PutApiV1ConnectionsIdSecret404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSync404 = {
+export type PostApiV1ConnectionsIdSync404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSync429 = {
+export type PostApiV1ConnectionsIdSync429 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type GetApiV1SourcesIdData200 = {
+export type GetApiV1ConnectionsIdData200 = {
   /**
-   * Parcels only this source reported.
+   * Parcels only this connection reported.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   parcels: number;
   /**
-   * Orders only this source reported.
+   * Orders only this connection reported.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   orders: number;
   /**
-   * Parcels and orders other sources also reported; they stay, unlinked from it.
+   * Parcels and orders other connections also reported; they stay, unlinked from it.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   shared: number;
 };
 
-export type GetApiV1SourcesIdData404 = {
+export type GetApiV1ConnectionsIdData404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdClear200 = {
+export type PostApiV1ConnectionsIdClear200 = {
   /**
-   * Parcels only this source reported.
+   * Parcels only this connection reported.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   parcels: number;
   /**
-   * Orders only this source reported.
+   * Orders only this connection reported.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   orders: number;
   /**
-   * Parcels and orders other sources also reported; they stay, unlinked from it.
+   * Parcels and orders other connections also reported; they stay, unlinked from it.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   shared: number;
 };
 
-export type PostApiV1SourcesIdClear404 = {
+export type PostApiV1ConnectionsIdClear404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
@@ -3981,13 +4367,13 @@ export type GetApiV1Data200 = {
    */
   orders: number;
   /**
-   * Tracking scans (parcel history rows).
+   * Tracking events (parcel history rows).
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
   scans: number;
   /**
-   * Raw carrier answers kept for diagnosing plug-ins.
+   * Raw carrier answers kept for diagnosing providers.
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
@@ -4042,7 +4428,7 @@ export type PostApiV1DataClear200 = {
    */
   orders: number;
   /**
-   * Other rows removed (scans, raw payloads).
+   * Other rows removed (events, raw payloads).
    * @minimum -9007199254740991
    * @maximum 9007199254740991
    */
@@ -4067,48 +4453,48 @@ export type PostApiV1DataClear400 = {
   message: string;
 };
 
-export type GetApiV1SourcesIdSignInFlows200ItemType =
-  (typeof GetApiV1SourcesIdSignInFlows200ItemType)[keyof typeof GetApiV1SourcesIdSignInFlows200ItemType];
+export type GetApiV1ConnectionsIdSignInFlows200ItemType =
+  (typeof GetApiV1ConnectionsIdSignInFlows200ItemType)[keyof typeof GetApiV1ConnectionsIdSignInFlows200ItemType];
 
-export const GetApiV1SourcesIdSignInFlows200ItemType = {
+export const GetApiV1ConnectionsIdSignInFlows200ItemType = {
   none: "none",
   credentials: "credentials",
   api_key: "api_key",
   interactive: "interactive",
 } as const;
 
-export type GetApiV1SourcesIdSignInFlows200ItemKindsItem =
-  (typeof GetApiV1SourcesIdSignInFlows200ItemKindsItem)[keyof typeof GetApiV1SourcesIdSignInFlows200ItemKindsItem];
+export type GetApiV1ConnectionsIdSignInFlows200ItemKindsItem =
+  (typeof GetApiV1ConnectionsIdSignInFlows200ItemKindsItem)[keyof typeof GetApiV1ConnectionsIdSignInFlows200ItemKindsItem];
 
-export const GetApiV1SourcesIdSignInFlows200ItemKindsItem = {
+export const GetApiV1ConnectionsIdSignInFlows200ItemKindsItem = {
   account: "account",
   tracking: "tracking",
   shop: "shop",
 } as const;
 
-export type GetApiV1SourcesIdSignInFlows200Item = {
+export type GetApiV1ConnectionsIdSignInFlows200Item = {
   id: string;
   label: string;
-  type: GetApiV1SourcesIdSignInFlows200ItemType;
-  kinds: GetApiV1SourcesIdSignInFlows200ItemKindsItem[];
+  type: GetApiV1ConnectionsIdSignInFlows200ItemType;
+  kinds: GetApiV1ConnectionsIdSignInFlows200ItemKindsItem[];
   conditional: boolean;
   /** JSON Schema of what to fill in for this flow; null: the carrier's secret_schema. */
   secret_schema: unknown;
 };
 
-export type GetApiV1SourcesIdSignInFlows404 = {
+export type GetApiV1ConnectionsIdSignInFlows404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsBody = {
+export type PostApiV1ConnectionsIdSignInAttemptsBody = {
   /** @maxLength 64 */
   flow?: string;
 };
 
-export type PostApiV1SourcesIdSignInAttempts200 =
+export type PostApiV1ConnectionsIdSignInAttempts200 =
   | {
       status: "step";
       /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -4173,48 +4559,50 @@ export type PostApiV1SourcesIdSignInAttempts200 =
       status: "done";
     };
 
-export type PostApiV1SourcesIdSignInAttempts400 = {
+export type PostApiV1ConnectionsIdSignInAttempts400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttempts404 = {
+export type PostApiV1ConnectionsIdSignInAttempts404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttempts409 = {
+export type PostApiV1ConnectionsIdSignInAttempts409 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttempts429 = {
+export type PostApiV1ConnectionsIdSignInAttempts429 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttempts503 = {
+export type PostApiV1ConnectionsIdSignInAttempts503 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinueBodyInput = { [key: string]: string };
-
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinueBody = {
-  input: PostApiV1SourcesIdSignInAttemptsAttemptContinueBodyInput;
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinueBodyInput = {
+  [key: string]: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue200 =
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinueBody = {
+  input: PostApiV1ConnectionsIdSignInAttemptsAttemptContinueBodyInput;
+};
+
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200 =
   | {
       status: "step";
       /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -4279,42 +4667,42 @@ export type PostApiV1SourcesIdSignInAttemptsAttemptContinue200 =
       status: "done";
     };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue400 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue404 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue409 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue429 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptContinue503 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll200 =
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll200 =
   | {
       status: "step";
       /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
@@ -4379,74 +4767,74 @@ export type PostApiV1SourcesIdSignInAttemptsAttemptPoll200 =
       status: "done";
     };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll400 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll404 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll409 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll429 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInAttemptsAttemptPoll503 = {
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type DeleteApiV1SourcesIdSignInAttemptsAttempt404 = {
+export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInStart200 = {
+export type PostApiV1ConnectionsIdSignInStart200 = {
   url: string;
 };
 
-export type PostApiV1SourcesIdSignInStart400 = {
+export type PostApiV1ConnectionsIdSignInStart400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInStart404 = {
+export type PostApiV1ConnectionsIdSignInStart404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInStart503 = {
+export type PostApiV1ConnectionsIdSignInStart503 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInFinishBody = {
+export type PostApiV1ConnectionsIdSignInFinishBody = {
   /**
    * @minLength 1
    * @maxLength 8192
@@ -4454,14 +4842,14 @@ export type PostApiV1SourcesIdSignInFinishBody = {
   pasted: string;
 };
 
-export type PostApiV1SourcesIdSignInFinish400 = {
+export type PostApiV1ConnectionsIdSignInFinish400 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
   message: string;
 };
 
-export type PostApiV1SourcesIdSignInFinish404 = {
+export type PostApiV1ConnectionsIdSignInFinish404 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
@@ -4509,6 +4897,8 @@ export type GetApiV1Calendar200Item = {
   /** For a return: its carrier, else a drop-off option's, else the shop. */
   carrier: string;
   /** For a return: the order number. */
+  tracking_number: string;
+  /** Deprecated: the same as `tracking_number`, sent for one release. */
   barcode: string;
   status: string;
   /** `return_by`: the last day to hand a return in (all day). */
@@ -4675,7 +5065,7 @@ export const getPostApiV1SessionUrl = () => {
 };
 
 /**
- * @summary Sign in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).
+ * @summary Log in with the admin password (may change anything) or OPENPARCELS_PASSWORD (may read).
  */
 export const postApiV1Session = async (
   postApiV1SessionBody: PostApiV1SessionBody,
@@ -4694,7 +5084,7 @@ export const getDeleteApiV1SessionUrl = () => {
 };
 
 /**
- * @summary Sign out of this browser session.
+ * @summary Log out of this browser session.
  */
 export const deleteApiV1Session = async (
   options?: Parameters<typeof apiFetch>[1],
@@ -5009,7 +5399,8 @@ export const getPostApiV1ParcelsUrl = () => {
 };
 
 /**
- * @summary Start tracking a code. Without a carrier it is detected from the code.
+ * **Deprecated for one release:** `barcode` instead of `tracking_number`, and the directions `incoming` and `outgoing` instead of `receiving` and `sending`.
+ * @summary Start tracking a tracking number. Without a carrier it is detected from the number.
  */
 export const postApiV1Parcels = async (
   postApiV1ParcelsBody: PostApiV1ParcelsBody,
@@ -5149,7 +5540,7 @@ export const getDeleteApiV1OrdersIdUrl = (id: string) => {
 };
 
 /**
- * The order's lines go and its parcels stay tracked without it. The shop and order number are remembered, so a shop source listing the order again does not re-create it. Fires `order.deleted`.
+ * The order's lines go and its parcels stay tracked without it. The shop and order number are remembered, so a shop connection listing the order again does not re-create it. Fires `order.deleted`.
  * @summary Delete an order; its parcels are kept and unlinked.
  */
 export const deleteApiV1OrdersId = async (
@@ -5177,7 +5568,7 @@ export const getGetApiV1ReturnsUrl = (params?: GetApiV1ReturnsParams) => {
 };
 
 /**
- * A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.
+ * A return is something sent back to a shop, per order. Connections (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every connection that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`. `view`: `open` (default; still going on), `closed` (refunded, rejected, cancelled or expired), or `all`.
  * @summary List returns, newest first.
  */
 export const getApiV1Returns = async (
@@ -5195,7 +5586,7 @@ export const getGetApiV1ReturnsIdUrl = (id: string) => {
 };
 
 /**
- * A return is something sent back to a shop, per order. Sources (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every source that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.
+ * A return is something sent back to a shop, per order. Connections (a shop account, return and refund mails) create and update it; `status` goes `requested`, `label_created`, `dropped_off`, `in_transit`, `received`, `refunded`, or ends `rejected` or `cancelled`. A return not handed in by `return_by` (the server's local day) reads `expired`. `drop_off` lists where it may be handed in (`kind`: `shop`, `parcel_locker`, `post_office`, `pickup`, or `any` point of the carrier); `cost` says whether sending it back is free. Once a tracking number is known, `parcel_id` is the outgoing parcel that tracks it. Returns hide while every connection that reported them, or their order, is disabled. Changes fire `return.created` and `return.updated`.
  * @summary One return.
  */
 export const getApiV1ReturnsId = async (
@@ -5213,7 +5604,7 @@ export const getGetApiV1CarriersUrl = () => {
 };
 
 /**
- * @summary Installed carrier plug-ins and how to set them up.
+ * @summary Installed carrier providers and how to set them up.
  */
 export const getApiV1Carriers = async (
   options?: Parameters<typeof apiFetch>[1],
@@ -5224,146 +5615,146 @@ export const getApiV1Carriers = async (
   });
 };
 
-export const getGetApiV1SourcesUrl = () => {
-  return `/api/v1/sources`;
+export const getGetApiV1ConnectionsUrl = () => {
+  return `/api/v1/connections`;
 };
 
 /**
- * @summary Carrier accounts, shops, tracking sources and mailboxes.
+ * @summary Carrier accounts, shops, tracking connections and inboxes.
  */
-export const getApiV1Sources = async (
+export const getApiV1Connections = async (
   options?: Parameters<typeof apiFetch>[1],
-): Promise<GetApiV1Sources200Item[]> => {
-  return apiFetch<GetApiV1Sources200Item[]>(getGetApiV1SourcesUrl(), {
+): Promise<GetApiV1Connections200Item[]> => {
+  return apiFetch<GetApiV1Connections200Item[]>(getGetApiV1ConnectionsUrl(), {
     ...options,
     method: "GET",
   });
 };
 
-export const getPostApiV1SourcesUrl = () => {
-  return `/api/v1/sources`;
+export const getPostApiV1ConnectionsUrl = () => {
+  return `/api/v1/connections`;
 };
 
 /**
- * @summary Add a source. Sign-in data is encrypted at rest and never returned.
+ * @summary Add a connection. Sign-in data is encrypted at rest and never returned.
  */
-export const postApiV1Sources = async (
-  postApiV1SourcesBody: PostApiV1SourcesBody,
+export const postApiV1Connections = async (
+  postApiV1ConnectionsBody: PostApiV1ConnectionsBody,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1Sources201> => {
-  return apiFetch<PostApiV1Sources201>(getPostApiV1SourcesUrl(), {
+): Promise<PostApiV1Connections201> => {
+  return apiFetch<PostApiV1Connections201>(getPostApiV1ConnectionsUrl(), {
     ...options,
     method: "POST",
     headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(postApiV1SourcesBody),
+    body: JSON.stringify(postApiV1ConnectionsBody),
   });
 };
 
-export const getPatchApiV1SourcesIdUrl = (id: string) => {
-  return `/api/v1/sources/${id}`;
+export const getPatchApiV1ConnectionsIdUrl = (id: string) => {
+  return `/api/v1/connections/${id}`;
 };
 
 /**
- * @summary Rename, reconfigure, enable or disable a source.
+ * @summary Rename, reconfigure, enable or disable a connection.
  */
-export const patchApiV1SourcesId = async (
+export const patchApiV1ConnectionsId = async (
   id: string,
-  patchApiV1SourcesIdBody: PatchApiV1SourcesIdBody,
+  patchApiV1ConnectionsIdBody: PatchApiV1ConnectionsIdBody,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PatchApiV1SourcesId200> => {
-  return apiFetch<PatchApiV1SourcesId200>(getPatchApiV1SourcesIdUrl(id), {
+): Promise<PatchApiV1ConnectionsId200> => {
+  return apiFetch<PatchApiV1ConnectionsId200>(getPatchApiV1ConnectionsIdUrl(id), {
     ...options,
     method: "PATCH",
     headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(patchApiV1SourcesIdBody),
+    body: JSON.stringify(patchApiV1ConnectionsIdBody),
   });
 };
 
-export const getDeleteApiV1SourcesIdUrl = (id: string) => {
-  return `/api/v1/sources/${id}`;
+export const getDeleteApiV1ConnectionsIdUrl = (id: string) => {
+  return `/api/v1/connections/${id}`;
 };
 
 /**
- * @summary Remove a source and its stored sign-in.
+ * @summary Remove a connection and its stored sign-in.
  */
-export const deleteApiV1SourcesId = async (
+export const deleteApiV1ConnectionsId = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<null> => {
-  return apiFetch<null>(getDeleteApiV1SourcesIdUrl(id), {
+  return apiFetch<null>(getDeleteApiV1ConnectionsIdUrl(id), {
     ...options,
     method: "DELETE",
   });
 };
 
-export const getPutApiV1SourcesIdSecretUrl = (id: string) => {
-  return `/api/v1/sources/${id}/secret`;
+export const getPutApiV1ConnectionsIdSecretUrl = (id: string) => {
+  return `/api/v1/connections/${id}/secret`;
 };
 
 /**
- * @summary Replace the sign-in data (credentials or API key) and run the source.
+ * @summary Replace the sign-in data (credentials or API key) and run the connection.
  */
-export const putApiV1SourcesIdSecret = async (
+export const putApiV1ConnectionsIdSecret = async (
   id: string,
-  putApiV1SourcesIdSecretBody: PutApiV1SourcesIdSecretBody,
+  putApiV1ConnectionsIdSecretBody: PutApiV1ConnectionsIdSecretBody,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<null> => {
-  return apiFetch<null>(getPutApiV1SourcesIdSecretUrl(id), {
+  return apiFetch<null>(getPutApiV1ConnectionsIdSecretUrl(id), {
     ...options,
     method: "PUT",
     headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(putApiV1SourcesIdSecretBody),
+    body: JSON.stringify(putApiV1ConnectionsIdSecretBody),
   });
 };
 
-export const getPostApiV1SourcesIdSyncUrl = (id: string) => {
-  return `/api/v1/sources/${id}/sync`;
+export const getPostApiV1ConnectionsIdSyncUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sync`;
 };
 
 /**
- * While the source backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `source_backing_off` with `Retry-After`.
- * @summary Run a source now.
+ * While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.
+ * @summary Run a connection now.
  */
-export const postApiV1SourcesIdSync = async (
+export const postApiV1ConnectionsIdSync = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<null> => {
-  return apiFetch<null>(getPostApiV1SourcesIdSyncUrl(id), {
+  return apiFetch<null>(getPostApiV1ConnectionsIdSyncUrl(id), {
     ...options,
     method: "POST",
   });
 };
 
-export const getGetApiV1SourcesIdDataUrl = (id: string) => {
-  return `/api/v1/sources/${id}/data`;
+export const getGetApiV1ConnectionsIdDataUrl = (id: string) => {
+  return `/api/v1/connections/${id}/data`;
 };
 
 /**
- * @summary Count what clearing a source would remove.
+ * @summary Count what clearing a connection would remove.
  */
-export const getApiV1SourcesIdData = async (
+export const getApiV1ConnectionsIdData = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<GetApiV1SourcesIdData200> => {
-  return apiFetch<GetApiV1SourcesIdData200>(getGetApiV1SourcesIdDataUrl(id), {
+): Promise<GetApiV1ConnectionsIdData200> => {
+  return apiFetch<GetApiV1ConnectionsIdData200>(getGetApiV1ConnectionsIdDataUrl(id), {
     ...options,
     method: "GET",
   });
 };
 
-export const getPostApiV1SourcesIdClearUrl = (id: string) => {
-  return `/api/v1/sources/${id}/clear`;
+export const getPostApiV1ConnectionsIdClearUrl = (id: string) => {
+  return `/api/v1/connections/${id}/clear`;
 };
 
 /**
- * Parcels and orders only this source reported are deleted with their history and items; ones other sources also reported stay. A mailbox reads its mails again. The source and its sign-in are kept, and an enabled source runs again at once.
- * @summary Remove everything a source imported, so it syncs again from scratch.
+ * Parcels and orders only this connection reported are deleted with their history and items; ones other connections also reported stay. An inbox reads its mails again. The connection and its sign-in are kept, and an enabled connection runs again at once.
+ * @summary Remove everything a connection imported, so it syncs again from scratch.
  */
-export const postApiV1SourcesIdClear = async (
+export const postApiV1ConnectionsIdClear = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1SourcesIdClear200> => {
-  return apiFetch<PostApiV1SourcesIdClear200>(getPostApiV1SourcesIdClearUrl(id), {
+): Promise<PostApiV1ConnectionsIdClear200> => {
+  return apiFetch<PostApiV1ConnectionsIdClear200>(getPostApiV1ConnectionsIdClearUrl(id), {
     ...options,
     method: "POST",
   });
@@ -5390,7 +5781,7 @@ export const getPostApiV1DataClearUrl = () => {
 };
 
 /**
- * `archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: "DELETE"`. Sources, sign-ins and settings stay.
+ * `archived`: archived parcels. `older_than`: delivered or archived parcels last seen before the date, then orders placed before it with no parcel left. `raw_payloads`, `archived_scans`: diagnostic rows. `cache`: an image, tile or collage cache (fetched again when needed). `everything`: all parcels and orders after a database backup; needs `confirm: "DELETE"`. Connections, sign-ins and settings stay.
  * @summary Delete stored data on the owner's request.
  */
 export const postApiV1DataClear = async (
@@ -5405,84 +5796,93 @@ export const postApiV1DataClear = async (
   });
 };
 
-export const getGetApiV1SourcesIdSignInFlowsUrl = (id: string) => {
-  return `/api/v1/sources/${id}/sign-in/flows`;
+export const getGetApiV1ConnectionsIdSignInFlowsUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sign-in/flows`;
 };
 
 /**
- * @summary The ways this source can sign in, the default first.
+ * @summary The ways this connection can sign in, the default first.
  */
-export const getApiV1SourcesIdSignInFlows = async (
+export const getApiV1ConnectionsIdSignInFlows = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<GetApiV1SourcesIdSignInFlows200Item[]> => {
-  return apiFetch<GetApiV1SourcesIdSignInFlows200Item[]>(getGetApiV1SourcesIdSignInFlowsUrl(id), {
-    ...options,
-    method: "GET",
-  });
+): Promise<GetApiV1ConnectionsIdSignInFlows200Item[]> => {
+  return apiFetch<GetApiV1ConnectionsIdSignInFlows200Item[]>(
+    getGetApiV1ConnectionsIdSignInFlowsUrl(id),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
 };
 
-export const getPostApiV1SourcesIdSignInAttemptsUrl = (id: string) => {
-  return `/api/v1/sources/${id}/sign-in/attempts`;
+export const getPostApiV1ConnectionsIdSignInAttemptsUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sign-in/attempts`;
 };
 
 /**
- * @summary Start an interactive sign-in. Replaces an unfinished one for the same source.
+ * @summary Start an interactive sign-in. Replaces an unfinished one for the same connection.
  */
-export const postApiV1SourcesIdSignInAttempts = async (
+export const postApiV1ConnectionsIdSignInAttempts = async (
   id: string,
-  postApiV1SourcesIdSignInAttemptsBody: PostApiV1SourcesIdSignInAttemptsBody,
+  postApiV1ConnectionsIdSignInAttemptsBody: PostApiV1ConnectionsIdSignInAttemptsBody,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1SourcesIdSignInAttempts200> => {
-  return apiFetch<PostApiV1SourcesIdSignInAttempts200>(getPostApiV1SourcesIdSignInAttemptsUrl(id), {
-    ...options,
-    method: "POST",
-    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(postApiV1SourcesIdSignInAttemptsBody),
-  });
+): Promise<PostApiV1ConnectionsIdSignInAttempts200> => {
+  return apiFetch<PostApiV1ConnectionsIdSignInAttempts200>(
+    getPostApiV1ConnectionsIdSignInAttemptsUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+      body: JSON.stringify(postApiV1ConnectionsIdSignInAttemptsBody),
+    },
+  );
 };
 
-export const getPostApiV1SourcesIdSignInAttemptsAttemptContinueUrl = (
+export const getPostApiV1ConnectionsIdSignInAttemptsAttemptContinueUrl = (
   id: string,
   attempt: string,
 ) => {
-  return `/api/v1/sources/${id}/sign-in/attempts/${attempt}/continue`;
+  return `/api/v1/connections/${id}/sign-in/attempts/${attempt}/continue`;
 };
 
 /**
  * @summary Answer the current step. A refused code keeps the step for another try.
  */
-export const postApiV1SourcesIdSignInAttemptsAttemptContinue = async (
+export const postApiV1ConnectionsIdSignInAttemptsAttemptContinue = async (
   id: string,
   attempt: string,
-  postApiV1SourcesIdSignInAttemptsAttemptContinueBody: PostApiV1SourcesIdSignInAttemptsAttemptContinueBody,
+  postApiV1ConnectionsIdSignInAttemptsAttemptContinueBody: PostApiV1ConnectionsIdSignInAttemptsAttemptContinueBody,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1SourcesIdSignInAttemptsAttemptContinue200> => {
-  return apiFetch<PostApiV1SourcesIdSignInAttemptsAttemptContinue200>(
-    getPostApiV1SourcesIdSignInAttemptsAttemptContinueUrl(id, attempt),
+): Promise<PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200> => {
+  return apiFetch<PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200>(
+    getPostApiV1ConnectionsIdSignInAttemptsAttemptContinueUrl(id, attempt),
     {
       ...options,
       method: "POST",
       headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-      body: JSON.stringify(postApiV1SourcesIdSignInAttemptsAttemptContinueBody),
+      body: JSON.stringify(postApiV1ConnectionsIdSignInAttemptsAttemptContinueBody),
     },
   );
 };
 
-export const getPostApiV1SourcesIdSignInAttemptsAttemptPollUrl = (id: string, attempt: string) => {
-  return `/api/v1/sources/${id}/sign-in/attempts/${attempt}/poll`;
+export const getPostApiV1ConnectionsIdSignInAttemptsAttemptPollUrl = (
+  id: string,
+  attempt: string,
+) => {
+  return `/api/v1/connections/${id}/sign-in/attempts/${attempt}/poll`;
 };
 
 /**
  * @summary Check an approval step. Refused (429) when called faster than the step's interval; fails with sign_in_timeout after its timeout.
  */
-export const postApiV1SourcesIdSignInAttemptsAttemptPoll = async (
+export const postApiV1ConnectionsIdSignInAttemptsAttemptPoll = async (
   id: string,
   attempt: string,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1SourcesIdSignInAttemptsAttemptPoll200> => {
-  return apiFetch<PostApiV1SourcesIdSignInAttemptsAttemptPoll200>(
-    getPostApiV1SourcesIdSignInAttemptsAttemptPollUrl(id, attempt),
+): Promise<PostApiV1ConnectionsIdSignInAttemptsAttemptPoll200> => {
+  return apiFetch<PostApiV1ConnectionsIdSignInAttemptsAttemptPoll200>(
+    getPostApiV1ConnectionsIdSignInAttemptsAttemptPollUrl(id, attempt),
     {
       ...options,
       method: "POST",
@@ -5490,58 +5890,64 @@ export const postApiV1SourcesIdSignInAttemptsAttemptPoll = async (
   );
 };
 
-export const getDeleteApiV1SourcesIdSignInAttemptsAttemptUrl = (id: string, attempt: string) => {
-  return `/api/v1/sources/${id}/sign-in/attempts/${attempt}`;
+export const getDeleteApiV1ConnectionsIdSignInAttemptsAttemptUrl = (
+  id: string,
+  attempt: string,
+) => {
+  return `/api/v1/connections/${id}/sign-in/attempts/${attempt}`;
 };
 
 /**
  * @summary Cancel an unfinished sign-in.
  */
-export const deleteApiV1SourcesIdSignInAttemptsAttempt = async (
+export const deleteApiV1ConnectionsIdSignInAttemptsAttempt = async (
   id: string,
   attempt: string,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<null> => {
-  return apiFetch<null>(getDeleteApiV1SourcesIdSignInAttemptsAttemptUrl(id, attempt), {
+  return apiFetch<null>(getDeleteApiV1ConnectionsIdSignInAttemptsAttemptUrl(id, attempt), {
     ...options,
     method: "DELETE",
   });
 };
 
-export const getPostApiV1SourcesIdSignInStartUrl = (id: string) => {
-  return `/api/v1/sources/${id}/sign-in/start`;
+export const getPostApiV1ConnectionsIdSignInStartUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sign-in/start`;
 };
 
 /**
  * @summary Start a pasted-link sign-in: returns the address to open in your browser.
  */
-export const postApiV1SourcesIdSignInStart = async (
+export const postApiV1ConnectionsIdSignInStart = async (
   id: string,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1SourcesIdSignInStart200> => {
-  return apiFetch<PostApiV1SourcesIdSignInStart200>(getPostApiV1SourcesIdSignInStartUrl(id), {
-    ...options,
-    method: "POST",
-  });
+): Promise<PostApiV1ConnectionsIdSignInStart200> => {
+  return apiFetch<PostApiV1ConnectionsIdSignInStart200>(
+    getPostApiV1ConnectionsIdSignInStartUrl(id),
+    {
+      ...options,
+      method: "POST",
+    },
+  );
 };
 
-export const getPostApiV1SourcesIdSignInFinishUrl = (id: string) => {
-  return `/api/v1/sources/${id}/sign-in/finish`;
+export const getPostApiV1ConnectionsIdSignInFinishUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sign-in/finish`;
 };
 
 /**
  * @summary Finish a pasted-link sign-in with the address the browser ended on.
  */
-export const postApiV1SourcesIdSignInFinish = async (
+export const postApiV1ConnectionsIdSignInFinish = async (
   id: string,
-  postApiV1SourcesIdSignInFinishBody: PostApiV1SourcesIdSignInFinishBody,
+  postApiV1ConnectionsIdSignInFinishBody: PostApiV1ConnectionsIdSignInFinishBody,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<null> => {
-  return apiFetch<null>(getPostApiV1SourcesIdSignInFinishUrl(id), {
+  return apiFetch<null>(getPostApiV1ConnectionsIdSignInFinishUrl(id), {
     ...options,
     method: "POST",
     headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(postApiV1SourcesIdSignInFinishBody),
+    body: JSON.stringify(postApiV1ConnectionsIdSignInFinishBody),
   });
 };
 
@@ -5719,7 +6125,7 @@ export const getGetApiV1DiagnosticsUrl = () => {
 };
 
 /**
- * @summary Redacted state of sources, parcels, live tracking and unknown carrier values.
+ * @summary Redacted state of connections, parcels, live tracking and unknown carrier values.
  */
 export const getApiV1Diagnostics = async (
   options?: Parameters<typeof apiFetch>[1],
@@ -5745,8 +6151,8 @@ export const getGetApiV1EventsUrl = (params?: GetApiV1EventsParams) => {
 };
 
 /**
- * Each message carries `id` (the outbox sequence), `event` (the event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed events. A connection without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed.
- * @summary Server-Sent Events stream of parcel and source events.
+ * Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. **Deprecated:** `positionAt`, the same value as `position_at`, is still sent for one release and will be removed. **Deprecated:** each `connection.*` live event and `parcel.sending_registered` / `parcel.sending_delivered` is followed, for one release, by the same live event under its old name (`source.*`, `parcel.outgoing_registered`, `parcel.outgoing_delivered`), without an `id` and with `source` (carrying `plugin`) next to `connection` in its data.
+ * @summary Server-Sent Events stream of live events about parcels, orders and connections.
  */
 export const getApiV1Events = async (
   params?: GetApiV1EventsParams,

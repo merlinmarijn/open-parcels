@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SyntheticEvent, type ReactNode } from "react";
-import { getApiV1SourcesIdSignInFlows, putApiV1SourcesIdSecret } from "../api/generated";
+import { getApiV1ConnectionsIdSignInFlows, putApiV1ConnectionsIdSecret } from "../api/generated";
 import { keys, useCarriers } from "../api/queries";
-import type { SignInFlow, Source } from "../api/types";
+import type { SignInFlow, Connection } from "../api/types";
 import { Dialog, ErrorNotice, Spinner } from "../components/ui";
-import { MAIL_FLOWS, MAIL_PLUGIN, MAIL_SECRET_SCHEMA } from "./mail";
+import { INBOX_FLOWS, INBOX_PROVIDER, INBOX_SECRET_SCHEMA } from "./inbox";
 import { SchemaFields } from "./SchemaForm";
 import { asSchema, cleanValues, type FormValues } from "./schema";
 import { StepRenderer } from "./StepRenderer";
@@ -12,7 +12,7 @@ import { useSignInAttempt } from "./useSignInAttempt";
 
 /** Credentials and API keys: a form from the carrier's sign-in schema, sent once with PUT. */
 function StaticSecretForm(props: {
-  readonly source: Source;
+  readonly connection: Connection;
   readonly flow: SignInFlow;
   readonly onDone: () => void;
 }): ReactNode {
@@ -20,18 +20,19 @@ function StaticSecretForm(props: {
   const client = useQueryClient();
   // A flow with its own fields (an optional API key) shows only those, not the whole sign-in data.
   const schema =
-    props.source.plugin === MAIL_PLUGIN
-      ? MAIL_SECRET_SCHEMA
+    props.connection.provider === INBOX_PROVIDER
+      ? INBOX_SECRET_SCHEMA
       : asSchema(
           props.flow.secret_schema ??
-            carriers.data?.find((c) => c.id === props.source.plugin)?.secret_schema,
+            carriers.data?.find((c) => c.id === props.connection.provider)?.secret_schema,
         );
   const [values, setValues] = useState<FormValues>({});
   const save = useMutation({
-    mutationFn: (secret: FormValues) => putApiV1SourcesIdSecret(props.source.id, { secret }),
+    mutationFn: (secret: FormValues) =>
+      putApiV1ConnectionsIdSecret(props.connection.id, { secret }),
     onSuccess: async () => {
       setValues({});
-      await client.invalidateQueries({ queryKey: keys.sources });
+      await client.invalidateQueries({ queryKey: keys.connections });
       props.onDone();
     },
   });
@@ -53,17 +54,17 @@ function StaticSecretForm(props: {
 }
 
 function InteractiveSignIn(props: {
-  readonly source: Source;
+  readonly connection: Connection;
   readonly flow: SignInFlow;
   readonly onDone: () => void;
 }): ReactNode {
-  const attempt = useSignInAttempt(props.source.id);
+  const attempt = useSignInAttempt(props.connection.id);
   const { state } = attempt;
   if (state.phase === "done") {
     return (
       <div className="stack">
         <p className="notice" role="status">
-          Signed in. The source runs now.
+          Signed in. The connection runs now.
         </p>
         <div className="actions">
           <button type="button" className="button primary" onClick={props.onDone}>
@@ -112,34 +113,36 @@ function InteractiveSignIn(props: {
 }
 
 function FlowBody(props: {
-  readonly source: Source;
+  readonly connection: Connection;
   readonly flow: SignInFlow;
   readonly onDone: () => void;
 }): ReactNode {
   switch (props.flow.type) {
     case "none":
-      return <p className="muted">This source needs no sign-in.</p>;
+      return <p className="muted">This connection needs no sign-in.</p>;
     case "credentials":
     case "api_key":
-      return <StaticSecretForm source={props.source} flow={props.flow} onDone={props.onDone} />;
+      return (
+        <StaticSecretForm connection={props.connection} flow={props.flow} onDone={props.onDone} />
+      );
     case "interactive":
       return <InteractiveSignIn key={props.flow.id} {...props} />;
   }
 }
 
 export function SignInDialog(props: {
-  readonly source: Source | null;
+  readonly connection: Connection | null;
   readonly onClose: () => void;
 }): ReactNode {
-  const source = props.source;
-  const isMail = source?.plugin === MAIL_PLUGIN;
+  const connection = props.connection;
+  const isMail = connection?.provider === INBOX_PROVIDER;
   const flows = useQuery({
-    queryKey: ["sign-in-flows", source?.id],
+    queryKey: ["sign-in-flows", connection?.id],
     queryFn: ({ signal }) =>
-      source === null || isMail
-        ? Promise.resolve(MAIL_FLOWS)
-        : getApiV1SourcesIdSignInFlows(source.id, { signal }),
-    enabled: source !== null,
+      connection === null || isMail
+        ? Promise.resolve(INBOX_FLOWS)
+        : getApiV1ConnectionsIdSignInFlows(connection.id, { signal }),
+    enabled: connection !== null,
   });
   const [chosen, setChosen] = useState<string | null>(null);
   const list = flows.data ?? [];
@@ -147,8 +150,8 @@ export function SignInDialog(props: {
 
   return (
     <Dialog
-      title={source === null ? "Sign in" : `Sign in: ${source.label}`}
-      open={source !== null}
+      title={connection === null ? "Sign in" : `Sign in: ${connection.label}`}
+      open={connection !== null}
       onClose={() => {
         setChosen(null);
         props.onClose();
@@ -174,8 +177,8 @@ export function SignInDialog(props: {
           </select>
         </label>
       ) : null}
-      {source === null || flow === undefined ? null : (
-        <FlowBody source={source} flow={flow} onDone={props.onClose} />
+      {connection === null || flow === undefined ? null : (
+        <FlowBody connection={connection} flow={flow} onDone={props.onClose} />
       )}
     </Dialog>
   );

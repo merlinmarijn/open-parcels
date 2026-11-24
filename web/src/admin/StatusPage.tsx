@@ -1,9 +1,9 @@
 import type { ReactNode } from "react";
-import { useDiagnostics, useHealth, useSources } from "../api/queries";
+import { useDiagnostics, useHealth, useConnections } from "../api/queries";
 import { useIsAdmin } from "../auth/session";
 import { ErrorNotice, ReadOnlyHint, Spinner } from "../components/ui";
 import { formatRelative } from "../lib/format";
-import { SourceStateBadge } from "../parcels/badges";
+import { ConnectionStateBadge } from "../parcels/badges";
 
 function download(data: unknown): void {
   const blob = new Blob([JSON.stringify(data, null, 2)], { type: "application/json" });
@@ -17,7 +17,7 @@ function download(data: unknown): void {
 
 export function StatusPage(): ReactNode {
   const health = useHealth();
-  const sources = useSources();
+  const connections = useConnections();
   const admin = useIsAdmin();
   const ready = health.data?.status === "ok";
 
@@ -32,27 +32,27 @@ export function StatusPage(): ReactNode {
           <Spinner />
         ) : (
           <p role="status">
-            <span className={`badge ${ready ? "source-ok" : "source-error"}`}>
+            <span className={`badge ${ready ? "connection-ok" : "connection-error"}`}>
               {ready ? "Ready" : "Not ready"}
             </span>
           </p>
         )}
         <ErrorNotice error={health.error} />
       </section>
-      <section className="card" aria-labelledby="sources-status-title">
-        <h2 id="sources-status-title">Sources</h2>
-        <ErrorNotice error={sources.error} />
+      <section className="card" aria-labelledby="connections-status-title">
+        <h2 id="connections-status-title">Connections</h2>
+        <ErrorNotice error={connections.error} />
         <ul className="plain-list">
-          {(sources.data ?? []).map((source) => (
-            <li key={source.id}>
-              <SourceStateBadge state={source.state} lastOkAt={source.last_ok_at} />{" "}
-              <strong>{source.label}</strong>{" "}
+          {(connections.data ?? []).map((connection) => (
+            <li key={connection.id}>
+              <ConnectionStateBadge state={connection.state} lastOkAt={connection.last_ok_at} />{" "}
+              <strong>{connection.label}</strong>{" "}
               <span className="muted">
-                last run {formatRelative(source.last_run_at)}, last success{" "}
-                {formatRelative(source.last_ok_at)}
+                last run {formatRelative(connection.last_run_at)}, last success{" "}
+                {formatRelative(connection.last_ok_at)}
               </span>
-              {source.state_detail === null ? null : (
-                <div className="muted">{source.state_detail}</div>
+              {connection.state_detail === null ? null : (
+                <div className="muted">{connection.state_detail}</div>
               )}
             </li>
           ))}
@@ -71,7 +71,9 @@ function Diagnostics(): ReactNode {
   const diagnostics = useDiagnostics();
   return (
     <>
-      <p className="muted">Redacted on the server: no codes, addresses or sign-in data.</p>
+      <p className="muted">
+        Redacted on the server: no tracking numbers, addresses or sign-in data.
+      </p>
       <ErrorNotice error={diagnostics.error} />
       <div className="actions">
         <button

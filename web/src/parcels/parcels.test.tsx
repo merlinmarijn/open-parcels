@@ -7,7 +7,7 @@ const PARCELS = [
   parcel({ id: "00000000-0000-4000-8000-00000000000a", label: "Book", carrier: "dhl" }),
   parcel({
     id: "00000000-0000-4000-8000-00000000000b",
-    barcode: "TEST0000000002",
+    tracking_number: "TEST0000000002",
     carrier: "dpd",
     status: "registered",
     lookup: {
@@ -18,7 +18,7 @@ const PARCELS = [
   }),
   parcel({
     id: "00000000-0000-4000-8000-00000000000c",
-    barcode: "TEST0000000003",
+    tracking_number: "TEST0000000003",
     label: "Shoes",
     carrier: "hermes",
     status: "delivered",
@@ -78,12 +78,12 @@ describe("parcel list", () => {
     const user = userEvent.setup();
     renderApp();
     await user.click(await screen.findByRole("button", { name: "Track a parcel" }));
-    await user.type(screen.getByLabelText("Tracking code"), " TEST0000000009 ");
+    await user.type(screen.getByLabelText("Tracking number"), " TEST0000000009 ");
     await user.click(screen.getByRole("button", { name: "Track" }));
 
     expect(await screen.findByRole("heading", { name: "Book" })).toBeInTheDocument();
     const post = calls.find((call) => call.method === "POST" && call.path === "/api/v1/parcels");
-    expect(post?.body).toEqual({ barcode: "TEST0000000009", label: null });
+    expect(post?.body).toEqual({ tracking_number: "TEST0000000009", label: null });
     expect(post?.headers.get("x-csrf-token")).toBe("csrf-test-value");
   });
 });

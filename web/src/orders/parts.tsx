@@ -5,7 +5,7 @@ import type { ReactNode } from "react";
 import { apiUrl } from "../api/fetcher";
 import type { Order, OrderStatus, OrderView, ParcelStatus } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
-import { formatRelative, formatWindow } from "../lib/format";
+import { formatRelative, formatExpected } from "../lib/format";
 import { ArchivedBadge, StatusBadge } from "../parcels/badges";
 
 export const ORDER_STATUS_LABELS: Readonly<Record<OrderStatus, string>> = {
@@ -145,8 +145,8 @@ type OrderParcel = Order["parcels"][number];
 
 function parcelLine(parcel: OrderParcel): string | null {
   if (parcel.delivered) return `Delivered ${formatRelative(parcel.delivered_at)}`;
-  if (parcel.planned_from !== null || parcel.planned_to !== null) {
-    return `Expected ${formatWindow(parcel.planned_from, parcel.planned_to)}`;
+  if (parcel.expected_from !== null || parcel.expected_to !== null) {
+    return `Expected ${formatExpected(parcel)}`;
   }
   return null;
 }
@@ -166,7 +166,7 @@ export function OrderParcels({ order }: { readonly order: Order }): ReactNode {
               <div className="parcel-card-body">
                 <div className="parcel-card-title">{parcel.display_name}</div>
                 <div className="parcel-card-meta">
-                  {parcel.carrier} · {parcel.barcode}
+                  {parcel.carrier} · {parcel.tracking_number}
                 </div>
                 {line === null ? null : <div className="parcel-card-eta">{line}</div>}
                 {place === null || parcel.delivered ? null : (

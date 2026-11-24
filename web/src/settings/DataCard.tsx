@@ -46,7 +46,7 @@ function Row(props: {
 
 /**
  * What is stored and the owner's clean-up actions. Nothing is deleted on its own unless automatic
- * deletion is turned on; clearing one source's data is on its card on the Sources page.
+ * deletion is turned on; clearing one connection's data is on its card on the Connections page.
  */
 export function DataCard(): ReactNode {
   const summary = useDataSummary();
@@ -77,8 +77,8 @@ export function DataCard(): ReactNode {
     <section className="card stack" aria-labelledby="settings-data">
       <h2 id="settings-data">Data</h2>
       <p className="muted">
-        Everything is kept until you delete it here. To re-import one source, use “Clear data” on
-        its card on the Sources page.
+        Everything is kept until you delete it here. To re-import one connection, use “Clear data”
+        on its card on the Connections page.
       </p>
       <ErrorNotice error={summary.error ?? clear.error} />
       {result === null ? null : <p role="status">{result}</p>}
@@ -103,14 +103,14 @@ export function DataCard(): ReactNode {
             />
             <Row label="Orders" value={String(data.orders)} busy={busy} />
             <Row
-              label="Tracking scans"
+              label="Tracking events"
               value={String(data.scans)}
               action="Delete those of archived parcels"
               busy={busy}
               onAction={() => {
                 run(
                   { what: "archived_scans" },
-                  "Delete the tracking scans of archived parcels? The parcels stay.",
+                  "Delete the tracking events of archived parcels? The parcels stay.",
                 );
               }}
             />
@@ -122,7 +122,7 @@ export function DataCard(): ReactNode {
               onAction={() => {
                 run(
                   { what: "raw_payloads" },
-                  "Delete the raw carrier answers? They only help diagnosing a plug-in.",
+                  "Delete the raw carrier answers? They only help diagnosing a provider.",
                 );
               }}
             />
@@ -176,7 +176,7 @@ export function DataCard(): ReactNode {
             disabled={busy}
             onClick={() => {
               const typed = window.prompt(
-                `Delete every parcel and order? Sources, sign-ins and settings stay, and a database backup is saved first. Type ${EVERYTHING_CONFIRMATION} to confirm.`,
+                `Delete every parcel and order? Connections, sign-ins and settings stay, and a database backup is saved first. Type ${EVERYTHING_CONFIRMATION} to confirm.`,
               );
               if (typed === null) return;
               setResult(null);

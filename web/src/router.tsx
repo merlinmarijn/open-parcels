@@ -2,6 +2,7 @@ import {
   createRootRoute,
   createRoute,
   createRouter,
+  redirect,
   type RouterHistory,
 } from "@tanstack/react-router";
 import { lazy, type ReactNode } from "react";
@@ -15,7 +16,7 @@ import { ParcelDetailPage } from "./parcels/ParcelDetailPage";
 import { ParcelsPage } from "./parcels/ParcelsPage";
 import { ReturnsPage } from "./returns/ReturnsPage";
 import { SettingsPage } from "./settings/SettingsPage";
-import { SourcesPage } from "./sources/SourcesPage";
+import { ConnectionsPage } from "./connections/ConnectionsPage";
 
 // Leaflet and FullCalendar are large; load them only when their tab opens.
 const MapPage = lazy(() => import("./map/MapPage"));
@@ -60,7 +61,20 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: "/", component: ParcelsPage }),
   parcelRoute,
   orderRoute,
-  createRoute({ getParentRoute: () => rootRoute, path: "/sources", component: SourcesPage }),
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/connections",
+    component: ConnectionsPage,
+  }),
+  // Deprecated: the page's address before the glossary; kept for bookmarks for one release.
+  createRoute({
+    getParentRoute: () => rootRoute,
+    path: "/sources",
+    beforeLoad: () => {
+      // eslint-disable-next-line @typescript-eslint/only-throw-error -- the router's redirect is thrown by design
+      throw redirect({ to: "/connections" });
+    },
+  }),
   createRoute({ getParentRoute: () => rootRoute, path: "/map", component: MapPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/orders", component: OrdersPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/returns", component: ReturnsPage }),

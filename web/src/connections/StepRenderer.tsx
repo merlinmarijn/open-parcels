@@ -109,7 +109,7 @@ function CodeStep(props: {
 
 const CHANNELS: Readonly<Record<Extract<SignInStep, { kind: "otp_code" }>["channel"], string>> = {
   sms: "by text message",
-  email: "by e-mail",
+  email: "by email",
   app: "in the carrier's app",
   other: "",
 };
@@ -175,8 +175,8 @@ export function StepRenderer(props: {
     case "email_link":
       return (
         <CodeStep
-          intro={`We sent a sign-in e-mail${step.destination === null ? "" : ` to ${step.destination}`}. Copy the link (or the code) from it and paste it here.`}
-          label="Link or code from the e-mail"
+          intro={`We sent a sign-in email${step.destination === null ? "" : ` to ${step.destination}`}. Copy the link (or the code) from it and paste it here.`}
+          label="Link or code from the email"
           message={step.message}
           busy={busy}
           onSubmit={onSubmit}

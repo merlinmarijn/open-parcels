@@ -1,11 +1,11 @@
 import { render, screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it, vi } from "vitest";
-import type { CalendarEntry, Source } from "./api/types";
+import type { CalendarEntry, Connection } from "./api/types";
 import { toCalendarEvent } from "./calendar/events";
 import { describeLookup } from "./lib/format";
-import { SourceStateBadge } from "./parcels/badges";
-import { isSecretField } from "./sources/schema";
+import { ConnectionStateBadge } from "./parcels/badges";
+import { isSecretField } from "./connections/schema";
 import { mockApi, parcel, renderApp, SIGNED_IN } from "./test/helpers";
 
 /* Regressions found by a live end-to-end run. Every value is made up. */
@@ -34,14 +34,14 @@ describe("parcel list", () => {
   });
 });
 
-describe("a source that ran but had nothing to do", () => {
+describe("a connection that ran but had nothing to do", () => {
   it("shows Idle from the server's idle state", () => {
-    render(<SourceStateBadge state="idle" lastOkAt={null} />);
+    render(<ConnectionStateBadge state="idle" lastOkAt={null} />);
     expect(screen.getByText("Idle", { selector: ".badge" })).toBeInTheDocument();
   });
 
-  it("does not guess Idle from the detail text of an OK source", () => {
-    render(<SourceStateBadge state="ok" lastOkAt="2026-11-01T10:00:00.000Z" />);
+  it("does not guess Idle from the detail text of an OK connection", () => {
+    render(<ConnectionStateBadge state="ok" lastOkAt="2026-11-01T10:00:00.000Z" />);
     expect(screen.getByText("OK", { selector: ".badge" })).toBeInTheDocument();
   });
 });
@@ -62,7 +62,7 @@ describe("an ended session and a deleted parcel", () => {
     let signedIn = true;
     mockApi({
       "GET /api/v1/session": () => ({ body: signedIn ? SIGNED_IN : SIGNED_OUT }),
-      [`GET /api/v1/parcels/${ID}`]: () => ({ body: { ...parcel({ id: ID }), sources: [] } }),
+      [`GET /api/v1/parcels/${ID}`]: () => ({ body: { ...parcel({ id: ID }), connections: [] } }),
       [`PATCH /api/v1/parcels/${ID}`]: () => {
         signedIn = false;
         return { status: 401, body: { error: "unauthorized", message: "Sign in again." } };
@@ -83,7 +83,7 @@ describe("an ended session and a deleted parcel", () => {
       [`GET /api/v1/parcels/${ID}`]: () =>
         deleted
           ? { status: 404, body: { error: "not_found", message: "Gone." } }
-          : { body: { ...parcel({ id: ID }), sources: [] } },
+          : { body: { ...parcel({ id: ID }), connections: [] } },
       [`DELETE /api/v1/parcels/${ID}`]: () => {
         deleted = true;
         return { status: 204 };
@@ -107,24 +107,24 @@ describe("an ended session and a deleted parcel", () => {
 });
 
 describe("parcel detail", () => {
-  it("shows an archived parcel as archived, offers Unarchive and names its sources", async () => {
+  it("shows an archived parcel as archived, offers Unarchive and names its connections", async () => {
     const calls = mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
       "GET /api/v1/parcels/00000000-0000-4000-8000-0000000000a1": () => ({
         body: {
           ...ARCHIVED,
-          sources: [
+          connections: [
             {
-              source_id: "s1",
-              plugin: "dhl",
+              connection_id: "s1",
+              provider: "dhl",
               label: "DHL account",
               kind: "account",
               role: "primary",
               last_seen_at: "2026-11-18T09:00:00.000Z",
             },
             {
-              source_id: "s2",
-              plugin: "dhl",
+              connection_id: "s2",
+              provider: "dhl",
               label: "DHL tracking",
               kind: "tracking",
               role: "primary",
@@ -143,19 +143,20 @@ describe("parcel detail", () => {
     renderApp("/parcels/00000000-0000-4000-8000-0000000000a1");
     await screen.findByRole("heading", { name: "Old lamp" });
     expect(screen.getByText("Archived")).toBeInTheDocument();
-    // The sources are their own region, not part of "Items" (OP-157).
-    const sources = screen.getByRole("region", { name: "Sources" });
-    expect(within(sources).getByText(/DHL account/)).toBeInTheDocument();
-    expect(within(sources).getByText(/DHL tracking/)).toBeInTheDocument();
+    // The connections are their own region, not part of "Items" (OP-157).
+    const connections = screen.getByRole("region", { name: "Connections" });
+    expect(within(connections).getByText(/DHL account/)).toBeInTheDocument();
+    expect(within(connections).getByText(/DHL tracking/)).toBeInTheDocument();
     await user.click(screen.getByRole("button", { name: "Unarchive" }));
     expect(await screen.findByText("Restored from the archive.")).toBeInTheDocument();
     expect(calls.find((call) => call.method === "PATCH")?.body).toEqual({ archived: false });
   });
 });
 
-describe("sources", () => {
-  const disabled: Source = {
+describe("connections", () => {
+  const disabled: Connection = {
     id: "s3",
+    provider: "dhl",
     plugin: "dhl",
     kind: "account",
     label: "DHL account",
@@ -168,28 +169,28 @@ describe("sources", () => {
     last_ok_at: null,
   };
 
-  it("offers neither Sync now nor Sign in on a disabled source", async () => {
+  it("offers neither Sync now nor Sign in on a disabled connection", async () => {
     mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
-      "GET /api/v1/sources": () => ({ body: [disabled] }),
+      "GET /api/v1/connections": () => ({ body: [disabled] }),
       "GET /api/v1/carriers": () => ({ body: [] }),
     });
-    renderApp("/sources");
+    renderApp("/connections");
     await screen.findByRole("heading", { name: "DHL account" });
     expect(screen.getByRole("button", { name: "Enable" })).toBeInTheDocument();
     expect(screen.queryByRole("button", { name: "Sync now" })).not.toBeInTheDocument();
     expect(screen.queryByRole("button", { name: /Sign in/ })).not.toBeInTheDocument();
   });
 
-  it("shows a source that never had a successful run as not run yet, never OK", async () => {
+  it("shows a connection that never had a successful run as not run yet, never OK", async () => {
     mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
-      "GET /api/v1/sources": () => ({
+      "GET /api/v1/connections": () => ({
         body: [{ ...disabled, state: "ok", state_detail: "Not run yet." }],
       }),
       "GET /api/v1/carriers": () => ({ body: [] }),
     });
-    renderApp("/sources");
+    renderApp("/connections");
     await screen.findByRole("heading", { name: "DHL account" });
     expect(screen.getByText("Not run yet", { selector: ".badge" })).toBeInTheDocument();
     expect(screen.queryByText("OK", { selector: ".badge" })).not.toBeInTheDocument();
@@ -292,6 +293,7 @@ describe("calendar", () => {
       details: [],
       title: "Lamp",
       carrier: "dhl",
+      tracking_number: "TEST0000000009",
       barcode: "TEST0000000009",
       status: "delivered",
       kind: "delivered",

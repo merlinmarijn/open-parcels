@@ -12,7 +12,7 @@ export function AddParcelDialog(props: {
   const carriers = useCarriers();
   const add = useAddParcel();
   const navigate = useNavigate();
-  const [barcode, setBarcode] = useState("");
+  const [trackingNumber, setTrackingNumber] = useState("");
   const [carrier, setCarrier] = useState(AUTO);
   const [label, setLabel] = useState("");
 
@@ -25,13 +25,13 @@ export function AddParcelDialog(props: {
     event.preventDefault();
     add.mutate(
       {
-        barcode: barcode.trim(),
+        tracking_number: trackingNumber.trim(),
         ...(carrier === AUTO ? {} : { carrier }),
         label: label.trim() === "" ? null : label.trim(),
       },
       {
         onSuccess: (parcel) => {
-          setBarcode("");
+          setTrackingNumber("");
           setLabel("");
           setCarrier(AUTO);
           props.onClose();
@@ -41,12 +41,12 @@ export function AddParcelDialog(props: {
     );
   };
 
-  const trackable = (carriers.data ?? []).filter((c) => c.source_kinds.includes("tracking"));
+  const trackable = (carriers.data ?? []).filter((c) => c.connection_kinds.includes("tracking"));
 
   return (
     <Dialog title="Track a parcel" open={props.open} onClose={close}>
       <form onSubmit={submit} className="stack">
-        <Field label="Tracking code">
+        <Field label="Tracking number">
           {(id) => (
             <input
               id={id}
@@ -55,14 +55,17 @@ export function AddParcelDialog(props: {
               maxLength={64}
               autoFocus
               className="mono"
-              value={barcode}
+              value={trackingNumber}
               onChange={(e) => {
-                setBarcode(e.target.value);
+                setTrackingNumber(e.target.value);
               }}
             />
           )}
         </Field>
-        <Field label="Carrier" hint="Leave on “Detect” to recognise the carrier from the code.">
+        <Field
+          label="Carrier"
+          hint="Leave on “Detect” to recognise the carrier from the tracking number."
+        >
           {(id, hint) => (
             <select
               id={id}
@@ -72,7 +75,7 @@ export function AddParcelDialog(props: {
                 setCarrier(e.target.value);
               }}
             >
-              <option value={AUTO}>Detect from the code</option>
+              <option value={AUTO}>Detect from the tracking number</option>
               {trackable.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}

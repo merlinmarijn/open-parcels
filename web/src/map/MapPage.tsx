@@ -36,7 +36,7 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
       {route === null || pin.from === null ? null : (
         <>
           <AnimatedRoute positions={route} color="#a78bfa" />
-          <Marker position={pin.from} icon={iconSource} title="Last carrier scan" />
+          <Marker position={pin.from} icon={iconSource} title="Last carrier event" />
         </>
       )}
       <Marker position={pin.point} icon={icon} title={parcelName(pin.parcel)} zIndexOffset={1000}>
@@ -54,7 +54,7 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
             </span>
             <PopupMeta when={formatRelative(pin.at)} point={pin.point} />
             {pin.approximate ? (
-              <span className="muted">Approximate: the scan named only the town</span>
+              <span className="muted">Approximate: the event named only the town</span>
             ) : null}
           </div>
         </Popup>

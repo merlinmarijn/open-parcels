@@ -10,8 +10,8 @@ import {
   describeLookup,
   formatDateTime,
   formatRelative,
-  formatWindow,
-  SOURCE_KIND_LABELS,
+  formatExpected,
+  CONNECTION_KIND_LABELS,
   STATUS_LABELS,
 } from "../lib/format";
 import { ArchivedBadge, LookupBadge } from "./badges";
@@ -27,7 +27,7 @@ const LocationMap = lazy(() => import("../map/LocationMap"));
 function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const carrierPage = safeHref(parcel.url);
   const rows: [string, ReactNode][] = [
-    ["Tracking code", <span className="mono">{parcel.barcode}</span>],
+    ["Tracking number", <span className="mono">{parcel.tracking_number}</span>],
     ["Carrier says", parcel.raw_status ?? "—"],
     [
       "Carrier lookup",
@@ -38,7 +38,7 @@ function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
     ],
     ["Pickup point", parcel.pickup_point ?? (parcel.pickup ? "Yes" : "—")],
     ["Sender", parcel.sender ?? "—"],
-    ["Direction", parcel.direction === "incoming" ? "Incoming" : "Outgoing"],
+    ["Direction", parcel.direction === "receiving" ? "Receiving" : "Sending"],
     [
       "Order",
       parcel.order === null ? (
@@ -81,12 +81,12 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const done = parcel.delivered;
   const km = kmToHome(parcel, home?.point ?? null);
   const away = km === null ? null : `${formatDistance(km)} away`;
-  const planned = parcel.planned_from !== null || parcel.planned_to !== null;
+  const planned = parcel.expected_from !== null || parcel.expected_to !== null;
   const when = done
     ? `${formatDateTime(parcel.delivered_at)} (${formatRelative(parcel.delivered_at)})`
     : planned
-      ? `${formatWindow(parcel.planned_from, parcel.planned_to)} (${[
-          formatRelative(parcel.planned_from ?? parcel.planned_to),
+      ? `${formatExpected(parcel)} (${[
+          formatRelative(parcel.expected_from ?? parcel.expected_to),
           ...(away === null ? [] : [away]),
         ].join("; ")})`
       : away === null
@@ -184,22 +184,22 @@ function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   );
 }
 
-/** Its own section, so assistive tech does not read the sources as part of "Items" (OP-157). */
-function Sources({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
+/** Its own section, so assistive tech does not read the connections as part of "Items" (OP-157). */
+function Connections({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   return (
-    <section className="detail-section" aria-labelledby="sources-title">
-      <h2 id="sources-title">Sources</h2>
-      {parcel.sources.length === 0 ? (
-        <p className="muted">No source follows this parcel.</p>
+    <section className="detail-section" aria-labelledby="connections-title">
+      <h2 id="connections-title">Connections</h2>
+      {parcel.connections.length === 0 ? (
+        <p className="muted">No connection follows this parcel.</p>
       ) : (
         <ul>
-          {parcel.sources.map((source) => (
-            <li key={`${source.source_id}-${source.role}`}>
-              {source.label}{" "}
+          {parcel.connections.map((connection) => (
+            <li key={`${connection.connection_id}-${connection.role}`}>
+              {connection.label}{" "}
               <span className="muted">
-                ({SOURCE_KIND_LABELS[source.kind]}, {source.role})
+                ({CONNECTION_KIND_LABELS[connection.kind]}, {connection.role})
               </span>
-              , seen {formatRelative(source.last_seen_at)}
+              , seen {formatRelative(connection.last_seen_at)}
             </li>
           ))}
         </ul>
@@ -253,7 +253,7 @@ function Overview({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         <EtaCard parcel={parcel} />
         <History parcel={parcel} />
         <Items parcel={parcel} />
-        <Sources parcel={parcel} />
+        <Connections parcel={parcel} />
         <Facts parcel={parcel} />
       </div>
     </div>

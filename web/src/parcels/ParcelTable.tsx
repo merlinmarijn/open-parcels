@@ -6,7 +6,7 @@ import { useUrlParam } from "../lib/urlState";
 import type { Parcel } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { DataTable } from "../components/DataTable";
-import { formatRelative, formatWindow } from "../lib/format";
+import { formatRelative, formatExpected } from "../lib/format";
 import { ArchivedBadge, LookupBadge, StatusBadge } from "./badges";
 
 export const PARCEL_FILTERS = ["active", "delivered", "all"] as const;
@@ -43,7 +43,7 @@ const COLUMNS = [
         <span className="cell-title">
           <strong>{info.getValue()}</strong>
           {info.row.original.label === null ? null : (
-            <span className="mono"> {info.row.original.barcode}</span>
+            <span className="mono"> {info.row.original.tracking_number}</span>
           )}
           {info.row.original.archived_at === null ? null : (
             <>
@@ -70,10 +70,10 @@ const COLUMNS = [
     cell: (info) => <LookupBadge state={info.getValue()} />,
   }),
   column.accessor("carrier", { header: "Carrier" }),
-  column.accessor((parcel) => parcel.planned_from ?? parcel.planned_to ?? "", {
+  column.accessor((parcel) => parcel.expected_from ?? parcel.expected_to ?? "", {
     id: "eta",
-    header: "Expected",
-    cell: (info) => formatWindow(info.row.original.planned_from, info.row.original.planned_to),
+    header: "ETA",
+    cell: (info) => formatExpected(info.row.original),
   }),
   column.accessor("updated_at", {
     header: "Last update",

@@ -116,7 +116,7 @@ export function SetupPage(props: AuthPageProps): ReactNode {
   );
 }
 
-/** One box: the admin password signs in to change things, the reader password only to read. */
+/** One box: the admin password logs in to change things, the reader password only to read. */
 export function SignInPage(props: AuthPageProps): ReactNode {
   const signIn = useSignIn();
   const [password, setPassword] = useState("");
@@ -131,7 +131,7 @@ export function SignInPage(props: AuthPageProps): ReactNode {
   };
 
   return (
-    <AuthCard title="Sign in" {...props}>
+    <AuthCard title="Log in" {...props}>
       <form onSubmit={submit} className="stack">
         <Field
           label="Password"
@@ -154,7 +154,7 @@ export function SignInPage(props: AuthPageProps): ReactNode {
         </Field>
         <ErrorNotice error={signIn.error} />
         <button type="submit" className="button primary" disabled={signIn.isPending}>
-          {signIn.isPending ? "Signing in…" : "Sign in"}
+          {signIn.isPending ? "Logging in…" : "Log in"}
         </button>
       </form>
     </AuthCard>

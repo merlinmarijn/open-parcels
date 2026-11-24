@@ -1,4 +1,4 @@
-/** Orders from shop sources and mails, sorted into open, delivered and archived. */
+/** Orders from shop connections and mails, sorted into open, delivered and archived. */
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
@@ -43,7 +43,7 @@ function OrderCard({ order }: { readonly order: Order }): ReactNode {
 }
 
 const EMPTY: Readonly<Record<OrderView, string>> = {
-  open: "No open orders. Orders found through a shop source or an order mail show up here.",
+  open: "No open orders. Orders found through a shop connection or an order email show up here.",
   delivered: "No delivered orders that are not archived yet.",
   archived: "Nothing archived yet.",
   all: "No orders yet.",

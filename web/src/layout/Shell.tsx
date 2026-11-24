@@ -29,7 +29,7 @@ const NAV = [
   { to: "/orders", label: "Orders", icon: ShoppingBag },
   { to: "/returns", label: "Returns", icon: Undo2 },
   { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/sources", label: "Sources", icon: Plug },
+  { to: "/connections", label: "Connections", icon: Plug },
   { to: "/tokens", label: "API tokens", icon: KeyRound, adminOnly: true },
   { to: "/status", label: "Status", icon: Activity },
   { to: "/settings", label: "Settings", icon: Settings },
@@ -86,13 +86,13 @@ export function Shell(): ReactNode {
       ? ROLE_LABELS.anonymous
       : ROLE_LABELS.reader;
 
-  // Once the admin is signed in, the header's sign-in is done: a later drop to reader (password
-  // changed elsewhere) shows the read-only app with its Sign in button, not the sign-in page.
+  // Once the admin is logged in, the header's login is done: a later drop to reader (password
+  // changed elsewhere) shows the read-only app with its Log in button, not the login page.
   if (signingIn && admin) {
     setSigningIn(false);
   }
 
-  // Reading is open (or a reader signed in) and the admin asked to sign in from the header.
+  // Reading is open (or a reader logged in) and the admin asked to log in from the header.
   if (signingIn && !admin) {
     const back = (): void => {
       setSigningIn(false);
@@ -163,7 +163,7 @@ export function Shell(): ReactNode {
               }}
             >
               <LogIn size={16} aria-hidden="true" />
-              Sign in
+              Log in
             </button>
           )}
           {method !== "session" ? null : (
@@ -176,7 +176,7 @@ export function Shell(): ReactNode {
               }}
             >
               <LogOut size={16} aria-hidden="true" />
-              Sign out
+              Log out
             </button>
           )}
         </div>

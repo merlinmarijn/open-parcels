@@ -118,7 +118,7 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
               onClick={() => {
                 if (
                   window.confirm(
-                    "Use the environment's admin password again? Everyone is signed out.",
+                    "Use the environment's admin password again? Everyone is logged out.",
                   )
                 ) {
                   reset.mutate();
@@ -163,7 +163,7 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
       <h3>Reader password</h3>
       <p className="muted">
         {set
-          ? "Set: reading needs a sign-in with this password (or the admin password)."
+          ? "Set: reading needs a login with this password (or the admin password)."
           : "Not set: anyone who can reach the server can read everything, but not change it."}{" "}
         Changing it signs readers out.
       </p>

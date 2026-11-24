@@ -96,7 +96,7 @@ describe("a courier position from the live stream (OP-061)", () => {
   });
 
   it("moves the courier of a parcel on the road and leaves others alone", () => {
-    const idle = { ...parcel(), sources: [] };
+    const idle = { ...parcel(), connections: [] };
     expect(withLivePosition(idle, message)).toBe(idle);
     const onRoad = {
       ...idle,

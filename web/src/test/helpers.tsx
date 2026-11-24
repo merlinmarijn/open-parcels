@@ -81,6 +81,7 @@ export function parcel(overrides: Partial<Parcel> = {}): Parcel {
   const base: Omit<Parcel, "display_name"> = {
     id: "00000000-0000-4000-8000-000000000001",
     carrier: "dhl",
+    tracking_number: "TEST0000000001",
     barcode: "TEST0000000001",
     sender: null,
     receiver: null,
@@ -88,13 +89,17 @@ export function parcel(overrides: Partial<Parcel> = {}): Parcel {
     raw_status: "On its way",
     delivered: false,
     delivered_at: null,
+    expected_from: null,
+    expected_to: null,
+    expected_days: null,
     planned_from: null,
     planned_to: null,
     pickup: false,
     pickup_point: null,
     history: [],
     url: null,
-    direction: "incoming",
+    direction: "receiving",
+    legacy_direction: "incoming",
     label: null,
     manual_status: null,
     carrier_status: "in_transit",
@@ -105,11 +110,12 @@ export function parcel(overrides: Partial<Parcel> = {}): Parcel {
     location: null,
     last_scan: null,
     order: null,
+    connections: [],
     sources: [],
     lookup: { state: "found", since: null, checked_at: null },
     first_seen_at: "2026-11-01T10:00:00.000Z",
     updated_at: "2026-11-18T10:00:00.000Z",
     ...overrides,
   };
-  return { ...base, display_name: overrides.display_name ?? base.label ?? base.barcode };
+  return { ...base, display_name: overrides.display_name ?? base.label ?? base.tracking_number };
 }
