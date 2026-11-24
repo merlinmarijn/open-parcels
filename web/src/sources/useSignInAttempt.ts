@@ -42,6 +42,8 @@ export function useSignInAttempt(sourceId: string) {
 
   const apply = useCallback(
     (result: SignInResult): void => {
+      // A later answer replaces an earlier "unavailable" or captcha error (OP-154).
+      setError(null);
       if (result.status === "done") {
         attemptRef.current = null;
         setState({ phase: "done" });

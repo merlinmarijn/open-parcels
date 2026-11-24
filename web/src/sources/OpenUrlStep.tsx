@@ -36,12 +36,19 @@ function isFirefox(): boolean {
   return /firefox|librewolf/iu.test(navigator.userAgent);
 }
 
-const CANCEL_REASONS: Readonly<Record<string, string>> = {
-  closed: "The sign-in window was closed before it finished.",
-  denied: "The extension was not allowed to help this page.",
-  invalid: "The extension could not use this sign-in address.",
-  timeout: "The sign-in took too long.",
-};
+const CANCEL_REASONS: ReadonlyMap<string, string> = new Map([
+  ["closed", "The sign-in window was closed before it finished."],
+  ["denied", "The extension was not allowed to help this page."],
+  ["invalid", "The extension could not use this sign-in address."],
+  ["timeout", "The sign-in took too long."],
+  ["busy", "The extension is already running another sign-in. Finish or close that one first."],
+  ["error", "The extension ran into an error."],
+]);
+
+/** The text for a reason the extension gave; a Map, so a name like "constructor" is no reason. */
+export function cancelText(reason: string): string {
+  return CANCEL_REASONS.get(reason) ?? "The extension stopped.";
+}
 
 /** Sign-in through the companion extension: it opens the window and brings the address back. */
 function ExtensionSignIn(
@@ -65,7 +72,7 @@ function ExtensionSignIn(
       if (outcome.status === "captured") {
         onSubmit({ pasted: outcome.url });
       } else {
-        onFallback(CANCEL_REASONS[outcome.reason] ?? "The extension stopped.");
+        onFallback(cancelText(outcome.reason));
       }
     });
   };
@@ -194,7 +201,13 @@ export function OpenUrlStep(props: Props): ReactNode {
   const usable = step.redirect_prefix !== null;
   const [mode, setMode] = useState<"extension" | "manual" | null>(null);
   const [notice, setNotice] = useState<string | null>(null);
-  const chosen = mode ?? (usable && extension.version !== null ? "extension" : null);
+  // Shown in a frame (Home Assistant's ingress panel), where the extension cannot reach the page.
+  const framed = window.self !== window.top;
+  // Without the extension the guide shows at once, not only after a click (OP-038).
+  const missing = extension.checked && extension.version === null;
+  const chosen =
+    mode ??
+    (usable && extension.version !== null ? "extension" : usable && missing ? "manual" : null);
 
   return (
     <div className="stack">
@@ -225,10 +238,20 @@ export function OpenUrlStep(props: Props): ReactNode {
                 <a href={EXTENSION_URL} target="_blank" rel="noreferrer noopener">
                   Get it
                 </a>{" "}
-                for Firefox, Chrome, Edge and Brave, then reload this page.
+                for Firefox, Chrome, Edge and Brave, then reload this page. Installed? Click the
+                extension&apos;s button and choose Enable on this site.
               </span>
             ) : null}
           </label>
+          {framed ? (
+            <p className="muted">
+              Inside Home Assistant the extension cannot help this page.{" "}
+              <a href={window.location.href} target="_blank" rel="noreferrer noopener">
+                Open the web UI in its own tab
+              </a>{" "}
+              to use it.
+            </p>
+          ) : null}
           <label className="checkbox">
             <input
               type="radio"

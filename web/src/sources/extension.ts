@@ -68,6 +68,12 @@ export type CaptureOutcome =
   | { readonly status: "captured"; readonly url: string }
   | { readonly status: "cancelled"; readonly reason: string };
 
+/**
+ * How long a capture may wait for the extension. Longer than any sign-in with a second factor;
+ * an extension removed or crashed mid-capture then still ends the wait (OP-154).
+ */
+export const CAPTURE_TIMEOUT_MS = 15 * 60 * 1000;
+
 /** Asks the extension to run one sign-in; `cancel` withdraws the request. */
 export function captureSignIn(request: {
   readonly url: string;
@@ -76,7 +82,12 @@ export function captureSignIn(request: {
 }): { readonly result: Promise<CaptureOutcome>; readonly cancel: () => void } {
   const requestId = crypto.randomUUID();
   let listener: ((event: MessageEvent) => void) | null = null;
+  let timer: number | undefined;
   const result = new Promise<CaptureOutcome>((resolve) => {
+    timer = window.setTimeout(() => {
+      post({ type: "cancel", requestId });
+      resolve({ status: "cancelled", reason: "timeout" });
+    }, CAPTURE_TIMEOUT_MS);
     listener = (event: MessageEvent): void => {
       if (!isExtensionMessage(event) || event.data.requestId !== requestId) return;
       if (event.data.type === "captured" && typeof event.data.url === "string") {
@@ -87,6 +98,7 @@ export function captureSignIn(request: {
     };
     window.addEventListener("message", listener);
   }).finally(() => {
+    window.clearTimeout(timer);
     if (listener !== null) window.removeEventListener("message", listener);
   });
   post({ type: "capture", requestId, ...request });

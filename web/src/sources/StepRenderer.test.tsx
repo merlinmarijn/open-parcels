@@ -123,8 +123,10 @@ describe("sign-in step renderer", () => {
       const open = vi.spyOn(window, "open").mockReturnValue(null);
       const { user } = setup(APP_STEP);
       expect(await screen.findByText(/not installed/i)).toBeInTheDocument();
-      await user.click(screen.getByLabelText(/step by step/i));
-      expect(screen.getByText(/Response Headers/)).toBeInTheDocument();
+      expect(screen.getByText(/choose Enable on this site/)).toBeInTheDocument();
+      // The guide shows without a click once no extension answered (OP-038).
+      expect(await screen.findByText(/Response Headers/)).toBeInTheDocument();
+      expect(screen.getByLabelText(/step by step/i)).toBeChecked();
       expect(screen.getByText("app.example://done")).toBeInTheDocument();
       await user.click(screen.getByRole("button", { name: /continue the sign-in/i }));
       expect(open).toHaveBeenCalledWith(
