@@ -59,15 +59,16 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 ## 2b. Early groundwork for decision record 0004 (do soon: shapes the API and data model)
 
-- [ ] Token login for non-cookie clients (access + refresh tokens, scoped, revocable; admin/reader
-      as in 0003), used by a web UI on another origin, the Android app and client libraries
-- [ ] CORS allow-list setting; live event stream (SSE) accepts a token
-- [ ] Delta sync: `updated_at` on every synced table, tombstones for deletions,
-      `GET /api/v1/sync?since=<cursor>`
-- [ ] API versioning; the OpenAPI document published per release
-- [ ] Slimmer images: Tailscale downloaded on demand when switched on (pinned version, pinned
-      SHA-256, cached in the data folder; −78 MB), no npm/npx, bundled server; a server-only image
-      without the web UI; track sizes with `op-image-housekeeping.sh`
+Token login, CORS, token on the live event stream, delta sync, API versioning and the slimmer
+image are shipped (see `DONE.md`). Left:
+
+- [ ] A server-only image without the web UI (same Dockerfile, a target without `web/dist`)
+- [ ] `op-publish.sh`: attach `docs/openapi.json` to the GitHub release as
+      `openapi-<version>.json` (step documented in `AGENT.md`, not yet scripted)
+- [ ] HA app (`open-parcels-ha-apps/open_parcels/Dockerfile`, builds from source, not FROM our
+      image): optionally adopt the bundle (`node dist/tools/bundle.js /out`, copy `/out`) and drop
+      npm/npx for the same savings; it keeps working unchanged meanwhile
+- [ ] Measure the arm64 image on the Pi at the next publish (`op-image-housekeeping.sh`)
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 

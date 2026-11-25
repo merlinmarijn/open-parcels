@@ -7,13 +7,8 @@ ARG NODE_VERSION=26
 # The node:26-slim index (amd64 + arm64) by digest, so a moved tag never changes the build. Bump:
 # `docker buildx imagetools inspect node:26-slim`, copy the Digest line here.
 ARG NODE_DIGEST=sha256:abe7e5a82b61a8ef67b315b85497c9e65173387ccf2f4a029248184b8e020be5
-# Tailscale is built in (optional, off unless TS_STATE_DIR is set). Pinned; bump deliberately.
-ARG TAILSCALE_VERSION=v1.104.7
-# Its index digest; bump both together (the digest wins over the tag).
-ARG TAILSCALE_DIGEST=sha256:72c1e19e0aedca96b8533bbb0b4368564410ff20b17e53b804eb6c1f04a31be4
-
-# --- Tailscale binaries (copied into the runtime; no sidecar container needed) ----------------------
-FROM tailscale/tailscale:${TAILSCALE_VERSION}@${TAILSCALE_DIGEST} AS tailscale
+# Tailscale is not in the image: the entrypoint downloads the pinned, hash-checked release into the
+# data folder the first time it is switched on (TS_STATE_DIR; docker/tailscale-entrypoint.sh).
 
 # --- Build: compile TypeScript with the full toolchain -------------------------------------------
 FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS build
@@ -34,29 +29,32 @@ RUN npm run build --workspace server
 COPY web/ web/
 RUN npm run build --workspace web
 
-# --- Production dependencies only -----------------------------------------------------------------
-FROM build AS deps
-# The runtime copies only the root node_modules: fail here if npm ever nests a server dependency.
-RUN rm -rf node_modules server/node_modules \
- && npm ci --workspace server --omit=dev \
- && test ! -e server/node_modules
+# --- Bundle: the server and its tools as ESM bundles, plus only the native modules ---------------
+FROM build AS bundle
+RUN cd server && node dist/tools/bundle.js /out \
+ && cp package.json /out/server/package.json \
+ && mkdir -p /out/web && cp -r /app/web/dist /out/web/dist
+# The bundled layout must start: a missing native module or a misplaced file fails the build here.
+RUN cd /out && node --input-type=module \
+    -e "await import('sharp'); const { default: Db } = await import('better-sqlite3'); new Db(':memory:').close()" \
+ && node /app/server/dist/tools/smoke.js /out/server/dist/main.js
 
 # --- Runtime ------------------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS runtime
 # The commit the image is built from (op-publish passes it); shown on the Status page next to the
 # version. Declared in the last stage only, so a new commit never invalidates the build cache.
 ARG OPENPARCELS_COMMIT=""
+# npm, npx and corepack are not needed at run time (−17 MB).
 RUN apt-get update \
  && apt-get install --no-install-recommends -y tini \
  && rm -rf /var/lib/apt/lists/* \
+ && rm -rf /usr/local/lib/node_modules/npm /usr/local/lib/node_modules/corepack \
+    /usr/local/bin/npm /usr/local/bin/npx /usr/local/bin/corepack /opt/yarn-* \
+    /usr/local/bin/yarn /usr/local/bin/yarnpkg \
  && mkdir -p /data /var/lib/tailscale \
  && chown node:node /data /var/lib/tailscale
 WORKDIR /app
-COPY --from=deps --chown=root:root /app/node_modules ./node_modules
-COPY --from=build --chown=root:root /app/server/package.json ./server/package.json
-COPY --from=build --chown=root:root /app/server/dist ./server/dist
-COPY --from=build --chown=root:root /app/web/dist ./web/dist
-COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscaled /usr/local/bin/
+COPY --from=bundle --chown=root:root /out/ ./
 COPY --chmod=755 docker/tailscale-entrypoint.sh /usr/local/bin/tailscale-entrypoint.sh
 
 ENV NODE_ENV=production \
@@ -65,8 +63,8 @@ ENV NODE_ENV=production \
     OPENPARCELS_PORT=3000
 
 # Runs as the image's unprivileged `node` user (uid 1000). The application files are owned by root
-# and read-only for it; /data is the only place it writes, plus /var/lib/tailscale for the
-# optional built-in Tailscale (a named volume mounted there inherits the ownership).
+# and read-only for it; /data is the only place it writes (the on-demand Tailscale too), plus
+# /var/lib/tailscale for Tailscale's state (a named volume mounted there inherits the ownership).
 USER node
 VOLUME ["/data"]
 EXPOSE 3000
@@ -76,7 +74,7 @@ HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["node", "-e", "const h=process.env.OPENPARCELS_HOST||'';const a=['','0.0.0.0','::'].includes(h)?'127.0.0.1':h.includes(':')?'['+h+']':h;fetch('http://'+a+':'+(process.env.OPENPARCELS_PORT||3000)+'/api/v1/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
 # The entrypoint starts Tailscale first when TS_STATE_DIR is set, then execs the server; without it,
-# it only execs the app.
+# it only execs the server.
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/tailscale-entrypoint.sh"]
 CMD ["node", "server/dist/main.js"]
 

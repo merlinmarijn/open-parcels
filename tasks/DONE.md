@@ -4,6 +4,12 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- TODO §2b (decision record 0004 §6): token logins (access + rotating refresh, admin/reader,
+  revocable on the Tokens page; 0003 §6), `OPENPARCELS_CORS_ORIGINS`, live event stream with a
+  login's access token, delta sync `GET /api/v1/sync` with trigger-kept tombstones
+  (`docs/sync.md`), API v1 + server version in the OpenAPI document (`7eb00bc`); slimmer image:
+  Tailscale downloaded on demand (pinned, SHA-256 checked), no npm/npx, bundled server with only
+  native modules: amd64 427 → 284 MB
 - Codes instead of English texts: calendar entries without `details`, ICS feed in English or German
   (`?lang`, `Accept-Language`); connection `state_reason` + `carrier_message` (migration
   `0025-state-reasons`); scheduler `last_error` and backup errors as codes; web EN/DE texts; HA

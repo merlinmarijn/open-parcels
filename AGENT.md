@@ -45,6 +45,23 @@ published (the Home Assistant app's `2.0.0-dev.<YYYYMMDD>.<n>` builds on it). Bu
 also carries its commit: `op-publish.sh` passes `--build-arg OPENPARCELS_COMMIT=<sha>`, and the
 Status page shows `2.0.0-dev.<date> (<commit>)`.
 
+### The API contract
+
+- The API version is the path: `/api/v1`. Within it, changes follow the "migrate, don't keep
+  legacy code" rule below: a breaking change ships with our clients in lockstep and is listed in
+  `CHANGELOG.md`; a `/api/v2` would only come with a reason to serve two versions at once.
+- `docs/openapi.json` is the contract. Its `info.version` is the server version, so it changes
+  with every version bump; the gate fails while the committed document differs from the server
+  (`--api` regenerates it and the web UI's `generated.ts`).
+- **Per release:** bump the versions, run the gate with `--api`, commit, tag; attach
+  `docs/openapi.json` to the GitHub release as `openapi-<version>.json`. Client libraries
+  (decision record 0004 §4) are generated from that file, never from a running server.
+- **Tailscale pin:** `docker/tailscale-entrypoint.sh` pins the Tailscale version and one SHA-256
+  per architecture. To bump, download `tailscale_<version>_{amd64,arm64}.tgz` from
+  `pkgs.tailscale.com/stable/`, check each against its `.sha256` file and set all three values.
+- **Image size:** `op-image-housekeeping.sh` (run by the publish scripts) records each
+  image's size and warns when one grew more than 5 %.
+
 ## Rules that matter here
 
 - **Test fixtures contain made-up values only.** Never commit real tracking numbers, order numbers,

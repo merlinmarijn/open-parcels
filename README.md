@@ -106,6 +106,11 @@ On the first start also set `TS_AUTHKEY`; later starts reuse the saved state. Th
 served at `https://<TS_HOSTNAME>.<your-tailnet>.ts.net` (`TS_HOSTNAME` defaults to `open-parcels`).
 Tailscale runs in userspace mode, as the same unprivileged user, so the container needs no extra
 capabilities and no `/dev/net/tun`. Without `TS_STATE_DIR` the image behaves as before.
+Tailscale is not part of the image: the first start with `TS_STATE_DIR` set downloads the release
+the image pins from `pkgs.tailscale.com`, checks its SHA-256 against the pinned one and keeps it in
+`tailscale/<version>/` in the data folder; later starts reuse it. Without internet access, put the
+archive (`tailscale_<version>_amd64.tgz` or `_arm64.tgz`, the version named in the log) into
+`tailscale/` in the data folder yourself; it is checked the same way.
 Tailnet visitors reach the server through `tailscale serve` on 127.0.0.1, so the image then sets
 `OPENPARCELS_TRUST_PROXY=127.0.0.1` itself (unless you set it), and the login throttle sees each
 visitor's own address.

@@ -40,7 +40,8 @@ serves static files). The real savings are elsewhere:
   prebuilds on amd64 and arm64): tens of MB more.
 - sharp (19 MB) is only used for collages and thumbnails; a "no pictures" build could drop it.
 
-Estimated: a server-only image of roughly 150–200 MB, versus 426 MB today. Memory is dominated by
+Estimated: a server-only image of roughly 150–200 MB, versus 426 MB today. **Measured after
+Tailscale on demand, no npm/npx and the bundle (2026-11-25, amd64): 284 MB** (`node_modules` 22 MB). Memory is dominated by
 Node itself and the providers, not by the web UI.
 
 ## 3. Proposed shape

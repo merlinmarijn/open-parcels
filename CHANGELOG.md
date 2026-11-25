@@ -2,6 +2,18 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Changed: a third smaller image, Tailscale on demand
+
+The amd64 image went from 427 MB to 284 MB (−143 MB): Tailscale is no longer in the image, npm,
+npx and corepack are removed, and the server and its tools are ESM bundles (`server/dist`) next to
+only the native modules (better-sqlite3, sharp; 22 MB instead of the whole `node_modules`). The
+build starts the bundled server once and fails if it does not answer ready.
+
+**Tailscale users:** nothing to change. The first start with `TS_STATE_DIR` set downloads the
+pinned Tailscale release (SHA-256 checked) into `tailscale/<version>/` in the data folder, so that
+start needs internet access once; without it, place the archive there by hand (README, "Tailscale").
+The tools keep their paths (`node server/dist/tools/restore-backup.js` and the importers).
+
 ### Added: token logins, CORS and delta sync for clients elsewhere (decision record 0004 §6)
 
 - **Token logins** for clients without cookies (a web UI on another origin, the Android app,
