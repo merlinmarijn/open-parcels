@@ -14,7 +14,7 @@ export const FALLBACK_LAYER: MapLayer = {
   kind: "base",
   max_zoom: 19,
   attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors',
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.openstreetmap.org/fixthemap">Report a map issue</a>',
   satellite: false,
   dark: false,
 };

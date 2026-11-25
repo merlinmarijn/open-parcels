@@ -35,8 +35,14 @@ export interface TileLayerDef {
 
 const OSM =
   '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors';
-const EOX =
-  '<a href="https://cloudless.eox.at">EOxCloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data 2025)';
+/** OpenStreetMap's tile policy recommends a way to report map errors next to the credit. */
+const OSM_FIX = '<a href="https://www.openstreetmap.org/fixthemap">Report a map issue</a>';
+/**
+ * The year of the EOX Sentinel-2 cloudless mosaic served. The upstream URL, the cache folder and
+ * the attribution all read it, so the credit always names the imagery actually shown.
+ */
+export const EOX_CLOUDLESS_YEAR = 2025;
+const EOX = `<a href="https://cloudless.eox.at">EOxCloudless</a> by EOX IT Services GmbH (contains modified Copernicus Sentinel data ${String(EOX_CLOUDLESS_YEAR)}), <a href="https://creativecommons.org/licenses/by-nc-sa/4.0/">CC BY-NC-SA 4.0</a>`;
 const EOX_OVERLAY = `${OSM}, rendering &copy; <a href="https://eox.at">EOX</a>`;
 const EOX_WMTS = "https://tiles.maps.eox.at/wmts/1.0.0";
 
@@ -48,7 +54,7 @@ export const BUILTIN_LAYERS: readonly TileLayerDef[] = [
     url: "https://tile.openstreetmap.org/{z}/{x}/{y}.png",
     format: "png",
     maxZoom: 19,
-    attribution: OSM,
+    attribution: `${OSM} | ${OSM_FIX}`,
     satellite: false,
     cacheKey: "osm",
   },
@@ -60,22 +66,23 @@ export const BUILTIN_LAYERS: readonly TileLayerDef[] = [
     subdomains: ["a", "b", "c"],
     format: "png",
     maxZoom: 17,
-    attribution: `Map data: ${OSM}, SRTM | Map style: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)`,
+    attribution: `Map data: ${OSM}, SRTM | Map display: &copy; <a href="https://opentopomap.org">OpenTopoMap</a> (<a href="https://creativecommons.org/licenses/by-sa/3.0/">CC-BY-SA</a>)`,
     satellite: false,
     cacheKey: "topo",
   },
   {
     id: "satellite",
-    label: "Satellite",
+    // EOX licenses the mosaic for non-commercial use only (CC BY-NC-SA 4.0).
+    label: "Satellite (non-commercial use only)",
     kind: "base",
     // WMTS REST order: TileMatrix/TileRow/TileCol, i.e. z/y/x.
-    url: `${EOX_WMTS}/s2cloudless-2025_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg`,
+    url: `${EOX_WMTS}/s2cloudless-${String(EOX_CLOUDLESS_YEAR)}_3857/default/GoogleMapsCompatible/{z}/{y}/{x}.jpg`,
     format: "jpg",
     // Sentinel-2 is 10 m imagery: deeper tiles are only upscaled copies.
     maxZoom: 15,
     attribution: EOX,
     satellite: true,
-    cacheKey: "s2cloudless-2025",
+    cacheKey: `s2cloudless-${String(EOX_CLOUDLESS_YEAR)}`,
   },
   {
     id: "borders",
@@ -192,17 +199,51 @@ export function customLayer(custom: CustomProvider): TileLayerDef | null {
 }
 
 /**
- * The allowlist the proxy serves: the built-in layers, CARTO's when a CARTO key is set, and the
- * custom one when usable.
+ * Other addresses for the built-in layers, so an install can move to a mirror or its own tile
+ * server without a software update, as the providers' policies ask: `osm` and `topo` are tile
+ * templates like the custom provider's, `eox` replaces the EOX WMTS base for all three EOX layers.
+ */
+export interface BuiltinUrls {
+  readonly osm?: string | undefined;
+  readonly topo?: string | undefined;
+  readonly eox?: string | undefined;
+}
+
+/** Why an EOX WMTS base address is unusable, or null when it is fine. */
+export function wmtsBaseProblem(base: string): string | null {
+  if (/[{}]/.test(base)) return "Give the WMTS base address without placeholders.";
+  return templateProblem(`${base.replace(/\/+$/, "")}/{z}/{y}/{x}`);
+}
+
+/** The built-in layers with any overridden address; a changed address gets its own cache folder. */
+export function builtinLayers(urls: BuiltinUrls = {}): readonly TileLayerDef[] {
+  const eox = urls.eox?.replace(/\/+$/, "");
+  return BUILTIN_LAYERS.map((layer) => {
+    let url = layer.url;
+    if (layer.id === "osm" && urls.osm !== undefined) url = urls.osm;
+    else if (layer.id === "topo" && urls.topo !== undefined) url = urls.topo;
+    else if (eox !== undefined && layer.url.startsWith(EOX_WMTS)) {
+      url = eox + layer.url.slice(EOX_WMTS.length);
+    }
+    if (url === layer.url) return layer;
+    const hash = createHash("sha256").update(url).digest("hex").slice(0, 12);
+    return { ...layer, url, cacheKey: `${layer.cacheKey}-${hash}` };
+  });
+}
+
+/**
+ * The allowlist the proxy serves: the built-in layers (at their configured addresses), CARTO's
+ * when a CARTO key is set, and the custom one when usable.
  */
 export function availableLayers(
   custom: CustomProvider | undefined,
   cartoKey?: string,
+  urls?: BuiltinUrls,
 ): readonly TileLayerDef[] {
   const carto =
     cartoKey === undefined ? [] : CARTO_LAYERS.map((layer) => ({ ...layer, apiKey: cartoKey }));
   const extra = custom === undefined ? null : customLayer(custom);
-  return [...BUILTIN_LAYERS, ...carto, ...(extra === null ? [] : [extra])];
+  return [...builtinLayers(urls), ...carto, ...(extra === null ? [] : [extra])];
 }
 
 function escapeHtml(text: string): string {
