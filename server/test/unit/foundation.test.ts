@@ -193,6 +193,7 @@ describe("migrations", () => {
         "0021-order-totals",
         "0022-live-state-connection",
         "0023-geocoding-opt-in",
+        "0024-dead-schema",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
       // Every table rebuild kept its references whole (OP-025).

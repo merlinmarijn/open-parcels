@@ -285,7 +285,7 @@ There is one owner per container, so tables carry no user column.
 | `owner` | password_hash (scrypt), created_at | A single row holding the admin password, set by the setup page; the reader password is `OPENPARCELS_PASSWORD` (§2.7) |
 | `api_tokens` | id, name, hash (SHA-256), scopes, last_used_at, expires_at | The token value is shown once |
 | `connections` | id, provider, kind (account/tracking/shop/mail), label, config (JSON), secret_blob (AES-GCM), session_blob (AES-GCM), state (ok/needs_sign_in/error/disabled), backoff fields, last_ok_at | One row per sign-in or inbox |
-| `parcels` | id (UUID), carrier, tracking_number, direction, status, raw_status, delivered, delivered_at, expected_from, expected_to, expected_days, pickup, pickup_point, url, sender, receiver, weight, dimensions, label, order_id, manual_status, manual_until, first_seen_at, last_seen_at, removed_at, archived_at | Unique on (carrier, tracking number). Nothing ever overwrites a manual override |
+| `parcels` | id (UUID), carrier, tracking_number, direction, status, raw_status, delivered, delivered_at, expected_from, expected_to, expected_days, pickup, pickup_point, url, sender, receiver, weight, label, order_id, manual_status, manual_at, first_seen_at, last_seen_at, removed_at, archived_at | Unique on (carrier, tracking number). Nothing ever overwrites a manual override |
 | `parcel_connections` | parcel_id, connection_id, external_ref, role (primary/handoff/mail), last_seen_at | Hand-off and deduplication |
 | `parcel_events` | id, parcel_id, connection_id, at, status, raw_status, location_text, fingerprint (unique) | History. No coordinates |
 | `parcel_raw` | parcel_id, connection_id, fetched_at, payload (JSON) | The latest raw payload per connection. Codes that open or sign in to something, and personal data (names, addresses, contact details, coordinates), are stripped |
@@ -296,7 +296,7 @@ There is one owner per container, so tables carry no user column.
 | `outbox` | seq (monotonic), type, parcel_id, payload (JSON), created_at | Feeds SSE replay and, later, webhooks and MQTT |
 | `unknown_vocab` | provider, kind, key, first_seen_at, count | Drives the one-time "please report" warning. Keys only |
 | `sign_in_attempts` | id, connection_id, flow, blob (AES-GCM: provider state and current step), failures, expires_at, poll_not_before | Interactive sign-ins in progress; one per connection, gone when finished, cancelled or expired |
-| `settings`, `image_cache` | | |
+| `settings` | | |
 
 **Retention defaults**, all configurable:
 

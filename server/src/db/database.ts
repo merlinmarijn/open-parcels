@@ -24,6 +24,7 @@ import * as m0020 from "./migrations/0020-ha-import-markers.js";
 import * as m0021 from "./migrations/0021-order-totals.js";
 import * as m0022 from "./migrations/0022-live-state-connection.js";
 import * as m0023 from "./migrations/0023-geocoding-opt-in.js";
+import * as m0024 from "./migrations/0024-dead-schema.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -54,6 +55,7 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0021-order-totals": m0021,
   "0022-live-state-connection": m0022,
   "0023-geocoding-opt-in": m0023,
+  "0024-dead-schema": m0024,
 };
 
 const staticProvider: MigrationProvider = {

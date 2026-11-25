@@ -99,7 +99,7 @@ describe("an inferred hand-off", () => {
       .executeTakeFirstOrThrow();
     await context.services.db
       .updateTable("parcels")
-      .set({ manual_status: "in_transit", manual_until: "2026-12-01T00:00:00.000Z" })
+      .set({ manual_status: "in_transit", manual_at: "2026-11-18T11:00:00.000Z" })
       .where("id", "=", shopParcel.id)
       .execute();
     // The carrier's own parcel, stored separately (by hand, say), so the two are folded together.
@@ -126,13 +126,13 @@ describe("an inferred hand-off", () => {
 
     const parcels = await context.services.db
       .selectFrom("parcels")
-      .select(["id", "carrier", "manual_status", "manual_until"])
+      .select(["id", "carrier", "manual_status", "manual_at"])
       .execute();
     expect(parcels).toHaveLength(1);
     expect(parcels[0]).toMatchObject({
       carrier: "fakepost",
       manual_status: "in_transit",
-      manual_until: "2026-12-01T00:00:00.000Z",
+      manual_at: "2026-11-18T11:00:00.000Z",
     });
     const raw = await context.services.db
       .selectFrom("parcel_raw")

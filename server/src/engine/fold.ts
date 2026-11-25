@@ -113,7 +113,7 @@ export async function foldParcel(
       order_id: target.order_id ?? duplicate.order_id,
       label: target.label ?? duplicate.label,
       manual_status: manualFromTarget ? target.manual_status : duplicate.manual_status,
-      manual_until: manualFromTarget ? target.manual_until : duplicate.manual_until,
+      manual_at: manualFromTarget ? target.manual_at : duplicate.manual_at,
     })
     .where("id", "=", target.id)
     .execute();
