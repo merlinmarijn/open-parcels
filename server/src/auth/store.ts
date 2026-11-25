@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import { IGNORE_USE, type UseRecorder } from "./use-events.js";
 import { addMs, isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
 import { hashPassword, randomSecret, sha256Hex, verifyPassword } from "./crypto.js";
@@ -66,6 +67,7 @@ export class AuthStore {
   constructor(
     private readonly db: Kysely<Database>,
     private readonly clock: Clock,
+    private readonly recordUse: UseRecorder = IGNORE_USE,
   ) {}
 
   async hasOwner(): Promise<boolean> {
@@ -213,6 +215,7 @@ export class AuthStore {
         .set({ last_used_at: now.toISOString() })
         .where("id", "=", row.id)
         .execute();
+      await this.recordUse({ kind: "token", id: row.id, lastUsedAt: now.toISOString() });
     }
     return { id: row.id, scopes: parseScopes(row.scopes) };
   }

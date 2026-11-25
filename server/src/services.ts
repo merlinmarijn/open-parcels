@@ -1,4 +1,5 @@
 import { userAgent } from "./version.js";
+import { announceUses } from "./auth/use-events.js";
 import path from "node:path";
 import type { Kysely } from "kysely";
 import type { Logger } from "pino";
@@ -201,10 +202,11 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     if (key === "OPENPARCELS_LOG_LEVEL") logger.level = config.logLevel;
   });
   await configSettings.load();
-  const auth = new AuthStore(db, clock);
-  const logins = new LoginStore(db, clock);
   const bus = new EventBus(db, clock, logger);
   await bus.start();
+  const uses = announceUses(db, clock, bus);
+  const auth = new AuthStore(db, clock, uses);
+  const logins = new LoginStore(db, clock, uses);
   const settings = new SettingsStore(db, clock, bus);
   await settings.load();
   const installId = await settings.installId();

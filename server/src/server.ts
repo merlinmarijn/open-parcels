@@ -1,4 +1,5 @@
 import { mkdirSync } from "node:fs";
+import { HealthWatch } from "./status/health-watch.js";
 import { fileURLToPath } from "node:url";
 import { buildApp, type App } from "./api/app.js";
 import { HA_INGRESS_ADDRESS } from "./api/auth-plugin.js";
@@ -112,6 +113,8 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
   services.live.start();
   services.places.start();
   await services.mail.start();
+  const health = new HealthWatch(services);
+  health.start();
 
   const supervisorToken = processEnv["SUPERVISOR_TOKEN"];
   if (supervised && supervisorToken !== undefined) {
@@ -152,6 +155,7 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
       services.scheduler.stop();
       services.live.stop();
       services.places.stop();
+      health.stop();
       await services.mail.stop();
       await Promise.all(servers.map((server) => server.close()));
       await db.destroy();

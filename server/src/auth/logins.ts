@@ -1,4 +1,5 @@
 import type { Kysely, Selectable } from "kysely";
+import { IGNORE_USE, type UseRecorder } from "./use-events.js";
 import { addMs, isoNow, type Clock } from "../clock.js";
 import type { Database, LoginTable } from "../db/schema.js";
 import { randomSecret, sha256Hex } from "./crypto.js";
@@ -51,6 +52,7 @@ export class LoginStore {
   constructor(
     private readonly db: Kysely<Database>,
     private readonly clock: Clock,
+    private readonly recordUse: UseRecorder = IGNORE_USE,
   ) {}
 
   async create(name: string, role: Role): Promise<IssuedTokens> {
@@ -117,6 +119,7 @@ export class LoginStore {
       })
       .where("id", "=", row.id)
       .execute();
+    await this.recordUse({ kind: "login", id: row.id, lastUsedAt: now });
     return {
       ...tokens,
       login: toInfo({
@@ -138,6 +141,7 @@ export class LoginStore {
         .set({ last_used_at: now.toISOString() })
         .where("id", "=", row.id)
         .execute();
+      await this.recordUse({ kind: "login", id: row.id, lastUsedAt: now.toISOString() });
     }
     return toInfo(row);
   }

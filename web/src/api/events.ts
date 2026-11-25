@@ -12,7 +12,16 @@ const STREAM_RETRY_MS = 5_000;
 const STREAM_RETRY_MAX_MS = 5 * 60_000;
 
 type Reaction =
-  "parcel" | "connection" | "order" | "return" | "settings" | "backup" | "resync" | "position";
+  | "parcel"
+  | "connection"
+  | "order"
+  | "return"
+  | "settings"
+  | "backup"
+  | "health"
+  | "token"
+  | "resync"
+  | "position";
 
 /**
  * What each message of the stream refreshes. Typed against the server's list (generated from its
@@ -47,6 +56,10 @@ const REACTIONS = {
   "settings.updated": "settings",
   // A backup finished or failed: the backup card and the status page.
   "backup.finished": "backup",
+  // The server's health or an inbox's connection changed: the status page.
+  "health.changed": "health",
+  // A token or token login was used: its "last used" on the tokens page.
+  "token.used": "token",
   resync: "resync",
   // Nothing on screen depends on these.
   "vocab.unknown": null,
@@ -251,6 +264,13 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: keys.backups });
       void client.invalidateQueries({ queryKey: keys.status });
     };
+    const onHealth = (): void => {
+      void client.invalidateQueries({ queryKey: keys.status });
+    };
+    const onToken = (): void => {
+      void client.invalidateQueries({ queryKey: keys.tokens });
+      void client.invalidateQueries({ queryKey: keys.logins });
+    };
     // The server could not replay what was missed (too old, or a reset database): reload all.
     const onResync = (): void => {
       void client.invalidateQueries();
@@ -269,6 +289,8 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       return: onReturn,
       settings: onSettings,
       backup: onBackup,
+      health: onHealth,
+      token: onToken,
       resync: onResync,
       position: onPosition,
     };

@@ -7292,6 +7292,8 @@ export type GetApiV1Events200Event =
   | "return.updated"
   | "settings.updated"
   | "backup.finished"
+  | "health.changed"
+  | "token.used"
   | "vocab.unknown"
   | "parcel.live_position"
   | "ready"

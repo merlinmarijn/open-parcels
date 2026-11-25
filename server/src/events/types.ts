@@ -26,6 +26,8 @@ export const EVENT_TYPES = [
   "return.updated",
   "settings.updated",
   "backup.finished",
+  "health.changed",
+  "token.used",
   "vocab.unknown",
 ] as const;
 export type EventType = (typeof EVENT_TYPES)[number];

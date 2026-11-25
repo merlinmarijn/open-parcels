@@ -135,8 +135,9 @@ describe("SSE event stream", () => {
     await track("00340434000000000001");
     const [ready, message] = await pending;
     controller.abort();
-    // A connection without Last-Event-ID first learns the current sequence.
-    expect(ready).toMatchObject({ event: "ready", id: "0", data: { seq: 0 } });
+    // A connection without Last-Event-ID first learns the current sequence: 1, the token.used
+    // event of the stream's own request (the token's first use).
+    expect(ready).toMatchObject({ event: "ready", id: "1", data: { seq: 1 } });
     expect(message?.event).toBe("parcel.registered");
     expect(message?.data).toMatchObject({
       parcel: { tracking_number: "00340434000000000001", status: "registered" },
@@ -151,6 +152,7 @@ describe("SSE event stream", () => {
       await context.services.db
         .selectFrom("outbox")
         .select("seq")
+        .where("type", "=", "parcel.registered")
         .orderBy("seq")
         .executeTakeFirstOrThrow()
     ).seq;

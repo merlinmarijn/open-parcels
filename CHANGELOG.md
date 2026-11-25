@@ -2,6 +2,15 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: live events `token.used` and `health.changed`
+
+- `token.used` (`{kind: "token" | "login", id, last_used_at}`) when an API token or token login
+  is used, at most once per touch interval; kept 15 minutes like other short-lived events.
+- `health.changed` (`{status, checks}`) when the overall status, a check or an inbox's connection
+  changes; the server compares once every 30 seconds.
+
+The Tokens and Status pages no longer poll every 30 seconds; they refresh on these events.
+
 ### Added: the inbox forms come from the server
 
 `GET /api/v1/inbox-form` returns the inbox's configuration and sign-in forms as JSON Schema, in

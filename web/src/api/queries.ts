@@ -145,24 +145,16 @@ export function useConnections() {
   });
 }
 
-/** Tokens are used by other clients, so "last used" changes without any event: re-read it. */
-const TOKENS_REFRESH_MS = 30_000;
-
-/**
- * The interval pauses while the tab is in the background, so coming back to it re-reads at once:
- * TanStack's focus manager reports the tab becoming visible, and the window regaining focus (a
- * visible tab in an unfocused window) is caught here.
- */
+/** Tokens are used by other clients; their `token.used` live events refresh "last used". */
 export function useTokens() {
-  // A tab coming back into view re-reads them through refetchOnWindowFocus.
   return useQuery({
     queryKey: keys.tokens,
     queryFn: ({ signal }) => getApiV1Tokens({ signal }),
+    // Coming back to the tab re-reads them, in case the live event stream was away.
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: "always",
     refetchOnReconnect: "always",
-    refetchInterval: TOKENS_REFRESH_MS,
   });
 }
 
@@ -179,13 +171,12 @@ export function useCalendar(range: { readonly from: string; readonly to: string 
 
 /**
  * Every connection, inbox, the scheduler, the live event stream and backups. Live events about
- * connections and backups refresh it at once; the interval catches the scheduler and inboxes.
+ * connections, backups and the server's health (`health.changed`) refresh it.
  */
 export function useStatus() {
   return useQuery({
     queryKey: keys.status,
     queryFn: ({ signal }) => getApiV1Status({ signal }),
-    refetchInterval: 30_000,
   });
 }
 
@@ -436,7 +427,7 @@ export function useRevokeToken() {
   });
 }
 
-/** Token logins, re-read like the tokens: their "last used" changes without any event. */
+/** Token logins; `token.used` live events refresh their "last used" like the tokens'. */
 export function useLogins() {
   return useQuery({
     queryKey: keys.logins,
@@ -444,7 +435,6 @@ export function useLogins() {
     staleTime: 0,
     refetchOnMount: "always",
     refetchOnWindowFocus: "always",
-    refetchInterval: TOKENS_REFRESH_MS,
   });
 }
 
