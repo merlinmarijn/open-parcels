@@ -1,4 +1,5 @@
-import { existsSync } from "node:fs";
+import { existsSync, writeFileSync } from "node:fs";
+import path from "node:path";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
 import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
@@ -117,5 +118,57 @@ describe("data page", () => {
     // Without a reader password an anonymous visitor reads, but is not the admin.
     const response = await app.inject({ url: "/api/v1/data" });
     expect(response.statusCode).toBe(403);
+    expect((await app.inject({ url: "/api/v1/data/backups" })).statusCode).toBe(403);
+  });
+});
+
+describe("backups", () => {
+  interface Status {
+    interval_hours: number;
+    keep: number;
+    directory: string;
+    last: { ok: boolean; file: string | null } | null;
+    failing: boolean;
+    files: { name: string }[];
+  }
+
+  async function status(): Promise<Status> {
+    const response = await app.inject({ url: "/api/v1/data/backups", headers });
+    expect(response.statusCode).toBe(200);
+    return response.json<Status>();
+  }
+
+  it("shows the schedule and backs up on demand", async () => {
+    expect(await status()).toMatchObject({
+      interval_hours: 24,
+      keep: 7,
+      directory: path.join(context.dataDir, "backups"),
+      last: null,
+      failing: false,
+      files: [],
+    });
+    const response = await app.inject({ method: "POST", url: "/api/v1/data/backups", headers });
+    expect(response.statusCode).toBe(200);
+    const result = response.json<{ ok: boolean; reason: string; file: string }>();
+    expect(result).toMatchObject({ ok: true, reason: "manual" });
+    const after = await status();
+    expect(after.last).toMatchObject({ ok: true, file: result.file });
+    expect(after.files.map((file) => file.name)).toEqual([result.file]);
+  });
+
+  it("deletes nothing when the backup before deleting everything fails", async () => {
+    const blocker = path.join(context.dataDir, "blocker");
+    writeFileSync(blocker, "");
+    expect(
+      await context.services.configSettings.patch({ OPENPARCELS_BACKUP_DIR: blocker }),
+    ).toMatchObject({ ok: true });
+    const before = await summary();
+    const done = await clear({ what: "everything", confirm: "DELETE" });
+    expect(done.status).toBe(500);
+    expect((await summary()).parcels).toBe(before.parcels);
+    const manual = await app.inject({ method: "POST", url: "/api/v1/data/backups", headers });
+    expect(manual.statusCode).toBe(500);
+    expect(manual.json<{ error: string }>().error).toBe("backup_failed");
+    expect((await status()).failing).toBe(true);
   });
 });

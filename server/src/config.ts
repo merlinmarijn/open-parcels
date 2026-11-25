@@ -240,6 +240,33 @@ export const SETTINGS = {
     apply: "live",
     kind: "number",
   }),
+  OPENPARCELS_BACKUP_HOURS: setting({
+    group: "Backups",
+    description:
+      "Hours between automatic database backups, taken while the server runs; 0 turns them off. Back up now on the Settings page works either way.",
+    schema: z.coerce.number().int().min(0).max(8760),
+    default: 24,
+    apply: "live",
+    kind: "number",
+  }),
+  OPENPARCELS_BACKUP_KEEP: setting({
+    group: "Backups",
+    description:
+      "How many database backups to keep; the oldest are deleted after each new one. Counts every backup in the folder, also those taken by hand or before deleting everything.",
+    schema: z.coerce.number().int().min(1).max(1000),
+    default: 7,
+    apply: "live",
+    kind: "number",
+  }),
+  OPENPARCELS_BACKUP_DIR: setting({
+    group: "Backups",
+    description:
+      "Folder for database backups. Unset uses backups/ in the data folder; point it at another volume to keep backups off the disk the database is on. The encryption key is not part of a backup: keep a copy of it (secret.key in the data folder, or OPENPARCELS_SECRET_KEY) as well.",
+    schema: z.string().trim().min(1).max(1000).optional(),
+    default: undefined,
+    apply: "live",
+    kind: "string",
+  }),
   OPENPARCELS_MAP_BASE_LAYER: setting({
     group: "Map",
     description:
@@ -483,6 +510,13 @@ export interface AppConfig {
     readonly rawAfterDays: number;
     readonly notFoundArchiveDays: number;
   };
+  readonly backup: {
+    /** 0: no automatic backups. */
+    readonly intervalHours: number;
+    readonly keep: number;
+    /** Absolute; `<dataDir>/backups` unless set. */
+    readonly directory: string;
+  };
   readonly map: {
     readonly baseLayer: (typeof BASE_LAYER_CHOICES)[number];
     readonly overlay: (typeof OVERLAY_CHOICES)[number];
@@ -536,6 +570,11 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
       deleteAfterDays: values.OPENPARCELS_DELETE_DAYS,
       rawAfterDays: values.OPENPARCELS_ARCHIVE_DAYS,
       notFoundArchiveDays: values.OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS,
+    },
+    backup: {
+      intervalHours: values.OPENPARCELS_BACKUP_HOURS,
+      keep: values.OPENPARCELS_BACKUP_KEEP,
+      directory: path.resolve(dataDir, values.OPENPARCELS_BACKUP_DIR ?? "backups"),
     },
     map: {
       baseLayer: values.OPENPARCELS_MAP_BASE_LAYER,

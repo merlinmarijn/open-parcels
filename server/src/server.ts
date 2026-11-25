@@ -128,10 +128,14 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
     runMaintenance(services).catch((error: unknown) => {
       logger.error({ err: error }, "Maintenance failed.");
     });
+    // On its own, so a failing clean-up never holds up a backup or the other way round.
+    services.backups.runIfDue().catch((error: unknown) => {
+      logger.error({ err: error }, "Checking for a due backup failed.");
+    });
   };
   const maintenance = setInterval(maintain, MAINTENANCE_INTERVAL_MS);
   // Also once shortly after start: a server restarted more often than hourly would otherwise
-  // never prune sessions, events and caches or apply retention.
+  // never prune sessions, events and caches, apply retention or take a due backup.
   const firstMaintenance = setTimeout(maintain, FIRST_MAINTENANCE_DELAY_MS);
 
   return {

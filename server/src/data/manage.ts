@@ -1,7 +1,6 @@
 import { mkdir, readdir, rm, stat } from "node:fs/promises";
 import path from "node:path";
-import { sql, type Kysely } from "kysely";
-import type { Clock } from "../clock.js";
+import type { Kysely } from "kysely";
 import type { Database } from "../db/schema.js";
 
 /** Folders under the data directory that only hold re-fetchable copies. */
@@ -96,21 +95,4 @@ export async function clearCache(dataDir: string, name: CacheName): Promise<numb
   await rm(dir, { recursive: true, force: true });
   await mkdir(dir, { recursive: true });
   return bytes;
-}
-
-/**
- * Writes a consistent copy of the database to `<dataDir>/backups/` and returns its path. Used
- * before deleting everything, so a mistaken reset can be undone by restoring the file.
- */
-export async function backupDatabase(
-  db: Kysely<Database>,
-  dataDir: string,
-  clock: Clock,
-): Promise<string> {
-  const dir = path.join(dataDir, "backups");
-  await mkdir(dir, { recursive: true });
-  const stamp = clock.now().toISOString().replaceAll(":", "-").replace(/\..*$/, "");
-  const file = path.join(dir, `openparcels-${stamp}.db`);
-  await sql`vacuum into ${sql.lit(file)}`.execute(db);
-  return file;
 }

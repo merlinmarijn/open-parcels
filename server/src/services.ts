@@ -45,6 +45,7 @@ import { PlaceResolver } from "./geo/resolver.js";
 import { ConfigSettings } from "./settings/config-settings.js";
 import { SettingsStore } from "./settings/store.js";
 import { CollageMaker } from "./images/collage.js";
+import { BackupService } from "./data/backup.js";
 
 /**
  * How this server identifies itself to tile servers and the place search: a stable name for the
@@ -88,6 +89,7 @@ export interface Services {
   readonly orders: OrderService;
   readonly returns: ReturnService;
   readonly access: AccessControl;
+  readonly backups: BackupService;
 }
 
 export interface ServiceDeps {
@@ -354,5 +356,12 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     orders: new OrderService(db, bus, clock, presentation, returns),
     returns,
     access,
+    backups: new BackupService({
+      db,
+      clock,
+      logger,
+      bus,
+      settings: () => deps.config.backup,
+    }),
   };
 }
