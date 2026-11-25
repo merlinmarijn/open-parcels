@@ -3,7 +3,7 @@ import { SESSION_KEY } from "../auth/session";
 import { ApiError } from "./fetcher";
 
 /**
- * The app's query client. A 401 anywhere, from a read or from a change, means the session ended:
+ * The web UI's query client. A 401 anywhere, from a read or from a change, means the session ended:
  * the session is asked again, which shows the sign-in page.
  */
 export function createQueryClient(): QueryClient {

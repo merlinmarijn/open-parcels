@@ -5,7 +5,7 @@ import { MIN_PASSWORD } from "./password";
 import { useSetup, useSignIn } from "./session";
 
 interface AuthPageProps {
-  /** Set when reading is open and this page was opened from the app: a way back to it. */
+  /** Set when reading is open and this page was opened from the web UI: a way back to it. */
   readonly onCancel?: () => void;
 }
 

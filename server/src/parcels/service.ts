@@ -190,7 +190,7 @@ export class ParcelService {
 
   /**
    * Deletes the parcel and fires `parcel.deleted`, so clients drop it at once. A tracking connection
-   * the app created for it alone goes too, with `connection.removed`.
+   * the server created for it alone goes too, with `connection.removed`.
    */
   async delete(id: string): Promise<boolean> {
     const deleted = await this.db.transaction().execute(async (trx) => {

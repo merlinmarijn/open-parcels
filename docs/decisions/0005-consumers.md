@@ -38,8 +38,8 @@ My take: build it, but with a small built-in set and the rules engine in the cor
 - **Consumer API** (in the provider kit): `describe()` (form, declared hosts, needed fields),
   `deliver(notification, config, secrets)` → ok / retry-after / permanent failure; optional
   `test()` for a "Send test notification" button.
-- **Android app (0004):** its UnifiedPush endpoint is simply an ntfy consumer the app registers
-  for itself, so the app and the consumer model share one path.
+- **Android app (0004):** its UnifiedPush endpoint is simply an ntfy consumer the Android app
+  registers for itself, so the Android app and the consumer model share one path.
 
 ## 4. Order
 

@@ -75,7 +75,7 @@ EXPOSE 3000
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
   CMD ["node", "-e", "const h=process.env.OPENPARCELS_HOST||'';const a=['','0.0.0.0','::'].includes(h)?'127.0.0.1':h.includes(':')?'['+h+']':h;fetch('http://'+a+':'+(process.env.OPENPARCELS_PORT||3000)+'/api/v1/health/ready').then(r=>process.exit(r.ok?0:1),()=>process.exit(1))"]
 
-# The entrypoint starts Tailscale first when TS_STATE_DIR is set, then execs the app; without it,
+# The entrypoint starts Tailscale first when TS_STATE_DIR is set, then execs the server; without it,
 # it only execs the app.
 ENTRYPOINT ["/usr/bin/tini", "--", "/usr/local/bin/tailscale-entrypoint.sh"]
 CMD ["node", "server/dist/main.js"]

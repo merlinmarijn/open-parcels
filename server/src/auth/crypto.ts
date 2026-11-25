@@ -1,7 +1,7 @@
 import { createHash, randomBytes, randomInt, scrypt, timingSafeEqual } from "node:crypto";
 
 /** scrypt parameters: N=2^15, r=8, p=1 (~32 MiB, ~100 ms) – OWASP's minimum is N=2^17 with r=8 p=1
- * for interactive logins on servers; this app runs on Raspberry Pis, so N=2^15 is the trade-off. */
+ * for interactive logins on servers; the server runs on Raspberry Pis, so N=2^15 is the trade-off. */
 const SCRYPT_N = 2 ** 15;
 const SCRYPT_R = 8;
 const SCRYPT_P = 1;

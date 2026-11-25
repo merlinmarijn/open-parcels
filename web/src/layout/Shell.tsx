@@ -80,7 +80,7 @@ export function Shell(): ReactNode {
       : ROLE_LABELS.reader;
 
   // Once the admin is logged in, the header's login is done: a later drop to reader (password
-  // changed elsewhere) shows the read-only app with its Log in button, not the login page.
+  // changed elsewhere) shows the read-only web UI with its Log in button, not the login page.
   if (signingIn && admin) {
     setSigningIn(false);
   }

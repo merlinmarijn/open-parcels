@@ -6,7 +6,7 @@ import type {
 } from "../../provider/api.js";
 
 /**
- * Made-up parcels for trying the app without a real account. Every ten minutes the demo starts
+ * Made-up parcels for trying open-parcels without a real account. Every ten minutes the demo starts
  * over: three parcels in two orders go from announced to delivered, with scans (some with
  * coordinates, some with a city only, one the rules do not map), a live courier counting down ten
  * stops, a failed delivery that ends at a pickup point to be collected the next day, and a parcel

@@ -143,7 +143,7 @@ countries: [DE]
 
 engine:
   api: "^1.3.0"                   # provider API range (§2.4), checked before install
-  core: ">=2.4.0"                 # optional: minimum app version, for UI features
+  core: ">=2.4.0"                 # optional: minimum server version, for UI features
 
 provides:
   carriers: [hermes]              # carrier ids this provider claims
@@ -211,7 +211,7 @@ a red warning, and never for `verified`.
 
 ### 2.4 Provider API versioning
 
-- **The provider API gets its own semver**, independent of the app version. It starts at `1.0.0`
+- **The provider API gets its own semver**, independent of the server version. It starts at `1.0.0`
   when the IPC protocol (§2.7) is frozen.
   - Minor: added context methods, added optional fields.
   - Major: anything a working provider could notice.
@@ -571,7 +571,7 @@ All of them are admin-only, by the existing method rule.
 
 - **The HA app** keeps `/data` as its only writable path, so providers live in
   `/data/providers` and are included in HA backups. Downloaded caches go under `backup_exclude`.
-  The app options above appear in the app's configuration tab, with the community tab off by
+  The HA app options above appear in the HA app's configuration tab, with the community tab off by
   default.
 - **The ingress UI** is the same web UI, so the Providers page works unchanged under ingress. The
   ingress listener already counts as the owner, so installs from ingress are admin actions.

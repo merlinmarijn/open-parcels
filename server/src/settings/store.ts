@@ -22,7 +22,7 @@ const INSTALL_ID = "install_id";
 const labelSchema = z.enum(PARCEL_LABEL_MODES);
 
 /**
- * The app's settings, kept in memory and written through to the `settings` table. Parcel reads use the label mode on every row, so it must not cost a query.
+ * The server's settings, kept in memory and written through to the `settings` table. Parcel reads use the label mode on every row, so it must not cost a query.
  */
 export class SettingsStore {
   #home: Home | null = null;

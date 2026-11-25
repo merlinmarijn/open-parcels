@@ -93,7 +93,7 @@ needs:
 | `open-parcels-server` (rename of `open-parcels`, or keep the name for the all-in-one) | server, database, providers, OpenAPI document | server image, all-in-one image |
 | `open-parcels-web` | React web UI | web image, static zip |
 | `open-parcels-client-typescript`, `-python`, `-csharp` (later `-kotlin`, `-go`) | generated clients + thin hand-written helpers | npm, PyPI, NuGet |
-| `open-parcels-android` | native app | APK/AAB to the stores below |
+| `open-parcels-android` | native Android app | APK/AAB to the stores below |
 | `open-parcels-rules`, `-ha`, `-ha-apps`, `-extension`, `.github`, website | as today | as today |
 | providers (0002) | official providers repo + registry | as decided in 0002 |
 
@@ -182,7 +182,7 @@ Android app, store publishing) waits until TODO §1–§10 are done.
 4. **Android notifications:** default is the public **ntfy.sh** instance; users can switch to their
    own ntfy server (or other UnifiedPush distributors). Because ntfy.sh is a public third party, the
    push message carries no personal data: only a random per-device topic and a "sync now" ping (or
-   an encrypted payload); the app then fetches the details from the user's own server.
+   an encrypted payload); the Android app then fetches the details from the user's own server.
 5. **Stores:** npm, PyPI and NuGet accounts exist (owner). **No Google Play** (paid developer
    account; there is no legitimate way around the fee). Android distribution: GitHub Releases +
    Obtainium, F-Droid, IzzyOnDroid, Accrescent.

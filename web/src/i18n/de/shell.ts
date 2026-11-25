@@ -27,7 +27,7 @@ export const shell: Messages["shell"] = {
   logOut: "Ausloggen",
   starting: "Startet…",
   tryAgain: "Erneut versuchen",
-  backToApp: "Zurück zur App (nur lesen)",
+  backToApp: "Zurück zur Weboberfläche (nur lesen)",
   setupTitle: "open-parcels einrichten",
   setupIntro:
     "Dies ist der erste Start. Den Einrichtungscode aus dem Container-Log eingeben, dann das Admin-Passwort wählen.",

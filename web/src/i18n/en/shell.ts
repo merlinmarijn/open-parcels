@@ -26,7 +26,7 @@ export const shell = {
   logOut: "Log out",
   starting: "Starting…",
   tryAgain: "Try again",
-  backToApp: "Back to the app (read only)",
+  backToApp: "Back to the web UI (read only)",
   setupTitle: "Set up open-parcels",
   setupIntro:
     "This is the first start. Enter the setup code printed in the container log, then choose the admin password.",

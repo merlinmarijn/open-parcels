@@ -103,7 +103,7 @@ describe("orders page", () => {
     expect(within(card).getByText("DEMO-1001")).toBeInTheDocument();
     expect(within(card).getByText("Lamp parcel")).toBeInTheDocument();
     expect(within(card).getByText("Sorting centre")).toBeInTheDocument();
-    // Pictures go through the app's base address (Home Assistant ingress).
+    // Pictures go through the web UI's base address (Home Assistant ingress).
     expect(within(card).getByRole("img", { name: "Desk lamp" }).getAttribute("src")).toMatch(
       /api\/v1\/images\/abc$/,
     );

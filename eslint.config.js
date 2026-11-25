@@ -73,7 +73,7 @@ export default tseslint.config(
     },
   },
   {
-    // Carrier providers may only use the provider API, never the app's internals.
+    // Carrier providers may only use the provider API, never the server's internals.
     files: ["server/src/carriers/**/*.ts"],
     rules: {
       "no-restricted-imports": [

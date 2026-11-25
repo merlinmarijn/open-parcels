@@ -12,7 +12,7 @@ import { buildApp } from "./app.js";
 
 /**
  * The OpenAPI document as `docs/openapi.json` holds it, without starting a server or touching real
- * data: the app is built against a throwaway database in a temporary directory.
+ * data: the server is built against a throwaway database in a temporary directory.
  */
 export async function renderOpenApiDocument(): Promise<string> {
   const dataDir = mkdtempSync(path.join(tmpdir(), "open-parcels-openapi-"));

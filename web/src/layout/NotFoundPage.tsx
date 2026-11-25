@@ -3,7 +3,7 @@ import { PackageX } from "lucide-react";
 import type { ReactNode } from "react";
 import { t } from "../i18n";
 
-/** Shown for any address the app does not know, inside the usual frame, with a way back. */
+/** Shown for any address the web UI does not know, inside the usual frame, with a way back. */
 export function NotFoundPage(): ReactNode {
   return (
     <section aria-labelledby="not-found-title" className="stack">

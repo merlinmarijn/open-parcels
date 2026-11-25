@@ -7,7 +7,7 @@ import { mockApi, renderApp, SIGNED_IN } from "../test/helpers";
 const OWNER_PASSWORD = ["correct", "horse", "battery"].join("-");
 
 describe("first start and login", () => {
-  it("sets the owner password with the setup code, then opens the app", async () => {
+  it("sets the owner password with the setup code, then opens the web UI", async () => {
     let done = false;
     const calls = mockApi({
       "GET /api/v1/session": () => ({

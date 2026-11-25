@@ -1,5 +1,5 @@
 #!/usr/bin/env bash
-# Starts Tailscale (userspace networking, no root needed) and publishes the app on the tailnet,
+# Starts Tailscale (userspace networking, no root needed) and publishes the server on the tailnet,
 # then runs the app. Skipped entirely when TS_STATE_DIR is unset.
 #   TS_STATE_DIR  folder for tailscaled state (persist it; reuse it to keep the same machine/name)
 #   TS_HOSTNAME   tailnet name (default: open-parcels)
@@ -11,7 +11,7 @@ if [[ -z "${TS_STATE_DIR:-}" ]]; then
   exec "$@"
 fi
 if [[ ! -w "$TS_STATE_DIR" ]]; then
-  echo "[ts] $TS_STATE_DIR is not writable for uid $(id -u): app runs without the tailnet." \
+  echo "[ts] $TS_STATE_DIR is not writable for uid $(id -u): the server runs without the tailnet." \
     "Make the folder or volume writable for uid 1000." >&2
   exec "$@"
 fi
@@ -36,7 +36,7 @@ tailscaled_pid=$!
 for _ in $(seq 60); do
   answering && break
   if ! kill -0 "$tailscaled_pid" 2>/dev/null; then
-    echo "[ts] tailscaled exited: app runs without the tailnet" >&2
+    echo "[ts] tailscaled exited: the server runs without the tailnet" >&2
     break
   fi
   sleep 1
@@ -56,7 +56,7 @@ if kill -0 "$tailscaled_pid" 2>/dev/null && ! ts status >/dev/null 2>&1; then
       echo "[ts] tailscale up failed (exit $status)" >&2
     fi
   else
-    echo "[ts] not logged in and no TS_AUTHKEY set: app runs without the tailnet" >&2
+    echo "[ts] not logged in and no TS_AUTHKEY set: the server runs without the tailnet" >&2
   fi
 fi
 
@@ -66,20 +66,20 @@ if ts status >/dev/null 2>&1; then
     name=$(ts status --json | sed -n 's/.*"DNSName": "\([^"]*\)\.".*/\1/p' | head -1)
     echo "[ts] serving http://127.0.0.1:$port on $name"
   else
-    echo "[ts] tailscale serve failed: the app is not published on the tailnet" >&2
+    echo "[ts] tailscale serve failed: the server is not published on the tailnet" >&2
   fi
 else
-  echo "[ts] not connected: the app is not published on the tailnet" >&2
+  echo "[ts] not connected: the server is not published on the tailnet" >&2
 fi
 
-# tini signals only its child, this shell: pass a stop on to the app and to tailscaled, so
+# tini signals only its child, this shell: pass a stop on to the server and to tailscaled, so
 # neither is killed hard.
 "$@" &
 app_pid=$!
 trap 'kill -TERM "$app_pid" "$tailscaled_pid" 2>/dev/null || true' TERM INT
 status=0
 wait "$app_pid" || status=$?
-# A stop signal interrupts the first wait; wait again for the app to finish shutting down.
+# A stop signal interrupts the first wait; wait again for the server to finish shutting down.
 if kill -0 "$app_pid" 2>/dev/null; then
   wait "$app_pid" || status=$?
 fi
