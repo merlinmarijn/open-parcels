@@ -4,6 +4,11 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- Server texts by language: setting groups as ids with web texts per setting key; provider
+  sign-in labels, step texts and form field titles (every field titled) and map layer labels and
+  attributions in EN/DE by `Accept-Language`, which the web sends; calendar returns carry
+  `drop_off`/`cost` (`decc545`). Accessibility: axe-core checks on every page, design token
+  contrast test, darker dark accent and light ok/yellow tokens (`0f89902`)
 - Server error codes with `params`; the web UI shows its own English/German text per code, the
   server's `message` stays English for scripts (`572434b`, orval enums as unions `bd19c84`);
   "Expected delivery" on the parcel page and one `formatMoney` (`e82ee97`); `install_id` in

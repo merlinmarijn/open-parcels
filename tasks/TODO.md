@@ -27,15 +27,17 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 ## 2. Production readiness
 
 - [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
-- [ ] Internationalisation leftovers (the web UI is in English and German, API error codes map to
-      web texts, see `DONE.md`). Still English from the server: setting descriptions and group
-      names (plan: group becomes an id, web dictionary per setting key), sign-in flow labels and
-      step texts and provider config/secret schema titles (plan: server-side EN/DE texts chosen by
-      `Accept-Language`, a title on every schema field, a test over all providers), map layer
-      labels and attributions, calendar return details, the engine's own `state_detail` /
-      `last_error` / backup error texts. Carrier names, and error texts written by individual
-      providers or carriers, stay as they are (provider rewrite, §3)
-- [ ] Accessibility pass (keyboard, screen reader, contrast) on every page
+- [ ] Internationalisation leftovers (web UI EN/DE, error codes, settings, provider texts, map
+      layers done, see `DONE.md`). Still English: the engine's own connection `state_detail`
+      texts ("Not run yet.", "The carrier asked us to slow down.", inbox states; plan: a
+      `state_reason` code column next to `state_detail` for the provider's words, migration
+      mapping the stored English texts), the scheduler's `last_error` and backup error texts on
+      the Status page, the ICS feed and calendar `details` (kept English for HA and calendar
+      apps). Carrier names and texts written by providers or carriers stay (provider rewrite, §3)
+- [ ] Accessibility pass: axe on every page and token contrast are tested (see `DONE.md`).
+      Still to do by hand: keyboard walk of every page and dialog (focus order, focus return
+      after dialogs, the map and calendar widgets), screen-reader pass (NVDA/Orca) of live
+      updates and sign-in steps
 - [ ] Mobile layout pass on every page
 - [ ] Performance with 10,000 parcels / 5,000 orders (history import scale)
 - [ ] Release 2.0.0: changelog, tags `2.0.0`, `2.0`, `latest` on Docker Hub and GHCR, website and
