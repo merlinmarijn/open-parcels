@@ -5,18 +5,15 @@
  */
 import { writeFileSync } from "node:fs";
 import { renderOpenApiDocument } from "../api/openapi-document.js";
+import { runTool, type ToolMain } from "./cli.js";
 
-async function main(): Promise<void> {
-  const output = process.argv[2];
-  if (output === undefined) {
+export const main: ToolMain = async ([file]) => {
+  if (file === undefined) {
     throw new Error("Pass the output file path.");
   }
-  writeFileSync(output, await renderOpenApiDocument());
-}
+  writeFileSync(file, await renderOpenApiDocument());
+};
 
-main().catch((error: unknown) => {
-  process.stderr.write(
-    `Exporting the OpenAPI document failed: ${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exit(1);
-});
+if (import.meta.main) {
+  runTool("Exporting the OpenAPI document failed", main);
+}

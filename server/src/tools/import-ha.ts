@@ -11,6 +11,7 @@ import { readFileSync } from "node:fs";
 import { systemClock } from "../clock.js";
 import { importHaEntries } from "../migrate/ha/import.js";
 import { parseImportArgs, RESTART_NOTICE, withImportTarget } from "./import-target.js";
+import { runTool, type ToolMain } from "./cli.js";
 
 class InputError extends Error {
   override readonly name = "InputError";
@@ -26,24 +27,21 @@ function readEntries(input: string): unknown {
   }
 }
 
-async function main(): Promise<void> {
+export const main: ToolMain = async (argv, output) => {
   const { input, dryRun } = parseImportArgs(
-    process.argv.slice(2),
+    argv,
     "Usage: import-ha <path of core.config_entries, or - for stdin> [--dry-run]",
   );
   const configEntries = readEntries(input);
   const report = await withImportTarget(dryRun, (db, secrets) =>
     importHaEntries({ configEntries, db, secrets, clock: systemClock, dryRun }),
   );
-  process.stdout.write(`${JSON.stringify(report, null, 2)}\n`);
+  output.out(`${JSON.stringify(report, null, 2)}\n`);
   if (!dryRun) {
-    process.stderr.write(RESTART_NOTICE);
+    output.err(RESTART_NOTICE);
   }
-}
+};
 
-main().catch((error: unknown) => {
-  process.stderr.write(
-    `Import failed: ${error instanceof Error ? error.message : String(error)}\n`,
-  );
-  process.exit(1);
-});
+if (import.meta.main) {
+  runTool("Import failed", main);
+}

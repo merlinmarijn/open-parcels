@@ -1,8 +1,15 @@
 import { loadRules } from "open-parcels-rules";
 import { describe, expect, it } from "vitest";
-import { createMailInterpreter, subjectAsStatus } from "../../src/mail/interpret.js";
+import {
+  carrierFor,
+  createMailInterpreter,
+  senderDomain,
+  senderName,
+  subjectAsStatus,
+} from "../../src/mail/interpret.js";
 
-const interpret = createMailInterpreter(loadRules(), "Europe/Berlin");
+const rules = loadRules();
+const interpret = createMailInterpreter(rules, "Europe/Berlin");
 
 describe("mail interpretation with the shared rules", () => {
   it("turns a German DHL shipping notice into a DHL parcel", () => {
@@ -30,6 +37,58 @@ describe("mail interpretation with the shared rules", () => {
         date: null,
       }),
     ).toEqual([]);
+  });
+});
+
+describe("mail interpretation details (OP-142)", () => {
+  const dhlMail = {
+    messageId: null,
+    from: "DHL Paket <noreply@dhl.de>",
+    subject: "Ihr DHL Paket kommt heute",
+    html: null,
+    date: new Date("2026-11-18T07:00:00Z"),
+  };
+
+  it("gives one parcel per tracking number in a mail", () => {
+    const snapshots = interpret({
+      ...dhlMail,
+      text: [
+        "Guten Tag, Ihre Sendung 00340434000000000017 wird heute zugestellt.",
+        "Ihre Sendung 00340434000000000024 wird heute zugestellt.",
+      ].join("\n"),
+    });
+    expect(snapshots.map((s) => s.trackingNumber).sort()).toEqual([
+      "00340434000000000017",
+      "00340434000000000024",
+    ]);
+  });
+
+  it("gives the same mail the same history id, by Message-ID or by its content", () => {
+    const text = "Guten Tag, Ihre Sendung 00340434000000000017 wird heute zugestellt.";
+    const idOf = (mail: Parameters<typeof interpret>[0]) => interpret(mail)[0]?.history[0]?.id;
+    expect(idOf({ ...dhlMail, text })).toBe(idOf({ ...dhlMail, text, date: null }));
+    expect(idOf({ ...dhlMail, text, messageId: "<a@example.invalid>" })).toBe(
+      "mail:<a@example.invalid>",
+    );
+  });
+
+  it("files a number no rule names a carrier for under the best match, never under upu", () => {
+    const result = {
+      kind: "parcel",
+      ruleId: "test",
+      trackingNumbers: [],
+      orderNumbers: [],
+    } as const;
+    expect(carrierFor(rules, { ...result, carrier: "gls" }, "anything", undefined)).toBe("gls");
+    expect(carrierFor(rules, result, "00340434000000000017", "dhl.de")).toBe("dhl");
+    expect(carrierFor(rules, result, "RR123456785CN", undefined)).not.toBe("upu");
+  });
+
+  it("reads the sender's domain and display name", () => {
+    expect(senderDomain("Example Store <Shop@Example.COM>")).toBe("example.com");
+    expect(senderDomain("shop@example.com")).toBe("example.com");
+    expect(senderName('"Example Store" <shop@example.com>')).toBe("Example Store");
+    expect(senderName("shop@example.com")).toBeNull();
   });
 });
 
