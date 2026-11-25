@@ -45,6 +45,18 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
       yet seen); the HA app's `backup_exclude` may want `backups/` once backups are on by default
 - [ ] OP-161 follow-up: a `health.changed` live event, so the status page needs no 30 s refetch
 
+## 2b. Early groundwork for decision record 0004 (do soon: shapes the API and data model)
+
+- [ ] Token login for non-cookie clients (access + refresh tokens, scoped, revocable; admin/reader
+      as in 0003), used by a web UI on another origin, the Android app and client libraries
+- [ ] CORS allow-list setting; live event stream (SSE) accepts a token
+- [ ] Delta sync: `updated_at` on every synced table, tombstones for deletions,
+      `GET /api/v1/sync?since=<cursor>`
+- [ ] API versioning; the OpenAPI document published per release
+- [ ] Slimmer images: Tailscale downloaded on demand when switched on (pinned version, pinned
+      SHA-256, cached in the data folder; −78 MB), no npm/npx, bundled server; a server-only image
+      without the web UI; track sizes with `op-image-housekeeping.sh`
+
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
 - [ ] Glossary pass in the other repos, in lockstep with the server (the server repo is done, see
@@ -143,3 +155,18 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 - [ ] Hermes password once in the Hermes connection
 - [ ] DHL API key (approved?) into the DHL connection
 - [ ] Make `ghcr.io/open-parcels/open-parcels` public
+
+## 11. After everything above: split, clients, Android app (decision record 0004)
+
+- [ ] Owner answers 0004 §7 (repo names, first client languages, push via ntfy/UnifiedPush)
+- [ ] Split repositories: `open-parcels-server`, `open-parcels-web` (own image + static zip),
+      Compose file for both, all-in-one image stays the default
+- [ ] Unraid: all-in-one template (default) plus server-only and web-only templates; Compose
+      Manager Plus documented (Unraid has no native Compose)
+- [ ] Website "Install" chooser: all-in-one (Docker / Unraid / Home Assistant), server only, web
+      only, apps, libraries
+- [ ] Client libraries from the released OpenAPI: `open-parcels-client-typescript`, `-python`,
+      `-csharp` (+ SSE helper), published to npm, PyPI, NuGet
+- [ ] Native Android app `open-parcels-android` (Kotlin, Compose, Room offline copy, WorkManager
+      sync, UnifiedPush notifications, optional FCM flavour); GitHub Releases + Obtainium,
+      F-Droid, IzzyOnDroid, Accrescent, Google Play
