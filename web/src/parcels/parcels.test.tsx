@@ -1,6 +1,6 @@
-import { screen, within } from "@testing-library/react";
+import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mockApi, parcel, renderApp, SIGNED_IN } from "../test/helpers";
 
 const PARCELS = [
@@ -85,5 +85,140 @@ describe("parcel list", () => {
     const post = calls.find((call) => call.method === "POST" && call.path === "/api/v1/parcels");
     expect(post?.body).toEqual({ tracking_number: "TEST0000000009", label: null });
     expect(post?.headers.get("x-csrf-token")).toBe("csrf-test-value");
+  });
+});
+
+const ARCHIVED = parcel({
+  id: "00000000-0000-4000-8000-0000000000a1",
+  label: "Old lamp",
+  archived_at: "2026-11-18T09:00:00.000Z",
+});
+
+describe("parcel list with archived parcels", () => {
+  it("keeps the Show selection when archived parcels are included", async () => {
+    mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/parcels": () => ({ body: [ARCHIVED] }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+    });
+    const user = userEvent.setup();
+    renderApp();
+    await screen.findByRole("table", { name: "Parcels" });
+    await user.click(screen.getByLabelText("All"));
+    await user.click(screen.getByLabelText("Include archived"));
+    const table = await screen.findByRole("table", { name: "Parcels" });
+    expect(screen.getByLabelText("All")).toBeChecked();
+    expect(within(table).getByText("Archived")).toBeInTheDocument();
+  });
+});
+
+describe("an ended session and a deleted parcel", () => {
+  const ID = "00000000-0000-4000-8000-0000000000b2";
+  const SIGNED_OUT = {
+    authenticated: false,
+    method: null,
+    role: null,
+    scopes: [],
+    csrf_token: null,
+    reader_required: true,
+    setup_required: false,
+  };
+
+  it("goes back to sign-in when a change is refused with 401", async () => {
+    let signedIn = true;
+    mockApi({
+      "GET /api/v1/session": () => ({ body: signedIn ? SIGNED_IN : SIGNED_OUT }),
+      [`GET /api/v1/parcels/${ID}`]: () => ({ body: { ...parcel({ id: ID }), connections: [] } }),
+      [`PATCH /api/v1/parcels/${ID}`]: () => {
+        signedIn = false;
+        return { status: 401, body: { error: "unauthorized", message: "Sign in again." } };
+      },
+      "GET /api/v1/parcels": () => ({ body: [] }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+    });
+    const user = userEvent.setup();
+    renderApp(`/parcels/${ID}`);
+    await user.click(await screen.findByRole("button", { name: "Archive" }));
+    expect(await screen.findByLabelText("Password")).toBeInTheDocument();
+  });
+
+  it("does not ask for a deleted parcel's detail again", async () => {
+    let deleted = false;
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      [`GET /api/v1/parcels/${ID}`]: () =>
+        deleted
+          ? { status: 404, body: { error: "not_found", message: "Gone." } }
+          : { body: { ...parcel({ id: ID }), connections: [] } },
+      [`DELETE /api/v1/parcels/${ID}`]: () => {
+        deleted = true;
+        return { status: 204 };
+      },
+      "GET /api/v1/parcels": () => ({ body: [] }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+    });
+    vi.spyOn(window, "confirm").mockReturnValue(true);
+    const user = userEvent.setup();
+    renderApp(`/parcels/${ID}`);
+    await user.click(await screen.findByRole("button", { name: "Delete" }));
+    // Back on the list, whose read follows the invalidation a stale detail read would come with.
+    await screen.findByRole("table");
+    await waitFor(() => {
+      expect(deleted).toBe(true);
+      expect(calls.some((call) => call.method === "GET" && call.path === "/api/v1/parcels")).toBe(
+        true,
+      );
+    });
+    const detailReads = calls.filter(
+      (call) => call.method === "GET" && call.path === `/api/v1/parcels/${ID}`,
+    );
+    expect(detailReads).toHaveLength(1);
+  });
+});
+
+describe("parcel detail", () => {
+  it("shows an archived parcel as archived, offers Unarchive and names its connections", async () => {
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/parcels/00000000-0000-4000-8000-0000000000a1": () => ({
+        body: {
+          ...ARCHIVED,
+          connections: [
+            {
+              connection_id: "s1",
+              provider: "dhl",
+              label: "DHL account",
+              kind: "account",
+              role: "primary",
+              last_seen_at: "2026-11-18T09:00:00.000Z",
+            },
+            {
+              connection_id: "s2",
+              provider: "dhl",
+              label: "DHL tracking",
+              kind: "tracking",
+              role: "primary",
+              last_seen_at: "2026-11-18T09:00:00.000Z",
+            },
+          ],
+        },
+      }),
+      "PATCH /api/v1/parcels/00000000-0000-4000-8000-0000000000a1": () => ({
+        body: { ...ARCHIVED, archived_at: null },
+      }),
+      "GET /api/v1/parcels": () => ({ body: [] }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+    });
+    const user = userEvent.setup();
+    renderApp("/parcels/00000000-0000-4000-8000-0000000000a1");
+    await screen.findByRole("heading", { name: "Old lamp" });
+    expect(screen.getByText("Archived")).toBeInTheDocument();
+    // The connections are their own region, not part of "Items" (OP-157).
+    const connections = screen.getByRole("region", { name: "Connections" });
+    expect(within(connections).getByText(/DHL account/)).toBeInTheDocument();
+    expect(within(connections).getByText(/DHL tracking/)).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Unarchive" }));
+    expect(await screen.findByText("Restored from the archive.")).toBeInTheDocument();
+    expect(calls.find((call) => call.method === "PATCH")?.body).toEqual({ archived: false });
   });
 });

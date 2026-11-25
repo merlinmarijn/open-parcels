@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { formatExpected } from "./format";
+import { describeLookup, formatExpected } from "./format";
 
 const day = new Intl.DateTimeFormat(undefined, {
   weekday: "short",
@@ -33,5 +33,27 @@ describe("formatExpected (OP-044)", () => {
     expect(formatExpected({ expected_from: null, expected_to: null, expected_days: null })).toBe(
       "—",
     );
+  });
+});
+
+describe("carrier lookup wording", () => {
+  const now = Date.parse("2026-11-18T12:00:00.000Z");
+
+  it("leaves out an unknown start instead of saying 'since never'", () => {
+    const text = describeLookup(
+      { state: "found", since: null, checked_at: "2026-11-18T11:00:00.000Z" },
+      now,
+    );
+    expect(text).toBe("Found by the carrier, last asked 1 hour ago");
+    expect(text).not.toContain("never");
+  });
+
+  it("names a known start and a parcel never asked", () => {
+    expect(
+      describeLookup(
+        { state: "not_found", since: "2026-11-16T12:00:00.000Z", checked_at: null },
+        now,
+      ),
+    ).toBe("Not found by the carrier 2 days ago, not asked yet");
   });
 });
