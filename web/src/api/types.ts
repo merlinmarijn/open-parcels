@@ -14,6 +14,7 @@ import type {
   GetApiV1Tokens200Item,
   PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200,
 } from "./generated";
+import { listingEvery } from "../lib/exhaustive";
 
 export type Session = GetApiV1Session200;
 export type Parcel = GetApiV1Parcels200Item;
@@ -36,7 +37,7 @@ export type Return = GetApiV1Returns200Item;
 export type ReturnStatus = Return["status"];
 export type ReturnView = GetApiV1ReturnsView;
 
-export const PARCEL_STATUSES: readonly ParcelStatus[] = [
+export const PARCEL_STATUSES = listingEvery<ParcelStatus>()([
   "registered",
   "in_transit",
   "out_for_delivery",
@@ -45,4 +46,4 @@ export const PARCEL_STATUSES: readonly ParcelStatus[] = [
   "returning",
   "problem",
   "unknown",
-];
+]);

@@ -33,7 +33,8 @@ export const PROMINENCE_GAP = 0.1;
 export const WEAK_IMPORTANCE = 0.25;
 export const CONFIRM_KM = 1_000;
 
-const EARTH_RADIUS_KM = 6_371;
+/** The mean Earth radius (IUGG); the web UI uses the same, so both measure alike. */
+const EARTH_RADIUS_KM = 6_371.0088;
 
 /** Great-circle distance (haversine). */
 export function distanceKm(a: Point, b: Point): number {

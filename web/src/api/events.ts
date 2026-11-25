@@ -2,6 +2,7 @@ import { useQueryClient } from "@tanstack/react-query";
 import { useEffect, useRef, useState } from "react";
 import { SESSION_KEY } from "../auth/session";
 import { apiUrl } from "./fetcher";
+import type { GetApiV1Events200Event } from "./generated";
 import type { ParcelDetail } from "./types";
 import { settingsKey } from "../settings/home";
 import { keys } from "./queries";
@@ -10,33 +11,44 @@ import { keys } from "./queries";
 const STREAM_RETRY_MS = 5_000;
 const STREAM_RETRY_MAX_MS = 5 * 60_000;
 
-const PARCEL_EVENTS = [
-  "parcel.registered",
-  "parcel.status_changed",
-  "parcel.delivered",
-  "parcel.delivery_time_changed",
-  "parcel.sending_registered",
-  "parcel.sending_delivered",
-  "parcel.live_updated",
-  "parcel.location_changed",
-  "parcel.removed",
-  "parcel.deleted",
-] as const;
+type Reaction = "parcel" | "connection" | "order" | "return" | "settings" | "resync" | "position";
 
-/** Live events about connections: added, renamed, a state change, a finished run (run times, counts), a removal. */
-const CONNECTION_EVENTS = [
-  "connection.added",
-  "connection.updated",
-  "connection.state_changed",
-  "connection.run_finished",
-  "connection.removed",
-] as const;
-
-/** An order renamed, (un)archived by hand, or deleted. */
-const ORDER_EVENTS = ["order.updated", "order.deleted"] as const;
-
-/** A return started or changed: the returns list, its order and the calendar's deadlines. */
-const RETURN_EVENTS = ["return.created", "return.updated"] as const;
+/**
+ * What each message of the stream refreshes. Typed against the server's list (generated from its
+ * API document), so a message type the server adds does not compile until it is handled here.
+ */
+const REACTIONS = {
+  "parcel.registered": "parcel",
+  "parcel.status_changed": "parcel",
+  "parcel.delivered": "parcel",
+  "parcel.delivery_time_changed": "parcel",
+  "parcel.sending_registered": "parcel",
+  "parcel.sending_delivered": "parcel",
+  "parcel.live_updated": "parcel",
+  "parcel.location_changed": "parcel",
+  "parcel.removed": "parcel",
+  "parcel.deleted": "parcel",
+  "parcel.archived": "parcel",
+  "parcel.live_position": "position",
+  // Connections: added, renamed, a state change, a finished run (run times, counts), a removal.
+  "connection.added": "connection",
+  "connection.updated": "connection",
+  "connection.state_changed": "connection",
+  "connection.run_finished": "connection",
+  "connection.removed": "connection",
+  // An order created (from an email), renamed, (un)archived by hand, or deleted.
+  "order.created": "order",
+  "order.updated": "order",
+  "order.deleted": "order",
+  // A return started or changed: the returns list, its order and the calendar's deadlines.
+  "return.created": "return",
+  "return.updated": "return",
+  "settings.updated": "settings",
+  resync: "resync",
+  // Nothing on screen depends on these.
+  "vocab.unknown": null,
+  ready: null,
+} as const satisfies Record<GetApiV1Events200Event, Reaction | null>;
 
 export type LiveState = "connecting" | "live" | "offline";
 
@@ -212,17 +224,11 @@ export function useLiveUpdates(enabled: boolean): LiveState {
         setGeneration((value) => value + 1);
       }, wait);
     };
-    for (const type of PARCEL_EVENTS) {
-      stream.addEventListener(type, onParcel);
-    }
-    for (const type of CONNECTION_EVENTS) {
-      stream.addEventListener(type, onConnection);
-    }
     // A changed setting (home, how parcels are named) changes every parcel's view.
-    stream.addEventListener("settings.updated", () => {
+    const onSettings = (): void => {
       void client.invalidateQueries({ queryKey: settingsKey });
       void client.invalidateQueries({ queryKey: keys.parcels });
-    });
+    };
     const onOrder = (event: MessageEvent<string>): void => {
       const id = subjectIdOf(event.data);
       if (id !== undefined && event.type === "order.deleted") {
@@ -232,22 +238,15 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: keys.orders });
       void client.invalidateQueries({ queryKey: keys.parcels });
     };
-    for (const type of ORDER_EVENTS) {
-      stream.addEventListener(type, onOrder);
-    }
     const onReturn = (): void => {
       void client.invalidateQueries({ queryKey: keys.returns });
       void client.invalidateQueries({ queryKey: keys.orders });
       void client.invalidateQueries({ queryKey: ["calendar"] });
     };
-    for (const type of RETURN_EVENTS) {
-      stream.addEventListener(type, onReturn);
-    }
     // The server could not replay what was missed (too old, or a reset database): reload all.
     const onResync = (): void => {
       void client.invalidateQueries();
     };
-    stream.addEventListener("resync", onResync);
     const onPosition = (event: MessageEvent<string>): void => {
       const message = parseLivePosition(event.data);
       if (message === null) return;
@@ -255,7 +254,18 @@ export function useLiveUpdates(enabled: boolean): LiveState {
         parcel === undefined ? undefined : withLivePosition(parcel, message),
       );
     };
-    stream.addEventListener("parcel.live_position", onPosition);
+    const handlers: Record<Reaction, (event: MessageEvent<string>) => void> = {
+      parcel: onParcel,
+      connection: onConnection,
+      order: onOrder,
+      return: onReturn,
+      settings: onSettings,
+      resync: onResync,
+      position: onPosition,
+    };
+    for (const [type, reaction] of Object.entries(REACTIONS)) {
+      if (reaction !== null) stream.addEventListener(type, handlers[reaction]);
+    }
     return () => {
       liveLists.cancel();
       clearTimeout(reopen);

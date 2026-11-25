@@ -1,11 +1,21 @@
 import { z } from "zod";
-import type { OutboxEvent } from "../../events/types.js";
+import { EVENT_TYPES, type OutboxEvent } from "../../events/types.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { credentialCheck, requireScope } from "../auth-plugin.js";
 
 /** Comment lines keep proxies (and Home Assistant ingress) from closing an idle stream. */
 const HEARTBEAT_MS = 25_000;
+
+/**
+ * Every message type the stream sends: the stored live events, the courier position and the two
+ * control messages. Documented as an enum so the web client's generated types name them all.
+ */
+const streamMessageSchema = z.object({
+  event: z.enum([...EVENT_TYPES, "parcel.live_position", "ready", "resync"]),
+  id: z.number().int().optional(),
+  data: z.unknown(),
+});
 
 /** One live event as an SSE message. */
 function formatEvent(event: OutboxEvent): string {
@@ -43,6 +53,8 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
           "the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and " +
           "`stops_away`; they have no `id` and are never replayed.",
         querystring: z.object({ last_event_id: z.coerce.number().int().nonnegative().optional() }),
+        produces: ["text/event-stream"],
+        response: { 200: streamMessageSchema },
       },
     },
     async (request, reply) => {

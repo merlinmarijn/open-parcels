@@ -3,7 +3,7 @@
  * Do not edit manually.
  * open-parcels
  * Self-hosted parcel and order tracking.
- * OpenAPI spec version: 2.0.0
+ * OpenAPI spec version: 2.0.0-dev.0
  */
 import { apiFetch } from "./fetcher";
 export type GetApiV1HealthLive200Status =
@@ -4518,53 +4518,6 @@ export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404 = {
   message: string;
 };
 
-export type PostApiV1ConnectionsIdSignInStart200 = {
-  url: string;
-};
-
-export type PostApiV1ConnectionsIdSignInStart400 = {
-  /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
-  message: string;
-};
-
-export type PostApiV1ConnectionsIdSignInStart404 = {
-  /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
-  message: string;
-};
-
-export type PostApiV1ConnectionsIdSignInStart503 = {
-  /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
-  message: string;
-};
-
-export type PostApiV1ConnectionsIdSignInFinishBody = {
-  /**
-   * @minLength 1
-   * @maxLength 8192
-   */
-  pasted: string;
-};
-
-export type PostApiV1ConnectionsIdSignInFinish400 = {
-  /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
-  message: string;
-};
-
-export type PostApiV1ConnectionsIdSignInFinish404 = {
-  /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
-  message: string;
-};
-
 export type GetApiV1CalendarParams = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   from: string;
@@ -4688,6 +4641,48 @@ export type GetApiV1EventsParams = {
    * @maximum 9007199254740991
    */
   last_event_id?: number;
+};
+
+export type GetApiV1Events200Event =
+  (typeof GetApiV1Events200Event)[keyof typeof GetApiV1Events200Event];
+
+export const GetApiV1Events200Event = {
+  parcelregistered: "parcel.registered",
+  parcelstatus_changed: "parcel.status_changed",
+  parceldelivered: "parcel.delivered",
+  parceldelivery_time_changed: "parcel.delivery_time_changed",
+  parcelsending_registered: "parcel.sending_registered",
+  parcelsending_delivered: "parcel.sending_delivered",
+  parcellive_updated: "parcel.live_updated",
+  parcellocation_changed: "parcel.location_changed",
+  parcelremoved: "parcel.removed",
+  parceldeleted: "parcel.deleted",
+  parcelarchived: "parcel.archived",
+  connectionadded: "connection.added",
+  connectionupdated: "connection.updated",
+  connectionstate_changed: "connection.state_changed",
+  connectionrun_finished: "connection.run_finished",
+  connectionremoved: "connection.removed",
+  ordercreated: "order.created",
+  orderupdated: "order.updated",
+  orderdeleted: "order.deleted",
+  returncreated: "return.created",
+  returnupdated: "return.updated",
+  settingsupdated: "settings.updated",
+  vocabunknown: "vocab.unknown",
+  parcellive_position: "parcel.live_position",
+  ready: "ready",
+  resync: "resync",
+} as const;
+
+export type GetApiV1Events200 = {
+  event: GetApiV1Events200Event;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  id?: number;
+  data: unknown;
 };
 
 const getHeaders = (
@@ -5617,46 +5612,6 @@ export const deleteApiV1ConnectionsIdSignInAttemptsAttempt = async (
   });
 };
 
-export const getPostApiV1ConnectionsIdSignInStartUrl = (id: string) => {
-  return `/api/v1/connections/${id}/sign-in/start`;
-};
-
-/**
- * @summary Start a pasted-link sign-in: returns the address to open in your browser.
- */
-export const postApiV1ConnectionsIdSignInStart = async (
-  id: string,
-  options?: Parameters<typeof apiFetch>[1],
-): Promise<PostApiV1ConnectionsIdSignInStart200> => {
-  return apiFetch<PostApiV1ConnectionsIdSignInStart200>(
-    getPostApiV1ConnectionsIdSignInStartUrl(id),
-    {
-      ...options,
-      method: "POST",
-    },
-  );
-};
-
-export const getPostApiV1ConnectionsIdSignInFinishUrl = (id: string) => {
-  return `/api/v1/connections/${id}/sign-in/finish`;
-};
-
-/**
- * @summary Finish a pasted-link sign-in with the address the browser ended on.
- */
-export const postApiV1ConnectionsIdSignInFinish = async (
-  id: string,
-  postApiV1ConnectionsIdSignInFinishBody: PostApiV1ConnectionsIdSignInFinishBody,
-  options?: Parameters<typeof apiFetch>[1],
-): Promise<null> => {
-  return apiFetch<null>(getPostApiV1ConnectionsIdSignInFinishUrl(id), {
-    ...options,
-    method: "POST",
-    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
-    body: JSON.stringify(postApiV1ConnectionsIdSignInFinishBody),
-  });
-};
-
 export const getGetApiV1CalendarUrl = (params: GetApiV1CalendarParams) => {
   const normalizedParams = new URLSearchParams();
 
@@ -5807,25 +5762,6 @@ export const getTilesLayerZXY = async (
   });
 };
 
-export const getGetTilesZXYPngUrl = (z: number, x: number, y: number) => {
-  return `/tiles/${z}/${x}/${y}.png`;
-};
-
-/**
- * @summary An OpenStreetMap tile (older clients; same as layer osm).
- */
-export const getTilesZXYPng = async (
-  z: number,
-  x: number,
-  y: number,
-  options?: Parameters<typeof apiFetch>[1],
-): Promise<void> => {
-  return apiFetch<void>(getGetTilesZXYPngUrl(z, x, y), {
-    ...options,
-    method: "GET",
-  });
-};
-
 export const getGetApiV1DiagnosticsUrl = () => {
   return `/api/v1/diagnostics`;
 };
@@ -5863,8 +5799,8 @@ export const getGetApiV1EventsUrl = (params?: GetApiV1EventsParams) => {
 export const getApiV1Events = async (
   params?: GetApiV1EventsParams,
   options?: Parameters<typeof apiFetch>[1],
-): Promise<void> => {
-  return apiFetch<void>(getGetApiV1EventsUrl(params), {
+): Promise<GetApiV1Events200> => {
+  return apiFetch<GetApiV1Events200>(getGetApiV1EventsUrl(params), {
     ...options,
     method: "GET",
   });
