@@ -64,11 +64,20 @@ set `OPENPARCELS_PASSWORD` (or set it on the Security card right after upgrading
 Open Parcels talks to the carriers and shops you add (and the hosts of their item pictures), and
 otherwise only to these:
 
-- **Place lookups** (`OPENPARCELS_GEOCODING`, on by default): carrier events that name only a place
-  ("Leipzig hub") are looked up on [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org),
-  so they can show on the map. Only those place names are sent, at most five a minute, and each
-  answer is cached. Turn the setting off (**Settings → Map**, admin only) to keep them on this server.
-- **Map tiles** are fetched by the server from the map provider you choose and cached.
+- **Address search** (Settings → Home location): the text you search for goes to the place search
+  service, [OpenStreetMap Nominatim](https://nominatim.openstreetmap.org) unless
+  `OPENPARCELS_GEOCODING_URL` names another Nominatim-compatible one, only when you press *Find*.
+- **Background place lookup** (`OPENPARCELS_GEOCODING`, **off** by default): carrier events that
+  name only a place ("Leipzig hub") are looked up on that service, so they can show on the map.
+  Only those place names are sent, at most one a second, and each answer is cached. Turn it on
+  under **Settings → Map** (admin only); preferably point it at your own Nominatim first.
+- **Map tiles** are fetched by the server from the map provider you choose and cached. Built-in
+  layers' addresses can be changed (`OPENPARCELS_MAP_OSM_URL`, `OPENPARCELS_MAP_TOPO_URL`,
+  `OPENPARCELS_MAP_EOX_URL`); the satellite layer is for non-commercial use only.
+
+What each service receives, its terms and how to switch to your own:
+[`docs/third-party-services.md`](docs/third-party-services.md). Set `OPENPARCELS_CONTACT_EMAIL`
+to give their operators a way to reach you.
 
 ## Fallback services
 

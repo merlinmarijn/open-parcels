@@ -32,6 +32,21 @@ Assistant app and the browser extension are released in lockstep with this serve
 older Home Assistant integration stops seeing connections and live events until it is updated.
 Scripts that call the API by hand must switch paths and fields; nothing else is needed.
 
+### Changed: third-party services (OP-079)
+
+- **Background place lookup is off by default** for new installs (`OPENPARCELS_GEOCODING`).
+  Migration `0023-geocoding-opt-in` saves `true` as a Settings page value for an existing install
+  that ran with the old default and does not set the variable in its environment, so nothing
+  changes there until you switch it off under **Settings → Map**.
+- New settings: `OPENPARCELS_GEOCODING_URL` (Nominatim-compatible search endpoint),
+  `OPENPARCELS_CONTACT_EMAIL` (added to the User-Agent), and `OPENPARCELS_MAP_OSM_URL`,
+  `OPENPARCELS_MAP_TOPO_URL`, `OPENPARCELS_MAP_EOX_URL` to move the built-in layers elsewhere.
+- The tile cache honours `Cache-Control` / `Expires` (a week when absent) and refreshes stale tiles
+  with conditional requests. Tiles cached before keep aging by their file time.
+- The OpenStreetMap credit links "Report a map issue"; the satellite layer is labelled
+  "non-commercial use only" and credits the imagery year it serves; the address search shows the
+  OpenStreetMap/ODbL credit. Terms and switching: [`docs/third-party-services.md`](docs/third-party-services.md).
+
 ### Fixed
 
 - **Live courier sessions survive a restart.** A stored session now names the connection that

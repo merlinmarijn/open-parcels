@@ -17,8 +17,6 @@ already fixed. Still open, by audit group:
 
 - [ ] OP-070, OP-142, OP-071, OP-163: missing tests (OP-162 and OP-164 shipped; the new web tests
       cover OP-149, OP-153 and OP-073 only)
-- [ ] OP-079: confirm the OSM tile, OpenTopoMap, EOX and Nominatim terms, document them in `docs/`,
-      and decide on place lookup and the default map layer (owner decision)
 - [ ] OP-048 … OP-161 cheap clean-ups (group 24 of the audit order)
 
 ## 2. Production readiness
