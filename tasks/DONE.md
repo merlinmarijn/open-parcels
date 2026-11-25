@@ -4,6 +4,10 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- Server error codes with `params`; the web UI shows its own English/German text per code, the
+  server's `message` stays English for scripts (`572434b`, orval enums as unions `bd19c84`);
+  "Expected delivery" on the parcel page and one `formatMoney` (`e82ee97`); `install_id` in
+  `GET /api/v1/status` for HA-010 (`7901b6a`); test timeouts for slow runners (`28c10e5`, `a2798ab`)
 - Rules 2.0.0-dev.14 on the server: every tracking number of a plural multi-number sentence
   (`4e83baf`); backups and the backup folder private (0600/0700, existing ones fixed on start,
   `f0c9eed`); version 2.0.0-dev.20261125 with the image's commit on the Status page (`6ab1715`)

@@ -27,13 +27,14 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 ## 2. Production readiness
 
 - [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
-- [ ] Internationalisation leftovers (the web UI is in English and German, see `DONE.md`): texts
-      the server sends are English only: setting descriptions and group names, API error
-      messages, `state_detail`/`last_error`/backup errors, sign-in flow labels and step texts,
-      provider config/secret schema titles and descriptions (unnamed fields are humanised from
-      their key), carrier names stay as they are, map layer labels and attributions, calendar
-      return details. Plan: error codes mapped to dictionary texts in the web UI, and server
-      texts keyed by id with an English and German table (or an `Accept-Language`-aware API)
+- [ ] Internationalisation leftovers (the web UI is in English and German, API error codes map to
+      web texts, see `DONE.md`). Still English from the server: setting descriptions and group
+      names (plan: group becomes an id, web dictionary per setting key), sign-in flow labels and
+      step texts and provider config/secret schema titles (plan: server-side EN/DE texts chosen by
+      `Accept-Language`, a title on every schema field, a test over all providers), map layer
+      labels and attributions, calendar return details, the engine's own `state_detail` /
+      `last_error` / backup error texts. Carrier names, and error texts written by individual
+      providers or carriers, stay as they are (provider rewrite, §3)
 - [ ] Accessibility pass (keyboard, screen reader, contrast) on every page
 - [ ] Mobile layout pass on every page
 - [ ] Performance with 10,000 parcels / 5,000 orders (history import scale)
