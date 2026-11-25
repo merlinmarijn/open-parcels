@@ -96,7 +96,6 @@ describe("return deadlines in the calendar", () => {
       tracking_number: "RET-0001",
       status: "requested",
       kind: "return_by",
-      details: [],
       drop_off: [{ carrier: "dhl", kind: "any", description: "Any DHL drop-off point" }],
       cost: { free: true, amount: null, currency: null },
       start: "2026-11-24T23:00:00.000Z",

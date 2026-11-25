@@ -52,7 +52,7 @@ export function mockApi(routes: Record<string, Handler>): Recorded[] {
 }
 
 export function renderApp(path = "/"): RenderResult {
-  // The app's own client, so its 401 handling is what the tests see; no retries in tests.
+  // The web UI's own client, so its 401 handling is what the tests see; no retries in tests.
   const client = createQueryClient();
   client.setDefaultOptions({
     ...client.getDefaultOptions(),
@@ -125,7 +125,8 @@ export function connection(overrides: Partial<Connection> = {}): Connection {
     config: {},
     has_secret: false,
     state: "ok",
-    state_detail: null,
+    state_reason: null,
+    carrier_message: null,
     next_run_at: null,
     last_run_at: null,
     last_ok_at: null,

@@ -60,7 +60,7 @@ export const settings = {
     mapPreview: "Default map style preview",
     sources: {
       env: "environment",
-      app: "Home Assistant app option",
+      ha_app: "Home Assistant app option",
       default: "default",
       override: "saved in UI",
     },

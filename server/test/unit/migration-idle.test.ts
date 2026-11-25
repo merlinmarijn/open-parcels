@@ -45,14 +45,20 @@ describe("migration 0009-idle-source-state", () => {
       // Later migrations follow; this test pins only its own.
       expect((await migrateToLatest(db))[0]).toBe("0009-idle-source-state");
 
-      const rows = await sql<{ id: string; state: string; state_detail: string | null }>`
-        select id, state, state_detail from connections order by id
+      // 0025 later turned the texts into reason codes and carrier messages.
+      const rows = await sql<{ id: string; state: string; state_reason: string | null }>`
+        select id, state, state_reason, carrier_message from connections order by id
       `.execute(db);
       expect(rows.rows).toEqual([
-        { id: "broken", state: "error", state_detail: "Boom." },
-        { id: "fine", state: "ok", state_detail: null },
-        { id: "fresh", state: "ok", state_detail: "Not run yet." },
-        { id: "idle", state: "idle", state_detail: "Public tracking off: nothing to look up." },
+        { id: "broken", state: "error", state_reason: "invalid_config", carrier_message: "Boom." },
+        { id: "fine", state: "ok", state_reason: null, carrier_message: null },
+        { id: "fresh", state: "ok", state_reason: "not_run_yet", carrier_message: null },
+        {
+          id: "idle",
+          state: "idle",
+          state_reason: "provider_idle",
+          carrier_message: "Public tracking off: nothing to look up.",
+        },
       ]);
       // The rebuild did not cascade into rows that point at a connection.
       const attempts = await sql`select id from sign_in_attempts`.execute(db);

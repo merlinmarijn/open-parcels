@@ -38,6 +38,16 @@ export const admin: Messages["admin"] = {
     redacted: "Auf dem Server geschwärzt: keine Sendungsnummern, Adressen oder Anmeldedaten.",
     download: "Diagnose herunterladen",
     show: "Anzeigen",
+    schedulerErrors: {
+      cycle_failed: "Der letzte Durchlauf ist fehlgeschlagen; das Server-Log nennt den Grund.",
+    },
+  },
+  backupErrors: {
+    no_space: "Der Datenträger ist voll.",
+    permission_denied: "Der Server darf nicht in den Sicherungsordner schreiben.",
+    read_only: "Der Sicherungsordner liegt auf einem schreibgeschützten Dateisystem.",
+    not_a_folder: "Der Pfad des Sicherungsordners ist kein Ordner.",
+    failed: "Die Sicherung ist fehlgeschlagen; das Server-Log nennt den Grund.",
   },
   tokens: {
     title: "API-Tokens",

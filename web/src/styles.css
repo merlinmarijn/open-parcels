@@ -1778,7 +1778,7 @@ tbody tr:hover {
   width: min(26rem, 100%);
 }
 
-/* A button that reads as a link: "Back to the app", place search results. */
+/* A button that reads as a link: "Back to the web UI", place search results. */
 .link-button {
   background: none;
   border: 0;

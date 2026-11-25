@@ -1,4 +1,6 @@
+import { admin } from "./admin";
 import {
+  backupErrorText,
   param,
   pick,
   withDetail,
@@ -65,9 +67,9 @@ export const errors: ErrorTexts = {
     carrier_not_detected: () =>
       "The carrier could not be detected from this tracking number. Choose one, or add a fallback service (Universal lookup, 17TRACK).",
     duplicate: () => "This parcel is already tracked.",
-    backup_failed: (p) => withDetail("The backup failed.", p),
+    backup_failed: (p) => `The backup failed: ${backupErrorText(admin.backupErrors, p)}`,
     delete_backup_failed: (p) =>
-      withDetail("Nothing was deleted: the backup before deleting failed.", p),
+      `Nothing was deleted: the backup before deleting failed. ${backupErrorText(admin.backupErrors, p)}`,
     confirmation_required: (p) =>
       `Type ${param(p, "phrase")} to confirm deleting every parcel and order.`,
     invalid_setting: pick(INVALID_SETTING, "reason", "This value is not valid."),

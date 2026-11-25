@@ -12,6 +12,7 @@ import {
 import type { LiveTargetOfParcel, Reconciler } from "./reconciler.js";
 import type { RunOutcome, ConnectionRunner } from "./runner.js";
 import type { ConnectionService } from "./connections.js";
+import { cause, NO_CAUSE } from "./state-reason.js";
 
 /** Upper bound on the timer, so removals are judged and clock changes picked up regularly. */
 const MAX_SLEEP_MS = 5 * 60_000;
@@ -21,6 +22,10 @@ const RUNNABLE_STATES: readonly ConnectionRow["state"][] = ["ok", "idle", "error
 /** A scheduler whose last cycle is older than this has stopped looking at its connections. */
 export const SCHEDULER_STALL_MS = 3 * MAX_SLEEP_MS;
 
+/** Scheduler error codes; clients show their own text. */
+export const SCHEDULER_ERRORS = ["cycle_failed"] as const;
+export type SchedulerError = (typeof SCHEDULER_ERRORS)[number];
+
 /** What the status page shows of the scheduler. */
 export interface SchedulerStatus {
   readonly running: boolean;
@@ -28,8 +33,8 @@ export interface SchedulerStatus {
   readonly inFlight: number;
   /** When the last cycle (due runs, then removals) finished; null before the first. */
   readonly lastCycleAt: string | null;
-  /** Why the last cycle failed; null when it succeeded. */
-  readonly lastError: string | null;
+  /** `cycle_failed` when the last cycle failed (the log says why); null when it succeeded. */
+  readonly lastError: SchedulerError | null;
 }
 
 export interface SchedulerDeps {
@@ -63,7 +68,7 @@ export class Scheduler {
   #timer: ReturnType<typeof setTimeout> | undefined;
   #stopped = true;
   #lastCycleAt: string | null = null;
-  #lastError: string | null = null;
+  #lastError: SchedulerError | null = null;
 
   constructor(private readonly deps: SchedulerDeps) {}
 
@@ -104,7 +109,8 @@ export class Scheduler {
       this.#timer = undefined;
       this.#cycle().catch((error: unknown) => {
         this.deps.logger.error({ err: error }, "Scheduler cycle failed.");
-        this.#lastError = error instanceof Error ? error.message : String(error);
+        // The error itself goes to the log; clients get a code and show their own text.
+        this.#lastError = "cycle_failed";
         this.#arm(MAX_SLEEP_MS);
       });
     }, delayMs);
@@ -202,9 +208,13 @@ export class Scheduler {
         .where("id", "=", connection.id)
         .execute();
       const state = outcome.idle === undefined ? "ok" : "idle";
-      const detail = outcome.idle ?? null;
-      if (connection.state !== state || connection.state_detail !== detail) {
-        await this.deps.connections.setState(connection.id, state, detail);
+      const why = outcome.idle === undefined ? NO_CAUSE : cause("provider_idle", outcome.idle);
+      if (
+        connection.state !== state ||
+        connection.state_reason !== why.reason ||
+        connection.carrier_message !== why.carrierMessage
+      ) {
+        await this.deps.connections.setState(connection.id, state, why);
       }
       return;
     }
@@ -226,7 +236,7 @@ export class Scheduler {
     await this.deps.connections.setState(
       connection.id,
       outcome.kind === "sign_in_rejected" ? "needs_sign_in" : "error",
-      outcome.detail,
+      outcome.why,
     );
   }
 

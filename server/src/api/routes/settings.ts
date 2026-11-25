@@ -36,8 +36,8 @@ const settingInfoSchema = z.object({
     ),
   secret: z.boolean().describe("The value is never returned."),
   source: z
-    .enum(["env", "default", "app", "override"])
-    .describe("app: an option of the Home Assistant app; override: saved in the UI."),
+    .enum(["env", "default", "ha_app", "override"])
+    .describe("ha_app: an option of the Home Assistant app; override: saved in the UI."),
   set: z.boolean(),
   value: settingValueSchema.nullable().describe("Null when unset or secret."),
   default: settingValueSchema.nullable(),
@@ -129,7 +129,7 @@ export function registerSettingsRoutes(app: TypedApp, services: Services): void 
       preHandler: requireScope("read"),
       schema: {
         tags: ["settings"],
-        summary: "The app's settings.",
+        summary: "The server's settings.",
         response: { 200: settingsSchema },
       },
     },

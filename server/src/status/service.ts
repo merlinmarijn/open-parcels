@@ -1,6 +1,7 @@
 import { sql } from "kysely";
 import type { ConnectionRow } from "../db/schema.js";
-import { SCHEDULER_STALL_MS } from "../engine/scheduler.js";
+import type { BackupError } from "../data/backup.js";
+import { SCHEDULER_STALL_MS, type SchedulerError } from "../engine/scheduler.js";
 import type { Services } from "../services.js";
 import { COMMIT, VERSION } from "../version.js";
 
@@ -30,7 +31,8 @@ export interface ConnectionStatus {
   readonly label: string;
   readonly kind: ConnectionRow["kind"];
   readonly state: ConnectionRow["state"];
-  readonly detail: string | null;
+  readonly state_reason: ConnectionRow["state_reason"];
+  readonly carrier_message: string | null;
   readonly consecutive_failures: number;
   readonly last_run_at: string | null;
   readonly last_ok_at: string | null;
@@ -59,7 +61,7 @@ export interface StatusReport {
     readonly running: boolean;
     readonly in_flight: number;
     readonly last_cycle_at: string | null;
-    readonly last_error: string | null;
+    readonly last_error: SchedulerError | null;
     /** The earliest planned run of any connection. */
     readonly next_run_at: string | null;
   };
@@ -74,7 +76,7 @@ export interface StatusReport {
     readonly enabled: boolean;
     readonly last_ok: boolean | null;
     readonly last_at: string | null;
-    readonly last_error: string | null;
+    readonly last_error: BackupError | null;
     readonly next_at: string | null;
   };
 }
@@ -95,7 +97,8 @@ function connectionStatus(row: ConnectionRow): ConnectionStatus {
     label: row.label,
     kind: row.kind,
     state: row.state,
-    detail: row.state_detail,
+    state_reason: row.state_reason,
+    carrier_message: row.carrier_message,
     consecutive_failures: row.consecutive_failures,
     last_run_at: row.last_run_at,
     last_ok_at: row.last_ok_at,

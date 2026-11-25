@@ -274,7 +274,7 @@ describe("mail watcher", () => {
     });
     expect(await context.services.connections.get(badConfig)).toMatchObject({
       state: "error",
-      stateDetail: "The inbox settings are invalid.",
+      stateReason: "inbox_settings_invalid",
     });
   });
 

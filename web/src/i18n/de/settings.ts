@@ -62,7 +62,7 @@ export const settings: Messages["settings"] = {
     mapPreview: "Vorschau des Standard-Kartenstils",
     sources: {
       env: "Umgebung",
-      app: "Option der Home-Assistant-App",
+      ha_app: "Option der Home-Assistant-App",
       default: "Standard",
       override: "in der Oberfläche gespeichert",
     },

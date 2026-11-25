@@ -124,7 +124,7 @@ describe("database backups", () => {
     const result = await test.services.backups.run("scheduled");
     expect(result.ok).toBe(false);
     expect(result.file).toBeNull();
-    expect(result.error).toMatch(/ENOTDIR|not a directory/i);
+    expect(result.error).toBe("not_a_folder");
     expect(await backupEvents(test)).toEqual([result]);
     const status = await test.services.backups.status();
     expect(status.failing).toBe(true);

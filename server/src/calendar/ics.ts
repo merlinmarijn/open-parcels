@@ -1,5 +1,7 @@
 import ical, { ICalCalendarMethod } from "ical-generator";
 import { findCarrier, loadRules } from "open-parcels-rules";
+import type { Language } from "../i18n/language.js";
+import { costText, dropOffText, ICS_TEXTS, statusText, type IcsTexts } from "./ics-texts.js";
 import type { CalendarEntry } from "./service.js";
 
 /** A `YYYY-MM-DD` day as a UTC-midnight Date: what an all-day DTSTART/DTEND needs. */
@@ -7,12 +9,12 @@ function utcDay(day: string): Date {
   return new Date(`${day}T00:00:00.000Z`);
 }
 
-function summaryOf(entry: CalendarEntry, title: string): string {
+function summaryOf(texts: IcsTexts, entry: CalendarEntry, title: string): string {
   switch (entry.kind) {
     case "delivered":
-      return `Delivered: ${title}`;
+      return texts.delivered(title);
     case "return_by":
-      return `Return by ${entry.startDate ?? entry.start.slice(0, 10)}: ${entry.title}`;
+      return texts.returnBy(entry.startDate ?? entry.start.slice(0, 10), entry.title);
     case "expected":
       return title;
   }
@@ -20,15 +22,47 @@ function summaryOf(entry: CalendarEntry, title: string): string {
 
 export interface IcsOptions {
   readonly timeZone: string;
-  readonly name: string;
+  readonly language: Language;
   readonly publicUrl: URL | undefined;
 }
 
-/** Renders entries as an iCalendar feed. Event UIDs are stable per parcel. */
+/** The description lines of one event, in the feed's language. */
+function descriptionOf(
+  texts: IcsTexts,
+  language: Language,
+  entry: CalendarEntry,
+  carrier: string,
+): string[] {
+  if (entry.kind !== "return_by") {
+    const lines = [
+      `${texts.carrier}: ${carrier}`,
+      `${texts.trackingNumber}: ${entry.trackingNumber}`,
+      `${texts.status}: ${statusText(texts, "parcel", entry.status)}`,
+    ];
+    return entry.pickupPoint === null
+      ? lines
+      : [...lines, `${texts.pickupPoint}: ${entry.pickupPoint}`];
+  }
+  const cost = costText(texts, language, entry.cost);
+  return [
+    `${texts.order}: ${entry.trackingNumber}`,
+    ...entry.dropOff.map((option) => `${texts.dropOff}: ${dropOffText(texts, option)}`),
+    ...(cost === null ? [] : [cost]),
+    `${texts.status}: ${statusText(texts, "return", entry.status)}`,
+    ...(entry.url === null ? [] : [`${texts.label}: ${entry.url}`]),
+  ];
+}
+
+/** Renders entries as an iCalendar feed in one language. Event UIDs are stable per parcel. */
 export function renderIcs(entries: readonly CalendarEntry[], options: IcsOptions): string {
+  const texts = ICS_TEXTS[options.language];
   const calendar = ical({
-    name: options.name,
-    prodId: { company: "open-parcels", product: "open-parcels", language: "EN" },
+    name: texts.feedName,
+    prodId: {
+      company: "open-parcels",
+      product: "open-parcels",
+      language: options.language.toUpperCase(),
+    },
     method: ICalCalendarMethod.PUBLISH,
     // The configured zone is a display hint only. A calendar `timezone` would make the generator
     // write each time as the server process's wall clock under a TZID with no VTIMEZONE, so the
@@ -46,21 +80,10 @@ export function renderIcs(entries: readonly CalendarEntry[], options: IcsOptions
       options.publicUrl === undefined ? null : new URL(path, options.publicUrl).toString();
     const carrier = findCarrier(loadRules(), entry.carrier)?.name ?? entry.carrier;
     const title = `${entry.title} (${carrier})`;
-    const lines =
-      entry.kind === "return_by"
-        ? [`Order: ${entry.trackingNumber}`, ...entry.details]
-        : [`Carrier: ${carrier}`, `Tracking: ${entry.trackingNumber}`];
-    lines.push(`Status: ${entry.status.replaceAll("_", " ")}`);
-    if (entry.kind === "return_by" && entry.url !== null) {
-      lines.push(`Label: ${entry.url}`);
-    }
-    if (entry.pickupPoint !== null) {
-      lines.push(`Pickup point: ${entry.pickupPoint}`);
-    }
     calendar.createEvent({
       id: entry.uid,
-      summary: summaryOf(entry, title),
-      description: lines.join("\n"),
+      summary: summaryOf(texts, entry, title),
+      description: descriptionOf(texts, options.language, entry, carrier).join("\n"),
       ...(entry.allDay && entry.startDate !== null && entry.endDate !== null
         ? {
             allDay: true,

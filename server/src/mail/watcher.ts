@@ -7,6 +7,7 @@ import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
+import { cause, NO_CAUSE } from "../engine/state-reason.js";
 import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 import {
   MAIL_PROVIDER,
@@ -286,13 +287,9 @@ export class MailWatcher {
       return { config, secret, progress: this.#progress(row) };
     } catch (error) {
       if (error instanceof DecryptionError) {
-        await this.deps.connections.setState(
-          row.id,
-          "needs_sign_in",
-          "The stored sign-in could not be read. Enter the password again.",
-        );
+        await this.deps.connections.setState(row.id, "needs_sign_in", cause("sign_in_unreadable"));
       } else if (error instanceof ZodError || error instanceof SyntaxError) {
-        await this.deps.connections.setState(row.id, "error", "The inbox settings are invalid.");
+        await this.deps.connections.setState(row.id, "error", cause("inbox_settings_invalid"));
       } else {
         throw error;
       }
@@ -391,7 +388,7 @@ export class MailWatcher {
     // Only a whole sync resets the reconnect backoff: a server that accepts the connection and
     // drops it straight away must not be reconnected to every 30 seconds.
     this.#retries.delete(connectionId);
-    await this.deps.connections.setState(connectionId, "ok", null);
+    await this.deps.connections.setState(connectionId, "ok", NO_CAUSE);
   }
 
   #interpret<T>(
@@ -420,7 +417,7 @@ export class MailWatcher {
       await this.deps.connections.setState(
         connectionId,
         "needs_sign_in",
-        "The mail server rejected the sign-in. Enter the password again.",
+        cause("inbox_sign_in_rejected"),
       );
       return;
     }
@@ -441,11 +438,7 @@ export class MailWatcher {
       },
       "Inbox connection failed.",
     );
-    await this.deps.connections.setState(
-      connectionId,
-      "error",
-      "The mail server could not be reached; retrying.",
-    );
+    await this.deps.connections.setState(connectionId, "error", cause("inbox_unreachable"));
     this.#reconnectAt.set(
       connectionId,
       new Date(this.deps.clock.now().getTime() + delay).toISOString(),

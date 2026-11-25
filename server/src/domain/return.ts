@@ -128,33 +128,3 @@ export const returnSchema = z.object({
   updated_at: z.string(),
 });
 export type Return = z.infer<typeof returnSchema>;
-
-const KIND_LABELS: Readonly<Record<DropOffKind, string>> = {
-  shop: "Shop",
-  parcel_locker: "Parcel locker",
-  post_office: "Post office",
-  pickup: "Pickup",
-  any: "Any drop-off point",
-};
-
-/** One drop-off option in words: the shop's description, else its kind and carrier. */
-export function dropOffText(option: DropOffOption): string {
-  const kind = KIND_LABELS[option.kind];
-  const carrier = option.carrier === null ? "" : ` (${option.carrier})`;
-  return option.description ?? `${kind}${carrier}`;
-}
-
-/** The cost in words, or null when it is not known. */
-export function costText(cost: Return["cost"]): string | null {
-  if (cost === null) return null;
-  if (cost.free) return "Free return";
-  if (cost.amount === null) return "Return costs money";
-  return `Return costs ${cost.amount.toFixed(2)}${cost.currency === null ? "" : ` ${cost.currency}`}`;
-}
-
-/** What a calendar entry says about a return: where to hand it in and what it costs. */
-export function returnDetails(entry: Pick<Return, "drop_off" | "cost">): string[] {
-  const lines = entry.drop_off.map((option) => `Drop off: ${dropOffText(option)}`);
-  const cost = costText(entry.cost);
-  return cost === null ? lines : [...lines, cost];
-}

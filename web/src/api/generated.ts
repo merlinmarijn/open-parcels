@@ -98,14 +98,42 @@ export type GetApiV1Status200Database = {
 export type GetApiV1Status200ConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Status200ConnectionsItemState =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
+/**
+ * Why the connection is in its state, as a code; null when there is nothing to say.
+ * @nullable
+ */
+export type GetApiV1Status200ConnectionsItemStateReason =
+  | "not_run_yet"
+  | "not_signed_in_yet"
+  | "sign_in_rejected"
+  | "sign_in_unreadable"
+  | "imported_without_sign_in"
+  | "rate_limited"
+  | "captcha"
+  | "invalid_config"
+  | "provider_missing"
+  | "update_failed"
+  | "provider_idle"
+  | "inbox_sign_in_rejected"
+  | "inbox_settings_invalid"
+  | "inbox_unreachable"
+  | null;
 export type GetApiV1Status200ConnectionsItem = {
   id: string;
   provider: string;
   label: string;
   kind: GetApiV1Status200ConnectionsItemKind;
   state: GetApiV1Status200ConnectionsItemState;
-  /** @nullable */
-  detail: string | null;
+  /**
+   * Why the connection is in its state, as a code; null when there is nothing to say.
+   * @nullable
+   */
+  state_reason: GetApiV1Status200ConnectionsItemStateReason;
+  /**
+   * What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.
+   * @nullable
+   */
+  carrier_message: string | null;
   /**
    * @minimum -9007199254740991
    * @maximum 9007199254740991
@@ -127,14 +155,42 @@ export type GetApiV1Status200ConnectionsItem = {
 export type GetApiV1Status200InboxesItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Status200InboxesItemState =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
+/**
+ * Why the connection is in its state, as a code; null when there is nothing to say.
+ * @nullable
+ */
+export type GetApiV1Status200InboxesItemStateReason =
+  | "not_run_yet"
+  | "not_signed_in_yet"
+  | "sign_in_rejected"
+  | "sign_in_unreadable"
+  | "imported_without_sign_in"
+  | "rate_limited"
+  | "captcha"
+  | "invalid_config"
+  | "provider_missing"
+  | "update_failed"
+  | "provider_idle"
+  | "inbox_sign_in_rejected"
+  | "inbox_settings_invalid"
+  | "inbox_unreachable"
+  | null;
 export type GetApiV1Status200InboxesItem = {
   id: string;
   provider: string;
   label: string;
   kind: GetApiV1Status200InboxesItemKind;
   state: GetApiV1Status200InboxesItemState;
-  /** @nullable */
-  detail: string | null;
+  /**
+   * Why the connection is in its state, as a code; null when there is nothing to say.
+   * @nullable
+   */
+  state_reason: GetApiV1Status200InboxesItemStateReason;
+  /**
+   * What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.
+   * @nullable
+   */
+  carrier_message: string | null;
   /**
    * @minimum -9007199254740991
    * @maximum 9007199254740991
@@ -160,6 +216,11 @@ export type GetApiV1Status200InboxesItem = {
   reconnect_at: string | null;
 };
 
+/**
+ * `cycle_failed`: the last cycle failed (the server log says why).
+ * @nullable
+ */
+export type GetApiV1Status200SchedulerLastError = "cycle_failed" | null;
 export type GetApiV1Status200Scheduler = {
   running: boolean;
   /**
@@ -170,8 +231,11 @@ export type GetApiV1Status200Scheduler = {
   in_flight: number;
   /** @nullable */
   last_cycle_at: string | null;
-  /** @nullable */
-  last_error: string | null;
+  /**
+   * `cycle_failed`: the last cycle failed (the server log says why).
+   * @nullable
+   */
+  last_error: GetApiV1Status200SchedulerLastError;
   /**
    * The earliest planned connection run.
    * @nullable
@@ -205,14 +269,23 @@ export type GetApiV1Status200EventStream = {
   live_sessions: number;
 };
 
+/**
+ * Why the backup failed, as a code (the server log has the details); null on success.
+ * @nullable
+ */
+export type GetApiV1Status200BackupsLastError =
+  "no_space" | "permission_denied" | "read_only" | "not_a_folder" | "failed" | null;
 export type GetApiV1Status200Backups = {
   enabled: boolean;
   /** @nullable */
   last_ok: boolean | null;
   /** @nullable */
   last_at: string | null;
-  /** @nullable */
-  last_error: string | null;
+  /**
+   * Why the backup failed, as a code (the server log has the details); null on success.
+   * @nullable
+   */
+  last_error: GetApiV1Status200BackupsLastError;
   /** @nullable */
   next_at: string | null;
 };
@@ -946,9 +1019,9 @@ export type GetApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean";
  */
 export type GetApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
 /**
- * app: an option of the Home Assistant app; override: saved in the UI.
+ * ha_app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type GetApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
+export type GetApiV1SettingsConfig200ItemSource = "env" | "default" | "ha_app" | "override";
 export type GetApiV1SettingsConfig200Item = {
   key: GetApiV1SettingsConfig200ItemKey;
   /** The group's id; clients name it in their language. */
@@ -962,7 +1035,7 @@ export type GetApiV1SettingsConfig200Item = {
   apply: GetApiV1SettingsConfig200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** app: an option of the Home Assistant app; override: saved in the UI. */
+  /** ha_app: an option of the Home Assistant app; override: saved in the UI. */
   source: GetApiV1SettingsConfig200ItemSource;
   set: boolean;
   /** Null when unset or secret. */
@@ -1019,9 +1092,9 @@ export type PatchApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean
  */
 export type PatchApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
 /**
- * app: an option of the Home Assistant app; override: saved in the UI.
+ * ha_app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type PatchApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
+export type PatchApiV1SettingsConfig200ItemSource = "env" | "default" | "ha_app" | "override";
 export type PatchApiV1SettingsConfig200Item = {
   key: PatchApiV1SettingsConfig200ItemKey;
   /** The group's id; clients name it in their language. */
@@ -1035,7 +1108,7 @@ export type PatchApiV1SettingsConfig200Item = {
   apply: PatchApiV1SettingsConfig200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** app: an option of the Home Assistant app; override: saved in the UI. */
+  /** ha_app: an option of the Home Assistant app; override: saved in the UI. */
   source: PatchApiV1SettingsConfig200ItemSource;
   set: boolean;
   /** Null when unset or secret. */
@@ -1143,9 +1216,9 @@ export type DeleteApiV1SettingsConfigKey200ItemKind = "string" | "number" | "boo
  */
 export type DeleteApiV1SettingsConfigKey200ItemApply = "env" | "restart" | "live";
 /**
- * app: an option of the Home Assistant app; override: saved in the UI.
+ * ha_app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type DeleteApiV1SettingsConfigKey200ItemSource = "env" | "default" | "app" | "override";
+export type DeleteApiV1SettingsConfigKey200ItemSource = "env" | "default" | "ha_app" | "override";
 export type DeleteApiV1SettingsConfigKey200Item = {
   key: DeleteApiV1SettingsConfigKey200ItemKey;
   /** The group's id; clients name it in their language. */
@@ -1159,7 +1232,7 @@ export type DeleteApiV1SettingsConfigKey200Item = {
   apply: DeleteApiV1SettingsConfigKey200ItemApply;
   /** The value is never returned. */
   secret: boolean;
-  /** app: an option of the Home Assistant app; override: saved in the UI. */
+  /** ha_app: an option of the Home Assistant app; override: saved in the UI. */
   source: DeleteApiV1SettingsConfigKey200ItemSource;
   set: boolean;
   /** Null when unset or secret. */
@@ -4283,6 +4356,26 @@ export type GetApiV1Carriers200Item = {
 export type GetApiV1Connections200ItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Connections200ItemState =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
+/**
+ * Why the connection is in its state, as a code; null when there is nothing to say.
+ * @nullable
+ */
+export type GetApiV1Connections200ItemStateReason =
+  | "not_run_yet"
+  | "not_signed_in_yet"
+  | "sign_in_rejected"
+  | "sign_in_unreadable"
+  | "imported_without_sign_in"
+  | "rate_limited"
+  | "captcha"
+  | "invalid_config"
+  | "provider_missing"
+  | "update_failed"
+  | "provider_idle"
+  | "inbox_sign_in_rejected"
+  | "inbox_settings_invalid"
+  | "inbox_unreachable"
+  | null;
 export type GetApiV1Connections200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4293,8 +4386,16 @@ export type GetApiV1Connections200Item = {
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
   state: GetApiV1Connections200ItemState;
-  /** @nullable */
-  state_detail: string | null;
+  /**
+   * Why the connection is in its state, as a code; null when there is nothing to say.
+   * @nullable
+   */
+  state_reason: GetApiV1Connections200ItemStateReason;
+  /**
+   * What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.
+   * @nullable
+   */
+  carrier_message: string | null;
   /** @nullable */
   next_run_at: string | null;
   /** @nullable */
@@ -4326,6 +4427,26 @@ export type PostApiV1ConnectionsBody = {
 
 export type PostApiV1Connections201Kind = "account" | "tracking" | "shop" | "mail";
 export type PostApiV1Connections201State = "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
+/**
+ * Why the connection is in its state, as a code; null when there is nothing to say.
+ * @nullable
+ */
+export type PostApiV1Connections201StateReason =
+  | "not_run_yet"
+  | "not_signed_in_yet"
+  | "sign_in_rejected"
+  | "sign_in_unreadable"
+  | "imported_without_sign_in"
+  | "rate_limited"
+  | "captcha"
+  | "invalid_config"
+  | "provider_missing"
+  | "update_failed"
+  | "provider_idle"
+  | "inbox_sign_in_rejected"
+  | "inbox_settings_invalid"
+  | "inbox_unreachable"
+  | null;
 export type PostApiV1Connections201 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4336,8 +4457,16 @@ export type PostApiV1Connections201 = {
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
   state: PostApiV1Connections201State;
-  /** @nullable */
-  state_detail: string | null;
+  /**
+   * Why the connection is in its state, as a code; null when there is nothing to say.
+   * @nullable
+   */
+  state_reason: PostApiV1Connections201StateReason;
+  /**
+   * What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.
+   * @nullable
+   */
+  carrier_message: string | null;
   /** @nullable */
   next_run_at: string | null;
   /** @nullable */
@@ -4412,6 +4541,26 @@ export type PatchApiV1ConnectionsIdBody = {
 export type PatchApiV1ConnectionsId200Kind = "account" | "tracking" | "shop" | "mail";
 export type PatchApiV1ConnectionsId200State =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
+/**
+ * Why the connection is in its state, as a code; null when there is nothing to say.
+ * @nullable
+ */
+export type PatchApiV1ConnectionsId200StateReason =
+  | "not_run_yet"
+  | "not_signed_in_yet"
+  | "sign_in_rejected"
+  | "sign_in_unreadable"
+  | "imported_without_sign_in"
+  | "rate_limited"
+  | "captcha"
+  | "invalid_config"
+  | "provider_missing"
+  | "update_failed"
+  | "provider_idle"
+  | "inbox_sign_in_rejected"
+  | "inbox_settings_invalid"
+  | "inbox_unreachable"
+  | null;
 export type PatchApiV1ConnectionsId200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4422,8 +4571,16 @@ export type PatchApiV1ConnectionsId200 = {
   /** Whether sign-in data is stored. The data itself is never returned. */
   has_secret: boolean;
   state: PatchApiV1ConnectionsId200State;
-  /** @nullable */
-  state_detail: string | null;
+  /**
+   * Why the connection is in its state, as a code; null when there is nothing to say.
+   * @nullable
+   */
+  state_reason: PatchApiV1ConnectionsId200StateReason;
+  /**
+   * What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.
+   * @nullable
+   */
+  carrier_message: string | null;
   /** @nullable */
   next_run_at: string | null;
   /** @nullable */
@@ -5017,6 +5174,12 @@ export type GetApiV1Data200 = {
 
 export type GetApiV1DataBackups200LastReason = "scheduled" | "manual" | "before_delete";
 /**
+ * Why the backup failed, as a code (the server log has the details); null on success.
+ * @nullable
+ */
+export type GetApiV1DataBackups200LastError =
+  "no_space" | "permission_denied" | "read_only" | "not_a_folder" | "failed" | null;
+/**
  * The newest backup attempt; null before the first.
  * @nullable
  */
@@ -5036,10 +5199,10 @@ export type GetApiV1DataBackups200Last = {
    */
   bytes: number | null;
   /**
-   * Why the backup failed; null on success.
+   * Why the backup failed, as a code (the server log has the details); null on success.
    * @nullable
    */
-  error: string | null;
+  error: GetApiV1DataBackups200LastError;
   /**
    * Older backups deleted to keep the configured number.
    * @minimum -9007199254740991
@@ -5090,6 +5253,12 @@ export type GetApiV1DataBackups200 = {
 };
 
 export type PostApiV1DataBackups200Reason = "scheduled" | "manual" | "before_delete";
+/**
+ * Why the backup failed, as a code (the server log has the details); null on success.
+ * @nullable
+ */
+export type PostApiV1DataBackups200Error =
+  "no_space" | "permission_denied" | "read_only" | "not_a_folder" | "failed" | null;
 export type PostApiV1DataBackups200 = {
   ok: boolean;
   reason: PostApiV1DataBackups200Reason;
@@ -5106,10 +5275,10 @@ export type PostApiV1DataBackups200 = {
    */
   bytes: number | null;
   /**
-   * Why the backup failed; null on success.
+   * Why the backup failed, as a code (the server log has the details); null on success.
    * @nullable
    */
-  error: string | null;
+  error: PostApiV1DataBackups200Error;
   /**
    * Older backups deleted to keep the configured number.
    * @minimum -9007199254740991
@@ -6534,8 +6703,6 @@ export type GetApiV1Calendar200Item = {
   status: string;
   /** `return_by`: the last day to hand a return in (all day). */
   kind: GetApiV1Calendar200ItemKind;
-  /** For a return: where it may be handed in and what sending it back costs, in English; `drop_off` and `cost` say the same for clients with their own texts. */
-  details: string[];
   /** For a return: where it may be handed in (as on the return); empty for a parcel. */
   drop_off: GetApiV1Calendar200ItemDropOffItem[];
   /**
@@ -6626,6 +6793,11 @@ export type PostApiV1CalendarFeed201 = {
   url: string | null;
 };
 
+export type GetIcalTokenIcsParams = {
+  lang?: GetIcalTokenIcsLang;
+};
+
+export type GetIcalTokenIcsLang = "en" | "de";
 export type GetApiV1MapLayers200LayersItemKind = "base" | "overlay";
 export type GetApiV1MapLayers200LayersItem = {
   id: string;
@@ -6972,7 +7144,7 @@ export const getGetApiV1SettingsUrl = () => {
 };
 
 /**
- * @summary The app's settings.
+ * @summary The server's settings.
  */
 export const getApiV1Settings = async (
   options?: Parameters<typeof apiFetch>[1],
@@ -7754,18 +7926,32 @@ export const deleteApiV1CalendarFeed = async (
   });
 };
 
-export const getGetIcalTokenIcsUrl = (token: string) => {
-  return `/ical/${token}.ics`;
+export const getGetIcalTokenIcsUrl = (token: string, params?: GetIcalTokenIcsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/ical/${token}.ics?${stringifiedParams}`
+    : `/ical/${token}.ics`;
 };
 
 /**
+ * Texts are in the language of `lang`, else of Accept-Language (English or German).
  * @summary The ICS feed. Its address is a secret: anyone who has it can read the delivery calendar.
  */
 export const getIcalTokenIcs = async (
   token: string,
+  params?: GetIcalTokenIcsParams,
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<void> => {
-  return apiFetch<void>(getGetIcalTokenIcsUrl(token), {
+  return apiFetch<void>(getGetIcalTokenIcsUrl(token, params), {
     ...options,
     method: "GET",
   });

@@ -9,12 +9,7 @@ import {
   type ParcelStatus,
 } from "../domain/parcel.js";
 import { localParts, nextLocalMidnight, zonedTime } from "../engine/tz.js";
-import {
-  awaitingDropOff,
-  returnDetails,
-  type Return,
-  type ReturnStatus,
-} from "../domain/return.js";
+import { awaitingDropOff, type Return, type ReturnStatus } from "../domain/return.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
 import type { ReturnService } from "../returns/service.js";
 
@@ -40,8 +35,6 @@ export interface CalendarEntry {
   readonly status: ParcelStatus | ReturnStatus;
   /** `return_by`: the last day to hand a return in, all day. */
   readonly kind: "expected" | "delivered" | "return_by";
-  /** For a return: where to hand it in and what it costs, one English line each. */
-  readonly details: readonly string[];
   /** For a return: where it may be handed in; empty for a parcel. */
   readonly dropOff: Return["drop_off"];
   /** For a return: what sending it back costs, when known; null for a parcel. */
@@ -165,7 +158,6 @@ export class CalendarService {
       trackingNumber: entry.order_number,
       status: entry.status,
       kind: "return_by",
-      details: returnDetails(entry),
       dropOff: entry.drop_off,
       cost: entry.cost,
       late: entry.status === "expired",
@@ -234,7 +226,6 @@ export class CalendarService {
           parcelId: row.id,
           returnId: null,
           orderId: null,
-          details: [],
           dropOff: [],
           cost: null,
           // The carrier is shown next to the title by each reader, so it is not repeated here.

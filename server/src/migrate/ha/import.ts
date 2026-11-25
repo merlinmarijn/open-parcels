@@ -9,7 +9,7 @@ import { BUILTIN_CARRIERS } from "../../engine/builtin-carriers.js";
 import { trackingConnectionIn } from "../../engine/linking.js";
 import { InvalidConnectionConfigError, ProviderRegistry } from "../../engine/registry.js";
 import { configKey } from "../../engine/connection-dedup.js";
-import { NOT_RUN_YET, secretAad, sessionAad } from "../../engine/connections.js";
+import { secretAad, sessionAad } from "../../engine/connections.js";
 import { appendEvent } from "../../events/bus.js";
 import { parseConfigEntries, planEntry, type ConnectionPlan } from "./entries.js";
 import { inImportTransaction } from "../shared.js";
@@ -28,7 +28,8 @@ export interface HaConnectionReport {
   readonly kind: string;
   readonly action: "created" | "updated";
   readonly state: "ok" | "needs_sign_in";
-  readonly stateDetail: string | null;
+  /** For the import report only: why the connection needs a sign-in (not stored). */
+  readonly signInNote: string | null;
   /** True when sign-in data was carried over (never the data itself). */
   readonly signedIn: boolean;
   /** False on a re-run whose HA sign-in data was unchanged, so newer tokens were kept. */
@@ -141,7 +142,8 @@ function blobs(ctx: Context, id: string, plan: ConnectionPlan) {
     session_blob:
       plan.session === null ? null : ctx.secrets.encryptJson(plan.session, sessionAad(id)),
     state: plan.state,
-    state_detail: plan.stateDetail,
+    state_reason: plan.state === "ok" ? null : ("imported_without_sign_in" as const),
+    carrier_message: null,
   };
 }
 
@@ -211,8 +213,7 @@ async function writeConnection(ctx: Context, plan: ConnectionPlan): Promise<Writ
   const id = crypto.randomUUID();
   const written = blobs(ctx, id, plan);
   // As ConnectionService.create: nothing has run yet, and that is what the connection says.
-  const detail =
-    written.state === "ok" ? (written.state_detail ?? NOT_RUN_YET) : written.state_detail;
+  const reason = written.state === "ok" ? ("not_run_yet" as const) : written.state_reason;
   await ctx.trx
     .insertInto("connections")
     .values({
@@ -222,7 +223,7 @@ async function writeConnection(ctx: Context, plan: ConnectionPlan): Promise<Writ
       label: plan.label,
       config: JSON.stringify(plan.config),
       ...written,
-      state_detail: detail,
+      state_reason: reason,
       next_run_at: plan.state === "ok" ? ctx.now : null,
       created_at: ctx.now,
       updated_at: ctx.now,
@@ -235,7 +236,8 @@ async function writeConnection(ctx: Context, plan: ConnectionPlan): Promise<Writ
     payload: {
       connection: { id, provider: plan.provider, label: plan.label, kind: plan.kind },
       state: plan.state,
-      detail,
+      state_reason: reason,
+      carrier_message: null,
     },
   });
   await writeMarker(ctx, plan.entryId, { connectionId: id, credentials: fingerprint });
@@ -386,7 +388,7 @@ async function importPlans(
       kind: plan.kind,
       action: written.action,
       state: plan.state,
-      stateDetail: plan.stateDetail,
+      signInNote: plan.signInNote,
       signedIn: plan.state === "ok" && (plan.secret !== null || plan.session !== null),
       credentialsWritten: written.credentialsWritten,
       parcels: plan.parcels.length,

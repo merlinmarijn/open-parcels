@@ -43,7 +43,9 @@ export function BackupCard(): ReactNode {
                 {formatDateTime(last.at)}
                 {last.ok && last.bytes !== null ? `, ${formatBytes(last.bytes)}` : ""}
               </span>
-              {last.error === null ? null : <div className="muted">{last.error}</div>}
+              {last.error === null ? null : (
+                <div className="muted">{t.admin.backupErrors[last.error]}</div>
+              )}
             </div>
           )}
           {data.files.length === 0 ? null : (

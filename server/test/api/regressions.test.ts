@@ -82,7 +82,7 @@ describe("enabling a connection", () => {
     expect(on.json()).toMatchObject({
       state: "ok",
       last_ok_at: null,
-      state_detail: "Not run yet.",
+      state_reason: "not_run_yet",
     });
   });
 });
@@ -147,7 +147,7 @@ describe("date-only calendar entries", () => {
     );
     const ics = renderIcs(entries, {
       timeZone: "Europe/Berlin",
-      name: "Test",
+      language: "en",
       publicUrl: undefined,
     });
     expect(ics).toContain("DTSTART;VALUE=DATE:20261117");
@@ -280,7 +280,8 @@ describe("shop attribution", () => {
         secret_blob: null,
         session_blob: null,
         state: "ok",
-        state_detail: null,
+        state_reason: null,
+        carrier_message: null,
         backoff_until: null,
         next_run_at: null,
         last_run_at: null,

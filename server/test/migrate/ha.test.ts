@@ -322,7 +322,7 @@ describe("Home Assistant suite import", () => {
       ["Amazon (amazon.de)", "needs_sign_in", false],
       ["Poland", "needs_sign_in", false],
     ]);
-    expect(report.connections[0]?.stateDetail).toMatch(/Credentials missing/);
+    expect(report.connections[0]?.signInNote).toMatch(/Credentials missing/);
     const rows = await connections();
     expect(rows.every((s) => s.state === "needs_sign_in" && s.next_run_at === null)).toBe(true);
     expect(report.skipped.map((s) => s.entryId)).toEqual(["n", "k"]);
@@ -356,7 +356,8 @@ describe("an existing tracking connection", () => {
         secret_blob: null,
         session_blob: null,
         state: "ok",
-        state_detail: null,
+        state_reason: null,
+        carrier_message: null,
         next_run_at: now,
         created_at: now,
         updated_at: now,
@@ -388,7 +389,8 @@ async function insertTrackingConnection(provider: string, config: string, label:
       secret_blob: null,
       session_blob: null,
       state: "ok",
-      state_detail: null,
+      state_reason: null,
+      carrier_message: null,
       next_run_at: now,
       created_at: now,
       updated_at: now,

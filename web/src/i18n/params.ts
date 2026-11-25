@@ -1,5 +1,5 @@
 import type { ErrorParams } from "../api/fetcher";
-import type { ErrorCode } from "../api/types";
+import type { BackupError, ErrorCode } from "../api/types";
 import { formatNumber } from "../lib/locale";
 
 /** A text value the server sent with an error; empty when it is missing. */
@@ -16,6 +16,15 @@ export function withDetail(text: string, params: ErrorParams): string {
 }
 
 export type ErrorText = (params: ErrorParams) => string;
+
+/** The text for the backup error code in `params.error`; the general one for an unknown code. */
+export function backupErrorText(
+  texts: Readonly<Record<BackupError, string>>,
+  params: ErrorParams,
+): string {
+  const code = param(params, "error");
+  return (texts as Readonly<Record<string, string | undefined>>)[code] ?? texts.failed;
+}
 
 /** One text per server error code, and one for an answer without a code (a proxy's page). */
 export interface ErrorTexts {

@@ -106,8 +106,8 @@ export function registerDataRoutes(app: TypedApp, services: Services): void {
         throw new ApiError(
           500,
           "backup_failed",
-          `The backup failed: ${result.error ?? "unknown error"}.`,
-          { detail: result.error ?? "" },
+          `The backup failed (${result.error ?? "failed"}).`,
+          { error: result.error ?? "failed" },
         );
       }
       return result;
@@ -160,8 +160,8 @@ export function registerDataRoutes(app: TypedApp, services: Services): void {
             throw new ApiError(
               500,
               "delete_backup_failed",
-              `Nothing was deleted: the backup before deleting failed (${backup.error ?? "unknown error"}).`,
-              { detail: backup.error ?? "" },
+              `Nothing was deleted: the backup before deleting failed (${backup.error ?? "failed"}).`,
+              { error: backup.error ?? "failed" },
             );
           }
           return {

@@ -1,3 +1,5 @@
+import type { BackupError, SchedulerError } from "../../api/types";
+
 /** English texts: admin. The German file must have the same keys (the type enforces it). */
 export const admin = {
   status: {
@@ -36,7 +38,17 @@ export const admin = {
     redacted: "Redacted on the server: no tracking numbers, addresses or sign-in data.",
     download: "Download diagnostics",
     show: "Show",
+    schedulerErrors: {
+      cycle_failed: "The last pass failed; the server log says why.",
+    } satisfies Record<SchedulerError, string>,
   },
+  backupErrors: {
+    no_space: "The disk is full.",
+    permission_denied: "The server may not write to the backup folder.",
+    read_only: "The backup folder is on a read-only file system.",
+    not_a_folder: "The backup folder path is not a folder.",
+    failed: "The backup failed; the server log says why.",
+  } satisfies Record<BackupError, string>,
   tokens: {
     title: "API tokens",
     adminOnly: "API tokens are for the admin only.",

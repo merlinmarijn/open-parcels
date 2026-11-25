@@ -137,7 +137,7 @@ Versions are pinned and checked at install time.
   - a lint that keeps every regex in a portable subset (no lookaround, no backreferences), so
     Python and other consumers can use the same files.
 
-The app consumes `open-parcels-rules` as a versioned dependency. Rules are **never** downloaded and
+The server consumes `open-parcels-rules` as a versioned dependency. Rules are **never** downloaded and
 run at runtime.
 
 The carrier providers live in `server/src/carriers/` behind a lint-enforced boundary: they import
@@ -231,7 +231,7 @@ The reconciler is the only writer of parcels. It:
 It implements the suite's polling rules:
 
 - **Quiet window:** 00:00–06:00, with catch-up anchors. On by default; one global opt-out
-  (`OPENPARCELS_QUIET_WINDOW=false`, or the app option `quiet_window`), never per carrier.
+  (`OPENPARCELS_QUIET_WINDOW=false`, or the HA app option `quiet_window`), never per carrier.
 - **Fast tier:** every 15 min for parcels out for delivery within an hour of `expected_from`.
 - **Slow tier:** every 45 min for everything else.
 - **Stagger** per install and per connection.
@@ -402,18 +402,20 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 | `parcel.removed` | An active parcel has been gone, undelivered, for 6 h. Nothing is judged while one of its connections is failing |
 | `parcel.deleted` | A parcel was deleted: by the user, by retention, or folded into another parcel with the same code (`merged_into`: its id) |
 | `parcel.archived` | A parcel was archived: by the user or by retention (delivered, by the carrier or by hand, longer ago than the archive period; or not found for too long) |
-| `connection.added` | A connection was created, by the user or by the app for a code added by hand. Clients add its device |
+| `connection.added` | A connection was created, by the user or by the server for a code added by hand. Clients add its device |
 | `connection.updated` | A connection's label or configuration changed. Clients rename its device |
 | `connection.state_changed` | A connection changes state, including "needs sign-in" |
-| `connection.run_finished` | A connection run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the provider skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone and puts the reason in the detail |
+| `connection.run_finished` | A connection run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the provider skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone, with `state_reason` `provider_idle` and the provider's words in `carrier_message` |
 | `connection.removed` | A connection was deleted, or merged into another (`merged_into`: its id). Clients drop its device |
-| `backup.finished` | A database backup ended, successfully or not (`ok`, `reason`, `file`, `bytes`, `error`) |
+| `backup.finished` | A database backup ended, successfully or not (`ok`, `reason`, `file`, `bytes`, `error`: a code such as `no_space`) |
 | `vocab.unknown` | An unmapped status value is seen for the first time |
 
 The payload is the normalised parcel without `raw`, with `live` stripped of coordinates and the
 trail, plus `old_*` and `new_*` for whatever changed. Connection events carry
 `connection: {id, provider, label, kind}` instead; `connection.added`, `connection.updated` and
-`connection.run_finished` also carry the connection's current `state` and `detail`.
+`connection.run_finished` also carry the connection's current `state`, `state_reason` (a code clients translate) and
+`carrier_message` (what the provider or carrier said, as written); `connection.state_changed`
+carries `old_state`, `new_state`, `state_reason` and `carrier_message`.
 
 #### Parcel shape
 
@@ -547,7 +549,7 @@ automatic triggers stay commented out, with the reason written above them.
 - `image:` points at the same image;
 - ingress is on, with `discovery: [open_parcels]`;
 - `backup_exclude` covers the image cache;
-- the app's options map to environment variables.
+- the HA app's options map to environment variables.
 
 **Visibility:** JSON logs, a Status page in the UI (every connection, inbox, the scheduler, the
 event stream and backups), the health levels of §2.6, and downloadable diagnostics with redaction

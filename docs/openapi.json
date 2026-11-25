@@ -449,8 +449,30 @@
                               "disabled"
                             ]
                           },
-                          "detail": {
+                          "state_reason": {
                             "nullable": true,
+                            "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                            "type": "string",
+                            "enum": [
+                              "not_run_yet",
+                              "not_signed_in_yet",
+                              "sign_in_rejected",
+                              "sign_in_unreadable",
+                              "imported_without_sign_in",
+                              "rate_limited",
+                              "captcha",
+                              "invalid_config",
+                              "provider_missing",
+                              "update_failed",
+                              "provider_idle",
+                              "inbox_sign_in_rejected",
+                              "inbox_settings_invalid",
+                              "inbox_unreachable"
+                            ]
+                          },
+                          "carrier_message": {
+                            "nullable": true,
+                            "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
                             "type": "string"
                           },
                           "consecutive_failures": {
@@ -482,7 +504,8 @@
                           "label",
                           "kind",
                           "state",
-                          "detail",
+                          "state_reason",
+                          "carrier_message",
                           "consecutive_failures",
                           "last_run_at",
                           "last_ok_at",
@@ -526,8 +549,30 @@
                               "disabled"
                             ]
                           },
-                          "detail": {
+                          "state_reason": {
                             "nullable": true,
+                            "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                            "type": "string",
+                            "enum": [
+                              "not_run_yet",
+                              "not_signed_in_yet",
+                              "sign_in_rejected",
+                              "sign_in_unreadable",
+                              "imported_without_sign_in",
+                              "rate_limited",
+                              "captcha",
+                              "invalid_config",
+                              "provider_missing",
+                              "update_failed",
+                              "provider_idle",
+                              "inbox_sign_in_rejected",
+                              "inbox_settings_invalid",
+                              "inbox_unreachable"
+                            ]
+                          },
+                          "carrier_message": {
+                            "nullable": true,
+                            "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
                             "type": "string"
                           },
                           "consecutive_failures": {
@@ -568,7 +613,8 @@
                           "label",
                           "kind",
                           "state",
-                          "detail",
+                          "state_reason",
+                          "carrier_message",
                           "consecutive_failures",
                           "last_run_at",
                           "last_ok_at",
@@ -598,7 +644,11 @@
                         },
                         "last_error": {
                           "nullable": true,
-                          "type": "string"
+                          "description": "`cycle_failed`: the last cycle failed (the server log says why).",
+                          "type": "string",
+                          "enum": [
+                            "cycle_failed"
+                          ]
                         },
                         "next_run_at": {
                           "nullable": true,
@@ -666,7 +716,15 @@
                         },
                         "last_error": {
                           "nullable": true,
-                          "type": "string"
+                          "description": "Why the backup failed, as a code (the server log has the details); null on success.",
+                          "type": "string",
+                          "enum": [
+                            "no_space",
+                            "permission_denied",
+                            "read_only",
+                            "not_a_folder",
+                            "failed"
+                          ]
                         },
                         "next_at": {
                           "nullable": true,
@@ -1857,7 +1915,7 @@
     },
     "/api/v1/settings": {
       "get": {
-        "summary": "The app's settings.",
+        "summary": "The server's settings.",
         "tags": [
           "settings"
         ],
@@ -2199,10 +2257,10 @@
                         "enum": [
                           "env",
                           "default",
-                          "app",
+                          "ha_app",
                           "override"
                         ],
-                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
+                        "description": "ha_app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"
@@ -2389,10 +2447,10 @@
                         "enum": [
                           "env",
                           "default",
-                          "app",
+                          "ha_app",
                           "override"
                         ],
-                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
+                        "description": "ha_app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"
@@ -2645,10 +2703,10 @@
                         "enum": [
                           "env",
                           "default",
-                          "app",
+                          "ha_app",
                           "override"
                         ],
-                        "description": "app: an option of the Home Assistant app; override: saved in the UI."
+                        "description": "ha_app: an option of the Home Assistant app; override: saved in the UI."
                       },
                       "set": {
                         "type": "boolean"
@@ -8939,8 +8997,30 @@
                           "disabled"
                         ]
                       },
-                      "state_detail": {
+                      "state_reason": {
                         "nullable": true,
+                        "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                        "type": "string",
+                        "enum": [
+                          "not_run_yet",
+                          "not_signed_in_yet",
+                          "sign_in_rejected",
+                          "sign_in_unreadable",
+                          "imported_without_sign_in",
+                          "rate_limited",
+                          "captcha",
+                          "invalid_config",
+                          "provider_missing",
+                          "update_failed",
+                          "provider_idle",
+                          "inbox_sign_in_rejected",
+                          "inbox_settings_invalid",
+                          "inbox_unreachable"
+                        ]
+                      },
+                      "carrier_message": {
+                        "nullable": true,
+                        "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
                         "type": "string"
                       },
                       "next_run_at": {
@@ -8964,7 +9044,8 @@
                       "config",
                       "has_secret",
                       "state",
-                      "state_detail",
+                      "state_reason",
+                      "carrier_message",
                       "next_run_at",
                       "last_run_at",
                       "last_ok_at"
@@ -9068,8 +9149,30 @@
                         "disabled"
                       ]
                     },
-                    "state_detail": {
+                    "state_reason": {
                       "nullable": true,
+                      "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                      "type": "string",
+                      "enum": [
+                        "not_run_yet",
+                        "not_signed_in_yet",
+                        "sign_in_rejected",
+                        "sign_in_unreadable",
+                        "imported_without_sign_in",
+                        "rate_limited",
+                        "captcha",
+                        "invalid_config",
+                        "provider_missing",
+                        "update_failed",
+                        "provider_idle",
+                        "inbox_sign_in_rejected",
+                        "inbox_settings_invalid",
+                        "inbox_unreachable"
+                      ]
+                    },
+                    "carrier_message": {
+                      "nullable": true,
+                      "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
                       "type": "string"
                     },
                     "next_run_at": {
@@ -9093,7 +9196,8 @@
                     "config",
                     "has_secret",
                     "state",
-                    "state_detail",
+                    "state_reason",
+                    "carrier_message",
                     "next_run_at",
                     "last_run_at",
                     "last_ok_at"
@@ -9265,8 +9369,30 @@
                         "disabled"
                       ]
                     },
-                    "state_detail": {
+                    "state_reason": {
                       "nullable": true,
+                      "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                      "type": "string",
+                      "enum": [
+                        "not_run_yet",
+                        "not_signed_in_yet",
+                        "sign_in_rejected",
+                        "sign_in_unreadable",
+                        "imported_without_sign_in",
+                        "rate_limited",
+                        "captcha",
+                        "invalid_config",
+                        "provider_missing",
+                        "update_failed",
+                        "provider_idle",
+                        "inbox_sign_in_rejected",
+                        "inbox_settings_invalid",
+                        "inbox_unreachable"
+                      ]
+                    },
+                    "carrier_message": {
+                      "nullable": true,
+                      "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
                       "type": "string"
                     },
                     "next_run_at": {
@@ -9290,7 +9416,8 @@
                     "config",
                     "has_secret",
                     "state",
-                    "state_detail",
+                    "state_reason",
+                    "carrier_message",
                     "next_run_at",
                     "last_run_at",
                     "last_ok_at"
@@ -10395,8 +10522,15 @@
                         },
                         "error": {
                           "nullable": true,
-                          "description": "Why the backup failed; null on success.",
-                          "type": "string"
+                          "description": "Why the backup failed, as a code (the server log has the details); null on success.",
+                          "type": "string",
+                          "enum": [
+                            "no_space",
+                            "permission_denied",
+                            "read_only",
+                            "not_a_folder",
+                            "failed"
+                          ]
                         },
                         "pruned": {
                           "type": "integer",
@@ -10509,8 +10643,15 @@
                     },
                     "error": {
                       "nullable": true,
-                      "description": "Why the backup failed; null on success.",
-                      "type": "string"
+                      "description": "Why the backup failed, as a code (the server log has the details); null on success.",
+                      "type": "string",
+                      "enum": [
+                        "no_space",
+                        "permission_denied",
+                        "read_only",
+                        "not_a_folder",
+                        "failed"
+                      ]
                     },
                     "pruned": {
                       "type": "integer",
@@ -13373,13 +13514,6 @@
                         ],
                         "description": "`return_by`: the last day to hand a return in (all day)."
                       },
-                      "details": {
-                        "type": "array",
-                        "items": {
-                          "type": "string"
-                        },
-                        "description": "For a return: where it may be handed in and what sending it back costs, in English; `drop_off` and `cost` say the same for clients with their own texts."
-                      },
                       "drop_off": {
                         "type": "array",
                         "items": {
@@ -13486,7 +13620,6 @@
                       "tracking_number",
                       "status",
                       "kind",
-                      "details",
                       "drop_off",
                       "cost",
                       "start",
@@ -13647,7 +13780,20 @@
         "tags": [
           "calendar"
         ],
+        "description": "Texts are in the language of `lang`, else of Accept-Language (English or German).",
         "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "en",
+                "de"
+              ]
+            },
+            "in": "query",
+            "name": "lang",
+            "required": false
+          },
           {
             "schema": {
               "type": "string",

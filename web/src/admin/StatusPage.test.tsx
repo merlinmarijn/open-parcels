@@ -30,7 +30,8 @@ const STATUS = {
       label: "Demo tracking",
       kind: "tracking",
       state: "error",
-      detail: "Demo answered HTTP 500.",
+      state_reason: "update_failed",
+      carrier_message: "Demo answered HTTP 500.",
       consecutive_failures: 2,
       last_run_at: "2026-11-25T09:50:00.000Z",
       last_ok_at: "2026-11-25T08:00:00.000Z",
@@ -45,7 +46,8 @@ const STATUS = {
       label: "Inbox",
       kind: "mail",
       state: "error",
-      detail: "The mail server could not be reached; retrying.",
+      state_reason: "inbox_unreachable",
+      carrier_message: null,
       consecutive_failures: 0,
       last_run_at: null,
       last_ok_at: null,
@@ -67,7 +69,7 @@ const STATUS = {
     enabled: true,
     last_ok: false,
     last_at: "2026-11-25T03:00:00.000Z",
-    last_error: "No space left on device.",
+    last_error: "no_space",
     next_at: "2026-11-25T10:00:00.000Z",
   },
 };
@@ -88,11 +90,15 @@ describe("status page", () => {
     expect(within(service).getByText("Backups")).toBeInTheDocument();
 
     const connections = screen.getByRole("region", { name: "Connections" });
-    expect(within(connections).getByText("Demo answered HTTP 500.")).toBeInTheDocument();
+    expect(
+      within(connections).getByText(
+        "The last update failed; retrying later. Details: Demo answered HTTP 500.",
+      ),
+    ).toBeInTheDocument();
     const inboxes = screen.getByRole("region", { name: "Inboxes" });
     expect(within(inboxes).getByText(/reconnecting/)).toBeInTheDocument();
     const background = screen.getByRole("region", { name: "Background work" });
-    expect(within(background).getByText("No space left on device.")).toBeInTheDocument();
+    expect(within(background).getByText("The disk is full.")).toBeInTheDocument();
     expect(screen.getByText("Diagnostics are for the admin only.")).toBeInTheDocument();
   });
 });

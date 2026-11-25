@@ -9,6 +9,7 @@ import type {
   GetApiV1Returns200Item,
   GetApiV1ReturnsView,
   GetApiV1Session200,
+  GetApiV1Status200,
   GetApiV1Connections200Item,
   GetApiV1ConnectionsIdSignInFlows200Item,
   GetApiV1Tokens200Item,
@@ -27,6 +28,9 @@ export type LookupState = Parcel["lookup"]["state"];
 export type Carrier = GetApiV1Carriers200Item;
 export type Connection = GetApiV1Connections200Item;
 export type ConnectionState = Connection["state"];
+export type StateReason = NonNullable<Connection["state_reason"]>;
+export type SchedulerError = NonNullable<GetApiV1Status200["scheduler"]["last_error"]>;
+export type BackupError = NonNullable<GetApiV1Status200["backups"]["last_error"]>;
 export type SignInFlow = GetApiV1ConnectionsIdSignInFlows200Item;
 export type SignInResult = PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200;
 export type SignInStepResult = Extract<SignInResult, { status: "step" }>;

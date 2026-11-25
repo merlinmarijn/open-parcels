@@ -8,7 +8,12 @@ import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
 import { connectionKindSchema } from "../../domain/parcel.js";
-import { idParams, providerKindSchema } from "../schemas.js";
+import {
+  carrierMessageSchema,
+  idParams,
+  providerKindSchema,
+  stateReasonSchema,
+} from "../schemas.js";
 
 /** "45 seconds", "12 minutes", "3 hours": rounded up, for a message a person reads. */
 export function waitText(seconds: number): string {
@@ -32,7 +37,8 @@ const connectionSchema = z.object({
     .boolean()
     .describe("Whether sign-in data is stored. The data itself is never returned."),
   state: z.enum(["ok", "idle", "needs_sign_in", "error", "disabled"]),
-  state_detail: z.string().nullable(),
+  state_reason: stateReasonSchema,
+  carrier_message: carrierMessageSchema,
   next_run_at: z.string().nullable(),
   last_run_at: z.string().nullable(),
   last_ok_at: z.string().nullable(),
@@ -82,7 +88,8 @@ function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
     config: view.config,
     has_secret: view.hasSecret,
     state: view.state,
-    state_detail: view.stateDetail,
+    state_reason: view.stateReason,
+    carrier_message: view.carrierMessage,
     next_run_at: view.nextRunAt,
     last_run_at: view.lastRunAt,
     last_ok_at: view.lastOkAt,

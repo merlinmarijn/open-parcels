@@ -25,7 +25,8 @@ describe("connections", () => {
     config: {},
     has_secret: false,
     state: "disabled",
-    state_detail: null,
+    state_reason: null,
+    carrier_message: null,
     next_run_at: null,
     last_run_at: null,
     last_ok_at: null,
@@ -48,13 +49,16 @@ describe("connections", () => {
     mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
       "GET /api/v1/connections": () => ({
-        body: [{ ...disabled, state: "ok", state_detail: "Not run yet." }],
+        body: [{ ...disabled, state: "ok", state_reason: "not_run_yet" }],
       }),
       "GET /api/v1/carriers": () => ({ body: [] }),
     });
     renderApp("/connections");
     await screen.findByRole("heading", { name: "DHL account" });
     expect(screen.getByText("Not run yet", { selector: ".badge" })).toBeInTheDocument();
+    expect(
+      screen.getByText("Not run yet.", { selector: ".connection-detail" }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("OK", { selector: ".badge" })).not.toBeInTheDocument();
   });
 });

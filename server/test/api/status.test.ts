@@ -42,7 +42,8 @@ async function addInbox(state: "ok" | "needs_sign_in"): Promise<void> {
       secret_blob: null,
       session_blob: null,
       state,
-      state_detail: state === "ok" ? null : "The mail server rejected the sign-in.",
+      state_reason: state === "ok" ? null : "inbox_sign_in_rejected",
+      carrier_message: null,
       backoff_until: null,
       next_run_at: null,
       last_run_at: null,
@@ -83,7 +84,10 @@ describe("health and status", () => {
       config: {},
       secret: null,
     });
-    await context.services.connections.setState(connection.id, "error", "Demo answered HTTP 500.");
+    await context.services.connections.setState(connection.id, "error", {
+      reason: "update_failed",
+      carrierMessage: "Demo answered HTTP 500.",
+    });
     const { code, body } = await health();
     expect(code).toBe(200);
     expect(body.status).toBe("degraded");
@@ -101,7 +105,8 @@ describe("health and status", () => {
         id: connection.id,
         label: "Demo tracking",
         state: "error",
-        detail: "Demo answered HTTP 500.",
+        state_reason: "update_failed",
+        carrier_message: "Demo answered HTTP 500.",
       }),
     ]);
   });

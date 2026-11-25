@@ -160,7 +160,7 @@ describe("auto-created tracking connections", () => {
 });
 
 describe("a failed run says what failed", () => {
-  it("puts the provider's reason, scrubbed, into the connection's detail", async () => {
+  it("puts the provider's reason, scrubbed, into the connection's carrier message", async () => {
     const id = await addConnection("fakepost", "account");
     post.failWith = new TransientError(
       "Fake tracking answered HTTP 403 (text/html) for 00340434000000000077, expected 200.",
@@ -168,8 +168,9 @@ describe("a failed run says what failed", () => {
     await runNow(id);
     const connection = await context.services.connections.get(id);
     expect(connection?.state).toBe("error");
-    expect(connection?.stateDetail).toContain("HTTP 403 (text/html)");
-    expect(connection?.stateDetail).not.toContain("00340434000000000077");
+    expect(connection?.stateReason).toBe("update_failed");
+    expect(connection?.carrierMessage).toContain("HTTP 403 (text/html)");
+    expect(connection?.carrierMessage).not.toContain("00340434000000000077");
   });
 });
 
@@ -260,21 +261,21 @@ describe("connection states", () => {
     await runNow(id);
     expect(await context.services.connections.get(id)).toMatchObject({
       state: "needs_sign_in",
-      stateDetail: "Not signed in yet.",
+      stateReason: "not_signed_in_yet",
     });
   });
 
   it("does not call a never-successful connection OK after it is disabled and enabled", async () => {
     const id = await addConnection("fakeshop", "shop");
-    expect((await context.services.connections.get(id))?.stateDetail).toBe("Not run yet.");
+    expect((await context.services.connections.get(id))?.stateReason).toBe("not_run_yet");
     await context.services.connections.updateSettings(id, { enabled: false });
     await context.services.connections.updateSettings(id, { enabled: true });
     expect(await context.services.connections.get(id)).toMatchObject({
       state: "ok",
-      stateDetail: "Not run yet.",
+      stateReason: "not_run_yet",
     });
     await runNow(id);
-    expect((await context.services.connections.get(id))?.stateDetail).toBeNull();
+    expect((await context.services.connections.get(id))?.stateReason).toBeNull();
   });
 
   it("announces every finished run, so open views refresh", async () => {

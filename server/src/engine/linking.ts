@@ -68,9 +68,10 @@ export function trackingConnectionIn(
         secret_blob: null,
         session_blob: null,
         state: "ok",
-        state_detail: null,
+        state_reason: null,
+        carrier_message: null,
         next_run_at: now,
-        // Made by the app, not the user: removed again once its last parcel is deleted.
+        // Made by the server, not the user: removed again once its last parcel is deleted.
         auto_created: 1,
         created_at: now,
         updated_at: now,
@@ -88,7 +89,8 @@ export function trackingConnectionIn(
           kind: "tracking",
         },
         state: "ok",
-        detail: null,
+        state_reason: null,
+        carrier_message: null,
       },
     });
     return id;

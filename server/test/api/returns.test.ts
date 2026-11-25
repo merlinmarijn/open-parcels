@@ -167,7 +167,6 @@ describe("returns in the calendar", () => {
         start_date: "2026-11-25",
         end_date: "2026-11-26",
         status: "requested",
-        details: ["Drop off: Any DHL drop-off point", "Free return"],
         drop_off: [expect.objectContaining({ description: "Any DHL drop-off point" })],
         cost: expect.objectContaining({ free: true }) as unknown,
       }),
@@ -180,6 +179,18 @@ describe("returns in the calendar", () => {
     expect(feed).toContain("SUMMARY:Return by 2026-11-25: Example kettle...");
     expect(feed).toContain("DTSTART;VALUE=DATE:20261125");
     expect(feed).toContain("Drop off: Any DHL drop-off point\\nFree return");
+    expect(feed).toContain("Status: Return requested");
+    const german = (
+      await app.inject({ url: `${created.json<{ path: string }>().path}?lang=de` })
+    ).body.replace(/\r\n /g, "");
+    expect(german).toContain("SUMMARY:Zurücksenden bis 2026-11-25: Example kettle...");
+    expect(german).toContain("Abgabe: Any DHL drop-off point\\nKostenlose Rücksendung");
+    expect(german).toContain("Status: Rücksendung angefragt");
+    const byHeader = await app.inject({
+      url: created.json<{ path: string }>().path,
+      headers: { "accept-language": "de-DE,de;q=0.9" },
+    });
+    expect(byHeader.body).toContain("X-WR-CALNAME:Paketzustellungen");
   });
 
   it("drops the entry once the return is handed in", async () => {

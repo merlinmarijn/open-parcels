@@ -21,8 +21,8 @@ import {
 } from "../config.js";
 import type { Database } from "../db/schema.js";
 
-/** `app`: an option of the Home Assistant app; `override`: saved on the Settings page. */
-export type SettingSource = "env" | "default" | "app" | "override";
+/** `ha_app`: an option of the Home Assistant app; `override`: saved on the Settings page. */
+export type SettingSource = "env" | "default" | "ha_app" | "override";
 
 export interface SettingInfo {
   readonly key: SettingKey;
@@ -95,7 +95,7 @@ export class ConfigSettings {
       }
     }
     for (const key of this.#overrides.keys()) {
-      if (this.config.env.sources[key] === "app") {
+      if (this.config.env.sources[key] === "ha_app") {
         this.logger.info(
           { key },
           "Home Assistant app option ignored: a value saved on the Settings page overrides it.",

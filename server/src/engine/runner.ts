@@ -28,7 +28,8 @@ import {
   type ProviderRegistry,
   type RegisteredProvider,
 } from "./registry.js";
-import { NOT_SIGNED_IN_YET, secretAad, sessionAad } from "./connections.js";
+import { secretAad, sessionAad } from "./connections.js";
+import { cause, type StateCause } from "./state-reason.js";
 import { recordUnknown } from "./vocab.js";
 
 export type RunOutcome =
@@ -44,7 +45,7 @@ export type RunOutcome =
   | {
       readonly ok: false;
       readonly kind: FailureKind;
-      readonly detail: string;
+      readonly why: StateCause;
       readonly retryAfterSeconds?: number;
     };
 
@@ -62,42 +63,35 @@ export interface RunnerDeps {
 
 function classify(error: unknown): {
   kind: FailureKind;
-  detail: string;
+  why: StateCause;
   retryAfterSeconds?: number;
 } {
   if (error instanceof SignInRejectedError) {
-    return { kind: "sign_in_rejected", detail: "The carrier rejected the sign-in. Sign in again." };
+    return { kind: "sign_in_rejected", why: cause("sign_in_rejected") };
   }
   if (error instanceof RateLimitedError) {
     return {
       kind: "rate_limited",
-      detail: "The carrier asked us to slow down.",
+      why: cause("rate_limited"),
       ...(error.retryAfterSeconds === undefined
         ? {}
         : { retryAfterSeconds: error.retryAfterSeconds }),
     };
   }
   if (error instanceof CaptchaError) {
-    return { kind: "captcha", detail: "The carrier showed a captcha; paused for six hours." };
+    return { kind: "captcha", why: cause("captcha") };
   }
   if (error instanceof InvalidConnectionConfigError) {
-    return { kind: "invalid_config", detail: error.message };
+    return { kind: "invalid_config", why: cause("invalid_config", error.message) };
   }
   if (error instanceof DecryptionError) {
-    return {
-      kind: "sign_in_rejected",
-      detail:
-        "The stored sign-in could not be decrypted (was the encryption key changed?). Sign in again.",
-    };
+    return { kind: "sign_in_rejected", why: cause("sign_in_unreadable") };
   }
   if (error instanceof TransientError) {
-    // The provider said what broke (an HTTP status, a changed response); show it, scrubbed.
-    return {
-      kind: "transient",
-      detail: `The last update failed: ${redactText(error.message)} Retrying later.`,
-    };
+    // The provider said what broke (an HTTP status, a changed response); pass it on, scrubbed.
+    return { kind: "transient", why: cause("update_failed", redactText(error.message)) };
   }
-  return { kind: "transient", detail: "The last update failed; retrying later." };
+  return { kind: "transient", why: cause("update_failed") };
 }
 
 interface TrackedParcel {
@@ -147,7 +141,7 @@ export class ConnectionRunner {
       return {
         ok: false,
         kind: "invalid_config",
-        detail: "The connection's carrier provider is not installed.",
+        why: cause("provider_missing"),
       };
     }
     const log = this.deps.logger.child({ provider: row.provider, connection: row.id });
@@ -179,7 +173,7 @@ export class ConnectionRunner {
         classified.kind === "sign_in_rejected" &&
         row.secret_blob === null &&
         row.session_blob === null
-          ? { ...classified, detail: NOT_SIGNED_IN_YET }
+          ? { ...classified, why: cause("not_signed_in_yet") }
           : classified;
       if (outcome.kind === "transient" && !(error instanceof TransientError)) {
         // Not a failure the provider signalled: most likely a bug. Keep the stack for diagnosis.

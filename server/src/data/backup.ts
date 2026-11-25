@@ -30,13 +30,54 @@ const LAST_RESULT_KEY = "backup_last";
 const FILE_MODE = 0o600;
 const DIRECTORY_MODE = 0o700;
 
+/**
+ * Why a backup failed, as a code; clients show their own text and the server log has the error.
+ * `no_space`: the disk is full. `permission_denied`: the server may not write the folder.
+ * `read_only`: the folder is on a read-only file system. `not_a_folder`: the path is a file.
+ * `failed`: anything else.
+ */
+export const BACKUP_ERRORS = [
+  "no_space",
+  "permission_denied",
+  "read_only",
+  "not_a_folder",
+  "failed",
+] as const;
+export type BackupError = (typeof BACKUP_ERRORS)[number];
+
+export const backupErrorSchema = z
+  .enum(BACKUP_ERRORS)
+  .nullable()
+  .describe("Why the backup failed, as a code (the server log has the details); null on success.");
+
+/** The code for a file system error. */
+export function backupError(error: unknown): BackupError {
+  const code =
+    typeof error === "object" && error !== null && "code" in error ? error.code : undefined;
+  switch (code) {
+    case "ENOSPC":
+    case "EDQUOT":
+      return "no_space";
+    case "EACCES":
+    case "EPERM":
+      return "permission_denied";
+    case "EROFS":
+      return "read_only";
+    case "EEXIST":
+    case "ENOTDIR":
+      return "not_a_folder";
+    default:
+      return "failed";
+  }
+}
+
 export const backupResultSchema = z.object({
   ok: z.boolean(),
   reason: z.enum(BACKUP_REASONS),
   at: z.string(),
   file: z.string().nullable().describe("File name inside the backup folder; null on failure."),
   bytes: z.number().int().nullable(),
-  error: z.string().nullable().describe("Why the backup failed; null on success."),
+  error: backupErrorSchema,
   pruned: z.number().int().describe("Older backups deleted to keep the configured number."),
 });
 export type BackupResult = z.infer<typeof backupResultSchema>;
@@ -227,14 +268,13 @@ export class BackupService {
       result = { ok: true, reason, at: at.toISOString(), file: name, bytes, error: null, pruned };
       this.deps.logger.info({ reason, file: name, bytes, pruned }, "Database backup written.");
     } catch (error) {
-      const message = error instanceof Error ? error.message : String(error);
       result = {
         ok: false,
         reason,
         at: at.toISOString(),
         file: null,
         bytes: null,
-        error: message,
+        error: backupError(error),
         pruned: 0,
       };
       this.deps.logger.error({ err: error, reason }, "Database backup failed.");

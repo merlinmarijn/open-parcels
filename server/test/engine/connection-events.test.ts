@@ -47,12 +47,13 @@ describe("connection.added", () => {
           kind: "tracking",
         },
         state: "ok",
-        detail: "Not run yet.",
+        state_reason: "not_run_yet",
+        carrier_message: null,
       },
     ]);
   });
 
-  it("fires when the app makes a tracking connection for a code added by hand", async () => {
+  it("fires when the server makes a tracking connection for a code added by hand", async () => {
     const parcel = await context.services.parcels.create({
       carrier: "fakepost",
       trackingNumber: "FP8001",
@@ -99,7 +100,8 @@ describe("a run the provider skips on purpose", () => {
     const connection = await context.services.connections.get(connectionId);
     expect(connection).toMatchObject({
       state: "idle",
-      stateDetail: "Public tracking off: nothing to look up.",
+      stateReason: "provider_idle",
+      carrierMessage: "Public tracking off: nothing to look up.",
       lastOkAt: null,
     });
     expect(connection?.lastRunAt).not.toBeNull();
@@ -109,17 +111,19 @@ describe("a run the provider skips on purpose", () => {
     expect(finished).toMatchObject({
       ok: true,
       state: "idle",
-      detail: "Public tracking off: nothing to look up.",
+      state_reason: "provider_idle",
+      carrier_message: "Public tracking off: nothing to look up.",
     });
 
-    // An idle connection stays scheduled; once it does something again it is OK, the detail clears
+    // An idle connection stays scheduled; once it does something again it is OK, the reason clears
     // and the success counts.
     post.idle = undefined;
     await context.services.connections.requestRun(connectionId);
     expect(await context.services.scheduler.runDue()).toBe(1);
     expect(await context.services.connections.get(connectionId)).toMatchObject({
       state: "ok",
-      stateDetail: null,
+      stateReason: null,
+      carrierMessage: null,
     });
     expect((await context.services.connections.get(connectionId))?.lastOkAt).not.toBeNull();
   });

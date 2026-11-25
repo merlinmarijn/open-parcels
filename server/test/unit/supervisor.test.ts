@@ -48,7 +48,7 @@ describe("Home Assistant app support", () => {
     expect(env["OPENPARCELS_TIMEZONE"]).toBeUndefined();
     // The Settings page names them as app options, apart from the plain environment.
     const parsed = parseEnv(env, appOptionKeys(explicit, env));
-    expect(parsed.sources.OPENPARCELS_PUBLIC_URL).toBe("app");
+    expect(parsed.sources.OPENPARCELS_PUBLIC_URL).toBe("ha_app");
     expect(parsed.sources.OPENPARCELS_LOG_LEVEL).toBe("env");
   });
 

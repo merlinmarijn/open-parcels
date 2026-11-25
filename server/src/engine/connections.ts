@@ -12,13 +12,10 @@ import {
   type LinkResult,
 } from "./linking.js";
 import { InvalidConnectionConfigError, type ProviderRegistry } from "./registry.js";
+import { cause, NO_CAUSE, type StateCause, type StateReason } from "./state-reason.js";
 
 export type ConnectionKind = ConnectionRow["kind"];
 export type ConnectionState = ConnectionRow["state"];
-
-/** Details of a connection no run has judged yet. */
-export const NOT_SIGNED_IN_YET = "Not signed in yet.";
-export const NOT_RUN_YET = "Not run yet.";
 
 /**
  * Writes `connection.removed` inside the caller's transaction. `mergedInto` names the connection that
@@ -46,7 +43,7 @@ export async function appendConnectionRemoved(
 }
 
 /**
- * Removes those of `connectionIds` that the app created on its own (keyless tracking connections made
+ * Removes those of `connectionIds` that the server created on its own (keyless tracking connections made
  * when a code was added by hand) and that no parcel links to any more, firing `connection.removed`
  * for each inside the caller's transaction. Connections the user made or imported are never touched,
  * and neither is one that has gained sign-in data since. Returns how many were removed.
@@ -88,7 +85,7 @@ export async function removeOrphanedAutoConnections(
 
 type EventRow = Pick<
   ConnectionRow,
-  "id" | "provider" | "label" | "kind" | "state" | "state_detail"
+  "id" | "provider" | "label" | "kind" | "state" | "state_reason" | "carrier_message"
 >;
 
 /** The payload of `connection.added`, `connection.updated` and `connection.run_finished`. */
@@ -96,7 +93,8 @@ function connectionPayload(row: EventRow): Record<string, unknown> {
   return {
     connection: { id: row.id, provider: row.provider, label: row.label, kind: row.kind },
     state: row.state,
-    detail: row.state_detail,
+    state_reason: row.state_reason,
+    carrier_message: row.carrier_message,
   };
 }
 
@@ -112,7 +110,8 @@ export interface ConnectionView {
   readonly config: unknown;
   readonly hasSecret: boolean;
   readonly state: ConnectionState;
-  readonly stateDetail: string | null;
+  readonly stateReason: StateReason | null;
+  readonly carrierMessage: string | null;
   readonly nextRunAt: string | null;
   readonly lastRunAt: string | null;
   readonly lastOkAt: string | null;
@@ -135,7 +134,8 @@ function toView(row: ConnectionRow): ConnectionView {
     config: JSON.parse(row.config) as unknown,
     hasSecret: row.secret_blob !== null,
     state: row.state,
-    stateDetail: row.state_detail,
+    stateReason: row.state_reason,
+    carrierMessage: row.carrier_message,
     nextRunAt: row.next_run_at,
     lastRunAt: row.last_run_at,
     lastOkAt: row.last_ok_at,
@@ -188,7 +188,8 @@ export class ConnectionService {
         // Nothing has judged the connection yet; its first run (due at once) decides, and a run that
         // finds no stored sign-in says "not signed in yet", never "rejected".
         state: "ok",
-        state_detail: input.kind === "mail" ? null : NOT_RUN_YET,
+        state_reason: input.kind === "mail" ? null : "not_run_yet",
+        carrier_message: null,
         // Inboxes are driven by the mail watcher (IMAP IDLE), never by the poll scheduler.
         next_run_at: input.kind === "mail" ? null : now,
         created_at: now,
@@ -334,7 +335,7 @@ export class ConnectionService {
       })
       .where("id", "=", id)
       .execute();
-    await this.setState(id, "ok", null);
+    await this.setState(id, "ok", NO_CAUSE);
     await this.requestRun(id);
   }
 
@@ -368,7 +369,7 @@ export class ConnectionService {
       await this.#announceConnection(id, "connection.updated");
     }
     if (changes.enabled === false) {
-      await this.setState(id, "disabled", null);
+      await this.setState(id, "disabled", NO_CAUSE);
     } else if (changes.enabled === true && row.state === "disabled") {
       await this.#enable(row);
     }
@@ -382,7 +383,7 @@ export class ConnectionService {
    */
   async #enable(row: ConnectionRow): Promise<void> {
     const proven = row.last_ok_at !== null || row.kind === "mail";
-    await this.setState(row.id, "ok", proven ? null : NOT_RUN_YET);
+    await this.setState(row.id, "ok", proven ? NO_CAUSE : cause("not_run_yet"));
     if (row.kind !== "mail") {
       await this.requestRun(row.id);
     }
@@ -411,7 +412,7 @@ export class ConnectionService {
 
   /**
    * Fires `connection.run_finished`: a run ended, whatever its outcome. It carries the connection's
-   * current label, state and detail, so a client that missed a change catches up here.
+   * current label, state, state reason and carrier message, so a client that missed a change catches up here.
    */
   async announceRun(id: string, ok: boolean): Promise<void> {
     const row = await this.#eventRow(id);
@@ -446,7 +447,7 @@ export class ConnectionService {
   async #eventRow(id: string): Promise<EventRow | undefined> {
     return this.db
       .selectFrom("connections")
-      .select(["id", "provider", "label", "kind", "state", "state_detail"])
+      .select(["id", "provider", "label", "kind", "state", "state_reason", "carrier_message"])
       .where("id", "=", id)
       .executeTakeFirst();
   }
@@ -476,7 +477,7 @@ export class ConnectionService {
   }
 
   /** Changes the state and fires `connection.state_changed` when it actually changed. */
-  async setState(id: string, state: ConnectionState, detail: string | null): Promise<void> {
+  async setState(id: string, state: ConnectionState, why: StateCause): Promise<void> {
     const row = await this.db
       .selectFrom("connections")
       .select(["state", "provider", "label"])
@@ -488,7 +489,12 @@ export class ConnectionService {
     await this.db.transaction().execute(async (trx) => {
       await trx
         .updateTable("connections")
-        .set({ state, state_detail: detail, updated_at: isoNow(this.clock) })
+        .set({
+          state,
+          state_reason: why.reason,
+          carrier_message: why.carrierMessage,
+          updated_at: isoNow(this.clock),
+        })
         .where("id", "=", id)
         .execute();
       if (row.state !== state) {
@@ -499,7 +505,8 @@ export class ConnectionService {
             connection: { id, provider: row.provider, label: row.label },
             old_state: row.state,
             new_state: state,
-            detail,
+            state_reason: why.reason,
+            carrier_message: why.carrierMessage,
           },
         });
       }

@@ -3,6 +3,7 @@ import { z } from "zod";
 import { randomSecret, safeEqual, sha256Hex } from "../../auth/crypto.js";
 import { renderIcs } from "../../calendar/ics.js";
 import { returnSchema } from "../../domain/return.js";
+import { LANGUAGES, requestLanguage } from "../../i18n/language.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
@@ -26,12 +27,6 @@ const entrySchema = z.object({
   kind: z
     .enum(["expected", "delivered", "return_by"])
     .describe("`return_by`: the last day to hand a return in (all day)."),
-  details: z
-    .array(z.string())
-    .describe(
-      "For a return: where it may be handed in and what sending it back costs, in English; " +
-        "`drop_off` and `cost` say the same for clients with their own texts.",
-    ),
   drop_off: returnSchema.shape.drop_off.describe(
     "For a return: where it may be handed in (as on the return); empty for a parcel.",
   ),
@@ -89,7 +84,6 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
         tracking_number: entry.trackingNumber,
         status: entry.status,
         kind: entry.kind,
-        details: [...entry.details],
         drop_off: entry.dropOff.map((option) => ({ ...option })),
         cost: entry.cost,
         start: entry.start,
@@ -152,8 +146,11 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
         tags: ["calendar"],
         summary:
           "The ICS feed. Its address is a secret: anyone who has it can read the delivery calendar.",
+        description:
+          "Texts are in the language of `lang`, else of Accept-Language (English or German).",
         security: [],
         params: z.object({ token: z.string().min(16).max(128) }),
+        querystring: z.object({ lang: z.enum(LANGUAGES).optional() }),
       },
     },
     async (request, reply) => {
@@ -168,7 +165,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
       );
       const body = renderIcs(entries, {
         timeZone: services.config.timeZone,
-        name: "Parcel deliveries",
+        language: request.query.lang ?? requestLanguage(request.headers["accept-language"]),
         publicUrl: services.config.publicUrl,
       });
       return reply

@@ -17,6 +17,7 @@ import { ErrorNotice, ReadOnlyHint, Spinner } from "../components/ui";
 import { formatRelative } from "../lib/format";
 import { ConnectionStateBadge } from "../parcels/badges";
 import { INBOX_PROVIDER } from "./inbox";
+import { StateCause } from "./StateCause";
 import { SignInDialog } from "./SignInDialog";
 import { ConnectionDialog } from "./ConnectionDialog";
 import { t } from "../i18n";
@@ -106,9 +107,7 @@ function ConnectionRow(props: {
         </div>
         <ConnectionStateBadge state={connection.state} lastOkAt={connection.last_ok_at} />
       </div>
-      {connection.state_detail === null ? null : (
-        <p className="muted connection-detail">{connection.state_detail}</p>
-      )}
+      <StateCause reason={connection.state_reason} carrierMessage={connection.carrier_message} />
       <div className="connection-stats">
         <Stat label={t.connections.statOnTheWay} value={stats.active} />
         <Stat label={t.connections.statDelivered} value={stats.delivered} />

@@ -222,7 +222,7 @@ describe("backups card", () => {
     at: "2026-11-24T03:00:00.000Z",
     file: null,
     bytes: null,
-    error: "EACCES: permission denied, mkdir '/backups'",
+    error: "permission_denied",
     pruned: 0,
   };
   const DONE = {
@@ -265,7 +265,9 @@ describe("backups card", () => {
     renderApp("/settings");
     const card = await screen.findByRole("region", { name: "Backups" });
     expect(await within(card).findByText("Last backup failed")).toBeInTheDocument();
-    expect(within(card).getByText(/permission denied/)).toBeInTheDocument();
+    expect(
+      within(card).getByText("The server may not write to the backup folder."),
+    ).toBeInTheDocument();
     expect(within(card).getByText("/data/backups")).toBeInTheDocument();
 
     await user.click(within(card).getByRole("button", { name: "Back up now" }));

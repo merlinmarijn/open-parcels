@@ -69,7 +69,7 @@ export interface FetchResult {
   readonly complete: boolean;
   /**
    * Set when the provider deliberately did nothing, saying why (for example "Public tracking off:
-   * nothing to look up."). The run then claims no success: the connection keeps this as its detail,
+   * nothing to look up."). The run then claims no success: the connection keeps this as its carrier message,
    * its last successful run stays as it was, and nothing is reconciled.
    */
   readonly idle?: string;

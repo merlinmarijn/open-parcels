@@ -1,3 +1,5 @@
+import type { StateReason } from "../../api/types";
+
 /** English texts: connections. The German file must have the same keys (the type enforces it). */
 export const connections = {
   title: "Connections",
@@ -121,4 +123,24 @@ export const connections = {
   openOwnTab: "Open the web UI in its own tab",
   toUseIt: "to use it.",
   byHand: "Step by step, by hand",
+  // Why a connection is in its state (the server's `state_reason`)
+  stateReasons: {
+    not_run_yet: "Not run yet.",
+    not_signed_in_yet: "Not signed in yet.",
+    sign_in_rejected: "The carrier rejected the sign-in. Sign in again.",
+    sign_in_unreadable:
+      "The stored sign-in could not be decrypted (was the encryption key changed?). Sign in again.",
+    imported_without_sign_in:
+      "Imported from Home Assistant without a sign-in that could be carried over. Sign in.",
+    rate_limited: "The carrier asked us to slow down.",
+    captcha: "The carrier showed a captcha; paused for six hours.",
+    invalid_config: "The connection's settings cannot work.",
+    provider_missing: "The connection's provider is not installed.",
+    update_failed: "The last update failed; retrying later.",
+    provider_idle: "Nothing to look up.",
+    inbox_sign_in_rejected: "The mail server rejected the sign-in. Enter the password again.",
+    inbox_settings_invalid: "The inbox settings are invalid.",
+    inbox_unreachable: "The mail server could not be reached; retrying.",
+  } satisfies Record<StateReason, string>,
+  carrierMessage: (message: string) => `Details: ${message}`,
 };

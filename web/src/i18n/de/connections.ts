@@ -133,4 +133,24 @@ export const connections: Messages["connections"] = {
   openOwnTab: "Die Weboberfläche in einem eigenen Tab öffnen",
   toUseIt: "um sie zu nutzen.",
   byHand: "Schritt für Schritt, von Hand",
+  stateReasons: {
+    not_run_yet: "Noch nicht gelaufen.",
+    not_signed_in_yet: "Noch nicht angemeldet.",
+    sign_in_rejected: "Der Paketdienst hat die Anmeldung abgelehnt. Melde dich erneut an.",
+    sign_in_unreadable:
+      "Die gespeicherte Anmeldung ließ sich nicht entschlüsseln (wurde der Schlüssel geändert?). Melde dich erneut an.",
+    imported_without_sign_in:
+      "Aus Home Assistant übernommen, ohne eine übertragbare Anmeldung. Melde dich an.",
+    rate_limited: "Der Paketdienst hat uns gebeten, langsamer zu machen.",
+    captcha: "Der Paketdienst hat ein Captcha gezeigt; sechs Stunden Pause.",
+    invalid_config: "Die Einstellungen der Verbindung können nicht funktionieren.",
+    provider_missing: "Der Anbieter dieser Verbindung ist nicht installiert.",
+    update_failed: "Die letzte Aktualisierung ist fehlgeschlagen; neuer Versuch später.",
+    provider_idle: "Nichts nachzuschlagen.",
+    inbox_sign_in_rejected:
+      "Der Mailserver hat die Anmeldung abgelehnt. Gib das Passwort erneut ein.",
+    inbox_settings_invalid: "Die Einstellungen des Postfachs sind ungültig.",
+    inbox_unreachable: "Der Mailserver war nicht erreichbar; neuer Versuch läuft.",
+  },
+  carrierMessage: (message: string) => `Details: ${message}`,
 };

@@ -31,7 +31,6 @@ describe("calendar entries", () => {
       parcel_id: "00000000-0000-4000-8000-0000000000b1",
       return_id: null,
       order_id: null,
-      details: [],
       drop_off: [],
       cost: null,
       title: "Lamp",

@@ -169,6 +169,7 @@ describe("backups", () => {
     const manual = await app.inject({ method: "POST", url: "/api/v1/data/backups", headers });
     expect(manual.statusCode).toBe(500);
     expect(manual.json<{ error: string }>().error).toBe("backup_failed");
+    expect(manual.json<{ params: unknown }>().params).toEqual({ error: "not_a_folder" });
     expect((await status()).failing).toBe(true);
   });
 });

@@ -1,4 +1,5 @@
 import type { ColumnType, Generated, Insertable, Selectable, Updateable } from "kysely";
+import type { StateReason } from "../engine/state-reason.js";
 
 /**
  * Row types for Kysely. Conventions:
@@ -57,15 +58,18 @@ export interface ConnectionTable {
   config: string;
   secret_blob: Buffer | null;
   session_blob: Buffer | null;
-  /** `idle`: the last run deliberately did nothing; `state_detail` says why. */
+  /** `idle`: the last run deliberately did nothing; `state_reason` and `carrier_message` say why. */
   state: "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
-  state_detail: string | null;
+  /** A `StateReason` code (`engine/state-reason.ts`). */
+  state_reason: StateReason | null;
+  /** The provider's or carrier's own words about the state, passed through as written. */
+  carrier_message: string | null;
   consecutive_failures: Generated<number>;
   backoff_until: Timestamp | null;
   next_run_at: Timestamp | null;
   last_run_at: Timestamp | null;
   last_ok_at: Timestamp | null;
-  /** 1 when the app made this keyless tracking connection on its own; see migration 0006. */
+  /** 1 when the server made this keyless tracking connection on its own; see migration 0006. */
   auto_created: Generated<number>;
   created_at: Timestamp;
   updated_at: Timestamp;
@@ -124,7 +128,7 @@ export interface ParcelTable {
   updated_at: Timestamp;
   removed_at: Timestamp | null;
   archived_at: Timestamp | null;
-  /** Why the app archived the parcel on its own; null for retention or a user's archive. */
+  /** Why the server archived the parcel on its own; null for retention or a user's archive. */
   archive_reason: ColumnType<string | null, string | null | undefined>;
   /** What a carrier last said about the code: pending (never answered), found or not_found. */
   lookup_state: ColumnType<

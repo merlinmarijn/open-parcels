@@ -6,6 +6,7 @@ import { ErrorNotice, ReadOnlyHint, Spinner } from "../components/ui";
 import { formatDateTime, formatRelative } from "../lib/format";
 import { t } from "../i18n";
 import { ConnectionStateBadge } from "../parcels/badges";
+import { StateCause } from "../connections/StateCause";
 
 type CheckState = GetApiV1Status200["status"];
 type CheckName = keyof GetApiV1Status200["checks"];
@@ -47,7 +48,11 @@ function ConnectionLine(props: {
           ? null
           : t.admin.status.pausedUntil(formatDateTime(connection.backoff_until))}
       </span>
-      {connection.detail === null ? null : <div className="muted">{connection.detail}</div>}
+      <StateCause
+        reason={connection.state_reason}
+        carrierMessage={connection.carrier_message}
+        as="div"
+      />
     </li>
   );
 }
@@ -94,7 +99,7 @@ function Background({ status }: { readonly status: GetApiV1Status200 }): ReactNo
             )}
           </span>
           {scheduler.last_error === null ? null : (
-            <div className="muted">{scheduler.last_error}</div>
+            <div className="muted">{t.admin.status.schedulerErrors[scheduler.last_error]}</div>
           )}
         </li>
         <li>
@@ -118,7 +123,9 @@ function Background({ status }: { readonly status: GetApiV1Status200 }): ReactNo
                   backups.last_ok === true,
                 )}
           </span>
-          {backups.last_error === null ? null : <div className="muted">{backups.last_error}</div>}
+          {backups.last_error === null ? null : (
+            <div className="muted">{t.admin.backupErrors[backups.last_error]}</div>
+          )}
         </li>
       </ul>
     </section>

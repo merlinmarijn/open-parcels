@@ -1,8 +1,11 @@
 import { sql } from "kysely";
 import { z } from "zod";
+import { backupErrorSchema } from "../../data/backup.js";
+import { SCHEDULER_ERRORS } from "../../engine/scheduler.js";
 import type { Services } from "../../services.js";
 import { CHECK_NAMES, CHECK_STATES, collectStatus, type CheckName } from "../../status/service.js";
 import type { TypedApp } from "../app.js";
+import { carrierMessageSchema, stateReasonSchema } from "../schemas.js";
 
 const healthSchema = z.object({ status: z.enum(["ok", "unavailable"]) });
 const checkState = z.enum(CHECK_STATES);
@@ -26,7 +29,8 @@ const connectionStatusSchema = z.object({
   label: z.string(),
   kind: z.enum(["account", "tracking", "shop", "mail"]),
   state: z.enum(["ok", "idle", "needs_sign_in", "error", "disabled"]),
-  detail: z.string().nullable(),
+  state_reason: stateReasonSchema,
+  carrier_message: carrierMessageSchema,
   consecutive_failures: z.number().int(),
   last_run_at: z.string().nullable(),
   last_ok_at: z.string().nullable(),
@@ -62,7 +66,10 @@ const statusSchema = summarySchema.extend({
     running: z.boolean(),
     in_flight: z.number().int().describe("Connection runs in progress."),
     last_cycle_at: z.string().nullable(),
-    last_error: z.string().nullable(),
+    last_error: z
+      .enum(SCHEDULER_ERRORS)
+      .nullable()
+      .describe("`cycle_failed`: the last cycle failed (the server log says why)."),
     next_run_at: z.string().nullable().describe("The earliest planned connection run."),
   }),
   event_stream: z.object({
@@ -75,7 +82,7 @@ const statusSchema = summarySchema.extend({
     enabled: z.boolean(),
     last_ok: z.boolean().nullable(),
     last_at: z.string().nullable(),
-    last_error: z.string().nullable(),
+    last_error: backupErrorSchema,
     next_at: z.string().nullable(),
   }),
 });

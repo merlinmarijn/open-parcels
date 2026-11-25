@@ -475,7 +475,8 @@ async function insertMailbox(
       secret_blob: input.secrets.encryptJson(secret, secretAad(id)),
       session_blob: null,
       state: "ok",
-      state_detail: null,
+      state_reason: null,
+      carrier_message: null,
       next_run_at: null,
       created_at: input.now,
       updated_at: input.now,
@@ -488,7 +489,8 @@ async function insertMailbox(
     payload: {
       connection: { id, provider: MAIL_PROVIDER, label, kind: "mail" },
       state: "ok",
-      detail: null,
+      state_reason: null,
+      carrier_message: null,
     },
   });
   return true;

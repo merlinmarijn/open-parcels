@@ -1,5 +1,6 @@
 import type { FastifyReply } from "fastify";
 import { z } from "zod";
+import { STATE_REASONS } from "../engine/state-reason.js";
 import { CONNECTION_KINDS } from "../provider/api.js";
 
 /** `/:id` of a parcel, order or connection. */
@@ -27,3 +28,18 @@ export function markNextPage(
     void reply.header("x-next-offset", String(offset + limit));
   }
 }
+
+/** Why a connection is in its state, as a code; clients show their own text. */
+export const stateReasonSchema = z
+  .enum(STATE_REASONS)
+  .nullable()
+  .describe("Why the connection is in its state, as a code; null when there is nothing to say.");
+
+/** Words a provider or carrier wrote about the state, passed through untranslated. */
+export const carrierMessageSchema = z
+  .string()
+  .nullable()
+  .describe(
+    "What the provider or carrier said about the state (an HTTP status, a changed response, why " +
+      "it did nothing), as written; null when it said nothing.",
+  );

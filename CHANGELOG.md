@@ -64,11 +64,41 @@ web UI shows an English or German text per code instead of the server's message.
   (`GET /api/v1/map/layers`). Every provider form field now has a `title`. A flow without its own
   label is named `No sign-in`, `Username and password` or `API key` (was its type).
 - Calendar entries (`GET /api/v1/calendar`) add `drop_off` and `cost`, shaped as on the return
-  (parcels: `[]` and `null`), for clients with their own texts; `details` stays the English lines,
-  as in the ICS feed.
+  (parcels: `[]` and `null`), for clients with their own texts.
 
 **What clients must do:** read setting groups as ids. The Home Assistant integration does not use
 them.
+
+### Changed (breaking): codes instead of English texts for states and errors
+
+- Calendar entries (`GET /api/v1/calendar`) lose `details` (the English drop-off and cost lines):
+  clients build their own text from `drop_off` and `cost`. The ICS feed writes its summaries and
+  descriptions in English or German, chosen by `?lang=en|de` on the feed address, else by
+  `Accept-Language`, else English; statuses are words now (`Status: Out for delivery`, was
+  `out for delivery`) and `Tracking:` reads `Tracking number:`.
+- Connections (`GET /api/v1/connections`, `/api/v1/status`) and connection live events lose
+  `state_detail` / `detail`. `state_reason` is a code (`not_run_yet`, `not_signed_in_yet`,
+  `sign_in_rejected`, `sign_in_unreadable`, `imported_without_sign_in`, `rate_limited`, `captcha`,
+  `invalid_config`, `provider_missing`, `update_failed`, `provider_idle`,
+  `inbox_sign_in_rejected`, `inbox_settings_invalid`, `inbox_unreachable`); what a provider or
+  carrier wrote (an HTTP status, why it did nothing, a settings complaint) comes as
+  `carrier_message`, untranslated.
+- `/api/v1/status`: `scheduler.last_error` is the code `cycle_failed` and `backups.last_error`, the
+  backup result's `error` (`/api/v1/data/backups`, `backup.finished`) and the `error` param of
+  `backup_failed` / `delete_backup_failed` (was `detail`) are `no_space`, `permission_denied`,
+  `read_only`, `not_a_folder` or `failed`. The server log keeps the full error.
+- The web UI shows its own English or German text for every code.
+- `GET /api/v1/settings/config`: a setting's `source` `app` is now `ha_app` (an option of the HA
+  app), so "app" never stands alone.
+
+**Stored data is migrated on start:** migration `0025-state-reasons` maps the stored English texts
+to codes (the provider's part of "The last update failed: …" moves to `carrier_message`), drops
+`state_detail`, sets a stored failed backup's error to `failed`, and empties the outbox (clients
+resync once).
+
+**What clients must do:** read `state_reason` and `carrier_message` instead of `state_detail` /
+`detail`, and build calendar texts from `drop_off` and `cost`. The Home Assistant integration 0.8.0
+does both and is released in lockstep.
 
 ### Changed: backups are private, versions name their commit
 

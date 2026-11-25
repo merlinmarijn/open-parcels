@@ -1,4 +1,6 @@
+import { admin } from "./admin";
 import {
+  backupErrorText,
   param,
   pick,
   withDetail,
@@ -67,9 +69,10 @@ export const errors: ErrorTexts = {
     carrier_not_detected: () =>
       "Der Paketdienst ließ sich an dieser Sendungsnummer nicht erkennen. Wähle einen aus oder füge einen Ausweichdienst hinzu (Universal lookup, 17TRACK).",
     duplicate: () => "Dieses Paket wird bereits verfolgt.",
-    backup_failed: (p) => withDetail("Die Sicherung ist fehlgeschlagen.", p),
+    backup_failed: (p) =>
+      `Die Sicherung ist fehlgeschlagen: ${backupErrorText(admin.backupErrors, p)}`,
     delete_backup_failed: (p) =>
-      withDetail("Nichts wurde gelöscht: Die Sicherung vor dem Löschen ist fehlgeschlagen.", p),
+      `Nichts wurde gelöscht: Die Sicherung vor dem Löschen ist fehlgeschlagen. ${backupErrorText(admin.backupErrors, p)}`,
     confirmation_required: (p) =>
       `Gib ${param(p, "phrase")} ein, um das Löschen aller Pakete und Bestellungen zu bestätigen.`,
     invalid_setting: pick(INVALID_SETTING, "reason", "Dieser Wert ist ungültig."),

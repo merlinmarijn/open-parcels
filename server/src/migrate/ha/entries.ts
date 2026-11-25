@@ -39,7 +39,8 @@ export interface ConnectionPlan {
   /** Encrypted into `session_blob`; null when there is nothing to carry over. */
   readonly session: unknown;
   readonly state: "ok" | "needs_sign_in";
-  readonly stateDetail: string | null;
+  /** For the import report only: why the connection needs a sign-in (not stored). */
+  readonly signInNote: string | null;
   readonly parcels: readonly ParcelPlan[];
   readonly parcelTarget: ParcelTarget;
   /** HA settings with no open-parcels equivalent: names only, never values. */
@@ -127,12 +128,12 @@ function base(entry: HaEntry, fallback: string): Base {
   return { entryId: entry.entryId, domain: entry.domain, label: entry.title || fallback };
 }
 
-function signedIn(): Pick<ConnectionPlan, "state" | "stateDetail"> {
-  return { state: "ok", stateDetail: null };
+function signedIn(): Pick<ConnectionPlan, "state" | "signInNote"> {
+  return { state: "ok", signInNote: null };
 }
 
-function needsSignIn(detail: string): Pick<ConnectionPlan, "state" | "stateDetail"> {
-  return { state: "needs_sign_in", stateDetail: detail };
+function needsSignIn(detail: string): Pick<ConnectionPlan, "state" | "signInNote"> {
+  return { state: "needs_sign_in", signInNote: detail };
 }
 
 /** Storefronts the `amazon` provider reads; kept here so the importer needs no provider import. */
