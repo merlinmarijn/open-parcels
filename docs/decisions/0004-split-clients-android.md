@@ -176,10 +176,8 @@ Android app, store publishing) waits until TODO §1–§10 are done.
    web only, all-in-one. With two source repos, the web repo publishes the web image and a static
    zip per release; the server repo builds the server image and the all-in-one image, which takes
    the web zip of the matching web release.
-2. **Web repo name:** still open between `open-parcels-web` and `open-parcels-ui` (and whether the
-   server repo should rather be `open-parcels-api`). Recommendation: `open-parcels-server` +
-   `open-parcels-web`, because the glossary calls it "web UI" and the server is more than an API
-   (scheduler, providers, database).
+2. **Web repo name:** `open-parcels-web` (owner, 2026-11-25). All names are listed in the
+   glossary's "Repositories, projects and images" table.
 3. **Client libraries first:** TypeScript, Python, C#.
 4. **Android notifications:** default is the public **ntfy.sh** instance; users can switch to their
    own ntfy server (or other UnifiedPush distributors). Because ntfy.sh is a public third party, the

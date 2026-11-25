@@ -58,6 +58,30 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | Theme | An installable, declarative look for the whole web UI (colours, fonts, spacing, map style, logo); may come with a light and a dark variant | skin, style, look, Design |
 | Mode | Light, dark or automatic (follow the device); chosen separately from the theme | colour scheme, appearance, dark mode, light mode |
 
+## Repositories, projects and images
+
+Every repository of the `open-parcels` GitHub organisation, the name to use for it in text, and
+what it publishes. Use the short name in prose ("the server", "the HA integration"); use the
+repository name in links, commands and code. "Planned" names take effect with decision record
+0004 (TODO §11); until then the current name is still the real one.
+
+| Repository (current → planned) | Short name (EN) | Short name (DE) | Publishes |
+| --- | --- | --- | --- |
+| `open-parcels` → **`open-parcels-server`** | the server | der Server | images `bluscream1/open-parcels` (today; planned: `open-parcels-server` server only, `open-parcels` all-in-one), `ghcr.io/open-parcels/…` |
+| **`open-parcels-web`** (planned; the web UI lives in `open-parcels/web` today) | the web UI | die Weboberfläche | image `open-parcels-web`, static zip |
+| `open-parcels-rules` | the rules | die Regeln | npm package `open-parcels-rules`, Python loader |
+| `open-parcels-ha` | the HA integration (Home Assistant integration) | die HA-Integration | HACS integration `open_parcels` |
+| `open-parcels-ha-apps` | the HA app (Home Assistant app) | die HA-App | image `bluscream1/open-parcels-ha-app` |
+| `open-parcels-extension` | the extension (browser extension) | die Erweiterung | Firefox and Chromium zips |
+| `open-parcels.github.io` | the website | die Website | open-parcels.github.io |
+| `.github` | the org profile | das Organisationsprofil | issue forms, profile README |
+| `open-parcels-client-typescript`, `-python`, `-csharp` (planned) | the TypeScript / Python / C# client | der TypeScript-/Python-/C#-Client | npm, PyPI, NuGet |
+| `open-parcels-android` (planned) | the Android app | die Android-App | APK (GitHub Releases, F-Droid, IzzyOnDroid, Accrescent) |
+| official providers repo and registry (planned, decision record 0002) | the official providers / the registry | die offiziellen Provider / das Verzeichnis | provider packages, signed index |
+
+Never call the server "the backend", "the API" or "the app"; "app" is reserved for the HA app and
+the Android app. "Home Assistant add-on" is the old name of the HA app.
+
 ## German UI terms
 
 The web UI is in English and German (`web/src/i18n`). These are the official German words for the

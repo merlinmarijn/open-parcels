@@ -163,7 +163,6 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 ## 11. After everything above: split, clients, Android app (decision record 0004)
 
-- [ ] Web repo name: `open-parcels-web` or `open-parcels-ui` (owner still deciding; 0004 §7)
 - [ ] Rename `open-parcels` → `open-parcels-server` and every reference; split repositories: `open-parcels-web` (own image + static zip),
       Compose file for both, all-in-one image stays the default
 - [ ] Unraid: all-in-one template (default) plus server-only and web-only templates; Compose
