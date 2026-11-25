@@ -79,8 +79,9 @@ repository name in links, commands and code. "Planned" names take effect with de
 | `open-parcels-android` (planned) | the Android app | die Android-App | APK (GitHub Releases, F-Droid, IzzyOnDroid, Accrescent) |
 | official providers repo and registry (planned, decision record 0002) | the official providers / the registry | die offiziellen Provider / das Verzeichnis | provider packages, signed index |
 
-Never call the server "the backend", "the API" or "the app"; "app" is reserved for the HA app and
-the Android app. "Home Assistant add-on" is the old name of the HA app.
+Never call the server "the backend", "the API" or "the app". Never write "app" on its own: always
+"HA app" (Home Assistant app) or "Android app", so it is clear which one is meant. "Home Assistant
+add-on" is the old name of the HA app.
 
 ## German UI terms
 
