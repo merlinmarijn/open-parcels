@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { snakeCased } from "../snake-case.js";
 import { PARCEL_LABEL_MODES } from "../../domain/parcel.js";
 import { GeocodeError } from "../../geo/geocoder.js";
 import type { Services } from "../../services.js";
@@ -45,11 +46,7 @@ const settingInfoSchema = z.object({
 });
 
 function settingInfos(services: Services): z.infer<typeof settingInfoSchema>[] {
-  return services.configSettings.list().map(({ pendingRestart, choices, ...rest }) => ({
-    ...rest,
-    choices: choices === null ? null : [...choices],
-    pending_restart: pendingRestart,
-  }));
+  return services.configSettings.list().map((info) => snakeCased(info));
 }
 
 async function afterConfigChange(services: Services, changed: readonly string[]): Promise<void> {

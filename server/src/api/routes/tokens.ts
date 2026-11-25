@@ -4,6 +4,7 @@ import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { errorBodySchema, notFound } from "../errors.js";
+import { snakeCased } from "../snake-case.js";
 
 const tokenInfoSchema = z.object({
   id: z.uuid(),
@@ -27,15 +28,7 @@ export function registerTokenRoutes(app: TypedApp, services: Services): void {
         response: { 200: z.array(tokenInfoSchema) },
       },
     },
-    async () =>
-      (await services.auth.listTokens()).map((token) => ({
-        id: token.id,
-        name: token.name,
-        scopes: [...token.scopes],
-        created_at: token.createdAt,
-        last_used_at: token.lastUsedAt,
-        expires_at: token.expiresAt,
-      })),
+    async () => (await services.auth.listTokens()).map((token) => snakeCased(token)),
   );
 
   app.post(
@@ -61,14 +54,7 @@ export function registerTokenRoutes(app: TypedApp, services: Services): void {
       );
       return reply.code(201).send({
         token,
-        info: {
-          id: info.id,
-          name: info.name,
-          scopes: [...info.scopes],
-          created_at: info.createdAt,
-          last_used_at: info.lastUsedAt,
-          expires_at: info.expiresAt,
-        },
+        info: snakeCased(info),
       });
     },
   );

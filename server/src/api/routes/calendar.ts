@@ -1,4 +1,5 @@
 import { DAY_MS } from "../../clock.js";
+import { snakeCased } from "../snake-case.js";
 import { z } from "zod";
 import { randomSecret, safeEqual, sha256Hex } from "../../auth/crypto.js";
 import { renderIcs } from "../../calendar/ics.js";
@@ -74,28 +75,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
         );
       }
       const entries = await services.calendar.entries(from, to);
-      return entries.map((entry) => ({
-        uid: entry.uid,
-        parcel_id: entry.parcelId,
-        return_id: entry.returnId,
-        order_id: entry.orderId,
-        title: entry.title,
-        carrier: entry.carrier,
-        tracking_number: entry.trackingNumber,
-        status: entry.status,
-        kind: entry.kind,
-        drop_off: entry.dropOff.map((option) => ({ ...option })),
-        cost: entry.cost,
-        start: entry.start,
-        end: entry.end,
-        all_day: entry.allDay,
-        start_date: entry.startDate,
-        end_date: entry.endDate,
-        late: entry.late,
-        image_url: entry.imageUrl,
-        url: entry.url,
-        pickup_point: entry.pickupPoint,
-      }));
+      return entries.map((entry) => snakeCased(entry));
     },
   );
 

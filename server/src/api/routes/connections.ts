@@ -1,4 +1,5 @@
 import { z } from "zod";
+import { snakeCased } from "../snake-case.js";
 import { requestLanguage, type Language } from "../../i18n/language.js";
 import { localizeSchema, providerText } from "../../i18n/translate.js";
 import { InvalidConnectionConfigError, type SignInFlowInfo } from "../../engine/registry.js";
@@ -92,20 +93,7 @@ const carrierSchema = z.object({
 });
 
 export function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
-  return {
-    id: view.id,
-    provider: view.provider,
-    kind: view.kind,
-    label: view.label,
-    config: view.config,
-    has_secret: view.hasSecret,
-    state: view.state,
-    state_reason: view.stateReason,
-    carrier_message: view.carrierMessage,
-    next_run_at: view.nextRunAt,
-    last_run_at: view.lastRunAt,
-    last_ok_at: view.lastOkAt,
-  };
+  return snakeCased(view);
 }
 
 /** A flow as the carrier list shows it; per-flow fields come from the connection's own flow list. */
