@@ -104,8 +104,9 @@ describe("useLiveUpdates (OP-163)", () => {
     ["parcel.deleted", { id: ID }, LISTS, [keys.parcel(ID)]],
     // Archived by retention: the lists drop it (OP-052).
     ["parcel.archived", { parcel: { id: ID } }, [...LISTS, keys.parcel(ID)], []],
-    ["connection.run_finished", { id: "c1" }, [keys.connections, keys.parcels], []],
-    ["connection.removed", { id: "c1" }, [keys.connections, keys.parcels], []],
+    ["connection.run_finished", { id: "c1" }, [keys.connections, keys.status, keys.parcels], []],
+    ["connection.removed", { id: "c1" }, [keys.connections, keys.status, keys.parcels], []],
+    ["backup.finished", { ok: false }, [keys.backups, keys.status], []],
     ["settings.updated", {}, [["settings"], keys.parcels], []],
     // An order started by an email shows up without a reload (OP-052).
     ["order.created", { id: "o1" }, [keys.orders, keys.parcels], []],

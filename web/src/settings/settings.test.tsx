@@ -174,6 +174,68 @@ describe("settings page", () => {
   });
 });
 
+describe("backups card", () => {
+  const FAILED = {
+    ok: false,
+    reason: "scheduled",
+    at: "2026-11-24T03:00:00.000Z",
+    file: null,
+    bytes: null,
+    error: "EACCES: permission denied, mkdir '/backups'",
+    pruned: 0,
+  };
+  const DONE = {
+    ok: true,
+    reason: "manual",
+    at: "2026-11-25T10:00:00.000Z",
+    file: "openparcels-2026-11-25T10-00-00-000Z.db",
+    bytes: 2_500_000,
+    error: null,
+    pruned: 0,
+  };
+
+  it("shows the last failure and backs up on demand", async () => {
+    let status = {
+      interval_hours: 24,
+      keep: 7,
+      directory: "/data/backups",
+      last: FAILED as typeof FAILED | typeof DONE,
+      next_at: "2026-11-25T03:00:00.000Z",
+      failing: true,
+      files: [] as { name: string; bytes: number; created_at: string }[],
+    };
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+      "GET /api/v1/settings": () => ({ body: { home: null, parcel_label: "tracking_number" } }),
+      "GET /api/v1/settings/config": () => ({ body: [] }),
+      "GET /api/v1/data/backups": () => ({ body: status }),
+      "POST /api/v1/data/backups": () => {
+        status = {
+          ...status,
+          last: DONE,
+          failing: false,
+          files: [{ name: DONE.file, bytes: DONE.bytes, created_at: DONE.at }],
+        };
+        return { body: DONE };
+      },
+    });
+    const user = userEvent.setup();
+    renderApp("/settings");
+    const card = await screen.findByRole("region", { name: "Backups" });
+    expect(await within(card).findByText("Last backup failed")).toBeInTheDocument();
+    expect(within(card).getByText(/permission denied/)).toBeInTheDocument();
+    expect(within(card).getByText("/data/backups")).toBeInTheDocument();
+
+    await user.click(within(card).getByRole("button", { name: "Back up now" }));
+    expect(await within(card).findByText("Last backup succeeded")).toBeInTheDocument();
+    expect(within(card).getByText(DONE.file)).toBeInTheDocument();
+    expect(calls.filter((call) => call.method === "POST").map((call) => call.path)).toEqual([
+      "/api/v1/data/backups",
+    ]);
+  });
+});
+
 describe("a server setting's typed value (OP-152)", () => {
   it("keeps a secret as typed and trims the rest", () => {
     expect(fromText(SECRET, " made up ")).toBe(" made up ");

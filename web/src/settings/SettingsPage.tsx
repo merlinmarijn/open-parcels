@@ -17,6 +17,7 @@ import {
   type ParcelLabelMode,
 } from "./home";
 import { useIsAdmin } from "../auth/session";
+import { BackupCard } from "./BackupCard";
 import { DataCard } from "./DataCard";
 import { ServerSettingsCards } from "./ServerSettings";
 
@@ -266,6 +267,7 @@ export function SettingsPage(): ReactNode {
           <>
             <ServerSettingsCards />
             <DataCard />
+            <BackupCard />
           </>
         ) : (
           <section className="card stack">

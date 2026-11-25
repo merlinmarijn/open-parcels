@@ -11,7 +11,8 @@ import { keys } from "./queries";
 const STREAM_RETRY_MS = 5_000;
 const STREAM_RETRY_MAX_MS = 5 * 60_000;
 
-type Reaction = "parcel" | "connection" | "order" | "return" | "settings" | "resync" | "position";
+type Reaction =
+  "parcel" | "connection" | "order" | "return" | "settings" | "backup" | "resync" | "position";
 
 /**
  * What each message of the stream refreshes. Typed against the server's list (generated from its
@@ -44,6 +45,8 @@ const REACTIONS = {
   "return.created": "return",
   "return.updated": "return",
   "settings.updated": "settings",
+  // A backup finished or failed: the backup card and the status page.
+  "backup.finished": "backup",
   resync: "resync",
   // Nothing on screen depends on these.
   "vocab.unknown": null,
@@ -200,6 +203,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
     };
     const onConnection = (): void => {
       void client.invalidateQueries({ queryKey: keys.connections });
+      void client.invalidateQueries({ queryKey: keys.status });
       // A run may have changed parcels without a parcel event (lookup state, last seen), and a
       // removed connection takes its links with it.
       void client.invalidateQueries({ queryKey: keys.parcels });
@@ -243,6 +247,10 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: keys.orders });
       void client.invalidateQueries({ queryKey: ["calendar"] });
     };
+    const onBackup = (): void => {
+      void client.invalidateQueries({ queryKey: keys.backups });
+      void client.invalidateQueries({ queryKey: keys.status });
+    };
     // The server could not replay what was missed (too old, or a reset database): reload all.
     const onResync = (): void => {
       void client.invalidateQueries();
@@ -260,6 +268,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       order: onOrder,
       return: onReturn,
       settings: onSettings,
+      backup: onBackup,
       resync: onResync,
       position: onPosition,
     };

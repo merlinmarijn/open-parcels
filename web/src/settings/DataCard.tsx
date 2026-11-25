@@ -2,20 +2,9 @@ import { useState, type ReactNode } from "react";
 import type { PostApiV1DataClearBody } from "../api/generated";
 import { useClearData, useDataSummary } from "../api/queries";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { formatBytes } from "../lib/format";
 
 const EVERYTHING_CONFIRMATION = "DELETE";
-
-function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${String(bytes)} B`;
-  const units = ["KB", "MB", "GB", "TB"];
-  let value = bytes / 1024;
-  let unit = 0;
-  while (value >= 1024 && unit < units.length - 1) {
-    value /= 1024;
-    unit += 1;
-  }
-  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unit] ?? "TB"}`;
-}
 
 function Row(props: {
   readonly label: string;

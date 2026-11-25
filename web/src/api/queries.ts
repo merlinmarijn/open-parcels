@@ -18,7 +18,9 @@ import {
   getApiV1Carriers,
   getApiV1Data,
   getApiV1Diagnostics,
-  getApiV1HealthReady,
+  getApiV1Status,
+  getApiV1DataBackups,
+  postApiV1DataBackups,
   getApiV1Orders,
   getApiV1OrdersId,
   getApiV1Returns,
@@ -60,7 +62,8 @@ export const keys = {
   carriers: ["carriers"] as const,
   tokens: ["tokens"] as const,
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
-  health: ["health"] as const,
+  status: ["status"] as const,
+  backups: ["backups"] as const,
   diagnostics: ["diagnostics"] as const,
   data: ["data"] as const,
 };
@@ -159,10 +162,14 @@ export function useCalendar(range: { readonly from: string; readonly to: string 
   });
 }
 
-export function useHealth() {
+/**
+ * Every connection, inbox, the scheduler, the live event stream and backups. Live events about
+ * connections and backups refresh it at once; the interval catches the scheduler and inboxes.
+ */
+export function useStatus() {
   return useQuery({
-    queryKey: keys.health,
-    queryFn: ({ signal }) => getApiV1HealthReady({ signal }),
+    queryKey: keys.status,
+    queryFn: ({ signal }) => getApiV1Status({ signal }),
     refetchInterval: 30_000,
   });
 }
@@ -357,6 +364,27 @@ export function useDataSummary() {
   return useQuery({
     queryKey: keys.data,
     queryFn: ({ signal }) => getApiV1Data({ signal }),
+  });
+}
+
+/** The backup schedule, the newest result and the backups kept (admin only). */
+export function useBackups() {
+  return useQuery({
+    queryKey: keys.backups,
+    queryFn: ({ signal }) => getApiV1DataBackups({ signal }),
+  });
+}
+
+/** "Back up now"; the live event `backup.finished` refreshes the card and the status page too. */
+export function useBackupNow() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: () => postApiV1DataBackups(),
+    onSettled: () =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.backups }),
+        client.invalidateQueries({ queryKey: keys.status }),
+      ]),
   });
 }
 

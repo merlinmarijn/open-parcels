@@ -60,6 +60,7 @@
         "tags": [
           "health"
         ],
+        "description": "What container health checks should use. Connections in error do not make it fail; `/api/v1/health` reports those.",
         "security": [],
         "responses": {
           "200": {
@@ -102,6 +103,589 @@
                   },
                   "required": [
                     "status"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/health": {
+      "get": {
+        "summary": "Overall state and one state per part, without details.",
+        "tags": [
+          "health"
+        ],
+        "description": "200 while the service works (also when `degraded`), 503 when it is `unavailable`. Names no connection and holds no data, so monitoring can read it without signing in.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "degraded",
+                        "unavailable"
+                      ],
+                      "description": "`ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer."
+                    },
+                    "checks": {
+                      "type": "object",
+                      "properties": {
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "connections": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "inboxes": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "scheduler": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "event_stream": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "backups": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "database",
+                        "connections",
+                        "inboxes",
+                        "scheduler",
+                        "event_stream",
+                        "backups"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "checks"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "503": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "degraded",
+                        "unavailable"
+                      ],
+                      "description": "`ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer."
+                    },
+                    "checks": {
+                      "type": "object",
+                      "properties": {
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "connections": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "inboxes": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "scheduler": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "event_stream": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "backups": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "database",
+                        "connections",
+                        "inboxes",
+                        "scheduler",
+                        "event_stream",
+                        "backups"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "checks"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/status": {
+      "get": {
+        "summary": "Every connection, inbox, the scheduler, the live event stream and backups, with what needs attention.",
+        "tags": [
+          "status"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "status": {
+                      "type": "string",
+                      "enum": [
+                        "ok",
+                        "degraded",
+                        "unavailable"
+                      ],
+                      "description": "`ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer."
+                    },
+                    "checks": {
+                      "type": "object",
+                      "properties": {
+                        "database": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "connections": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "inboxes": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "scheduler": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "event_stream": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        },
+                        "backups": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "degraded",
+                            "unavailable"
+                          ]
+                        }
+                      },
+                      "required": [
+                        "database",
+                        "connections",
+                        "inboxes",
+                        "scheduler",
+                        "event_stream",
+                        "backups"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "checked_at": {
+                      "type": "string"
+                    },
+                    "version": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "type": "string"
+                    },
+                    "database": {
+                      "type": "object",
+                      "properties": {
+                        "detail": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "detail"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "connections": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "ok",
+                              "idle",
+                              "needs_sign_in",
+                              "error",
+                              "disabled"
+                            ]
+                          },
+                          "detail": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "consecutive_failures": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "last_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "last_ok_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "next_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "backoff_until": {
+                            "nullable": true,
+                            "description": "The carrier asked for a pause (rate limit, captcha) until then.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "label",
+                          "kind",
+                          "state",
+                          "detail",
+                          "consecutive_failures",
+                          "last_run_at",
+                          "last_ok_at",
+                          "next_run_at",
+                          "backoff_until"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "Every enabled connection but inboxes."
+                    },
+                    "inboxes": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "ok",
+                              "idle",
+                              "needs_sign_in",
+                              "error",
+                              "disabled"
+                            ]
+                          },
+                          "detail": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "consecutive_failures": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "last_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "last_ok_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "next_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "backoff_until": {
+                            "nullable": true,
+                            "description": "The carrier asked for a pause (rate limit, captcha) until then.",
+                            "type": "string"
+                          },
+                          "connected": {
+                            "type": "boolean",
+                            "description": "Connected to the mail server and watching for new email."
+                          },
+                          "reconnect_at": {
+                            "nullable": true,
+                            "description": "When the next reconnect is tried.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "label",
+                          "kind",
+                          "state",
+                          "detail",
+                          "consecutive_failures",
+                          "last_run_at",
+                          "last_ok_at",
+                          "next_run_at",
+                          "backoff_until",
+                          "connected",
+                          "reconnect_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "scheduler": {
+                      "type": "object",
+                      "properties": {
+                        "running": {
+                          "type": "boolean"
+                        },
+                        "in_flight": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Connection runs in progress."
+                        },
+                        "last_cycle_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_error": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "next_run_at": {
+                          "nullable": true,
+                          "description": "The earliest planned connection run.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "running",
+                        "in_flight",
+                        "last_cycle_at",
+                        "last_error",
+                        "next_run_at"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "event_stream": {
+                      "type": "object",
+                      "properties": {
+                        "clients": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Clients connected to the live event stream."
+                        },
+                        "last_seq": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "stored": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Live events kept for replay."
+                        },
+                        "live_sessions": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Couriers followed live now."
+                        }
+                      },
+                      "required": [
+                        "clients",
+                        "last_seq",
+                        "stored",
+                        "live_sessions"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "backups": {
+                      "type": "object",
+                      "properties": {
+                        "enabled": {
+                          "type": "boolean"
+                        },
+                        "last_ok": {
+                          "nullable": true,
+                          "type": "boolean"
+                        },
+                        "last_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "last_error": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "next_at": {
+                          "nullable": true,
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "enabled",
+                        "last_ok",
+                        "last_at",
+                        "last_error",
+                        "next_at"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "status",
+                    "checks",
+                    "checked_at",
+                    "version",
+                    "started_at",
+                    "database",
+                    "connections",
+                    "inboxes",
+                    "scheduler",
+                    "event_stream",
+                    "backups"
                   ],
                   "additionalProperties": false
                 }
@@ -7911,6 +8495,234 @@
         }
       }
     },
+    "/api/v1/data/backups": {
+      "get": {
+        "summary": "The backup schedule, the newest result and the backups kept.",
+        "tags": [
+          "data"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "interval_hours": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Hours between automatic backups; 0: off."
+                    },
+                    "keep": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "How many backups are kept."
+                    },
+                    "directory": {
+                      "type": "string",
+                      "description": "Folder the backups are written to."
+                    },
+                    "last": {
+                      "nullable": true,
+                      "description": "The newest backup attempt; null before the first.",
+                      "type": "object",
+                      "properties": {
+                        "ok": {
+                          "type": "boolean"
+                        },
+                        "reason": {
+                          "type": "string",
+                          "enum": [
+                            "scheduled",
+                            "manual",
+                            "before_delete"
+                          ]
+                        },
+                        "at": {
+                          "type": "string"
+                        },
+                        "file": {
+                          "nullable": true,
+                          "description": "File name inside the backup folder; null on failure.",
+                          "type": "string"
+                        },
+                        "bytes": {
+                          "nullable": true,
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991
+                        },
+                        "error": {
+                          "nullable": true,
+                          "description": "Why the backup failed; null on success.",
+                          "type": "string"
+                        },
+                        "pruned": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "Older backups deleted to keep the configured number."
+                        }
+                      },
+                      "required": [
+                        "ok",
+                        "reason",
+                        "at",
+                        "file",
+                        "bytes",
+                        "error",
+                        "pruned"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "next_at": {
+                      "nullable": true,
+                      "description": "When the next automatic backup is due; null when off.",
+                      "type": "string"
+                    },
+                    "failing": {
+                      "type": "boolean",
+                      "description": "Automatic backups are on and the last one failed, or none succeeded for too long."
+                    },
+                    "files": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "name": {
+                            "type": "string"
+                          },
+                          "bytes": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          },
+                          "created_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "name",
+                          "bytes",
+                          "created_at"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "The backups in the folder, newest first."
+                    }
+                  },
+                  "required": [
+                    "interval_hours",
+                    "keep",
+                    "directory",
+                    "last",
+                    "next_at",
+                    "failing",
+                    "files"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Back up the database now.",
+        "tags": [
+          "data"
+        ],
+        "description": "Writes a consistent copy while the server keeps running. A failure is answered with 500 `backup_failed`; either way the result is announced as the live event `backup.finished`.",
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "ok": {
+                      "type": "boolean"
+                    },
+                    "reason": {
+                      "type": "string",
+                      "enum": [
+                        "scheduled",
+                        "manual",
+                        "before_delete"
+                      ]
+                    },
+                    "at": {
+                      "type": "string"
+                    },
+                    "file": {
+                      "nullable": true,
+                      "description": "File name inside the backup folder; null on failure.",
+                      "type": "string"
+                    },
+                    "bytes": {
+                      "nullable": true,
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "error": {
+                      "nullable": true,
+                      "description": "Why the backup failed; null on success.",
+                      "type": "string"
+                    },
+                    "pruned": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Older backups deleted to keep the configured number."
+                    }
+                  },
+                  "required": [
+                    "ok",
+                    "reason",
+                    "at",
+                    "file",
+                    "bytes",
+                    "error",
+                    "pruned"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "500": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/data/clear": {
       "post": {
         "summary": "Delete stored data on the owner's request.",
@@ -8081,6 +8893,31 @@
             }
           },
           "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "Human-readable explanation."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "500": {
             "description": "Default Response",
             "content": {
               "application/json": {
@@ -10100,6 +10937,7 @@
                         "return.created",
                         "return.updated",
                         "settings.updated",
+                        "backup.finished",
                         "vocab.unknown",
                         "parcel.live_position",
                         "ready",

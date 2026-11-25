@@ -43,6 +43,422 @@ export type GetApiV1HealthReady503 = {
 };
 
 /**
+ * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
+ */
+export type GetApiV1Health200Status =
+  (typeof GetApiV1Health200Status)[keyof typeof GetApiV1Health200Status];
+
+export const GetApiV1Health200Status = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksDatabase =
+  (typeof GetApiV1Health200ChecksDatabase)[keyof typeof GetApiV1Health200ChecksDatabase];
+
+export const GetApiV1Health200ChecksDatabase = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksConnections =
+  (typeof GetApiV1Health200ChecksConnections)[keyof typeof GetApiV1Health200ChecksConnections];
+
+export const GetApiV1Health200ChecksConnections = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksInboxes =
+  (typeof GetApiV1Health200ChecksInboxes)[keyof typeof GetApiV1Health200ChecksInboxes];
+
+export const GetApiV1Health200ChecksInboxes = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksScheduler =
+  (typeof GetApiV1Health200ChecksScheduler)[keyof typeof GetApiV1Health200ChecksScheduler];
+
+export const GetApiV1Health200ChecksScheduler = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksEventStream =
+  (typeof GetApiV1Health200ChecksEventStream)[keyof typeof GetApiV1Health200ChecksEventStream];
+
+export const GetApiV1Health200ChecksEventStream = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200ChecksBackups =
+  (typeof GetApiV1Health200ChecksBackups)[keyof typeof GetApiV1Health200ChecksBackups];
+
+export const GetApiV1Health200ChecksBackups = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health200Checks = {
+  database: GetApiV1Health200ChecksDatabase;
+  connections: GetApiV1Health200ChecksConnections;
+  inboxes: GetApiV1Health200ChecksInboxes;
+  scheduler: GetApiV1Health200ChecksScheduler;
+  event_stream: GetApiV1Health200ChecksEventStream;
+  backups: GetApiV1Health200ChecksBackups;
+};
+
+export type GetApiV1Health200 = {
+  /** `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer. */
+  status: GetApiV1Health200Status;
+  checks: GetApiV1Health200Checks;
+};
+
+/**
+ * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
+ */
+export type GetApiV1Health503Status =
+  (typeof GetApiV1Health503Status)[keyof typeof GetApiV1Health503Status];
+
+export const GetApiV1Health503Status = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksDatabase =
+  (typeof GetApiV1Health503ChecksDatabase)[keyof typeof GetApiV1Health503ChecksDatabase];
+
+export const GetApiV1Health503ChecksDatabase = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksConnections =
+  (typeof GetApiV1Health503ChecksConnections)[keyof typeof GetApiV1Health503ChecksConnections];
+
+export const GetApiV1Health503ChecksConnections = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksInboxes =
+  (typeof GetApiV1Health503ChecksInboxes)[keyof typeof GetApiV1Health503ChecksInboxes];
+
+export const GetApiV1Health503ChecksInboxes = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksScheduler =
+  (typeof GetApiV1Health503ChecksScheduler)[keyof typeof GetApiV1Health503ChecksScheduler];
+
+export const GetApiV1Health503ChecksScheduler = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksEventStream =
+  (typeof GetApiV1Health503ChecksEventStream)[keyof typeof GetApiV1Health503ChecksEventStream];
+
+export const GetApiV1Health503ChecksEventStream = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503ChecksBackups =
+  (typeof GetApiV1Health503ChecksBackups)[keyof typeof GetApiV1Health503ChecksBackups];
+
+export const GetApiV1Health503ChecksBackups = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Health503Checks = {
+  database: GetApiV1Health503ChecksDatabase;
+  connections: GetApiV1Health503ChecksConnections;
+  inboxes: GetApiV1Health503ChecksInboxes;
+  scheduler: GetApiV1Health503ChecksScheduler;
+  event_stream: GetApiV1Health503ChecksEventStream;
+  backups: GetApiV1Health503ChecksBackups;
+};
+
+export type GetApiV1Health503 = {
+  /** `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer. */
+  status: GetApiV1Health503Status;
+  checks: GetApiV1Health503Checks;
+};
+
+/**
+ * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
+ */
+export type GetApiV1Status200Status =
+  (typeof GetApiV1Status200Status)[keyof typeof GetApiV1Status200Status];
+
+export const GetApiV1Status200Status = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksDatabase =
+  (typeof GetApiV1Status200ChecksDatabase)[keyof typeof GetApiV1Status200ChecksDatabase];
+
+export const GetApiV1Status200ChecksDatabase = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksConnections =
+  (typeof GetApiV1Status200ChecksConnections)[keyof typeof GetApiV1Status200ChecksConnections];
+
+export const GetApiV1Status200ChecksConnections = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksInboxes =
+  (typeof GetApiV1Status200ChecksInboxes)[keyof typeof GetApiV1Status200ChecksInboxes];
+
+export const GetApiV1Status200ChecksInboxes = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksScheduler =
+  (typeof GetApiV1Status200ChecksScheduler)[keyof typeof GetApiV1Status200ChecksScheduler];
+
+export const GetApiV1Status200ChecksScheduler = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksEventStream =
+  (typeof GetApiV1Status200ChecksEventStream)[keyof typeof GetApiV1Status200ChecksEventStream];
+
+export const GetApiV1Status200ChecksEventStream = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200ChecksBackups =
+  (typeof GetApiV1Status200ChecksBackups)[keyof typeof GetApiV1Status200ChecksBackups];
+
+export const GetApiV1Status200ChecksBackups = {
+  ok: "ok",
+  degraded: "degraded",
+  unavailable: "unavailable",
+} as const;
+
+export type GetApiV1Status200Checks = {
+  database: GetApiV1Status200ChecksDatabase;
+  connections: GetApiV1Status200ChecksConnections;
+  inboxes: GetApiV1Status200ChecksInboxes;
+  scheduler: GetApiV1Status200ChecksScheduler;
+  event_stream: GetApiV1Status200ChecksEventStream;
+  backups: GetApiV1Status200ChecksBackups;
+};
+
+export type GetApiV1Status200Database = {
+  /** @nullable */
+  detail: string | null;
+};
+
+export type GetApiV1Status200ConnectionsItemKind =
+  (typeof GetApiV1Status200ConnectionsItemKind)[keyof typeof GetApiV1Status200ConnectionsItemKind];
+
+export const GetApiV1Status200ConnectionsItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type GetApiV1Status200ConnectionsItemState =
+  (typeof GetApiV1Status200ConnectionsItemState)[keyof typeof GetApiV1Status200ConnectionsItemState];
+
+export const GetApiV1Status200ConnectionsItemState = {
+  ok: "ok",
+  idle: "idle",
+  needs_sign_in: "needs_sign_in",
+  error: "error",
+  disabled: "disabled",
+} as const;
+
+export type GetApiV1Status200ConnectionsItem = {
+  id: string;
+  provider: string;
+  label: string;
+  kind: GetApiV1Status200ConnectionsItemKind;
+  state: GetApiV1Status200ConnectionsItemState;
+  /** @nullable */
+  detail: string | null;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  consecutive_failures: number;
+  /** @nullable */
+  last_run_at: string | null;
+  /** @nullable */
+  last_ok_at: string | null;
+  /** @nullable */
+  next_run_at: string | null;
+  /**
+   * The carrier asked for a pause (rate limit, captcha) until then.
+   * @nullable
+   */
+  backoff_until: string | null;
+};
+
+export type GetApiV1Status200InboxesItemKind =
+  (typeof GetApiV1Status200InboxesItemKind)[keyof typeof GetApiV1Status200InboxesItemKind];
+
+export const GetApiV1Status200InboxesItemKind = {
+  account: "account",
+  tracking: "tracking",
+  shop: "shop",
+  mail: "mail",
+} as const;
+
+export type GetApiV1Status200InboxesItemState =
+  (typeof GetApiV1Status200InboxesItemState)[keyof typeof GetApiV1Status200InboxesItemState];
+
+export const GetApiV1Status200InboxesItemState = {
+  ok: "ok",
+  idle: "idle",
+  needs_sign_in: "needs_sign_in",
+  error: "error",
+  disabled: "disabled",
+} as const;
+
+export type GetApiV1Status200InboxesItem = {
+  id: string;
+  provider: string;
+  label: string;
+  kind: GetApiV1Status200InboxesItemKind;
+  state: GetApiV1Status200InboxesItemState;
+  /** @nullable */
+  detail: string | null;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  consecutive_failures: number;
+  /** @nullable */
+  last_run_at: string | null;
+  /** @nullable */
+  last_ok_at: string | null;
+  /** @nullable */
+  next_run_at: string | null;
+  /**
+   * The carrier asked for a pause (rate limit, captcha) until then.
+   * @nullable
+   */
+  backoff_until: string | null;
+  /** Connected to the mail server and watching for new email. */
+  connected: boolean;
+  /**
+   * When the next reconnect is tried.
+   * @nullable
+   */
+  reconnect_at: string | null;
+};
+
+export type GetApiV1Status200Scheduler = {
+  running: boolean;
+  /**
+   * Connection runs in progress.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  in_flight: number;
+  /** @nullable */
+  last_cycle_at: string | null;
+  /** @nullable */
+  last_error: string | null;
+  /**
+   * The earliest planned connection run.
+   * @nullable
+   */
+  next_run_at: string | null;
+};
+
+export type GetApiV1Status200EventStream = {
+  /**
+   * Clients connected to the live event stream.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  clients: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  last_seq: number;
+  /**
+   * Live events kept for replay.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  stored: number;
+  /**
+   * Couriers followed live now.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  live_sessions: number;
+};
+
+export type GetApiV1Status200Backups = {
+  enabled: boolean;
+  /** @nullable */
+  last_ok: boolean | null;
+  /** @nullable */
+  last_at: string | null;
+  /** @nullable */
+  last_error: string | null;
+  /** @nullable */
+  next_at: string | null;
+};
+
+export type GetApiV1Status200 = {
+  /** `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer. */
+  status: GetApiV1Status200Status;
+  checks: GetApiV1Status200Checks;
+  checked_at: string;
+  version: string;
+  started_at: string;
+  database: GetApiV1Status200Database;
+  /** Every enabled connection but inboxes. */
+  connections: GetApiV1Status200ConnectionsItem[];
+  inboxes: GetApiV1Status200InboxesItem[];
+  scheduler: GetApiV1Status200Scheduler;
+  event_stream: GetApiV1Status200EventStream;
+  backups: GetApiV1Status200Backups;
+};
+
+/**
  * @nullable
  */
 export type GetApiV1Session200Method =
@@ -4101,6 +4517,132 @@ export type GetApiV1Data200 = {
   cache_bytes: GetApiV1Data200CacheBytes;
 };
 
+export type GetApiV1DataBackups200LastReason =
+  (typeof GetApiV1DataBackups200LastReason)[keyof typeof GetApiV1DataBackups200LastReason];
+
+export const GetApiV1DataBackups200LastReason = {
+  scheduled: "scheduled",
+  manual: "manual",
+  before_delete: "before_delete",
+} as const;
+
+/**
+ * The newest backup attempt; null before the first.
+ * @nullable
+ */
+export type GetApiV1DataBackups200Last = {
+  ok: boolean;
+  reason: GetApiV1DataBackups200LastReason;
+  at: string;
+  /**
+   * File name inside the backup folder; null on failure.
+   * @nullable
+   */
+  file: string | null;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  bytes: number | null;
+  /**
+   * Why the backup failed; null on success.
+   * @nullable
+   */
+  error: string | null;
+  /**
+   * Older backups deleted to keep the configured number.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  pruned: number;
+} | null;
+
+export type GetApiV1DataBackups200FilesItem = {
+  name: string;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  bytes: number;
+  created_at: string;
+};
+
+export type GetApiV1DataBackups200 = {
+  /**
+   * Hours between automatic backups; 0: off.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  interval_hours: number;
+  /**
+   * How many backups are kept.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  keep: number;
+  /** Folder the backups are written to. */
+  directory: string;
+  /**
+   * The newest backup attempt; null before the first.
+   * @nullable
+   */
+  last: GetApiV1DataBackups200Last;
+  /**
+   * When the next automatic backup is due; null when off.
+   * @nullable
+   */
+  next_at: string | null;
+  /** Automatic backups are on and the last one failed, or none succeeded for too long. */
+  failing: boolean;
+  /** The backups in the folder, newest first. */
+  files: GetApiV1DataBackups200FilesItem[];
+};
+
+export type PostApiV1DataBackups200Reason =
+  (typeof PostApiV1DataBackups200Reason)[keyof typeof PostApiV1DataBackups200Reason];
+
+export const PostApiV1DataBackups200Reason = {
+  scheduled: "scheduled",
+  manual: "manual",
+  before_delete: "before_delete",
+} as const;
+
+export type PostApiV1DataBackups200 = {
+  ok: boolean;
+  reason: PostApiV1DataBackups200Reason;
+  at: string;
+  /**
+   * File name inside the backup folder; null on failure.
+   * @nullable
+   */
+  file: string | null;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  bytes: number | null;
+  /**
+   * Why the backup failed; null on success.
+   * @nullable
+   */
+  error: string | null;
+  /**
+   * Older backups deleted to keep the configured number.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  pruned: number;
+};
+
+export type PostApiV1DataBackups500 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
 export type PostApiV1DataClearBody =
   | {
       what: "archived";
@@ -4156,6 +4698,13 @@ export type PostApiV1DataClear200 = {
 };
 
 export type PostApiV1DataClear400 = {
+  /** Stable machine-readable error code. */
+  error: string;
+  /** Human-readable explanation. */
+  message: string;
+};
+
+export type PostApiV1DataClear500 = {
   /** Stable machine-readable error code. */
   error: string;
   /** Human-readable explanation. */
@@ -4669,6 +5218,7 @@ export const GetApiV1Events200Event = {
   returncreated: "return.created",
   returnupdated: "return.updated",
   settingsupdated: "settings.updated",
+  backupfinished: "backup.finished",
   vocabunknown: "vocab.unknown",
   parcellive_position: "parcel.live_position",
   ready: "ready",
@@ -4735,12 +5285,46 @@ export const getGetApiV1HealthReadyUrl = () => {
 };
 
 /**
+ * What container health checks should use. Connections in error do not make it fail; `/api/v1/health` reports those.
  * @summary The service can answer requests: the database responds.
  */
 export const getApiV1HealthReady = async (
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<GetApiV1HealthReady200> => {
   return apiFetch<GetApiV1HealthReady200>(getGetApiV1HealthReadyUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1HealthUrl = () => {
+  return `/api/v1/health`;
+};
+
+/**
+ * 200 while the service works (also when `degraded`), 503 when it is `unavailable`. Names no connection and holds no data, so monitoring can read it without signing in.
+ * @summary Overall state and one state per part, without details.
+ */
+export const getApiV1Health = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1Health200> => {
+  return apiFetch<GetApiV1Health200>(getGetApiV1HealthUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1StatusUrl = () => {
+  return `/api/v1/status`;
+};
+
+/**
+ * @summary Every connection, inbox, the scheduler, the live event stream and backups, with what needs attention.
+ */
+export const getApiV1Status = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1Status200> => {
+  return apiFetch<GetApiV1Status200>(getGetApiV1StatusUrl(), {
     ...options,
     method: "GET",
   });
@@ -5474,6 +6058,39 @@ export const getApiV1Data = async (
   return apiFetch<GetApiV1Data200>(getGetApiV1DataUrl(), {
     ...options,
     method: "GET",
+  });
+};
+
+export const getGetApiV1DataBackupsUrl = () => {
+  return `/api/v1/data/backups`;
+};
+
+/**
+ * @summary The backup schedule, the newest result and the backups kept.
+ */
+export const getApiV1DataBackups = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1DataBackups200> => {
+  return apiFetch<GetApiV1DataBackups200>(getGetApiV1DataBackupsUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1DataBackupsUrl = () => {
+  return `/api/v1/data/backups`;
+};
+
+/**
+ * Writes a consistent copy while the server keeps running. A failure is answered with 500 `backup_failed`; either way the result is announced as the live event `backup.finished`.
+ * @summary Back up the database now.
+ */
+export const postApiV1DataBackups = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1DataBackups200> => {
+  return apiFetch<PostApiV1DataBackups200>(getPostApiV1DataBackupsUrl(), {
+    ...options,
+    method: "POST",
   });
 };
 

@@ -831,7 +831,8 @@ tbody tr:hover {
 
 .status-out_for_delivery,
 .lookup-not_found,
-.connection-needs_sign_in {
+.connection-needs_sign_in,
+.check-degraded {
   color: var(--warn);
   background: rgba(249, 115, 22, 0.15);
   border-color: rgba(249, 115, 22, 0.25);
@@ -845,7 +846,8 @@ tbody tr:hover {
 
 .status-delivered,
 .lookup-found,
-.connection-ok {
+.connection-ok,
+.check-ok {
   color: var(--ok);
   background: rgba(34, 197, 94, 0.15);
   border-color: rgba(34, 197, 94, 0.25);
@@ -858,7 +860,8 @@ tbody tr:hover {
 }
 
 .status-problem,
-.connection-error {
+.connection-error,
+.check-unavailable {
   color: var(--danger);
   background: rgba(239, 68, 68, 0.15);
   border-color: rgba(239, 68, 68, 0.25);
