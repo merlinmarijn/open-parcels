@@ -1,10 +1,10 @@
-import { existsSync, mkdtempSync, rmSync, writeFileSync } from "node:fs";
+import { chmodSync, existsSync, mkdtempSync, rmSync, statSync, writeFileSync } from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
 import { demoShop } from "../../src/carriers/demo/index.js";
-import { listBackups } from "../../src/data/backup.js";
+import { listBackups, secureBackups } from "../../src/data/backup.js";
 import { register } from "../../src/engine/registry.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -76,6 +76,35 @@ describe("database backups", () => {
     }
     const kept = await listBackups(path.join(test.dataDir, "backups"));
     expect(kept.map((entry) => entry.name)).toEqual([names[2], names[1]]);
+  });
+
+  // Windows has no POSIX modes; the image and the NAS run Linux.
+  const posix = process.platform !== "win32";
+  const mode = (file: string): number => statSync(file).mode & 0o777;
+
+  it.skipIf(!posix)("writes backups readable only by the server's user", async () => {
+    const elsewhere = mkdtempSync(path.join(tmpdir(), "open-parcels-backups-"));
+    scratch.push(elsewhere);
+    chmodSync(elsewhere, 0o755);
+    const test = await start({ OPENPARCELS_BACKUP_DIR: elsewhere });
+    const result = await test.services.backups.run("manual");
+    expect(mode(path.join(elsewhere, result.file ?? ""))).toBe(0o600);
+    expect(mode(elsewhere)).toBe(0o700);
+  });
+
+  it.skipIf(!posix)("restricts backups written before, leaving other files alone", async () => {
+    const dir = mkdtempSync(path.join(tmpdir(), "open-parcels-backups-"));
+    scratch.push(dir);
+    chmodSync(dir, 0o755);
+    const backup = path.join(dir, "openparcels-2026-11-25T10-00-00-000Z.db");
+    const partial = `${backup}.partial`;
+    const other = path.join(dir, "notes.txt");
+    for (const file of [backup, partial, other]) writeFileSync(file, "x", { mode: 0o644 });
+    await secureBackups(dir);
+    expect([mode(dir), mode(backup), mode(partial), mode(other)]).toEqual([
+      0o700, 0o600, 0o600, 0o644,
+    ]);
+    await expect(secureBackups(path.join(dir, "missing"))).resolves.toBeUndefined();
   });
 
   it("writes to the configured folder", async () => {

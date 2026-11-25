@@ -1,4 +1,4 @@
-import { mkdir, readdir, rename, rm, stat } from "node:fs/promises";
+import { chmod, mkdir, readdir, rename, rm, stat, writeFile } from "node:fs/promises";
 import path from "node:path";
 import { sql, type Kysely } from "kysely";
 import type { Logger } from "pino";
@@ -23,6 +23,12 @@ export type BackupReason = (typeof BACKUP_REASONS)[number];
 /** Backups are named by their UTC time, so names sort by age: `openparcels-2026-11-25T10-00-00-000Z.db`. */
 const FILE_PATTERN = /^openparcels-(\d{4}-\d{2}-\d{2})T(\d{2})-(\d{2})-(\d{2})-(\d{3})Z\.db$/;
 const LAST_RESULT_KEY = "backup_last";
+/**
+ * Backups hold the whole database (encrypted sign-ins, personal parcel data): only the server's
+ * user may read them, whatever the umask or a bind mount's defaults.
+ */
+const FILE_MODE = 0o600;
+const DIRECTORY_MODE = 0o700;
 
 export const backupResultSchema = z.object({
   ok: z.boolean(),
@@ -107,6 +113,25 @@ export async function listBackups(directory: string): Promise<BackupFile[]> {
 }
 
 /**
+ * Makes the backup folder and every backup (and leftover `.partial`) in it private to the server's
+ * user, for backups written before modes were set. A missing folder is fine.
+ */
+export async function secureBackups(directory: string): Promise<void> {
+  let names: string[];
+  try {
+    names = await readdir(directory);
+  } catch (error) {
+    if (isMissing(error)) return;
+    throw error;
+  }
+  await chmod(directory, DIRECTORY_MODE);
+  for (const name of names) {
+    if (takenAt(name.replace(/\.partial$/, "")) === undefined) continue;
+    await chmod(path.join(directory, name), FILE_MODE);
+  }
+}
+
+/**
  * Scheduled and on-demand copies of the database. Each backup is SQLite's `VACUUM INTO`, which
  * reads one consistent snapshot while the server keeps writing, into a `.partial` file that is
  * renamed only when complete; so a backup in the folder is always whole. Backups run one at a
@@ -118,6 +143,11 @@ export class BackupService {
   #last: BackupResult | null | undefined;
 
   constructor(private readonly deps: BackupDeps) {}
+
+  /** Restricts the modes of the backup folder and the backups in it; run once at start. */
+  async secure(): Promise<void> {
+    await secureBackups(this.deps.settings().directory);
+  }
 
   /** Takes a backup now. A failed backup is reported in the result, not thrown. */
   run(reason: BackupReason): Promise<BackupResult> {
@@ -184,9 +214,13 @@ export class BackupService {
     const partial = `${target}.partial`;
     let result: BackupResult;
     try {
-      await mkdir(directory, { recursive: true });
+      await mkdir(directory, { recursive: true, mode: DIRECTORY_MODE });
+      await chmod(directory, DIRECTORY_MODE);
       await rm(partial, { force: true });
+      // VACUUM INTO accepts an empty file and keeps its mode, so the copy is never readable by others.
+      await writeFile(partial, "", { mode: FILE_MODE, flag: "wx" });
       await sql`vacuum into ${partial}`.execute(this.deps.db);
+      await chmod(partial, FILE_MODE);
       await rename(partial, target);
       const bytes = (await stat(target)).size;
       const pruned = await this.#prune(directory, keep);

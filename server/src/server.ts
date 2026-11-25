@@ -103,6 +103,9 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
   }
 
   await services.reconciler.repair();
+  await services.backups.secure().catch((error: unknown) => {
+    logger.error({ err: error }, "Restricting the backup files' permissions failed.");
+  });
   services.scheduler.start();
   services.live.start();
   services.places.start();
