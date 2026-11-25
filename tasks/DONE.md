@@ -9,6 +9,18 @@ Shipped work, newest first, with the commit that shipped it.
   URL overrides, OSM map-issue link, EOX non-commercial label and year (`6cd2b6a`);
   `docs/third-party-services.md` (`c6c33b8`)
 
+## 2026-11-25
+
+- TODO §1 tests: OP-070 start-up/shutdown over broken connections (`main.ts` → `startServer`),
+  IMAP client, throttle per forwarded client (`cdb1527`); OP-142 CLI tools with injected argv,
+  mail interpreter details (`a8eb732`); OP-071 base path and `apiFetch` (`4f9099a`); OP-163
+  `useLiveUpdates` with a fake EventSource, schema helpers, `regressions.test.tsx` split beside its
+  modules (`4ee05d4`)
+- Group 24 clean-ups: OP-058 (`673c02d`), OP-052 with `parcel.archived`/`order.created` now
+  refreshing the UI (`a28b048`), OP-159/160/161 (`7b93639`), OP-048, OP-049, OP-053, OP-054,
+  OP-056, OP-059 (unused routes removed), OP-060, OP-062, OP-138, OP-140, OP-141 (`5b3aa9c`);
+  remainders in TODO §1
+
 ## 2026-11-24
 
 - TODO §1 remainder: build, styles and tooling OP-045 (`8d58625`), OP-046 (`d5bc19c`), OP-047

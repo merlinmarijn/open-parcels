@@ -47,8 +47,26 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
   "non-commercial use only" and credits the imagery year it serves; the address search shows the
   OpenStreetMap/ODbL credit. Terms and switching: [`docs/third-party-services.md`](docs/third-party-services.md).
 
+### Removed (breaking): unused older routes (OP-059)
+
+- `GET /tiles/{z}/{x}/{y}.png` (use `GET /tiles/osm/{z}/{x}/{y}`), and
+  `POST /api/v1/connections/{id}/sign-in/start` / `…/sign-in/finish` (use the sign-in attempts:
+  `POST …/sign-in/attempts`, then `…/attempts/{attempt}/continue` with `{"input": {"pasted": "…"}}`). No
+  client of ours called them.
+- Migration `0024-dead-schema` drops the unused `image_cache` table and the never-read
+  `parcels.dimensions` and `parcels.manual_until` columns.
+
 ### Fixed
 
+- The web UI refreshes when retention archives a parcel (`parcel.archived`) and when an email
+  starts an order (`order.created`); it ignored both before. The stream's message types are now
+  listed in the API document, so the UI's handling is checked against the server's list (OP-052).
+- `X-Next-Offset` on `GET /api/v1/parcels` is sent only when another page really follows, not on
+  every full page (OP-053).
+- Diagnostics, the API document and every User-Agent report the running version from
+  `server/package.json` instead of three hard-coded ones (OP-056).
+- Folding a shop's parcel into its carrier's keeps the time the owner set a manual status
+  (`manual_at`) with that status (OP-058).
 - **Live courier sessions survive a restart.** A stored session now names the connection that
   follows it, so the first run of another connection of the same parcel no longer ends it
   (migration `0022-live-state-connection`; sessions stored before the upgrade are dropped once and

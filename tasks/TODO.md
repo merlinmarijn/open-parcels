@@ -7,17 +7,22 @@ Assistant integration, `AP-` Home Assistant app, `EX-` extension, `WS-` website,
 
 ## 1. Core hardening (server + web, audit "Now" items not yet shipped)
 
-Verified against `main` at `0f6b858` (2026-11-24). Groups 1–16 are fixed with a regression test
-in the commit except the ids below; of groups 17–24 only OP-020 (no test), OP-021 and OP-026 were
-already fixed. Still open, by audit group:
+Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, verified against
+`main` on 2026-11-25:
 
-| Group | Open | Note |
-|---|---|---|
-| 17, 19–24 | all ids | none fixed yet |
-
-- [ ] OP-070, OP-142, OP-071, OP-163: missing tests (OP-162 and OP-164 shipped; the new web tests
-      cover OP-149, OP-153 and OP-073 only)
-- [ ] OP-048 … OP-161 cheap clean-ups (group 24 of the audit order)
+- [ ] OP-060: a `knip` configuration and gate step (the listed unused exports are gone; about 270
+      plug-in internals remain exported, better handled with the provider rewrite)
+- [ ] OP-053: camelCase → snake_case mapping is still written by hand in the tokens, calendar,
+      connections and settings routes
+- [ ] OP-138: one new-parcel row builder for the four writers (legacy and HA import, parcel
+      service, reconciler); the `item as Record<string, unknown>` narrowing in `migrate/ha/entries.ts`
+- [ ] OP-159: `deliveryLine`, one `ItemPictures`, `Segmented`, an archive/delete actions
+      component, `HomeMarker`, query-key comparison without `JSON.stringify`, and inbox form
+      schemas served by the server (shipped: `formatMoney`, `keys.signInFlows`, one settings query)
+- [ ] OP-161: `token.used` and `health.changed` live events so the tokens and status pages stop
+      polling (the duplicate focus read is gone)
+- [ ] OP-067: optional splits (`reconciler.ts` order items and twin folding, `styles.css` per
+      feature); every file is inside the enforced limits (largest 933 of 1,000 lines)
 
 ## 2. Production readiness
 
