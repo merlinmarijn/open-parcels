@@ -96,7 +96,7 @@ describe("Geocoder", () => {
     const waits: number[] = [];
     let calls = 0;
     const geocoder = new Geocoder({
-      userAgent: "test",
+      userAgent: () => "test",
       now: () => clock,
       sleep: (ms) => {
         waits.push(ms);
@@ -113,5 +113,29 @@ describe("Geocoder", () => {
     await geocoder.search("  ONE ");
     expect(calls).toBe(2);
     expect(waits).toEqual([1_000]);
+  });
+
+  it("asks the configured service and names the contact address, both changeable live (OP-079)", async () => {
+    const asked: { url: string; agent: string | null }[] = [];
+    const { app, headers } = await setUp((input, init) => {
+      const url = input instanceof Request ? input.url : input.toString();
+      asked.push({ url, agent: new Headers(init?.headers).get("user-agent") });
+      return Promise.resolve(Response.json([{ display_name: "Testtown", lat: "1", lon: "2" }]));
+    });
+    expect(context.services.config.geocoding).toBe(false);
+    await app.inject({ url: "/api/v1/geocode?q=testtown", headers });
+    expect(asked[0]?.url).toMatch(/^https:\/\/nominatim\.openstreetmap\.org\/search\?q=testtown&/);
+    expect(asked[0]?.agent).toMatch(
+      /^open-parcels\/\S+ \(.*github\.com\/open-parcels\/open-parcels\)$/,
+    );
+
+    const patched = await context.services.configSettings.patch({
+      OPENPARCELS_GEOCODING_URL: "https://places.example.org/search",
+      OPENPARCELS_CONTACT_EMAIL: "admin@example.org",
+    });
+    expect(patched.ok).toBe(true);
+    await app.inject({ url: "/api/v1/geocode?q=testtown", headers });
+    expect(asked[1]?.url).toMatch(/^https:\/\/places\.example\.org\/search\?q=testtown&/);
+    expect(asked[1]?.agent).toContain("; admin@example.org)");
   });
 });

@@ -36,15 +36,17 @@ export class GeocodeError extends Error {
 type FetchLike = (input: URL, init: RequestInit) => Promise<Response>;
 
 export interface GeocoderOptions {
-  readonly userAgent: string;
-  /** Nominatim-compatible search endpoint. */
-  readonly endpoint?: string;
+  /** Read per request, so a contact address saved in the UI applies at once. */
+  readonly userAgent: () => string;
+  /** Nominatim-compatible search endpoint, read per request; unset is the public Nominatim. */
+  readonly endpoint?: () => string;
   readonly fetchImpl?: FetchLike;
   readonly now?: () => number;
   readonly sleep?: (ms: number) => Promise<void>;
 }
 
-const NOMINATIM = "https://nominatim.openstreetmap.org/search";
+/** OpenStreetMap's public Nominatim; its policy allows light, user-triggered use only. */
+export const NOMINATIM_SEARCH = "https://nominatim.openstreetmap.org/search";
 /** Nominatim's usage policy: at most one request per second, from an identified client. */
 const MIN_INTERVAL_MS = 1_000;
 const TIMEOUT_MS = 10_000;
@@ -64,9 +66,11 @@ const answerSchema = z.array(
 );
 
 /**
- * Turns an address or place name into coordinates through OpenStreetMap's Nominatim, as the
- * settings page's home search does. Requests are queued one per second and answers cached, as
- * the usage policy asks; only the typed text leaves the server.
+ * Turns an address or place name into coordinates through a Nominatim-compatible service (the
+ * public OpenStreetMap one unless configured), for the settings page's home search and the
+ * opt-in background place lookup. Requests are queued one per second for the whole server and
+ * answers cached, as Nominatim's usage policy asks; only the text searched for leaves the server.
+ * Answers are kept per endpoint, so switching services never serves the old one's results.
  */
 export class Geocoder {
   readonly #cache = new Map<string, readonly Place[]>();
@@ -80,12 +84,13 @@ export class Geocoder {
     if (text.length === 0) {
       return [];
     }
-    const key = `${language ?? ""}\u0000${text.toLowerCase()}`;
+    const endpoint = this.options.endpoint?.() ?? NOMINATIM_SEARCH;
+    const key = `${endpoint}\u0000${language ?? ""}\u0000${text.toLowerCase()}`;
     const cached = this.#cache.get(key);
     if (cached !== undefined) {
       return cached;
     }
-    const run = this.#queue.then(() => this.#fetch(text, language));
+    const run = this.#queue.then(() => this.#fetch(endpoint, text, language));
     this.#queue = run.catch(() => undefined);
     const places = await run;
     this.#cache.set(key, places);
@@ -96,7 +101,11 @@ export class Geocoder {
     return places;
   }
 
-  async #fetch(text: string, language: string | undefined): Promise<readonly Place[]> {
+  async #fetch(
+    endpoint: string,
+    text: string,
+    language: string | undefined,
+  ): Promise<readonly Place[]> {
     const now = this.options.now ?? Date.now;
     const sleep =
       this.options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
@@ -104,7 +113,7 @@ export class Geocoder {
     if (wait > 0) await sleep(wait);
     this.#last = now();
 
-    const url = new URL(this.options.endpoint ?? NOMINATIM);
+    const url = new URL(endpoint);
     url.searchParams.set("q", text);
     url.searchParams.set("format", "jsonv2");
     url.searchParams.set("limit", String(RESULTS));
@@ -113,7 +122,7 @@ export class Geocoder {
     try {
       response = await fetchImpl(url, {
         headers: {
-          "user-agent": this.options.userAgent,
+          "user-agent": this.options.userAgent(),
           accept: "application/json",
           ...(language === undefined ? {} : { "accept-language": language }),
         },

@@ -127,6 +127,21 @@ function HomeSection(): ReactNode {
           </button>
         </form>
       ) : null}
+      {admin ? (
+        // Nominatim's usage policy asks for the ODbL credit wherever its results are shown; the
+        // search runs only when the form is submitted, never while typing.
+        <p className="muted">
+          Address search: data &copy;{" "}
+          <a
+            href="https://www.openstreetmap.org/copyright"
+            target="_blank"
+            rel="noreferrer noopener"
+          >
+            OpenStreetMap contributors
+          </a>
+          , ODbL.
+        </p>
+      ) : null}
       {/* Announced and styled like every other error (OP-157). */}
       {searchError === null ? null : (
         <p role="alert" className="notice notice-error">

@@ -5,8 +5,11 @@ import {
   BASE_LAYER_CHOICES,
   OVERLAY_CHOICES,
   templateProblem,
+  wmtsBaseProblem,
+  type BuiltinUrls,
   type CustomProvider,
 } from "./tiles/layers.js";
+import { NOMINATIM_SEARCH } from "./geo/geocoder.js";
 import { TILE_MAX_ZOOM_ANY } from "./tiles/proxy.js";
 
 const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace"] as const;
@@ -16,6 +19,18 @@ const booleanFlag = z
   .transform((value) => value === "true" || value === "1" || value === "yes");
 
 const port = z.coerce.number().int().min(1).max(65535);
+
+/** A tile URL template ({z}, {x}, {y}, optional {s}, {r}, {key}), checked like the custom one. */
+const tileTemplate = z
+  .string()
+  .trim()
+  .min(1)
+  .max(500)
+  .superRefine((value, context) => {
+    const problem = templateProblem(value);
+    if (problem !== null) context.addIssue({ code: "custom", message: problem });
+  })
+  .optional();
 
 /**
  * How a change made in the UI takes effect:
@@ -247,11 +262,29 @@ export const SETTINGS = {
   OPENPARCELS_GEOCODING: setting({
     group: "Map",
     description:
-      "Look up the places named in carrier scans on OpenStreetMap Nominatim, so scans without coordinates still show on the map. This sends those place names (never codes or addresses of yours) to nominatim.openstreetmap.org. Turn off to keep them on this server.",
+      "Background place lookup: look up the places named in carrier scans with the place search service below (OpenStreetMap Nominatim unless changed), so scans without coordinates still show on the map. This sends those place names (never codes or addresses of yours) to that service, one a second at most. Off by default; the address search on the Settings page works either way.",
     schema: booleanFlag,
-    default: true,
+    default: false,
     apply: "live",
     kind: "boolean",
+  }),
+  OPENPARCELS_GEOCODING_URL: setting({
+    group: "Map",
+    description:
+      "Search endpoint of a Nominatim-compatible place search service (`/search?q=…&format=jsonv2`), e.g. your own Nominatim. Used by the address search and the background place lookup. The public OpenStreetMap server allows at most one request a second and no heavy use.",
+    schema: z.url({ protocol: /^https?$/, error: "Use an http or https address." }),
+    default: NOMINATIM_SEARCH,
+    apply: "live",
+    kind: "string",
+  }),
+  OPENPARCELS_CONTACT_EMAIL: setting({
+    group: "Map",
+    description:
+      "Optional contact address added to the User-Agent sent to the place search and tile servers, so their operators can reach you instead of blocking this install.",
+    schema: z.email().max(200).optional(),
+    default: undefined,
+    apply: "live",
+    kind: "string",
   }),
   OPENPARCELS_MAP_CARTO_KEY: setting({
     group: "Map",
@@ -263,20 +296,47 @@ export const SETTINGS = {
     kind: "string",
     secret: true,
   }),
-  OPENPARCELS_MAP_CUSTOM_URL: setting({
+  OPENPARCELS_MAP_OSM_URL: setting({
     group: "Map",
     description:
-      "Custom tile provider, e.g. https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key={key}. Needs https and {z}, {x}, {y}; {s}, {r} and {key} are filled in by the server.",
+      "Tile address of the plain map layer, default https://tile.openstreetmap.org/{z}/{x}/{y}.png. Point it at a mirror or your own tile server if the public one is unsuitable.",
+    schema: tileTemplate,
+    default: undefined,
+    apply: "live",
+    kind: "string",
+  }),
+  OPENPARCELS_MAP_TOPO_URL: setting({
+    group: "Map",
+    description:
+      "Tile address of the topographic layer, default https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png.",
+    schema: tileTemplate,
+    default: undefined,
+    apply: "live",
+    kind: "string",
+  }),
+  OPENPARCELS_MAP_EOX_URL: setting({
+    group: "Map",
+    description:
+      "WMTS base address of the EOX layers (satellite, borders, labels), default https://tiles.maps.eox.at/wmts/1.0.0.",
     schema: z
       .string()
       .trim()
       .min(1)
       .max(500)
       .superRefine((value, context) => {
-        const problem = templateProblem(value);
+        const problem = wmtsBaseProblem(value);
         if (problem !== null) context.addIssue({ code: "custom", message: problem });
       })
       .optional(),
+    default: undefined,
+    apply: "live",
+    kind: "string",
+  }),
+  OPENPARCELS_MAP_CUSTOM_URL: setting({
+    group: "Map",
+    description:
+      "Custom tile provider, e.g. https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key={key}. Needs https and {z}, {x}, {y}; {s}, {r} and {key} are filled in by the server.",
+    schema: tileTemplate,
     default: undefined,
     apply: "live",
     kind: "string",
@@ -405,8 +465,12 @@ export interface AppConfig {
   readonly readerPassword: string;
   readonly timeZone: string;
   readonly quietWindow: boolean;
-  /** Look up scan place names on Nominatim (OPENPARCELS_GEOCODING). */
+  /** Background lookup of scan place names (OPENPARCELS_GEOCODING). */
   readonly geocoding: boolean;
+  /** Nominatim-compatible search endpoint (OPENPARCELS_GEOCODING_URL). */
+  readonly geocodingUrl: string;
+  /** Added to the User-Agent sent to OpenStreetMap-style services; unset adds none. */
+  readonly contactEmail: string | undefined;
   readonly webDir: string | undefined;
   readonly trustProxy: TrustProxy;
   readonly retention: {
@@ -422,6 +486,8 @@ export interface AppConfig {
     readonly custom: CustomProvider | undefined;
     /** Unlocks the CARTO styles; unset hides them. */
     readonly cartoKey: string | undefined;
+    /** Other addresses for the built-in layers; unset keeps the providers' own. */
+    readonly builtinUrls: BuiltinUrls;
   };
 }
 
@@ -451,6 +517,8 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
     timeZone: values.OPENPARCELS_TIMEZONE ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
     quietWindow: values.OPENPARCELS_QUIET_WINDOW,
     geocoding: values.OPENPARCELS_GEOCODING,
+    geocodingUrl: values.OPENPARCELS_GEOCODING_URL,
+    contactEmail: values.OPENPARCELS_CONTACT_EMAIL,
     webDir:
       values.OPENPARCELS_WEB_DIR === undefined
         ? undefined
@@ -475,6 +543,11 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
               maxZoom: values.OPENPARCELS_MAP_CUSTOM_MAX_ZOOM,
             },
       cartoKey: values.OPENPARCELS_MAP_CARTO_KEY,
+      builtinUrls: {
+        osm: values.OPENPARCELS_MAP_OSM_URL,
+        topo: values.OPENPARCELS_MAP_TOPO_URL,
+        eox: values.OPENPARCELS_MAP_EOX_URL,
+      },
     },
   };
 }

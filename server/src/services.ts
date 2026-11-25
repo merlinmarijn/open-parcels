@@ -44,9 +44,15 @@ import { ConfigSettings } from "./settings/config-settings.js";
 import { SettingsStore } from "./settings/store.js";
 import { CollageMaker } from "./images/collage.js";
 
-/** How this server identifies itself to OpenStreetMap's services. */
-const USER_AGENT =
-  "open-parcels/2.0 (self-hosted parcel tracker; +https://github.com/open-parcels/open-parcels)";
+/**
+ * How this server identifies itself to tile servers and the place search: a stable name for the
+ * application, plus the owner's contact address when one is set, so the operators of those
+ * services can write to this install instead of blocking it.
+ */
+export function serviceUserAgent(contactEmail: string | undefined): string {
+  const contact = contactEmail === undefined ? "" : `; ${contactEmail}`;
+  return `open-parcels/2.0 (self-hosted parcel tracker; +https://github.com/open-parcels/open-parcels${contact})`;
+}
 
 export interface Services {
   readonly config: AppConfig;
@@ -201,13 +207,19 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   });
   const tiles = new TileProxy({
     cacheDir: path.join(deps.config.dataDir, "tiles"),
-    userAgent: USER_AGENT,
-    // Read per request: a custom provider saved in the UI applies at once.
-    layers: () => availableLayers(deps.config.map.custom, deps.config.map.cartoKey),
+    userAgent: () => serviceUserAgent(deps.config.contactEmail),
+    // Read per request: a custom provider or tile address saved in the UI applies at once.
+    layers: () =>
+      availableLayers(
+        deps.config.map.custom,
+        deps.config.map.cartoKey,
+        deps.config.map.builtinUrls,
+      ),
     ...(deps.fetchImpl === undefined ? {} : { fetchImpl: deps.fetchImpl }),
   });
   const geocoder = new Geocoder({
-    userAgent: USER_AGENT,
+    userAgent: () => serviceUserAgent(deps.config.contactEmail),
+    endpoint: () => deps.config.geocodingUrl,
     ...(deps.fetchImpl === undefined ? {} : { fetchImpl: deps.fetchImpl }),
   });
   // Filled in once the live tracker exists; reads before that see no positions.

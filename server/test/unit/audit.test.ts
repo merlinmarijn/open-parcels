@@ -167,7 +167,7 @@ describe("tile cache pruning", () => {
       const fresh = tile("3.png", 1, 60);
       const proxy = new TileProxy({
         cacheDir: dir,
-        userAgent: "test",
+        userAgent: () => "test",
         now: () => now,
         maxCacheBytes: 100,
       });

@@ -589,7 +589,7 @@ describe("place precision", () => {
     let clock = 100_000;
     const waits: number[] = [];
     const geocoder = new Geocoder({
-      userAgent: "test",
+      userAgent: () => "test",
       now: () => clock,
       sleep: (ms) => {
         waits.push(ms);

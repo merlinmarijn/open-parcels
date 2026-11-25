@@ -23,6 +23,7 @@ import * as m0019 from "./migrations/0019-glossary-names.js";
 import * as m0020 from "./migrations/0020-ha-import-markers.js";
 import * as m0021 from "./migrations/0021-order-totals.js";
 import * as m0022 from "./migrations/0022-live-state-connection.js";
+import * as m0023 from "./migrations/0023-geocoding-opt-in.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -52,6 +53,7 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0020-ha-import-markers": m0020,
   "0021-order-totals": m0021,
   "0022-live-state-connection": m0022,
+  "0023-geocoding-opt-in": m0023,
 };
 
 const staticProvider: MigrationProvider = {
