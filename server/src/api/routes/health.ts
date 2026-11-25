@@ -40,6 +40,10 @@ const connectionStatusSchema = z.object({
 const statusSchema = summarySchema.extend({
   checked_at: z.string(),
   version: z.string(),
+  commit: z
+    .string()
+    .nullable()
+    .describe("The git commit (7 characters) the image was built from; null outside an image."),
   started_at: z.string(),
   database: z.object({ detail: z.string().nullable() }),
   connections: z.array(connectionStatusSchema).describe("Every enabled connection but inboxes."),

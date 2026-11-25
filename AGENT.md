@@ -37,6 +37,14 @@ npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc
   Personal patterns (names, local paths) go one regex per line into the untracked
   `.git/info/pii-patterns`. Never bypass the hook with `--no-verify`.
 
+## Versions
+
+Until 2.0.0 the server and web packages are `2.0.0-dev.<YYYYMMDD>`, the day of the build that is
+published (the Home Assistant app's `2.0.0-dev.<YYYYMMDD>.<n>` builds on it). Bump both
+`package.json` files (and the lockfile's workspace entries) when publishing on a new day. The image
+also carries its commit: `op-publish.sh` passes `--build-arg OPENPARCELS_COMMIT=<sha>`, and the
+Status page shows `2.0.0-dev.<date> (<commit>)`.
+
 ## Rules that matter here
 
 - **Test fixtures contain made-up values only.** Never commit real tracking numbers, order numbers,

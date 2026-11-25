@@ -3,7 +3,7 @@
   "info": {
     "title": "open-parcels",
     "description": "Self-hosted parcel and order tracking.",
-    "version": "2.0.0-dev.0"
+    "version": "2.0.0-dev.20261125"
   },
   "components": {
     "securitySchemes": {
@@ -391,6 +391,11 @@
                     "version": {
                       "type": "string"
                     },
+                    "commit": {
+                      "nullable": true,
+                      "description": "The git commit (7 characters) the image was built from; null outside an image.",
+                      "type": "string"
+                    },
                     "started_at": {
                       "type": "string"
                     },
@@ -679,6 +684,7 @@
                     "checks",
                     "checked_at",
                     "version",
+                    "commit",
                     "started_at",
                     "database",
                     "connections",

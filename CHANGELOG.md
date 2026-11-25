@@ -32,6 +32,14 @@ Assistant app and the browser extension are released in lockstep with this serve
 older Home Assistant integration stops seeing connections and live events until it is updated.
 Scripts that call the API by hand must switch paths and fields; nothing else is needed.
 
+### Changed: backups are private, versions name their commit
+
+- Backups (and the unfinished `.partial`) are written with mode 0600 and the backup folder with
+  0700; on start, the server restricts backups written earlier the same way.
+- Versions are `2.0.0-dev.<date>` until 2.0.0. The image bakes in its commit
+  (`OPENPARCELS_COMMIT`, a build argument); `GET /api/v1/status` and diagnostics return it as
+  `commit`, and the Status page shows `Version 2.0.0-dev.20261125 (abc1234)`.
+
 ### Changed: third-party services (OP-079)
 
 - **Background place lookup is off by default** for new installs (`OPENPARCELS_GEOCODING`).

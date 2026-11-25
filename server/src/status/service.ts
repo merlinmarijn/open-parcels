@@ -2,7 +2,7 @@ import { sql } from "kysely";
 import type { ConnectionRow } from "../db/schema.js";
 import { SCHEDULER_STALL_MS } from "../engine/scheduler.js";
 import type { Services } from "../services.js";
-import { VERSION } from "../version.js";
+import { COMMIT, VERSION } from "../version.js";
 
 /** When this process started, for the status page and diagnostics. */
 export const STARTED_AT = new Date();
@@ -48,6 +48,7 @@ export interface StatusReport {
   readonly status: CheckState;
   readonly checked_at: string;
   readonly version: string;
+  readonly commit: string | null;
   readonly started_at: string;
   readonly checks: Readonly<Record<CheckName, CheckState>>;
   readonly database: { readonly detail: string | null };
@@ -118,6 +119,7 @@ export async function collectStatus(services: Services): Promise<StatusReport> {
   const base = {
     checked_at: now.toISOString(),
     version: VERSION,
+    commit: COMMIT,
     started_at: STARTED_AT.toISOString(),
   };
   const databaseError = await databaseCheck(services);

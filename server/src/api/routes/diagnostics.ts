@@ -1,4 +1,4 @@
-import { VERSION } from "../../version.js";
+import { COMMIT, VERSION } from "../../version.js";
 import { z } from "zod";
 import { redactValue } from "../../log/redact.js";
 import type { Services } from "../../services.js";
@@ -63,6 +63,7 @@ export function registerDiagnosticsRoutes(app: TypedApp, services: Services): vo
       ]);
       return redactValue({
         version: VERSION,
+        commit: COMMIT,
         started_at: STARTED_AT.toISOString(),
         uptime_seconds: Math.round((services.clock.now().getTime() - STARTED_AT.getTime()) / 1000),
         time_zone: services.config.timeZone,

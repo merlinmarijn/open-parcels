@@ -43,6 +43,9 @@ RUN rm -rf node_modules server/node_modules \
 
 # --- Runtime ------------------------------------------------------------------------------------
 FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS runtime
+# The commit the image is built from (op-publish passes it); shown on the Status page next to the
+# version. Declared in the last stage only, so a new commit never invalidates the build cache.
+ARG OPENPARCELS_COMMIT=""
 RUN apt-get update \
  && apt-get install --no-install-recommends -y tini \
  && rm -rf /var/lib/apt/lists/* \
@@ -57,6 +60,7 @@ COPY --from=tailscale /usr/local/bin/tailscale /usr/local/bin/tailscaled /usr/lo
 COPY --chmod=755 docker/tailscale-entrypoint.sh /usr/local/bin/tailscale-entrypoint.sh
 
 ENV NODE_ENV=production \
+    OPENPARCELS_COMMIT=${OPENPARCELS_COMMIT} \
     OPENPARCELS_DATA_DIR=/data \
     OPENPARCELS_PORT=3000
 

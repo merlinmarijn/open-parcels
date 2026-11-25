@@ -3,7 +3,7 @@
  * Do not edit manually.
  * open-parcels
  * Self-hosted parcel and order tracking.
- * OpenAPI spec version: 2.0.0-dev.0
+ * OpenAPI spec version: 2.0.0-dev.20261125
  */
 import { apiFetch } from "./fetcher";
 export type GetApiV1HealthLive200Status =
@@ -448,6 +448,11 @@ export type GetApiV1Status200 = {
   checks: GetApiV1Status200Checks;
   checked_at: string;
   version: string;
+  /**
+   * The git commit (7 characters) the image was built from; null outside an image.
+   * @nullable
+   */
+  commit: string | null;
   started_at: string;
   database: GetApiV1Status200Database;
   /** Every enabled connection but inboxes. */
