@@ -2,6 +2,13 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Fixed: the v1 import's dry run on a fresh installation
+
+`import-legacy --dry-run` (README, "Migrating") failed with "There is no encryption key" until the
+server had started once. On an installation without a key and without a database it now runs with
+a throwaway key and still creates nothing. Checked on a copy of a real v1 database; a made-up v1
+database of the same schema is now part of the tests.
+
 ### Added: a searchable connection picker with provider logos
 
 "Add a connection" opens a picker like Home Assistant's "Add integration": a search over name,

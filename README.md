@@ -156,10 +156,13 @@ Two one-time tools carry data over from earlier setups. Both read the server's o
 environment (data directory, encryption key), so run them inside the open-parcels container, and
 both accept `--dry-run`, which works on a temporary copy and changes nothing.
 
-- **The pre-rewrite open-parcels database:** copy the old `data.db` into the data volume, then
-  run `node server/dist/tools/import-legacy.js /data/old.db --dry-run`, and again without
-  `--dry-run`. Its IMAP inboxes come over only when the old encryption key is set as
-  `OPENPARCELS_LEGACY_KEY` in the container's environment; it is never taken from the command line.
+- **The pre-rewrite open-parcels database (v1):** copy the old `data.db` into the data volume as
+  `old.db` (readable by the container's user; it is only read, never changed), then run
+  `node server/dist/tools/import-legacy.js /data/old.db --dry-run`, check the counts it prints,
+  and run it again without `--dry-run`. This works on a fresh installation too, before the first
+  start. Running it twice imports nothing twice. Its IMAP inboxes come over only when the old
+  encryption key is set as `OPENPARCELS_LEGACY_KEY` in the container's environment; it is never
+  taken from the command line. Amazon and AliExpress connections are signed in again by hand.
 - **The Home Assistant parcel suite:** `node server/dist/tools/import-ha.js - --dry-run` reads
   Home Assistant's `.storage/core.config_entries` from stdin (or a path instead of `-`).
 

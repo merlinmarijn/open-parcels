@@ -8,6 +8,7 @@ import { migrateToLatest, openDatabase } from "../../src/db/database.js";
 import { main as exportOpenApi } from "../../src/tools/export-openapi.js";
 import { main as importHa } from "../../src/tools/import-ha.js";
 import { main as importLegacy } from "../../src/tools/import-legacy.js";
+import { writeLegacyV1Database } from "../fakes/legacy-v1.js";
 
 /** Made-up sign-in value, built from parts. */
 const TOKEN = ["fake", "refresh", "0000"].join("-");
@@ -117,10 +118,54 @@ describe("import-legacy (OP-142)", () => {
 
   it("creates no key and no database on a dry run of a fresh install", async () => {
     const old = path.join(dir, "old.db");
-    new SQLite(old).close();
-    await expect(importLegacy([old, "--dry-run"], output)).rejects.toThrow(/no encryption key/);
+    writeLegacyV1Database(old);
+    await importLegacy([old, "--dry-run"], output);
+    expect(JSON.parse(printed(output.out))).toMatchObject({ dryRun: true, parcels: 5 });
     expect(existsSync(path.join(dir, "secret.key"))).toBe(false);
     expect(existsSync(database)).toBe(false);
+  });
+
+  it("follows the README path on a v1 database: dry run, import, a repeat imports nothing", async () => {
+    const old = path.join(dir, "old.db");
+    writeLegacyV1Database(old);
+    const counts = (report: string) => {
+      const { orders, parcels, events, droppedPositionEvents, skippedDuplicateParcels } =
+        JSON.parse(report) as Record<string, number>;
+      return { orders, parcels, events, droppedPositionEvents, skippedDuplicateParcels };
+    };
+    const expected = {
+      orders: 3,
+      parcels: 5,
+      events: 2,
+      droppedPositionEvents: 1,
+      skippedDuplicateParcels: 0,
+    };
+
+    await importLegacy([old, "--dry-run"], output);
+    expect(counts(printed(output.out))).toEqual(expected);
+    output.out.mockClear();
+    await importLegacy([old], output);
+    expect(counts(printed(output.out))).toEqual(expected);
+    output.out.mockClear();
+    await importLegacy([old], output);
+    expect(counts(printed(output.out))).toEqual({
+      orders: 0,
+      parcels: 0,
+      events: 0,
+      droppedPositionEvents: 1,
+      skippedDuplicateParcels: 5,
+    });
+
+    const sqlite = new SQLite(database, { readonly: true });
+    const unknown = sqlite
+      .prepare("select tracking_number from parcels where carrier = 'unknown' order by 1")
+      .all();
+    sqlite.close();
+    // Only the bare numbers with a generic courier and no order stay unidentified.
+    expect(unknown).toEqual([
+      { tracking_number: "000000000001" },
+      { tracking_number: "0000000001" },
+    ]);
   });
 });
 

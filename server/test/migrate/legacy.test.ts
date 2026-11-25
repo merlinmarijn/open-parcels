@@ -6,16 +6,9 @@ import { secretAad } from "../../src/engine/connections.js";
 import { importLegacy, parseDecrypted } from "../../src/migrate/legacy.js";
 import { carrierId, resolveLegacyCarrier } from "../../src/migrate/legacy-carrier.js";
 import { parseLegacyImap } from "../../src/migrate/legacy-imap.js";
+import { LEGACY_V1_DDL } from "../fakes/legacy-v1.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
-/** The schema of the pre-rewrite app (UUID variant), as it exists in deployed databases. */
-const LEGACY_DDL = `
-create table orders (id text primary key, source text not null, order_number text not null, status text not null, placed_at integer, added_at integer not null, updated_at integer not null);
-create table parcels (id text primary key, tracking_number text not null unique, name text, courier text, status text not null, estimated_delivery_start integer, estimated_delivery_end integer, lat real, lng real, order_id text, last_vehicle text, last_event_description text, is_manual_status integer default 0, added_at integer not null, updated_at integer not null);
-create table parcel_events (id text primary key, parcel_id text not null, location text, description text not null, timestamp integer not null, lat real, lng real, vehicle text, source text);
-create table credentials (id text primary key, service text not null, encrypted_data text not null, updated_at integer not null);
-create table settings (key text primary key, value text not null, updated_at integer not null);
-`;
 
 function legacyEncrypt(text: string, key: Buffer): string {
   const iv = randomBytes(16);
@@ -33,7 +26,7 @@ beforeEach(async () => {
   context = await createTestContext();
   legacyPath = path.join(context.dataDir, "legacy.db");
   const legacy = new SQLite(legacyPath);
-  legacy.exec(LEGACY_DDL);
+  legacy.exec(LEGACY_V1_DDL);
   legacy
     .prepare("insert into orders values (?, ?, ?, ?, ?, ?, ?)")
     .run("o1", "Amazon", "000-0000000-0000001", "shipped", T, T, T);

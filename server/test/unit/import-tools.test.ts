@@ -31,7 +31,14 @@ describe("a dry run (OP-127)", () => {
     rmSync(dataDir, { recursive: true, force: true });
   });
 
-  it("creates no encryption key", async () => {
+  it("on a fresh installation runs with a throwaway key and creates nothing", async () => {
+    await expect(withImportTarget(true, () => Promise.resolve(1))).resolves.toBe(1);
+    expect(existsSync(path.join(dataDir, "secret.key"))).toBe(false);
+    expect(existsSync(path.join(dataDir, "openparcels.db"))).toBe(false);
+  });
+
+  it("refuses a database without its encryption key", async () => {
+    openDatabase(path.join(dataDir, "openparcels.db")).sqlite.close();
     await expect(withImportTarget(true, () => Promise.resolve(0))).rejects.toThrow(
       /no encryption key/,
     );
