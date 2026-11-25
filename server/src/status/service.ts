@@ -49,6 +49,7 @@ export interface StatusReport {
   readonly checked_at: string;
   readonly version: string;
   readonly commit: string | null;
+  readonly install_id: string;
   readonly started_at: string;
   readonly checks: Readonly<Record<CheckName, CheckState>>;
   readonly database: { readonly detail: string | null };
@@ -120,6 +121,7 @@ export async function collectStatus(services: Services): Promise<StatusReport> {
     checked_at: now.toISOString(),
     version: VERSION,
     commit: COMMIT,
+    install_id: services.installId,
     started_at: STARTED_AT.toISOString(),
   };
   const databaseError = await databaseCheck(services);

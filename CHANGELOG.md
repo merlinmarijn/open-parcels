@@ -46,6 +46,8 @@ the server (setting descriptions, error messages, sign-in steps, provider forms)
 - Versions are `2.0.0-dev.<date>` until 2.0.0. The image bakes in its commit
   (`OPENPARCELS_COMMIT`, a build argument); `GET /api/v1/status` and diagnostics return it as
   `commit`, and the Status page shows `Version 2.0.0-dev.20261125 (abc1234)`.
+- `GET /api/v1/status` returns `install_id`, a random id kept for the life of the install, so
+  clients such as the Home Assistant integration can recognise the same server (HA-010).
 
 ### Changed: third-party services (OP-079)
 

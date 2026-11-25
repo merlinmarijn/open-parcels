@@ -453,6 +453,8 @@ export type GetApiV1Status200 = {
    * @nullable
    */
   commit: string | null;
+  /** A random id created once per install and kept for its lifetime; clients use it to recognise the same server (the Home Assistant integration's unique id). */
+  install_id: string;
   started_at: string;
   database: GetApiV1Status200Database;
   /** Every enabled connection but inboxes. */

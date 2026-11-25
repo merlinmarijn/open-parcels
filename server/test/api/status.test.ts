@@ -93,6 +93,9 @@ describe("health and status", () => {
 
     const status = await app.inject({ url: "/api/v1/status" });
     expect(status.statusCode).toBe(200);
+    expect(status.json<{ install_id: string }>().install_id).toBe(
+      await context.services.settings.installId(),
+    );
     expect(status.json<{ connections: unknown[] }>().connections).toEqual([
       expect.objectContaining({
         id: connection.id,

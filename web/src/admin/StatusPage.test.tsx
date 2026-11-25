@@ -20,6 +20,7 @@ const STATUS = {
   checked_at: "2026-11-25T10:00:00.000Z",
   version: "2.0.0-dev.20261125",
   commit: "abc1234",
+  install_id: "install-1",
   started_at: "2026-11-25T08:00:00.000Z",
   database: { detail: null },
   connections: [

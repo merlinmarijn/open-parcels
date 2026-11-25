@@ -44,6 +44,11 @@ const statusSchema = summarySchema.extend({
     .string()
     .nullable()
     .describe("The git commit (7 characters) the image was built from; null outside an image."),
+  install_id: z
+    .string()
+    .describe(
+      "A random id created once per install and kept for its lifetime; clients use it to recognise the same server (the Home Assistant integration's unique id).",
+    ),
   started_at: z.string(),
   database: z.object({ detail: z.string().nullable() }),
   connections: z.array(connectionStatusSchema).describe("Every enabled connection but inboxes."),
