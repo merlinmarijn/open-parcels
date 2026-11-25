@@ -4,6 +4,12 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- Codes instead of English texts: calendar entries without `details`, ICS feed in English or German
+  (`?lang`, `Accept-Language`); connection `state_reason` + `carrier_message` (migration
+  `0025-state-reasons`); scheduler `last_error` and backup errors as codes; web EN/DE texts; HA
+  integration 0.8.0 in lockstep (calendar words from HA translations). Settings source `app` →
+  `ha_app`; "app" alone replaced across the server, web UI and docs.
+- Phone layout pass (360–480 px CSS, calendar list view on phones); real-device checks in TODO §2.
 - Server texts by language: setting groups as ids with web texts per setting key; provider
   sign-in labels, step texts and form field titles (every field titled) and map layer labels and
   attributions in EN/DE by `Accept-Language`, which the web sends; calendar returns carry

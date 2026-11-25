@@ -28,17 +28,20 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 - [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
 - [ ] Internationalisation leftovers (web UI EN/DE, error codes, settings, provider texts, map
-      layers done, see `DONE.md`). Still English: the engine's own connection `state_detail`
-      texts ("Not run yet.", "The carrier asked us to slow down.", inbox states; plan: a
-      `state_reason` code column next to `state_detail` for the provider's words, migration
-      mapping the stored English texts), the scheduler's `last_error` and backup error texts on
-      the Status page, the ICS feed and calendar `details` (kept English for HA and calendar
-      apps). Carrier names and texts written by providers or carriers stay (provider rewrite, §3)
+      layers, connection state reasons, scheduler and backup error codes, calendar and ICS texts
+      done, see `DONE.md`). Still English: the database check's own error text on the Status page
+      and texts written by providers or carriers (`carrier_message`, provider rewrite, §3); the
+      HA integration's return sensor attributes (`drop_off`, `cost` words)
 - [ ] Accessibility pass: axe on every page and token contrast are tested (see `DONE.md`).
       Still to do by hand: keyboard walk of every page and dialog (focus order, focus return
       after dialogs, the map and calendar widgets), screen-reader pass (NVDA/Orca) of live
       updates and sign-in steps
-- [ ] Mobile layout pass on every page
+- [ ] Mobile layout pass: phone CSS at 360–480 px done (nav on its own row, icons only; tables
+      scroll inside their card; smaller paddings; dialogs nearly full width; calendar toolbar
+      wraps and opens the list view on phones; map menu kept clear). Still to look at on a real
+      phone: the parcels table (scrolls, maybe cards), the split map/list pages and Leaflet's
+      controls, FullCalendar's week/day views, the sign-in dialog's steps, the Settings place
+      picker map, and Safari's dialog height (`100dvh`)
 - [ ] Performance with 10,000 parcels / 5,000 orders (history import scale)
 - [ ] Release 2.0.0: changelog, tags `2.0.0`, `2.0`, `latest` on Docker Hub and GHCR, website and
       Unraid template switched from `:dev` to `:latest`, HA app on the release
