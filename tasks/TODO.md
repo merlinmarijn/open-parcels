@@ -50,6 +50,13 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
       yet seen); the HA app's `backup_exclude` may want `backups/` once backups are on by default
 - [ ] OP-161 follow-up: a `health.changed` live event, so the status page needs no 30 s refetch
 
+- [ ] "Add a connection" picker like Home Assistant's "Add integration" dialog instead of the
+      plain dropdown: a search field on top (matches name, country, aliases), one row per
+      provider with its logo (bundled, no external URLs), name, countries/storefronts as small
+      badges and a chevron; "Inbox (IMAP)" and fallback services (17TRACK, universal lookup) as
+      their own section; keyboard and screen-reader friendly, full-height on phones. Provider
+      logos come from the provider manifest (decision record 0002), built-in ones bundled
+
 ## 2b. Early groundwork for decision record 0004 (do soon: shapes the API and data model)
 
 - [ ] Token login for non-cookie clients (access + refresh tokens, scoped, revocable; admin/reader
