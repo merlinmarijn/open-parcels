@@ -71,57 +71,59 @@ export function DataCard(): ReactNode {
       {data === undefined ? (
         <Spinner />
       ) : (
-        <table className="data-table">
-          <tbody>
-            <Row
-              label={t.settings.data.database}
-              value={formatBytes(data.database_bytes)}
-              busy={busy}
-            />
-            <Row label={t.settings.data.parcels} value={String(data.parcels)} busy={busy} />
-            <Row
-              label={t.settings.data.archivedParcels}
-              value={String(data.archived_parcels)}
-              action={t.settings.data.delete}
-              busy={busy || data.archived_parcels === 0}
-              onAction={() => {
-                run({ what: "archived" }, t.settings.data.confirmArchived(data.archived_parcels));
-              }}
-            />
-            <Row label={t.settings.data.orders} value={String(data.orders)} busy={busy} />
-            <Row
-              label={t.settings.data.events}
-              value={String(data.scans)}
-              action={t.settings.data.deleteArchivedEvents}
-              busy={busy}
-              onAction={() => {
-                run({ what: "archived_scans" }, t.settings.data.confirmArchivedEvents);
-              }}
-            />
-            <Row
-              label={t.settings.data.rawPayloads}
-              value={String(data.raw_payloads)}
-              action={t.settings.data.delete}
-              busy={busy || data.raw_payloads === 0}
-              onAction={() => {
-                run({ what: "raw_payloads" }, t.settings.data.confirmRaw);
-              }}
-            />
-            <Row label={t.settings.data.eventLog} value={String(data.events)} busy={busy} />
-            {(["images", "tiles", "collages"] as const).map((name) => (
+        <div className="card-table-scroll">
+          <table className="data-table">
+            <tbody>
               <Row
-                key={name}
-                label={t.settings.data.caches[name]}
-                value={formatBytes(data.cache_bytes[name])}
-                action={t.settings.data.clear}
-                busy={busy || data.cache_bytes[name] === 0}
+                label={t.settings.data.database}
+                value={formatBytes(data.database_bytes)}
+                busy={busy}
+              />
+              <Row label={t.settings.data.parcels} value={String(data.parcels)} busy={busy} />
+              <Row
+                label={t.settings.data.archivedParcels}
+                value={String(data.archived_parcels)}
+                action={t.settings.data.delete}
+                busy={busy || data.archived_parcels === 0}
                 onAction={() => {
-                  run({ what: "cache", cache: name }, t.settings.data.confirmCache[name]);
+                  run({ what: "archived" }, t.settings.data.confirmArchived(data.archived_parcels));
                 }}
               />
-            ))}
-          </tbody>
-        </table>
+              <Row label={t.settings.data.orders} value={String(data.orders)} busy={busy} />
+              <Row
+                label={t.settings.data.events}
+                value={String(data.scans)}
+                action={t.settings.data.deleteArchivedEvents}
+                busy={busy}
+                onAction={() => {
+                  run({ what: "archived_scans" }, t.settings.data.confirmArchivedEvents);
+                }}
+              />
+              <Row
+                label={t.settings.data.rawPayloads}
+                value={String(data.raw_payloads)}
+                action={t.settings.data.delete}
+                busy={busy || data.raw_payloads === 0}
+                onAction={() => {
+                  run({ what: "raw_payloads" }, t.settings.data.confirmRaw);
+                }}
+              />
+              <Row label={t.settings.data.eventLog} value={String(data.events)} busy={busy} />
+              {(["images", "tiles", "collages"] as const).map((name) => (
+                <Row
+                  key={name}
+                  label={t.settings.data.caches[name]}
+                  value={formatBytes(data.cache_bytes[name])}
+                  action={t.settings.data.clear}
+                  busy={busy || data.cache_bytes[name] === 0}
+                  onAction={() => {
+                    run({ what: "cache", cache: name }, t.settings.data.confirmCache[name]);
+                  }}
+                />
+              ))}
+            </tbody>
+          </table>
+        </div>
       )}
       <div className="stack">
         <label className="field">

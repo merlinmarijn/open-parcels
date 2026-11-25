@@ -37,6 +37,14 @@ function viewName(fullCalendarId: string): ViewName {
   return VIEW_NAMES.find((name) => VIEWS[name] === fullCalendarId) ?? "month";
 }
 
+/** Phone width, as in `styles.css`: a month grid has no room there, so the list is the default. */
+const PHONE_QUERY = "(max-width: 480px)";
+
+function defaultView(): ViewName {
+  const phone = typeof window.matchMedia === "function" && window.matchMedia(PHONE_QUERY).matches;
+  return phone ? "list" : "month";
+}
+
 /** A local calendar day as YYYY-MM-DD. */
 function dayString(date: Date): string {
   const pad = (n: number): string => String(n).padStart(2, "0");
@@ -49,7 +57,7 @@ export default function CalendarPage(): ReactNode {
   const [dateParam, setDateParam] = useUrlParam("date");
   // Read once: FullCalendar takes them only when it mounts; afterwards it reports back.
   const [initial] = useState(() => ({
-    view: VIEWS[pickOne(viewParam, VIEW_NAMES, "month")],
+    view: VIEWS[pickOne(viewParam, VIEW_NAMES, defaultView())],
     date: dateParam !== null && /^\d{4}-\d{2}-\d{2}$/.test(dateParam) ? dateParam : undefined,
   }));
   // Set by FullCalendar once it knows the shown range, so the first request already asks for the

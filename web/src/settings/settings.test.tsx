@@ -273,6 +273,8 @@ describe("backups card", () => {
     await user.click(within(card).getByRole("button", { name: "Back up now" }));
     expect(await within(card).findByText("Last backup succeeded")).toBeInTheDocument();
     expect(within(card).getByText(DONE.file)).toBeInTheDocument();
+    // On a phone the file list scrolls inside the card instead of widening the page.
+    expect(within(card).getByText(DONE.file).closest(".card-table-scroll")).not.toBeNull();
     expect(calls.filter((call) => call.method === "POST").map((call) => call.path)).toEqual([
       "/api/v1/data/backups",
     ]);

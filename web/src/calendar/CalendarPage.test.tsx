@@ -1,5 +1,5 @@
 import { screen, waitFor } from "@testing-library/react";
-import { describe, expect, it } from "vitest";
+import { afterEach, describe, expect, it, vi } from "vitest";
 import { mockApi, renderApp, SIGNED_IN } from "../test/helpers";
 import type { CalendarEntry } from "../api/types";
 import { toCalendarEvent } from "./events";
@@ -21,6 +21,31 @@ describe("calendar page", () => {
     expect(read?.query.get("from")?.slice(0, 10) ?? "").toMatch(/^2025-0[23]-/);
     expect(read?.query.get("to")?.slice(0, 10) ?? "").toMatch(/^2025-04-/);
     expect(reads()).toHaveLength(1);
+  });
+
+  describe("on a phone", () => {
+    afterEach(() => {
+      vi.unstubAllGlobals();
+    });
+
+    it("opens the list instead of the month grid unless the address names a view", async () => {
+      vi.stubGlobal("matchMedia", (query: string) => ({
+        matches: query === "(max-width: 480px)",
+        media: query,
+        addEventListener: () => undefined,
+        removeEventListener: () => undefined,
+      }));
+      mockApi({
+        "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+        "GET /api/v1/calendar": () => ({ body: [] }),
+        "GET /api/v1/carriers": () => ({ body: [] }),
+      });
+      const { container } = renderApp("/calendar?date=2025-03-15");
+      await waitFor(() => {
+        expect(container.querySelector(".fc-listWeek-view")).not.toBeNull();
+      });
+      expect(container.querySelector(".fc-dayGridMonth-view")).toBeNull();
+    });
   });
 });
 

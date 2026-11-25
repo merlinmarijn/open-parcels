@@ -49,19 +49,21 @@ export function BackupCard(): ReactNode {
             </div>
           )}
           {data.files.length === 0 ? null : (
-            <table className="data-table">
-              <tbody>
-                {data.files.slice(0, LISTED).map((file) => (
-                  <tr key={file.name}>
-                    <th scope="row">
-                      <code>{file.name}</code>
-                    </th>
-                    <td>{formatDateTime(file.created_at)}</td>
-                    <td>{formatBytes(file.bytes)}</td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
+            <div className="card-table-scroll">
+              <table className="data-table">
+                <tbody>
+                  {data.files.slice(0, LISTED).map((file) => (
+                    <tr key={file.name}>
+                      <th scope="row">
+                        <code>{file.name}</code>
+                      </th>
+                      <td>{formatDateTime(file.created_at)}</td>
+                      <td>{formatBytes(file.bytes)}</td>
+                    </tr>
+                  ))}
+                </tbody>
+              </table>
+            </div>
           )}
           {data.files.length > LISTED ? (
             <p className="muted">{t.settings.backups.older(data.files.length - LISTED)}</p>
