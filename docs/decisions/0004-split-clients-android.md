@@ -169,9 +169,25 @@ twice:
 Everything else (repo split, web image, client repos, Unraid templates for split installs,
 Android app, store publishing) waits until TODO §1–§10 are done.
 
-## 7. Open questions for the owner
+## 7. Owner decisions (2026-11-25)
 
-- Name of the all-in-one repo after a split: keep `open-parcels` or rename to `open-parcels-server`.
-- Which client languages first (proposal: TypeScript, Python, C#).
-- Push: is self-hosted ntfy (UnifiedPush) acceptable as the default for notifications?
-- Store accounts (Google Play, npm, PyPI, NuGet) are owner actions.
+1. **Server repo name:** `open-parcels-server` (rename of `open-parcels`; every reference in the
+   other repos, the website, image names and docs has to follow). Three images stay: server only,
+   web only, all-in-one. With two source repos, the web repo publishes the web image and a static
+   zip per release; the server repo builds the server image and the all-in-one image, which takes
+   the web zip of the matching web release.
+2. **Web repo name:** still open between `open-parcels-web` and `open-parcels-ui` (and whether the
+   server repo should rather be `open-parcels-api`). Recommendation: `open-parcels-server` +
+   `open-parcels-web`, because the glossary calls it "web UI" and the server is more than an API
+   (scheduler, providers, database).
+3. **Client libraries first:** TypeScript, Python, C#.
+4. **Android notifications:** default is the public **ntfy.sh** instance; users can switch to their
+   own ntfy server (or other UnifiedPush distributors). Because ntfy.sh is a public third party, the
+   push message carries no personal data: only a random per-device topic and a "sync now" ping (or
+   an encrypted payload); the app then fetches the details from the user's own server.
+5. **Stores:** npm, PyPI and NuGet accounts exist (owner). **No Google Play** (paid developer
+   account; there is no legitimate way around the fee). Android distribution: GitHub Releases +
+   Obtainium, F-Droid, IzzyOnDroid, Accrescent.
+6. **Credentials** for npm, PyPI and NuGet: look in the NAS environment and on the owner's PC
+   (Bazzite) first; ask the owner to unlock Bitwarden only if they can't be found. Needed only when
+   the client libraries are published (TODO §11).

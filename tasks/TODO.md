@@ -163,8 +163,8 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 ## 11. After everything above: split, clients, Android app (decision record 0004)
 
-- [ ] Owner answers 0004 §7 (repo names, first client languages, push via ntfy/UnifiedPush)
-- [ ] Split repositories: `open-parcels-server`, `open-parcels-web` (own image + static zip),
+- [ ] Web repo name: `open-parcels-web` or `open-parcels-ui` (owner still deciding; 0004 §7)
+- [ ] Rename `open-parcels` → `open-parcels-server` and every reference; split repositories: `open-parcels-web` (own image + static zip),
       Compose file for both, all-in-one image stays the default
 - [ ] Unraid: all-in-one template (default) plus server-only and web-only templates; Compose
       Manager Plus documented (Unraid has no native Compose)
@@ -173,5 +173,5 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 - [ ] Client libraries from the released OpenAPI: `open-parcels-client-typescript`, `-python`,
       `-csharp` (+ SSE helper), published to npm, PyPI, NuGet
 - [ ] Native Android app `open-parcels-android` (Kotlin, Compose, Room offline copy, WorkManager
-      sync, UnifiedPush notifications, optional FCM flavour); GitHub Releases + Obtainium,
-      F-Droid, IzzyOnDroid, Accrescent, Google Play
+      sync, UnifiedPush via ntfy.sh by default with no personal data in pushes); GitHub Releases +
+      Obtainium, F-Droid, IzzyOnDroid, Accrescent (no Google Play)
