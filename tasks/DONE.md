@@ -2,6 +2,13 @@
 
 Shipped work, newest first, with the commit that shipped it.
 
+## 2026-11-25
+
+- OP-079 third-party services: background place lookup opt-in with migration 0023, configurable
+  Nominatim endpoint and contact (`24fe477`); tile cache headers, conditional refresh, built-in tile
+  URL overrides, OSM map-issue link, EOX non-commercial label and year (`6cd2b6a`);
+  `docs/third-party-services.md` (`c6c33b8`)
+
 ## 2026-11-24
 
 - TODO §1 remainder: build, styles and tooling OP-045 (`8d58625`), OP-046 (`d5bc19c`), OP-047
