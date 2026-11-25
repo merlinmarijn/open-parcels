@@ -34,6 +34,7 @@ export const packeta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Packeta (Zásilkovna)",
   countries: ["CZ", "SK", "HU", "RO", "PL", "DE", "AT"],
+  aliases: ["Zásilkovna", "Zasilkovna"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

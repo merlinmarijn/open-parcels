@@ -134,6 +134,7 @@ export const evri = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
   name: "Evri",
   countries: ["GB"],
+  aliases: ["Hermes UK"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),

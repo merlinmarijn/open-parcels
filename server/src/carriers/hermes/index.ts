@@ -114,6 +114,8 @@ export const hermes = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Hermes",
   countries: ["DE"],
+  aliases: ["myHermes"],
+  logo: "hermes.svg",
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

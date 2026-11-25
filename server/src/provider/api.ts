@@ -102,6 +102,13 @@ export interface CarrierProvider<Config = unknown, Secret = unknown> {
   /** ISO 3166-1 alpha-2 codes, or `*` for worldwide. */
   readonly countries: readonly string[];
   readonly connectionKinds: readonly ProviderConnectionKind[];
+  /** Other names people search for (former names, sub-brands, local names): "Deutsche Post". */
+  readonly aliases?: readonly string[];
+  /**
+   * File name of the provider's logo in the server's `logos/` folder (SVG or PNG; its source is
+   * recorded in `logos/manifest.json`). Unset: the UI draws a monogram tile.
+   */
+  readonly logo?: string;
   /**
    * A fallback tracking service (universal lookup, 17TRACK) rather than a carrier: consulted only
    * for parcels no built-in carrier can follow, or that their carrier has not found for a day.

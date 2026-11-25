@@ -36,6 +36,7 @@ export const oesterreichischePost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Österreichische Post",
   countries: ["AT"],
+  aliases: ["Austrian Post", "Post.at"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

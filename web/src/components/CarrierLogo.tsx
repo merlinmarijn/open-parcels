@@ -1,20 +1,16 @@
 /**
- * A coloured carrier tile, standing in for the original UI's logo images: the API has no logo URLs
- * yet, so well-known carriers get their brand colour and the rest a stable colour from their id.
+ * A carrier's tile: the provider's bundled logo when it has one (the carrier list gives its URL),
+ * otherwise a monogram in the carrier's brand colour or a stable colour from its id.
  */
 import type { CSSProperties, ReactNode } from "react";
+import { apiUrl } from "../api/fetcher";
 import { useCarriers } from "../api/queries";
 
+/** Brand colours for monograms of carriers without a bundled logo. */
 const BRAND: Readonly<Record<string, readonly [string, string]>> = {
-  dhl: ["#ffcc00", "#d40511"],
-  dpd: ["#dc0032", "#ffffff"],
-  ups: ["#351c15", "#ffb500"],
   gls: ["#061ab1", "#ffd100"],
-  hermes: ["#0091cd", "#ffffff"],
-  fedex: ["#4d148c", "#ff6600"],
   amazon: ["#232f3e", "#ff9900"],
   postnl: ["#ff6200", "#ffffff"],
-  usps: ["#333366", "#ffffff"],
 };
 
 function colours(id: string): readonly [string, string] {
@@ -41,11 +37,27 @@ export function useCarrierName(id: string): string {
   return carriers.data?.find((carrier) => carrier.id === id)?.name ?? id;
 }
 
-export function CarrierLogo(props: {
+/** A carrier's tile from what the carrier list says: its logo, or else a monogram. */
+export function LogoTile(props: {
   readonly carrier: string;
+  readonly name: string;
+  readonly logo: string | null;
   readonly size?: number;
 }): ReactNode {
   const size = props.size ?? 40;
+  if (props.logo !== null) {
+    // Decoration: the carrier name is always written out next to it.
+    return (
+      <img
+        className="carrier-logo carrier-logo-image"
+        src={apiUrl(props.logo)}
+        alt=""
+        width={size}
+        height={size}
+        loading="lazy"
+      />
+    );
+  }
   const [background, color] = colours(props.carrier);
   const style: CSSProperties = {
     width: size,
@@ -61,7 +73,24 @@ export function CarrierLogo(props: {
       className="carrier-logo"
       style={style}
       aria-hidden="true"
-      data-initials={initials(props.carrier)}
+      data-initials={initials(props.name)}
+    />
+  );
+}
+
+/** A carrier's tile by id: looks its logo up in the carrier list. */
+export function CarrierLogo(props: {
+  readonly carrier: string;
+  readonly size?: number;
+}): ReactNode {
+  const carriers = useCarriers();
+  const logo = carriers.data?.find((carrier) => carrier.id === props.carrier)?.logo ?? null;
+  return (
+    <LogoTile
+      carrier={props.carrier}
+      name={props.carrier}
+      logo={logo}
+      {...(props.size === undefined ? {} : { size: props.size })}
     />
   );
 }

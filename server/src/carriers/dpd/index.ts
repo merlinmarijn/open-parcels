@@ -29,6 +29,7 @@ export const dpd = defineCarrier({
   id: "dpd",
   name: "DPD",
   countries: ["DE"],
+  logo: "dpd.svg",
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

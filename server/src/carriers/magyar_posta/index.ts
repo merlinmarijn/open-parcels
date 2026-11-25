@@ -29,6 +29,7 @@ export const magyarPosta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Magyar Posta",
   countries: ["HU"],
+  aliases: ["Hungarian Post"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

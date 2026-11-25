@@ -2,6 +2,21 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: a searchable connection picker with provider logos
+
+"Add a connection" opens a picker like Home Assistant's "Add integration": a search over name,
+aliases and countries (in the page's language, accents ignored), one row per provider with its
+logo, country badges and a chevron, and the inbox and fallback services in their own section.
+Arrow keys move between rows, Enter in the search picks the first match; on phones the picker
+fills the screen.
+
+- `GET /api/v1/carriers` lists `aliases` (other names to search for) and `logo`: the path of the
+  provider's bundled logo with its content hash (`/api/v1/carriers/<id>/logo?v=<hash>`, cached for
+  good, no login needed), or null; the web UI then draws a monogram tile.
+- Logos live in `server/logos/` with their source and licence per file in `manifest.json`. The
+  first ones come from simple-icons (CC0): DHL, DPD, FedEx, Hermes, Shopee Xpress, UPS, USPS and
+  Vinted Go. Carrier marks identify the carrier only.
+
 ### Changed: a third smaller image, Tailscale on demand
 
 The amd64 image went from 427 MB to 284 MB (−143 MB): Tailscale is no longer in the image, npm,

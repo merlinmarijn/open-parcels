@@ -62,6 +62,8 @@ export const dhl = defineCarrier<Config, Secret>({
   id: "dhl",
   name: "DHL",
   countries: ["*"],
+  aliases: ["Deutsche Post"],
+  logo: "dhl.svg",
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

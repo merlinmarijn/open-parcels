@@ -164,6 +164,7 @@ export const ukrposhta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Ukrposhta",
   countries: ["UA"],
+  aliases: ["Ukrainian Post"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

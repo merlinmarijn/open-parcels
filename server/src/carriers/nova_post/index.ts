@@ -32,6 +32,7 @@ export const novaPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Nova Post",
   countries: ["UA", "MD", "PL", "DE", "CZ", "SK", "RO", "LT", "LV", "EE", "IT", "ES", "FR", "GB"],
+  aliases: ["Nova Poshta"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

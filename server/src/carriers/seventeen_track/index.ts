@@ -227,6 +227,7 @@ export const seventeenTrack = defineCarrier<unknown, Secret>({
   id: CARRIER_ID,
   name: "17TRACK",
   countries: ["*"],
+  aliases: ["17track"],
   connectionKinds: ["tracking"],
   fallback: true,
   configSchema: z.looseObject({}),

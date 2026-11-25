@@ -1,0 +1,74 @@
+{
+  "dhl": {
+    "file": "dhl.svg",
+    "brand": "DHL",
+    "source": "simple-icons 15.22.0, icon \"dhl\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.dpdhl-brands.com/dhl/en/guides/design-basics/logo-and-claim.html",
+    "guidelines": "https://www.dpdhl-brands.com/dhl/en/guides/design-basics/logo-and-claim.html",
+    "changes": "drawn on a rounded tile in the brand colour #FFCC00"
+  },
+  "dpd": {
+    "file": "dpd.svg",
+    "brand": "DPD",
+    "source": "simple-icons 15.22.0, icon \"dpd\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.dpd.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #DC0032"
+  },
+  "fedex": {
+    "file": "fedex.svg",
+    "brand": "FedEx",
+    "source": "simple-icons 15.22.0, icon \"fedex\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://newsroom.fedex.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #4D148C"
+  },
+  "hermes": {
+    "file": "hermes.svg",
+    "brand": "Hermes",
+    "source": "simple-icons 15.22.0, icon \"hermes\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.myhermes.de/assets/touchicons/favicon.svg",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #0091CD"
+  },
+  "shopee_xpress": {
+    "file": "shopee_xpress.svg",
+    "brand": "Shopee",
+    "source": "simple-icons 15.22.0, icon \"shopee\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://shopee.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #EE4D2D"
+  },
+  "ups": {
+    "file": "ups.svg",
+    "brand": "UPS",
+    "source": "simple-icons 15.22.0, icon \"ups\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.ups.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #150400"
+  },
+  "usps": {
+    "file": "usps.svg",
+    "brand": "USPS",
+    "source": "simple-icons 15.22.0, icon \"usps\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.usps.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #333366"
+  },
+  "vinted_go": {
+    "file": "vinted_go.svg",
+    "brand": "Vinted",
+    "source": "simple-icons 15.22.0, icon \"vinted\" (https://simpleicons.org)",
+    "license": "CC0-1.0 (simple-icons); the mark itself is the carrier's trademark, used only to identify the carrier",
+    "upstream": "https://www.vinted.com",
+    "guidelines": null,
+    "changes": "drawn on a rounded tile in the brand colour #007782"
+  }
+}

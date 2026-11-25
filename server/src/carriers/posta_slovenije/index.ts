@@ -88,6 +88,7 @@ export const postaSlovenije = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Pošta Slovenije",
   countries: ["SI"],
+  aliases: ["Post of Slovenia"],
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

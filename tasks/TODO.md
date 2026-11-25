@@ -50,12 +50,10 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
       yet seen); the HA app's `backup_exclude` may want `backups/` once backups are on by default
 - [ ] OP-161 follow-up: a `health.changed` live event, so the status page needs no 30 s refetch
 
-- [ ] "Add a connection" picker like Home Assistant's "Add integration" dialog instead of the
-      plain dropdown: a search field on top (matches name, country, aliases), one row per
-      provider with its logo (bundled, no external URLs), name, countries/storefronts as small
-      badges and a chevron; "Inbox (IMAP)" and fallback services (17TRACK, universal lookup) as
-      their own section; keyboard and screen-reader friendly, full-height on phones. Provider
-      logos come from the provider manifest (decision record 0002), built-in ones bundled
+- [ ] Provider logos beyond the eight from simple-icons (`server/logos/manifest.json`): add
+      carriers' official logos from their press/brand pages where the terms allow, recording the
+      source per file; until then the picker shows monograms
+- [ ] Connection picker: look at it on a real phone (full-height dialog via `:has(.picker)`)
 
 ## 2b. Early groundwork for decision record 0004 (do soon: shapes the API and data model)
 
@@ -65,9 +63,6 @@ image are shipped (see `DONE.md`). Left:
 - [ ] A server-only image without the web UI (same Dockerfile, a target without `web/dist`)
 - [ ] `op-publish.sh`: attach `docs/openapi.json` to the GitHub release as
       `openapi-<version>.json` (step documented in `AGENT.md`, not yet scripted)
-- [ ] HA app (`open-parcels-ha-apps/open_parcels/Dockerfile`, builds from source, not FROM our
-      image): optionally adopt the bundle (`node dist/tools/bundle.js /out`, copy `/out`) and drop
-      npm/npx for the same savings; it keeps working unchanged meanwhile
 - [ ] Measure the arm64 image on the Pi at the next publish (`op-image-housekeeping.sh`)
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)

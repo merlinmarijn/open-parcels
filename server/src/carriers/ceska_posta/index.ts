@@ -177,6 +177,7 @@ export const ceskaPosta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Česká pošta",
   countries: ["CZ"],
+  aliases: ["Czech Post"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

@@ -119,6 +119,7 @@ export const fedex = defineCarrier<unknown, Secret>({
   id: CARRIER_ID,
   name: "FedEx",
   countries: ["*"],
+  logo: "fedex.svg",
   connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema,

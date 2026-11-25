@@ -4674,6 +4674,10 @@ export type GetApiV1ReturnsId404 = {
   params: GetApiV1ReturnsId404Params;
 };
 
+export type GetApiV1CarriersIdLogoParams = {
+  v?: string;
+};
+
 export type GetApiV1Carriers200ItemConnectionKindsItem = "account" | "tracking" | "shop";
 export type GetApiV1Carriers200ItemSignInFlowsItemType =
   "none" | "credentials" | "api_key" | "interactive";
@@ -4691,6 +4695,13 @@ export type GetApiV1Carriers200Item = {
   id: string;
   name: string;
   countries: string[];
+  /** Other names people search for: former names, sub-brands, local names. */
+  aliases: string[];
+  /**
+   * Path of the provider's bundled logo (cache-busted by its content hash), or null: draw a monogram instead.
+   * @nullable
+   */
+  logo: string | null;
   connection_kinds: GetApiV1Carriers200ItemConnectionKindsItem[];
   /** A fallback tracking service, not a carrier: asked only about parcels no built-in carrier follows or finds. */
   fallback: boolean;
@@ -8845,6 +8856,36 @@ export const getApiV1ReturnsId = async (
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<GetApiV1ReturnsId200> => {
   return apiFetch<GetApiV1ReturnsId200>(getGetApiV1ReturnsIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1CarriersIdLogoUrl = (id: string, params?: GetApiV1CarriersIdLogoParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/carriers/${id}/logo?${stringifiedParams}`
+    : `/api/v1/carriers/${id}/logo`;
+};
+
+/**
+ * @summary A provider's logo (SVG or PNG); the carrier list gives its URL.
+ */
+export const getApiV1CarriersIdLogo = async (
+  id: string,
+  params?: GetApiV1CarriersIdLogoParams,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<void> => {
+  return apiFetch<void>(getGetApiV1CarriersIdLogoUrl(id, params), {
     ...options,
     method: "GET",
   });

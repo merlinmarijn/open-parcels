@@ -9549,6 +9549,38 @@
         }
       }
     },
+    "/api/v1/carriers/{id}/logo": {
+      "get": {
+        "summary": "A provider's logo (SVG or PNG); the carrier list gives its URL.",
+        "tags": [
+          "connections"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "v",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Default Response"
+          }
+        }
+      }
+    },
     "/api/v1/carriers": {
       "get": {
         "summary": "Installed carrier providers and how to set them up.",
@@ -9576,6 +9608,18 @@
                         "items": {
                           "type": "string"
                         }
+                      },
+                      "aliases": {
+                        "type": "array",
+                        "items": {
+                          "type": "string"
+                        },
+                        "description": "Other names people search for: former names, sub-brands, local names."
+                      },
+                      "logo": {
+                        "nullable": true,
+                        "description": "Path of the provider's bundled logo (cache-busted by its content hash), or null: draw a monogram instead.",
+                        "type": "string"
                       },
                       "connection_kinds": {
                         "type": "array",
@@ -9654,6 +9698,8 @@
                       "id",
                       "name",
                       "countries",
+                      "aliases",
+                      "logo",
                       "connection_kinds",
                       "fallback",
                       "sign_in",

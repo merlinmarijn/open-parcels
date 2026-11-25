@@ -72,6 +72,10 @@ export interface ProviderInfo {
   readonly name: string;
   readonly countries: readonly string[];
   readonly connectionKinds: readonly ProviderConnectionKind[];
+  /** Other names to search for (see `CarrierProvider`). */
+  readonly aliases: readonly string[];
+  /** Logo file name in `logos/`, or null (see `CarrierProvider`). */
+  readonly logo: string | null;
   /** Type of the default flow (`none`, `credentials`, `api_key` or `interactive`). */
   readonly signIn: string;
   readonly signInFlows: readonly SignInFlowInfo[];
@@ -245,6 +249,8 @@ export function register<Config, Secret>(
       name: provider.name,
       countries: provider.countries,
       connectionKinds: provider.connectionKinds,
+      aliases: provider.aliases ?? [],
+      logo: provider.logo ?? null,
       signIn: flows[0]?.type ?? "none",
       signInFlows: flows.map((flow) => flowInfo(provider, flow)),
       configSchema: provider.configSchema,

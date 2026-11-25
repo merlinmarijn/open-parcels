@@ -29,6 +29,7 @@ export const hrvatskaPosta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Hrvatska pošta",
   countries: ["HR"],
+  aliases: ["Croatian Post"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,

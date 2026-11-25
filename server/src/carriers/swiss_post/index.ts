@@ -136,6 +136,7 @@ export const swissPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Swiss Post",
   countries: ["CH", "LI"],
+  aliases: ["Die Post", "La Poste Suisse", "Posta Svizzera"],
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

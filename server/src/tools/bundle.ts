@@ -111,6 +111,8 @@ async function main(): Promise<void> {
   // The rules read their bundle next to their own module, which is now one of these files.
   const resolver = createRequire(path.join(serverDir, "package.json"));
   cpSync(resolver.resolve("open-parcels-rules/bundle.json"), path.join(outDir, "bundle.json"));
+  // The providers' logos, next to dist/ as in the source tree (src/logos.ts reads ../logos).
+  cpSync(path.join(serverDir, "logos"), path.join(out, "server", "logos"), { recursive: true });
   for (const dir of runtimeClosure(root, NATIVE)) {
     cpSync(dir, path.join(out, path.relative(root, dir)), {
       recursive: true,

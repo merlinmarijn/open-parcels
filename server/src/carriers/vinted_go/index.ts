@@ -135,6 +135,7 @@ export const vintedGo = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Vinted Go",
   countries: ["NL", "BE", "FR"],
+  logo: "vinted_go.svg",
   connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,

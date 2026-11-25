@@ -338,6 +338,7 @@ export const postenBring = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Posten / Bring",
   countries: ["NO"],
+  aliases: ["Norway Post"],
   connectionKinds: ["account"],
   configSchema,
   secretSchema,

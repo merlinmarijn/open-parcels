@@ -223,6 +223,7 @@ export const postaSrbije = defineCarrier<Config, null>({
   id: CARRIER_ID,
   name: "Pošta Srbije",
   countries: ["RS"],
+  aliases: ["Post of Serbia"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.null(),

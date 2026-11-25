@@ -8,6 +8,8 @@ import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
 import { connectionKindSchema } from "../../domain/parcel.js";
+import { loadLogos, logoPath } from "../../logos.js";
+import { registerLogoRoutes } from "./logos.js";
 import {
   carrierMessageSchema,
   idParams,
@@ -48,6 +50,16 @@ const carrierSchema = z.object({
   id: z.string(),
   name: z.string(),
   countries: z.array(z.string()),
+  aliases: z
+    .array(z.string())
+    .describe("Other names people search for: former names, sub-brands, local names."),
+  logo: z
+    .string()
+    .nullable()
+    .describe(
+      "Path of the provider's bundled logo (cache-busted by its content hash), or null: draw a " +
+        "monogram instead.",
+    ),
   connection_kinds: z.array(providerKindSchema),
   fallback: z
     .boolean()
@@ -123,6 +135,8 @@ function asBadRequest(error: unknown): never {
 /** The installed carrier providers, as the "Add a connection" form needs them. */
 function registerCarrierRoutes(app: TypedApp, services: Services): void {
   const read = requireScope("read");
+  const logos = loadLogos();
+  registerLogoRoutes(app, services, logos);
   app.get(
     "/api/v1/carriers",
     {
@@ -141,6 +155,8 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         id: provider.info.id,
         name: provider.info.name,
         countries: [...provider.info.countries],
+        aliases: [...provider.info.aliases],
+        logo: logoPath(logos, provider.info.id, provider.info.logo),
         connection_kinds: [...provider.info.connectionKinds],
         fallback: provider.info.fallback,
         sign_in: provider.info.signIn,

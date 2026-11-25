@@ -184,6 +184,7 @@ export const pocztaPolska = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   name: "Poczta Polska",
   countries: ["PL"],
+  aliases: ["Polish Post"],
   connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
