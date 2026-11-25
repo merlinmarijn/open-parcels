@@ -1,4 +1,5 @@
 import { createDecipheriv } from "node:crypto";
+import { newParcelRow } from "../parcels/new-row.js";
 import SQLite from "better-sqlite3";
 import type { Kysely, Transaction } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
@@ -254,26 +255,25 @@ async function importParcels(
     const updatedAt = toIso(row["updated_at"]) ?? now;
     await trx
       .insertInto("parcels")
-      .values({
-        id,
-        carrier,
-        tracking_number: stored,
-        direction: "receiving",
-        status,
-        raw_status: text(row["last_event_description"]),
-        delivered: delivered ? 1 : 0,
-        delivered_at: delivered ? updatedAt : null,
-        expected_from: delivered ? null : toIso(row["estimated_delivery_start"]),
-        expected_to: delivered ? null : toIso(row["estimated_delivery_end"]),
-        pickup: status === "at_pickup_point" ? 1 : 0,
-        label: text(row["name"]),
-        order_id: order?.id ?? null,
-        // A status the user set by hand stays theirs.
-        manual_status: row["is_manual_status"] === 1 ? status : null,
-        first_seen_at: toIso(row["added_at"]) ?? now,
-        last_seen_at: updatedAt,
-        updated_at: updatedAt,
-      })
+      .values(
+        newParcelRow(
+          { id, carrier, trackingNumber: stored, direction: "receiving", now: updatedAt },
+          {
+            status,
+            raw_status: text(row["last_event_description"]),
+            delivered: delivered ? 1 : 0,
+            delivered_at: delivered ? updatedAt : null,
+            expected_from: delivered ? null : toIso(row["estimated_delivery_start"]),
+            expected_to: delivered ? null : toIso(row["estimated_delivery_end"]),
+            pickup: status === "at_pickup_point" ? 1 : 0,
+            label: text(row["name"]),
+            order_id: order?.id ?? null,
+            // A status the user set by hand stays theirs.
+            manual_status: row["is_manual_status"] === 1 ? status : null,
+            first_seen_at: toIso(row["added_at"]) ?? now,
+          },
+        ),
+      )
       .execute();
     ids.set(String(row["id"]), id);
     counters.parcels += 1;

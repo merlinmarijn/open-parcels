@@ -1,4 +1,5 @@
 import type { Kysely } from "kysely";
+import { newParcelRow } from "./new-row.js";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelUpdate } from "../db/schema.js";
 import { type Direction, type Parcel, type ParcelStatus } from "../domain/parcel.js";
@@ -93,20 +94,18 @@ export class ParcelService {
       }
       await trx
         .insertInto("parcels")
-        .values({
-          id,
-          carrier: input.carrier,
-          tracking_number: input.trackingNumber,
-          direction: input.direction,
-          status: "registered",
-          raw_status: null,
-          delivered: 0,
-          pickup: 0,
-          label: input.label,
-          first_seen_at: now,
-          last_seen_at: now,
-          updated_at: now,
-        })
+        .values(
+          newParcelRow(
+            {
+              id,
+              carrier: input.carrier,
+              trackingNumber: input.trackingNumber,
+              direction: input.direction,
+              now,
+            },
+            { status: "registered", label: input.label },
+          ),
+        )
         .execute();
       if (connectionId !== undefined) {
         await trx

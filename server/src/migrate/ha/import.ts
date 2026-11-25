@@ -1,4 +1,5 @@
 import { createHash, createHmac } from "node:crypto";
+import { newParcelRow } from "../../parcels/new-row.js";
 import type { Kysely, Transaction } from "kysely";
 import { z } from "zod";
 import { isoNow, type Clock } from "../../clock.js";
@@ -280,25 +281,15 @@ async function writeParcels(
     if (found === undefined) {
       await ctx.trx
         .insertInto("parcels")
-        .values({
-          id,
-          carrier: plan.provider,
-          tracking_number: parcel.trackingNumber,
-          direction: parcel.direction,
-          status: "unknown",
-          raw_status: null,
-          delivered: 0,
-          delivered_at: null,
-          expected_from: null,
-          expected_to: null,
-          pickup: 0,
-          label: null,
-          order_id: null,
-          manual_status: null,
-          first_seen_at: ctx.now,
-          last_seen_at: ctx.now,
-          updated_at: ctx.now,
-        })
+        .values(
+          newParcelRow({
+            id,
+            carrier: plan.provider,
+            trackingNumber: parcel.trackingNumber,
+            direction: parcel.direction,
+            now: ctx.now,
+          }),
+        )
         .execute();
       counts.created += 1;
     } else {

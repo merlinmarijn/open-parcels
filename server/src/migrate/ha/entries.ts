@@ -1,5 +1,6 @@
 import { z } from "zod";
 import type { ConnectionKind } from "../../engine/connections.js";
+import { asArray, asObject, isObject } from "../../provider/kit/json.js";
 import { text } from "../shared.js";
 
 /**
@@ -107,9 +108,8 @@ function notCarried(options: Readonly<Record<string, unknown>>, keys: readonly s
 /** Codes from a list of strings or of `{<key>: code, direction?}` objects; duplicates dropped. */
 function codes(value: unknown, key: string): ParcelPlan[] {
   const seen = new Map<string, ParcelPlan>();
-  for (const item of Array.isArray(value) ? value : []) {
-    const record =
-      item !== null && typeof item === "object" ? (item as Record<string, unknown>) : null;
+  for (const item of asArray(value)) {
+    const record = isObject(item) ? item : null;
     const trackingNumber = text(record === null ? item : record[key])
       ?.replace(/\s+/g, "")
       .toUpperCase();
@@ -261,9 +261,8 @@ function glsSession(entry: HaEntry, country: string): unknown {
   }
   // The parcel numbers GLS Germany assigned, so adding a known code again never hits its 409.
   const parcels: Record<string, string> = {};
-  for (const item of Array.isArray(entry.options["parcels"]) ? entry.options["parcels"] : []) {
-    const record =
-      item !== null && typeof item === "object" ? (item as Record<string, unknown>) : {};
+  for (const item of asArray(entry.options["parcels"])) {
+    const record = asObject(item);
     const code = text(record["parcel_no"])?.replace(/\s+/g, "").toUpperCase();
     const number = text(record["de_parcel_number"]);
     if (code !== undefined && number !== null) {
@@ -282,8 +281,8 @@ function glsPlan(entry: HaEntry): EntryPlan {
   }
   const parcels = codes(entry.options["parcels"], "parcel_no");
   const postcodes = new Set<string>();
-  for (const item of Array.isArray(entry.options["parcels"]) ? entry.options["parcels"] : []) {
-    const own = item !== null && typeof item === "object" ? (item as Record<string, unknown>) : {};
+  for (const item of asArray(entry.options["parcels"])) {
+    const own = asObject(item);
     postcodes.add(text(own["postal_code"]) ?? postalCode);
   }
   const extra = postcodes.size > 1 ? ["per-parcel postal_code"] : [];

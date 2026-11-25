@@ -1,4 +1,5 @@
 import { createHash } from "node:crypto";
+import { newParcelRow } from "../parcels/new-row.js";
 import type { ExpressionBuilder, Kysely, Transaction } from "kysely";
 import type { Logger } from "pino";
 import { addMs, isoNow, type Clock } from "../clock.js";
@@ -450,18 +451,18 @@ export class Reconciler {
     if (existing === undefined) {
       await trx
         .insertInto("parcels")
-        .values({
-          id: parcelId,
-          carrier: key.carrier,
-          tracking_number: key.trackingNumber,
-          direction: after.direction,
-          ...stateColumns(after),
-          label: null,
-          order_id: orderId,
-          first_seen_at: now,
-          last_seen_at: now,
-          updated_at: now,
-        })
+        .values(
+          newParcelRow(
+            {
+              id: parcelId,
+              carrier: key.carrier,
+              trackingNumber: key.trackingNumber,
+              direction: after.direction,
+              now,
+            },
+            { ...stateColumns(after), order_id: orderId },
+          ),
+        )
         .execute();
     } else {
       await trx
