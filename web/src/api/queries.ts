@@ -3,6 +3,7 @@
  * mutations invalidate the same entries.
  */
 import {
+  hashKey,
   keepPreviousData,
   useMutation,
   useQuery,
@@ -17,6 +18,7 @@ import {
   deleteApiV1TokensId,
   getApiV1Calendar,
   getApiV1Carriers,
+  getApiV1InboxForm,
   getApiV1Data,
   getApiV1Diagnostics,
   getApiV1Status,
@@ -62,6 +64,7 @@ export const keys = {
   connections: ["connections"] as const,
   signInFlows: (connectionId: string | undefined) => ["sign-in-flows", connectionId] as const,
   carriers: ["carriers"] as const,
+  inboxForm: ["inbox-form"] as const,
   tokens: ["tokens"] as const,
   logins: ["logins"] as const,
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
@@ -122,6 +125,15 @@ export function useCarriers() {
   return useQuery({
     queryKey: keys.carriers,
     queryFn: ({ signal }) => getApiV1Carriers({ signal }),
+    staleTime: 5 * 60_000,
+  });
+}
+
+/** The inbox's forms; the server owns them like a provider's (translated, one source). */
+export function useInboxForm() {
+  return useQuery({
+    queryKey: keys.inboxForm,
+    queryFn: ({ signal }) => getApiV1InboxForm({ signal }),
     staleTime: 5 * 60_000,
   });
 }
@@ -192,11 +204,11 @@ export async function invalidateParcelViews(
   client: QueryClient,
   except?: readonly unknown[],
 ): Promise<void> {
-  const skipped = except === undefined ? null : JSON.stringify(except);
+  const skipped = except === undefined ? null : hashKey(except);
   await Promise.all([
     client.invalidateQueries({
       queryKey: keys.parcels,
-      predicate: (query) => skipped === null || JSON.stringify(query.queryKey) !== skipped,
+      predicate: (query) => skipped === null || query.queryHash !== skipped,
     }),
     client.invalidateQueries({ queryKey: ["calendar"] }),
     // An order's status and archiving follow its parcels.
@@ -308,7 +320,7 @@ export function useDeleteOrder() {
       await Promise.all([
         client.invalidateQueries({
           queryKey: keys.orders,
-          predicate: (query) => JSON.stringify(query.queryKey) !== JSON.stringify(keys.order(id)),
+          predicate: (query) => query.queryHash !== hashKey(keys.order(id)),
         }),
         client.invalidateQueries({ queryKey: keys.parcels }),
       ]);

@@ -52,18 +52,6 @@ export const connections = {
   addConnection: "Add connection",
   save: "Save",
   // Inbox forms (mirror the server's mail schemas)
-  imapServer: "IMAP server",
-  imapServerHint: "For example imap.example.org.",
-  port: "Port",
-  useTls: "Use TLS",
-  useTlsHint: "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
-  allowPlaintext: "Allow an unencrypted connection",
-  allowPlaintextHint:
-    "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
-  folders: "Folders",
-  initialDays: "Days to look back on the first sync",
-  userName: "User name",
-  passwordText: "Password",
   userNameAndPasswordText: "User name and password",
   onePerLine: "One per line",
   // Sign-in dialog

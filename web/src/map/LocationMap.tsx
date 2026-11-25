@@ -1,4 +1,5 @@
 import { MapPin } from "lucide-react";
+import { HomeMarker } from "./HomeMarker";
 import { useMemo, type ReactNode } from "react";
 import { Marker, Popup } from "react-leaflet";
 import type { ParcelDetail } from "../api/types";
@@ -11,7 +12,6 @@ import {
   generateCurvedPath,
   getTransportMarkerIcon,
   iconApproximate,
-  iconHome,
   iconIntermediate,
   iconSource,
   iconVan,
@@ -146,18 +146,7 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
             </Popup>
           </Marker>
         )}
-        {homePoint === null ? null : (
-          <Marker position={homePoint} icon={iconHome} zIndexOffset={-100}>
-            <Popup>
-              <div className="popup-content">
-                <strong>{t.map.home}</strong>
-                {home?.label === null || home?.label === undefined ? null : (
-                  <span className="muted">{home.label}</span>
-                )}
-              </div>
-            </Popup>
-          </Marker>
-        )}
+        {homePoint === null ? null : <HomeMarker point={homePoint} label={home?.label} />}
       </SharedMap>
     </div>
   );

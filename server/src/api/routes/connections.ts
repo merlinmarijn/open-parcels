@@ -11,6 +11,7 @@ import { ApiError, errorBodySchema, notFound } from "../errors.js";
 import { connectionKindSchema } from "../../domain/parcel.js";
 import { loadLogos, logoPath } from "../../logos.js";
 import { registerLogoRoutes } from "./logos.js";
+import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema } from "../../mail/types.js";
 import {
   carrierMessageSchema,
   idParams,
@@ -152,6 +153,34 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         config_schema: schema(provider.info.configSchema),
         secret_schema: schema(provider.info.secretSchema),
       }));
+    },
+  );
+
+  app.get(
+    "/api/v1/inbox-form",
+    {
+      preHandler: read,
+      schema: {
+        tags: ["connections"],
+        summary: "The inbox's configuration and sign-in forms (inboxes are no carrier provider).",
+        response: {
+          200: z.object({
+            provider: z.literal(MAIL_PROVIDER),
+            config_schema: z.unknown().describe("JSON Schema of the inbox configuration form."),
+            secret_schema: z.unknown().describe("JSON Schema of the inbox sign-in data."),
+          }),
+        },
+      },
+    },
+    (request) => {
+      const language = requestLanguage(request.headers["accept-language"]);
+      const schema = (zod: z.ZodType): unknown =>
+        localizeSchema(language, z.toJSONSchema(zod, { io: "input" }));
+      return {
+        provider: MAIL_PROVIDER,
+        config_schema: schema(mailConfigSchema),
+        secret_schema: schema(mailSecretSchema),
+      };
     },
   );
 }

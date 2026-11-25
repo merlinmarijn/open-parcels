@@ -1,4 +1,5 @@
 /** Returns from shop accounts and return mails: still going on, finished, or all. */
+import { Segmented } from "../components/Segmented";
 import { Undo2 } from "lucide-react";
 import type { ReactNode } from "react";
 import { useReturns } from "../api/queries";
@@ -27,23 +28,15 @@ export function ReturnsPage(): ReactNode {
           <h1 id="returns-title">{t.returns.title}</h1>
           <span className="page-count">{returns.data?.length ?? 0}</span>
         </div>
-        <fieldset className="segmented">
-          <legend className="visually-hidden">{t.returns.show}</legend>
-          {TABS.map((tab) => (
-            <label key={tab.view} className={view === tab.view ? "selected" : undefined}>
-              <input
-                type="radio"
-                name="return-view"
-                value={tab.view}
-                checked={view === tab.view}
-                onChange={() => {
-                  setViewParam(tab.view === "open" ? null : tab.view);
-                }}
-              />
-              {tab.label}
-            </label>
-          ))}
-        </fieldset>
+        <Segmented
+          legend={t.returns.show}
+          name="return-view"
+          options={TABS.map((tab) => ({ value: tab.view, label: tab.label }))}
+          value={view}
+          onChange={(next) => {
+            setViewParam(next === "open" ? null : next);
+          }}
+        />
       </div>
       <ErrorNotice error={returns.error} />
       {returns.data === undefined ? (

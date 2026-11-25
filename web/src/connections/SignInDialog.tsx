@@ -1,10 +1,10 @@
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useState, type SyntheticEvent, type ReactNode } from "react";
 import { getApiV1ConnectionsIdSignInFlows, putApiV1ConnectionsIdSecret } from "../api/generated";
-import { keys, useCarriers } from "../api/queries";
+import { keys, useCarriers, useInboxForm } from "../api/queries";
 import type { SignInFlow, Connection } from "../api/types";
 import { Dialog, ErrorNotice, Spinner } from "../components/ui";
-import { INBOX_FLOWS, INBOX_PROVIDER, INBOX_SECRET_SCHEMA } from "./inbox";
+import { INBOX_FLOWS, INBOX_PROVIDER } from "./inbox";
 import { SchemaFields } from "./SchemaForm";
 import { asSchema, cleanValues, type FormValues } from "./schema";
 import { StepRenderer } from "./StepRenderer";
@@ -18,11 +18,12 @@ function StaticSecretForm(props: {
   readonly onDone: () => void;
 }): ReactNode {
   const carriers = useCarriers();
+  const inbox = useInboxForm();
   const client = useQueryClient();
   // A flow with its own fields (an optional API key) shows only those, not the whole sign-in data.
   const schema =
     props.connection.provider === INBOX_PROVIDER
-      ? INBOX_SECRET_SCHEMA
+      ? asSchema(inbox.data?.secret_schema)
       : asSchema(
           props.flow.secret_schema ??
             carriers.data?.find((c) => c.id === props.connection.provider)?.secret_schema,

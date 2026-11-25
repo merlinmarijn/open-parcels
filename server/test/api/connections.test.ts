@@ -28,6 +28,27 @@ describe("carriers and connections API", () => {
     expect(carriers[0]?.config_schema).toMatchObject({ type: "object" });
   });
 
+  it("serves the inbox forms, translated, with only the server required", async () => {
+    const form = async (language: string) =>
+      (
+        await app.inject({
+          url: "/api/v1/inbox-form",
+          headers: { ...headers, "accept-language": language },
+        })
+      ).json<{
+        provider: string;
+        config_schema: { required: string[]; properties: Record<string, { title: string }> };
+        secret_schema: { required: string[] };
+      }>();
+    const english = await form("en");
+    expect(english.provider).toBe("imap");
+    expect(english.config_schema.required).toEqual(["host"]);
+    expect(english.config_schema.properties["port"]).toMatchObject({ title: "Port", default: 993 });
+    expect(english.secret_schema.required).toEqual(["username", "password"]);
+    const german = await form("de-DE,de;q=0.9");
+    expect(german.config_schema.properties["folders"]?.title).toBe("Ordner");
+  });
+
   it("accepts body-less calls whatever Content-Type the client sends", async () => {
     const missing = "00000000-0000-4000-8000-000000000000";
     for (const type of ["application/octet-stream", "application/json", undefined]) {

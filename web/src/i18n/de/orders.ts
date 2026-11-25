@@ -54,8 +54,6 @@ export const orders: Messages["orders"] = {
     `${String(delivered)} von ${String(total)} ${plural(total, "Paket", "Paketen")} zugestellt`,
   deliveredParcels: "Zugestellte Pakete",
   items: "Artikel",
-  parcelDelivered: (when) => `Zugestellt ${when}`,
-  parcelExpected: (when) => `Voraussichtlich ${when}`,
   archive: {
     archived:
       "Diese Bestellung wurde von Hand archiviert. Sie bleibt im Archiv, bis sie wiederhergestellt wird.",

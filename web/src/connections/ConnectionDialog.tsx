@@ -1,9 +1,9 @@
 import { useMemo, useState, type SyntheticEvent, type ReactNode } from "react";
-import { useAddConnection, useCarriers, useUpdateConnection } from "../api/queries";
+import { useAddConnection, useCarriers, useInboxForm, useUpdateConnection } from "../api/queries";
 import type { Carrier, Connection } from "../api/types";
 import { Dialog, ErrorNotice, Field } from "../components/ui";
 import { LogoTile } from "../components/CarrierLogo";
-import { INBOX_CONFIG_SCHEMA, INBOX_PROVIDER } from "./inbox";
+import { INBOX_PROVIDER } from "./inbox";
 import { pickerEntries } from "./picker";
 import { ProviderPicker } from "./ProviderPicker";
 import { SchemaFields } from "./SchemaForm";
@@ -19,9 +19,13 @@ const KIND_LABELS: Readonly<Record<Kind, string>> = {
   mail: t.connections.kindMail,
 };
 
-function configSchema(provider: string, carriers: readonly Carrier[]): JsonSchema {
+function configSchema(
+  provider: string,
+  carriers: readonly Carrier[],
+  inboxSchema: unknown,
+): JsonSchema {
   return provider === INBOX_PROVIDER
-    ? INBOX_CONFIG_SCHEMA
+    ? asSchema(inboxSchema)
     : asSchema(carriers.find((c) => c.id === provider)?.config_schema);
 }
 
@@ -60,6 +64,7 @@ export function ConnectionDialog(props: {
   readonly onCreated: (connection: Connection) => void;
 }): ReactNode {
   const carriers = useCarriers();
+  const inbox = useInboxForm().data?.config_schema;
   const add = useAddConnection();
   const update = useUpdateConnection();
   const list = useMemo(() => carriers.data ?? [], [carriers.data]);
@@ -69,17 +74,20 @@ export function ConnectionDialog(props: {
   const kinds = kindsOf(provider, list);
   const [kind, setKind] = useState<Kind | "">(editing?.kind ?? "");
   const effectiveKind = kind !== "" && kinds.includes(kind) ? kind : (kinds[0] ?? "");
-  const schema = configSchema(provider, list);
+  const schema = configSchema(provider, list, inbox);
   const [label, setLabel] = useState(editing?.label ?? "");
   const [values, setValues] = useState<FormValues>(() =>
-    initialValues(configSchema(editing?.provider ?? "", carriers.data ?? []), editing?.config),
+    initialValues(
+      configSchema(editing?.provider ?? "", carriers.data ?? [], inbox),
+      editing?.config,
+    ),
   );
   const mutation = editing === null ? add : update;
 
   const chooseProvider = (next: string): void => {
     setProvider(next);
     setKind("");
-    setValues(initialValues(configSchema(next, list), undefined));
+    setValues(initialValues(configSchema(next, list, inbox), undefined));
     const name =
       next === INBOX_PROVIDER ? t.connections.inboxName : list.find((c) => c.id === next)?.name;
     if (name !== undefined) {

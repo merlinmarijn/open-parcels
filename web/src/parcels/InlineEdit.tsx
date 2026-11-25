@@ -1,6 +1,7 @@
 import { useQueryClient } from "@tanstack/react-query";
+import { ArchiveButton, DeleteButton } from "../components/RecordActions";
 import { useNavigate } from "@tanstack/react-router";
-import { Archive, ArchiveRestore, Check, Pencil, Trash2, X } from "lucide-react";
+import { Check, Pencil, X } from "lucide-react";
 import {
   useState,
   type FocusEvent,
@@ -244,30 +245,20 @@ export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): Re
   const archived = parcel.archived_at !== null;
   return (
     <>
-      <button
-        type="button"
-        className="button small"
-        aria-pressed={archived}
-        disabled={update.isPending}
+      <ArchiveButton
+        archived={archived}
+        pending={update.isPending}
+        archiveLabel={t.parcels.archive}
+        restoreLabel={t.parcels.unarchive}
         title={archived ? t.parcels.showAgain : t.parcels.hideFromList}
-        onClick={() => {
-          update.mutate({ archived: !archived });
+        onChange={(next) => {
+          update.mutate({ archived: next });
         }}
-      >
-        {archived ? (
-          <ArchiveRestore size={14} aria-hidden="true" />
-        ) : (
-          <Archive size={14} aria-hidden="true" />
-        )}{" "}
-        {archived ? t.parcels.unarchive : t.parcels.archive}
-      </button>
-      <button
-        type="button"
-        className="button small danger"
-        onClick={() => {
-          if (!window.confirm(t.parcels.confirmDelete)) {
-            return;
-          }
+      />
+      <DeleteButton
+        label={t.common.delete}
+        question={t.parcels.confirmDelete}
+        onDelete={() => {
           remove.mutate(parcel.id, {
             onSuccess: () => {
               void navigate({ to: "/" }).then(() => {
@@ -277,9 +268,7 @@ export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): Re
             },
           });
         }}
-      >
-        <Trash2 size={14} aria-hidden="true" /> {t.common.delete}
-      </button>
+      />
       {update.isSuccess && update.variables.archived !== undefined ? (
         <p className="notice" role="status">
           {update.variables.archived ? t.parcels.archivedNotice : t.parcels.restoredNotice}

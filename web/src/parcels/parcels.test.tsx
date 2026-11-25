@@ -94,7 +94,8 @@ describe("parcel list", () => {
     // The search covers parcels that were never drawn.
     await user.type(screen.getByLabelText("Search parcels"), "Scale 449");
     expect(within(table).getByText("Scale 449")).toBeInTheDocument();
-  });
+    // 450 table rows in jsdom took just over the 5 s default on the NAS's capped test container.
+  }, 15_000);
 
   it("adds a parcel with carrier detection and sends the CSRF header", async () => {
     const calls = mockApi({

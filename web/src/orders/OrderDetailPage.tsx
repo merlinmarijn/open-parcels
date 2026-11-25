@@ -1,7 +1,8 @@
 /** One order: rename, archive or delete it, its items and its parcels. */
+import { ArchiveButton, DeleteButton } from "../components/RecordActions";
 import { useQueryClient } from "@tanstack/react-query";
 import { Link, useNavigate } from "@tanstack/react-router";
-import { Archive, ArchiveRestore, ArrowLeft, RotateCcw, ShoppingBag, Trash2 } from "lucide-react";
+import { ArrowLeft, RotateCcw, ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
 import { keys, useDeleteOrder, useOrder, useUpdateOrder } from "../api/queries";
 import type { Order } from "../api/types";
@@ -40,22 +41,15 @@ function Actions({ order }: { readonly order: Order }): ReactNode {
   if (!canEdit) return null;
   return (
     <>
-      <button
-        type="button"
-        className="button small"
-        aria-pressed={order.archived}
-        disabled={update.isPending}
-        onClick={() => {
-          update.mutate({ archived: !order.archived });
+      <ArchiveButton
+        archived={order.archived}
+        pending={update.isPending}
+        archiveLabel={t.orders.archiveAction}
+        restoreLabel={t.orders.unarchive}
+        onChange={(archived) => {
+          update.mutate({ archived });
         }}
-      >
-        {order.archived ? (
-          <ArchiveRestore size={14} aria-hidden="true" />
-        ) : (
-          <Archive size={14} aria-hidden="true" />
-        )}{" "}
-        {order.archived ? t.orders.unarchive : t.orders.archiveAction}
-      </button>
+      />
       {order.archive_mode === "automatic" ? null : (
         <button
           type="button"
@@ -69,11 +63,10 @@ function Actions({ order }: { readonly order: Order }): ReactNode {
           <RotateCcw size={14} aria-hidden="true" /> {t.orders.archiveAutomatically}
         </button>
       )}
-      <button
-        type="button"
-        className="button small danger"
-        onClick={() => {
-          if (!window.confirm(t.orders.deleteQuestion)) return;
+      <DeleteButton
+        label={t.orders.delete}
+        question={t.orders.deleteQuestion}
+        onDelete={() => {
           remove.mutate(order.id, {
             onSuccess: () => {
               void navigate({ to: "/orders" }).then(() => {
@@ -82,9 +75,7 @@ function Actions({ order }: { readonly order: Order }): ReactNode {
             },
           });
         }}
-      >
-        <Trash2 size={14} aria-hidden="true" /> {t.orders.delete}
-      </button>
+      />
       <ErrorNotice error={update.error ?? remove.error} />
     </>
   );

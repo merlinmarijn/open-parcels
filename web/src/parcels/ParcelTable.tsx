@@ -1,4 +1,5 @@
-import { apiUrl } from "../api/fetcher";
+import { ItemPictures } from "../components/ItemPictures";
+import { Segmented } from "../components/Segmented";
 import { Link } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo, type ReactNode } from "react";
@@ -20,21 +21,6 @@ const FILTER_LABELS: Readonly<Record<ParcelFilter, string>> = {
 };
 
 const column = createColumnHelper<Parcel>();
-
-/** Up to three item pictures beside the parcel name, as the original list showed them. */
-function ItemThumbs({ items }: { readonly items: Parcel["items"] }): ReactNode {
-  const images = items.flatMap((item) => (item.image_url === null ? [] : [item.image_url]));
-  if (images.length === 0) {
-    return null;
-  }
-  return (
-    <span className="thumbs">
-      {images.slice(0, 3).map((src) => (
-        <img key={src} src={apiUrl(src)} alt="" loading="lazy" width={32} height={32} />
-      ))}
-    </span>
-  );
-}
 
 const COLUMNS = [
   column.accessor((parcel) => parcel.display_name, {
@@ -59,7 +45,7 @@ const COLUMNS = [
             </>
           )}
         </span>
-        <ItemThumbs items={info.row.original.items} />
+        <ItemPictures items={info.row.original.items} limit={3} size="small" />
       </Link>
     ),
   }),
@@ -124,23 +110,16 @@ export function ParcelTable(props: {
 
   const controls = (
     <>
-      <fieldset className="segmented">
-        <legend className="visually-hidden">{t.parcels.show}</legend>
-        {(["active", "delivered", "all"] as const).map((value) => (
-          <label key={value} className={filter === value ? "selected" : undefined}>
-            <input
-              type="radio"
-              name="parcel-filter"
-              value={value}
-              checked={filter === value}
-              onChange={() => {
-                setFilter(value);
-              }}
-            />
-            {FILTER_LABELS[value]}
-          </label>
-        ))}
-      </fieldset>
+      <Segmented
+        legend={t.parcels.show}
+        name="parcel-filter"
+        options={(["active", "delivered", "all"] as const).map((value) => ({
+          value,
+          label: FILTER_LABELS[value],
+        }))}
+        value={filter}
+        onChange={setFilter}
+      />
       <label>
         <span className="visually-hidden">{t.parcels.carrier}</span>
         <select

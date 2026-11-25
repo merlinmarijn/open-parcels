@@ -1275,19 +1275,6 @@ tbody tr:hover {
   border: 1px solid var(--panel-border);
 }
 
-.thumbs {
-  display: flex;
-  gap: 6px;
-}
-
-.thumbs img {
-  width: 32px;
-  height: 32px;
-  border-radius: 8px;
-  object-fit: cover;
-  border: 1px solid var(--panel-border);
-}
-
 /* Orders */
 .order-grid {
   display: grid;
@@ -1362,16 +1349,17 @@ tbody tr:hover {
   margin: 0;
 }
 
-.order-pictures {
-  list-style: none;
-  margin: 0;
-  padding: 0;
+.item-pictures {
   display: flex;
   flex-wrap: wrap;
   gap: 8px;
 }
 
-.order-pictures li {
+.item-pictures.small {
+  gap: 6px;
+}
+
+.item-pictures > span {
   width: 56px;
   height: 56px;
   border-radius: 8px;
@@ -1382,7 +1370,14 @@ tbody tr:hover {
   justify-content: center;
 }
 
-.order-pictures img {
+.item-pictures.small > span {
+  width: 32px;
+  height: 32px;
+  font-size: 0.75rem;
+  border: 1px solid var(--panel-border);
+}
+
+.item-pictures img {
   width: 100%;
   height: 100%;
   object-fit: cover;

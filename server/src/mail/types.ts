@@ -2,27 +2,50 @@ import { z } from "zod";
 import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 
 /** Provider id of inbox connections. Mail is handled by the core, not by a carrier provider. */
-export const MAIL_PROVIDER = "imap";
+export const MAIL_PROVIDER = "imap" as const;
 
+/** The inbox form's fields; the titles and descriptions are translated like a provider's. */
 export const mailConfigSchema = z.object({
-  host: z.string().min(1).max(255),
-  port: z.number().int().min(1).max(65535).default(993),
+  host: z
+    .string()
+    .min(1)
+    .max(255)
+    .meta({ title: "IMAP server", description: "For example imap.example.org." }),
+  port: z.number().int().min(1).max(65535).default(993).meta({ title: "Port" }),
   /** TLS from the start (993). Without it the connection must upgrade with STARTTLS. */
-  secure: z.boolean().default(true),
+  secure: z.boolean().default(true).meta({
+    title: "Use TLS",
+    description: "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
+  }),
   /**
    * Without `secure`, allow staying in cleartext when the server offers no STARTTLS, which sends
    * the password unencrypted. Off unless the user chooses it.
    */
-  allowPlaintext: z.boolean().default(false),
-  folders: z.array(z.string().min(1).max(200)).min(1).max(20).default(["INBOX"]),
+  allowPlaintext: z.boolean().default(false).meta({
+    title: "Allow an unencrypted connection",
+    description:
+      "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
+  }),
+  folders: z
+    .array(z.string().min(1).max(200))
+    .min(1)
+    .max(20)
+    .default(["INBOX"])
+    .meta({ title: "Folders" }),
   /** How far back the first sync looks. */
-  initialDays: z.number().int().min(1).max(365).default(30),
+  initialDays: z
+    .number()
+    .int()
+    .min(1)
+    .max(365)
+    .default(30)
+    .meta({ title: "Days to look back on the first sync" }),
 });
 export type MailConfig = z.infer<typeof mailConfigSchema>;
 
 export const mailSecretSchema = z.object({
-  username: z.string().min(1),
-  password: z.string().min(1),
+  username: z.string().min(1).meta({ title: "Username" }),
+  password: z.string().min(1).meta({ title: "Password" }),
 });
 export type MailSecret = z.infer<typeof mailSecretSchema>;
 

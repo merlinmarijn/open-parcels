@@ -28,6 +28,22 @@ export const PROVIDER_TEXTS_DE: Readonly<Record<string, string>> = Object.fromEn
   ["Language", "Sprache"],
   ["Postcode", "Postleitzahl"],
   ["Market", "Markt"],
+  // Inbox (IMAP)
+  ["IMAP server", "IMAP-Server"],
+  ["For example imap.example.org.", "Zum Beispiel imap.example.org."],
+  ["Port", "Port"],
+  ["Use TLS", "TLS verwenden"],
+  [
+    "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
+    "Aus: Die Verbindung muss mit STARTTLS auf TLS wechseln, meist auf Port 143.",
+  ],
+  ["Allow an unencrypted connection", "Unverschlüsselte Verbindung erlauben"],
+  [
+    "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
+    "Nur ohne TLS: auch verbinden, wenn der Server kein STARTTLS anbietet. Das Passwort geht im Klartext über die Leitung.",
+  ],
+  ["Folders", "Ordner"],
+  ["Days to look back on the first sync", "Tage, die die erste Synchronisierung zurückblickt"],
   ["Yes", "Ja"],
   ["No", "Nein"],
   ["Client ID", "Client-ID"],

@@ -19,7 +19,7 @@ export const parcels: Messages["parcels"] = {
   deliveredAgo: (relative) => `Zugestellt ${relative}`,
   nextStop: "Nächster Halt",
   stopsAway: (stops) => `Noch ${formatNumber(stops)} ${plural(stops, "Halt", "Halte")}`,
-  expected: (when) => `Erwartet ${when}`,
+  expected: (when) => `Voraussichtlich ${when}`,
   columnParcel: "Paket",
   columnStatus: "Status",
   columnLookup: "Abfrage beim Paketdienst",

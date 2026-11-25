@@ -52,8 +52,6 @@ export const orders = {
     `${String(delivered)} of ${String(total)} ${plural(total, "parcel", "parcels")} delivered`,
   deliveredParcels: "Delivered parcels",
   items: "Items",
-  parcelDelivered: (when: string) => `Delivered ${when}`,
-  parcelExpected: (when: string) => `Expected ${when}`,
   archive: {
     archived: "You archived this order. It stays archived until you restore it.",
     kept: "You restored this order, so it stays out of the archive even once all its parcels are archived.",

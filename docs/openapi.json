@@ -9716,6 +9716,46 @@
         }
       }
     },
+    "/api/v1/inbox-form": {
+      "get": {
+        "summary": "The inbox's configuration and sign-in forms (inboxes are no carrier provider).",
+        "tags": [
+          "connections"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "provider": {
+                      "type": "string",
+                      "enum": [
+                        "imap"
+                      ]
+                    },
+                    "config_schema": {
+                      "description": "JSON Schema of the inbox configuration form."
+                    },
+                    "secret_schema": {
+                      "description": "JSON Schema of the inbox sign-in data."
+                    }
+                  },
+                  "required": [
+                    "provider",
+                    "config_schema",
+                    "secret_schema"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connections": {
       "get": {
         "summary": "Carrier accounts, shops, tracking connections and inboxes.",

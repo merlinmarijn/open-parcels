@@ -2,10 +2,9 @@
 import { Link } from "@tanstack/react-router";
 import { MapPin } from "lucide-react";
 import type { ReactNode } from "react";
-import { apiUrl } from "../api/fetcher";
 import type { Order, OrderStatus, OrderView, ParcelStatus } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
-import { formatExpected, formatMoney, formatRelative } from "../lib/format";
+import { deliveryLine, formatMoney, formatRelative } from "../lib/format";
 import { t } from "../i18n";
 import { ArchivedBadge, StatusBadge } from "../parcels/badges";
 
@@ -92,43 +91,13 @@ export function OrderProgress({ order }: { readonly order: Order }): ReactNode {
   );
 }
 
-/** Up to `limit` item pictures; the rest is counted. */
-export function PictureGrid(props: { readonly order: Order; readonly limit: number }): ReactNode {
-  const pictures = props.order.items.flatMap((item) =>
-    item.image_url === null ? [] : [{ title: item.title, imageUrl: item.image_url }],
-  );
-  if (pictures.length === 0) return null;
-  const shown = pictures.slice(0, props.limit);
-  const more = pictures.length - shown.length;
-  return (
-    <ul className="order-pictures" aria-label={t.orders.items}>
-      {shown.map((item, index) => (
-        <li key={`${item.title}-${String(index)}`} title={item.title}>
-          <img src={apiUrl(item.imageUrl)} alt={item.title} loading="lazy" />
-        </li>
-      ))}
-      {more > 0 ? <li>+{more}</li> : null}
-    </ul>
-  );
-}
-
-type OrderParcel = Order["parcels"][number];
-
-function parcelLine(parcel: OrderParcel): string | null {
-  if (parcel.delivered) return t.orders.parcelDelivered(formatRelative(parcel.delivered_at));
-  if (parcel.expected_from !== null || parcel.expected_to !== null) {
-    return t.orders.parcelExpected(formatExpected(parcel));
-  }
-  return null;
-}
-
 /** The order's parcels, each linking to its page, with status and where it is. */
 export function OrderParcels({ order }: { readonly order: Order }): ReactNode {
   if (order.parcels.length === 0) return null;
   return (
     <ul className="parcel-list">
       {order.parcels.map((parcel) => {
-        const line = parcelLine(parcel);
+        const line = deliveryLine(parcel);
         const place = parcel.location?.name ?? null;
         return (
           <li key={parcel.id}>

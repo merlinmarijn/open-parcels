@@ -2,6 +2,12 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: the inbox forms come from the server
+
+`GET /api/v1/inbox-form` returns the inbox's configuration and sign-in forms as JSON Schema, in
+the language asked for, like a carrier's in `GET /api/v1/carriers`. The web UI no longer keeps
+its own copy of them.
+
 ### Changed: faster lists at 10,000 parcels
 
 Measured with 10,000 parcels and 5,000 orders in a 384 MB container

@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { HomeMarker } from "./HomeMarker";
 import { PackageOpen } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { Marker, Popup } from "react-leaflet";
@@ -16,7 +17,6 @@ import {
   determineTransportMethod,
   generateCurvedPath,
   getTransportMarkerIcon,
-  iconHome,
   iconSource,
   iconVan,
 } from "./mapIcons";
@@ -126,19 +126,7 @@ export default function MapPage(): ReactNode {
                   {...(homePoint === undefined ? {} : { center: homePoint, zoom: 12 })}
                 >
                   {homePoint === undefined ? null : (
-                    <Marker
-                      position={homePoint}
-                      icon={iconHome}
-                      title={t.map.home}
-                      zIndexOffset={-100}
-                    >
-                      <Popup>
-                        <strong>{t.map.home}</strong>
-                        {home?.label === null || home?.label === undefined ? null : (
-                          <div className="muted">{home.label}</div>
-                        )}
-                      </Popup>
-                    </Marker>
+                    <HomeMarker point={homePoint} label={home?.label} />
                   )}
                   {pins.map((pin) => (
                     <PinMarker key={pin.parcel.id} pin={pin} />

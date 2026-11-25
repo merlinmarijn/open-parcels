@@ -44,6 +44,15 @@ function localDay(day: string): Date {
   return new Date(year ?? 1970, (month ?? 1) - 1, date ?? 1, 12);
 }
 
+/** "Delivered 2 hours ago", "Expected Thu 20 Nov", or null when neither is known. */
+export function deliveryLine(
+  parcel: ExpectedDelivery & { readonly delivered: boolean; readonly delivered_at: string | null },
+): string | null {
+  if (parcel.delivered) return t.parcels.deliveredAgo(formatRelative(parcel.delivered_at));
+  if (parcel.expected_from === null && parcel.expected_to === null) return null;
+  return t.parcels.expected(formatExpected(parcel));
+}
+
 /**
  * The expected delivery: whole days as the server's local days (OP-044), never shifted by the
  * browser's zone; else "Mon 3 Nov, 10:00–12:00", or one side only when the other is missing.

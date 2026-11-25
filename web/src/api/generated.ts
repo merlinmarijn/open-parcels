@@ -4715,6 +4715,15 @@ export type GetApiV1Carriers200Item = {
   secret_schema: unknown;
 };
 
+export type GetApiV1InboxForm200Provider = "imap";
+export type GetApiV1InboxForm200 = {
+  provider: GetApiV1InboxForm200Provider;
+  /** JSON Schema of the inbox configuration form. */
+  config_schema: unknown;
+  /** JSON Schema of the inbox sign-in data. */
+  secret_schema: unknown;
+};
+
 export type GetApiV1Connections200ItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Connections200ItemState =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
@@ -8902,6 +8911,22 @@ export const getApiV1Carriers = async (
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<GetApiV1Carriers200Item[]> => {
   return apiFetch<GetApiV1Carriers200Item[]>(getGetApiV1CarriersUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1InboxFormUrl = () => {
+  return `/api/v1/inbox-form`;
+};
+
+/**
+ * @summary The inbox's configuration and sign-in forms (inboxes are no carrier provider).
+ */
+export const getApiV1InboxForm = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1InboxForm200> => {
+  return apiFetch<GetApiV1InboxForm200>(getGetApiV1InboxFormUrl(), {
     ...options,
     method: "GET",
   });

@@ -1,4 +1,6 @@
 /** Orders from shop connections and mails, sorted into open, delivered and archived. */
+import { ItemPictures } from "../components/ItemPictures";
+import { Segmented } from "../components/Segmented";
 import { Link } from "@tanstack/react-router";
 import { ShoppingBag } from "lucide-react";
 import type { ReactNode } from "react";
@@ -8,14 +10,7 @@ import type { Order, OrderView } from "../api/types";
 import { useShowMore } from "../components/ShowMore";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { t } from "../i18n";
-import {
-  OrderBadges,
-  OrderParcels,
-  OrderProgress,
-  orderSummary,
-  ORDER_VIEW_TABS,
-  PictureGrid,
-} from "./parts";
+import { OrderBadges, OrderParcels, OrderProgress, orderSummary, ORDER_VIEW_TABS } from "./parts";
 
 function OrderCard({ order }: { readonly order: Order }): ReactNode {
   const titleId = `order-${order.id}`;
@@ -37,7 +32,7 @@ function OrderCard({ order }: { readonly order: Order }): ReactNode {
         <OrderBadges order={order} />
       </div>
       {summary === "" ? null : <div className="muted">{summary}</div>}
-      <PictureGrid order={order} limit={6} />
+      <ItemPictures items={order.items} limit={6} size="large" />
       <OrderProgress order={order} />
       <OrderParcels order={order} />
     </section>
@@ -65,23 +60,13 @@ export function OrdersPage(): ReactNode {
           <h1 id="orders-title">{t.orders.title}</h1>
           <span className="page-count">{orders.data?.length ?? 0}</span>
         </div>
-        <fieldset className="segmented">
-          <legend className="visually-hidden">{t.orders.show}</legend>
-          {ORDER_VIEW_TABS.map((entry) => (
-            <label key={entry.view} className={view === entry.view ? "selected" : undefined}>
-              <input
-                type="radio"
-                name="order-view"
-                value={entry.view}
-                checked={view === entry.view}
-                onChange={() => {
-                  setView(entry.view);
-                }}
-              />
-              {entry.label}
-            </label>
-          ))}
-        </fieldset>
+        <Segmented
+          legend={t.orders.show}
+          name="order-view"
+          options={ORDER_VIEW_TABS.map((entry) => ({ value: entry.view, label: entry.label }))}
+          value={view}
+          onChange={setView}
+        />
       </div>
       {tab === undefined ? null : <p className="muted order-view-help">{tab.help}</p>}
       <ErrorNotice error={orders.error} />
