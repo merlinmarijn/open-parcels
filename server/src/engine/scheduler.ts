@@ -18,6 +18,19 @@ const MAX_SLEEP_MS = 5 * 60_000;
 const DEFAULT_CONCURRENCY = 3;
 /** An idle connection keeps running: the reason it had nothing to do may go away (a setting changed). */
 const RUNNABLE_STATES: readonly ConnectionRow["state"][] = ["ok", "idle", "error"];
+/** A scheduler whose last cycle is older than this has stopped looking at its connections. */
+export const SCHEDULER_STALL_MS = 3 * MAX_SLEEP_MS;
+
+/** What the status page shows of the scheduler. */
+export interface SchedulerStatus {
+  readonly running: boolean;
+  /** Connection runs in progress now. */
+  readonly inFlight: number;
+  /** When the last cycle (due runs, then removals) finished; null before the first. */
+  readonly lastCycleAt: string | null;
+  /** Why the last cycle failed; null when it succeeded. */
+  readonly lastError: string | null;
+}
 
 export interface SchedulerDeps {
   readonly db: Kysely<Database>;
@@ -49,8 +62,19 @@ export class Scheduler {
   readonly #running = new Set<string>();
   #timer: ReturnType<typeof setTimeout> | undefined;
   #stopped = true;
+  #lastCycleAt: string | null = null;
+  #lastError: string | null = null;
 
   constructor(private readonly deps: SchedulerDeps) {}
+
+  status(): SchedulerStatus {
+    return {
+      running: !this.#stopped,
+      inFlight: this.#running.size,
+      lastCycleAt: this.#lastCycleAt,
+      lastError: this.#lastError,
+    };
+  }
 
   start(): void {
     this.#stopped = false;
@@ -80,6 +104,7 @@ export class Scheduler {
       this.#timer = undefined;
       this.#cycle().catch((error: unknown) => {
         this.deps.logger.error({ err: error }, "Scheduler cycle failed.");
+        this.#lastError = error instanceof Error ? error.message : String(error);
         this.#arm(MAX_SLEEP_MS);
       });
     }, delayMs);
@@ -90,6 +115,8 @@ export class Scheduler {
   async #cycle(): Promise<void> {
     await this.runDue();
     await this.deps.reconciler.judgeRemovals();
+    this.#lastCycleAt = isoNow(this.deps.clock);
+    this.#lastError = null;
     if (!this.#stopped) {
       this.#arm(await this.#sleepUntilNext());
     }

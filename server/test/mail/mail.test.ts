@@ -368,6 +368,33 @@ describe("mail watcher", () => {
     expect(setState).not.toHaveBeenCalled();
   });
 
+  it("backs off further when the server accepts the connection but every sync fails", async () => {
+    const id = await addMailbox();
+    const at = (seconds: number): string =>
+      new Date(context.clock.now().getTime() + seconds * 1000).toISOString();
+    vi.useFakeTimers({ toFake: ["setTimeout", "clearTimeout"] });
+    try {
+      mailbox.open = () => Promise.reject(new Error("folder gone"));
+      mailbox.newMail?.();
+      await context.services.mail.settled(id);
+      expect(context.services.mail.status(id)).toMatchObject({
+        failures: 1,
+        reconnectAt: at(30),
+      });
+      // The reconnect succeeds, the sync after it fails again: the wait doubles instead of
+      // starting over at 30 seconds.
+      await vi.advanceTimersByTimeAsync(30_000);
+      await vi.waitFor(() => {
+        expect(context.services.mail.status(id)).toMatchObject({
+          failures: 2,
+          reconnectAt: at(60),
+        });
+      });
+    } finally {
+      vi.useRealTimers();
+    }
+  });
+
   it("rejects mailboxes without a host or sign-in", async () => {
     const response = await app.inject({
       method: "POST",

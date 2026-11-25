@@ -115,6 +115,11 @@ export class EventBus {
     return this.#listeners.size;
   }
 
+  /** The sequence number of the newest event delivered to subscribers. */
+  get lastSeq(): number {
+    return this.#lastSeq;
+  }
+
   /** Call after any transaction that appended events. Safe to call concurrently. */
   notify(): Promise<void> {
     this.#requested += 1;

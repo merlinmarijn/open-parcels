@@ -48,6 +48,16 @@ export interface MailWatcherDeps {
   readonly followUp: (connectionId: string) => Promise<void>;
 }
 
+/** What the status page shows of one inbox. */
+export interface InboxStatus {
+  /** Connected and watching (IDLE). */
+  readonly connected: boolean;
+  /** When the next reconnect is tried after a failure; null when none is waiting. */
+  readonly reconnectAt: string | null;
+  /** Failed connects or syncs in a row. */
+  readonly failures: number;
+}
+
 interface Connection {
   readonly client: MailboxClient;
   readonly config: MailConfig;
@@ -123,9 +133,18 @@ export class MailWatcher {
   readonly #connections = new Map<string, Connection>();
   readonly #retries = new Map<string, number>();
   readonly #timers = new Map<string, ReturnType<typeof setTimeout>>();
+  readonly #reconnectAt = new Map<string, string>();
   #stopped = true;
 
   constructor(private readonly deps: MailWatcherDeps) {}
+
+  status(connectionId: string): InboxStatus {
+    return {
+      connected: this.#connections.has(connectionId),
+      reconnectAt: this.#reconnectAt.get(connectionId) ?? null,
+      failures: this.#retries.get(connectionId) ?? 0,
+    };
+  }
 
   async start(): Promise<void> {
     this.#stopped = false;
@@ -153,6 +172,7 @@ export class MailWatcher {
       clearTimeout(timer);
     }
     this.#timers.clear();
+    this.#reconnectAt.clear();
     await Promise.all([...this.#connections.keys()].map((id) => this.disconnect(id)));
   }
 
@@ -199,7 +219,6 @@ export class MailWatcher {
       return;
     }
     this.#connections.set(connectionId, connection);
-    this.#retries.delete(connectionId);
     client.onClose((error) => {
       if (this.#connections.get(connectionId) === connection) {
         this.#connections.delete(connectionId);
@@ -369,6 +388,9 @@ export class MailWatcher {
       })
       .where("id", "=", connectionId)
       .execute();
+    // Only a whole sync resets the reconnect backoff: a server that accepts the connection and
+    // drops it straight away must not be reconnected to every 30 seconds.
+    this.#retries.delete(connectionId);
     await this.deps.connections.setState(connectionId, "ok", null);
   }
 
@@ -424,8 +446,13 @@ export class MailWatcher {
       "error",
       "The mail server could not be reached; retrying.",
     );
+    this.#reconnectAt.set(
+      connectionId,
+      new Date(this.deps.clock.now().getTime() + delay).toISOString(),
+    );
     const timer = setTimeout(() => {
       this.#timers.delete(connectionId);
+      this.#reconnectAt.delete(connectionId);
       if (this.#stopped) {
         return;
       }

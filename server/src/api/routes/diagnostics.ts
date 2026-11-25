@@ -4,8 +4,7 @@ import { redactValue } from "../../log/redact.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-
-const startedAt = new Date();
+import { STARTED_AT } from "../../status/service.js";
 
 /**
  * A snapshot of how the service is doing, for the Status page and for bug reports. It contains no
@@ -64,8 +63,8 @@ export function registerDiagnosticsRoutes(app: TypedApp, services: Services): vo
       ]);
       return redactValue({
         version: VERSION,
-        started_at: startedAt.toISOString(),
-        uptime_seconds: Math.round((services.clock.now().getTime() - startedAt.getTime()) / 1000),
+        started_at: STARTED_AT.toISOString(),
+        uptime_seconds: Math.round((services.clock.now().getTime() - STARTED_AT.getTime()) / 1000),
         time_zone: services.config.timeZone,
         node: process.version,
         providers: services.registry.list().map((provider) => ({
