@@ -5,7 +5,7 @@ import { renderIcs } from "../../calendar/ics.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-import { ApiError, errorBodySchema } from "../errors.js";
+import { ApiError, errorBodySchema, notFound } from "../errors.js";
 
 /** The feed shows a month back and two months ahead. */
 const FEED_PAST_MS = 30 * DAY_MS;
@@ -147,7 +147,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
     async (request, reply) => {
       const stored = services.settings.feedHash;
       if (stored === null || !safeEqual(stored, sha256Hex(request.params.token))) {
-        throw new ApiError(404, "not_found", "This calendar feed does not exist.");
+        throw notFound("calendar_feed");
       }
       const now = services.clock.now();
       const entries = await services.calendar.entries(

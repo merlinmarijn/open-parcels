@@ -52,6 +52,8 @@ export class SignInError extends Error {
     readonly code: SignInErrorCode,
     message: string,
     readonly retryAfterSeconds?: number,
+    /** Values for the client's own text (`seconds`, or an invalid connection's `reason`). */
+    readonly params: Readonly<Record<string, string | number>> = {},
   ) {
     super(message);
   }
@@ -280,6 +282,7 @@ export class SignInService {
         "sign_in_poll_too_soon",
         "Polled too soon; wait before asking again.",
         Math.ceil((notBefore - now) / 1000),
+        { seconds: Math.ceil((notBefore - now) / 1000) },
       );
     }
     const turn = await this.#guarded(attempt, () =>
@@ -368,7 +371,10 @@ export class SignInService {
         );
       }
       if (error instanceof InvalidConnectionConfigError) {
-        throw new SignInError("invalid_connection", error.message);
+        throw new SignInError("invalid_connection", error.message, undefined, {
+          reason: error.reason,
+          ...error.values,
+        });
       }
       if (attempt !== null) {
         await this.#fail(attempt);

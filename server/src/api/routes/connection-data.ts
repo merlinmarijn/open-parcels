@@ -31,7 +31,7 @@ export function registerConnectionDataRoutes(app: TypedApp, services: Services):
     },
     async (request) => {
       if ((await services.connections.get(request.params.id)) === undefined) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       return services.parcels.countConnectionData(request.params.id);
     },
@@ -55,7 +55,7 @@ export function registerConnectionDataRoutes(app: TypedApp, services: Services):
     async (request) => {
       const connection = await services.connections.get(request.params.id);
       if (connection === undefined) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       const counts = await services.parcels.clearConnectionData(connection.id);
       if (connection.state !== "disabled") {

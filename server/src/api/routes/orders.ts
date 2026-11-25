@@ -66,7 +66,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
     async (request) => {
       const order = await services.orders.get(request.params.id);
       if (order === undefined) {
-        throw notFound("The order");
+        throw notFound("order");
       }
       return order;
     },
@@ -98,7 +98,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
         ...(archived === undefined ? {} : { archived }),
       });
       if (order === undefined) {
-        throw notFound("The order");
+        throw notFound("order");
       }
       return order;
     },
@@ -121,7 +121,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       if (!(await services.orders.delete(request.params.id))) {
-        throw notFound("The order");
+        throw notFound("order");
       }
       return reply.code(204).send(null);
     },

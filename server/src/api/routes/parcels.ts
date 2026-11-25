@@ -76,7 +76,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
     async (request) => {
       const parcel = await services.parcels.repository.getVisible(request.params.id);
       if (parcel === undefined) {
-        throw notFound("The parcel");
+        throw notFound("parcel");
       }
       return parcel;
     },
@@ -128,6 +128,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
             409,
             "duplicate",
             `This parcel is already tracked as ${error.existingId}.`,
+            { parcel_id: error.existingId },
           );
         }
         throw error;
@@ -160,7 +161,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
         ...(body.archived === undefined ? {} : { archived: body.archived }),
       });
       if (parcel === undefined) {
-        throw notFound("The parcel");
+        throw notFound("parcel");
       }
       return parcel;
     },
@@ -179,7 +180,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       if (!(await services.parcels.delete(request.params.id))) {
-        throw notFound("The parcel");
+        throw notFound("parcel");
       }
       return reply.code(204).send(null);
     },

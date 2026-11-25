@@ -81,7 +81,7 @@ describe("apiFetch (OP-071)", () => {
   it("turns a JSON error into an ApiError with its code, message and wait", async () => {
     fetchMock.mockResolvedValue(
       Response.json(
-        { error: "connection_backing_off", message: "Wait a bit." },
+        { error: "connection_backing_off", message: "Wait a bit.", params: { seconds: 30 } },
         { status: 429, headers: { "retry-after": "30" } },
       ),
     );
@@ -94,6 +94,7 @@ describe("apiFetch (OP-071)", () => {
       code: "connection_backing_off",
       message: "Wait a bit.",
       retryAfterSeconds: 30,
+      params: { seconds: 30 },
     });
   });
 
@@ -110,6 +111,7 @@ describe("apiFetch (OP-071)", () => {
       code: "http_502",
       message: "The server answered 502 Bad Gateway.",
       retryAfterSeconds: null,
+      params: {},
     });
   });
 });

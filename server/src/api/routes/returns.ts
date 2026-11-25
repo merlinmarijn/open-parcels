@@ -52,7 +52,7 @@ export function registerReturnRoutes(app: TypedApp, services: Services): void {
     async (request) => {
       const found = await services.returns.get(request.params.id);
       if (found === undefined) {
-        throw notFound("The return");
+        throw notFound("return");
       }
       return found;
     },

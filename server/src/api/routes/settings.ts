@@ -5,7 +5,8 @@ import type { Services } from "../../services.js";
 import { homeSchema } from "../../settings/store.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-import { ApiError, errorBodySchema } from "../errors.js";
+import type { SettingError } from "../../config.js";
+import { ApiError, errorBodySchema, notFound } from "../errors.js";
 
 const settingsSchema = z.object({
   home: homeSchema.nullable(),
@@ -59,6 +60,15 @@ async function afterConfigChange(services: Services, changed: readonly string[])
 }
 
 /** The OPENPARCELS_* settings: the environment, with values saved here on top. Admin only. */
+/** `invalid_setting` with the reason; `not_found` for an address naming no setting. */
+function settingError(error: SettingError, inPath = false): ApiError {
+  if (inPath && error.reason === "unknown") return notFound("setting");
+  const params: Record<string, string | number> = { key: error.key, reason: error.reason };
+  if (error.detail !== undefined) params["detail"] = error.detail;
+  if (error.min !== undefined) params["min"] = error.min;
+  return new ApiError(400, "invalid_setting", error.message, params);
+}
+
 function registerConfigRoutes(app: TypedApp, services: Services): void {
   app.get(
     "/api/v1/settings/config",
@@ -86,7 +96,7 @@ function registerConfigRoutes(app: TypedApp, services: Services): void {
     },
     async (request) => {
       const result = await services.configSettings.patch(request.body);
-      if (!result.ok) throw new ApiError(400, "invalid_setting", result.error);
+      if (!result.ok) throw settingError(result.error);
       await afterConfigChange(services, result.changed);
       return settingInfos(services);
     },
@@ -100,12 +110,12 @@ function registerConfigRoutes(app: TypedApp, services: Services): void {
         tags: ["settings"],
         summary: "Forget a saved server setting, so the environment or default applies again.",
         params: z.object({ key: z.string() }),
-        response: { 200: z.array(settingInfoSchema), 404: errorBodySchema },
+        response: { 200: z.array(settingInfoSchema), 400: errorBodySchema, 404: errorBodySchema },
       },
     },
     async (request) => {
       const result = await services.configSettings.reset(request.params.key);
-      if (!result.ok) throw new ApiError(404, "not_found", result.error);
+      if (!result.ok) throw settingError(result.error, true);
       await afterConfigChange(services, result.changed);
       return settingInfos(services);
     },
@@ -198,7 +208,7 @@ export function registerSettingsRoutes(app: TypedApp, services: Services): void 
         return places.map((place) => ({ ...place }));
       } catch (error) {
         if (error instanceof GeocodeError) {
-          throw new ApiError(502, "geocode_failed", error.message);
+          throw new ApiError(502, "geocode_failed", error.message, { detail: error.message });
         }
         throw error;
       }

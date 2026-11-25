@@ -2,6 +2,7 @@ import { fireEvent, screen, waitFor } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
 import { describe, expect, it } from "vitest";
 import { mockApi, parcel, renderApp, SIGNED_IN } from "../test/helpers";
+import { t } from "../i18n";
 
 /* Every value is made up. */
 const ID = "00000000-0000-4000-8000-0000000000e1";
@@ -68,7 +69,9 @@ describe("editing a parcel in place", () => {
     await user.selectOptions(screen.getByRole("combobox", { name: "Status" }), "delivered");
     await user.click(screen.getByRole("button", { name: "Save status" }));
     // The refused save goes through a server round trip; allow a slow machine some time.
-    expect(await screen.findByText("Try again.", {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(
+      await screen.findByText(t.errors.byCode.internal({}), {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(screen.queryByText("Delivered", { selector: ".badge" })).toBeNull();
     expect(screen.getByText("At pickup point", { selector: ".badge" })).toBeInTheDocument();
   });
@@ -78,7 +81,9 @@ describe("editing a parcel in place", () => {
     const user = userEvent.setup();
     renderApp(`/parcels/${ID}`);
     await user.click(await screen.findByRole("button", { name: "Mark delivered" }));
-    expect(await screen.findByText("Not now.", {}, { timeout: 5000 })).toBeInTheDocument();
+    expect(
+      await screen.findByText(t.errors.byCode.internal({}), {}, { timeout: 5000 }),
+    ).toBeInTheDocument();
     expect(await screen.findByRole("button", { name: "Mark delivered" })).toHaveAttribute(
       "aria-pressed",
       "false",

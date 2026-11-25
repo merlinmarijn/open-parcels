@@ -82,6 +82,7 @@ chosen once in `web/src/i18n/de/` and are added here when they matter.
 | Event | Ereignis |
 | Live event | Live-Ereignis |
 | Provider | Anbieter |
+| Fallback service | Ausweichdienst |
 | Sign in / sign-in | Anmelden / Anmeldung |
 | Log in / login | Einloggen / Login |
 | Archive | Archivieren / Archiv |

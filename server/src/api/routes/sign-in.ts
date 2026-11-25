@@ -5,7 +5,7 @@ import type { SignInStep } from "../../provider/api.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-import { ApiError, errorBodySchema } from "../errors.js";
+import { ApiError, errorBodySchema, notFound } from "../errors.js";
 import { idParams, providerKindSchema } from "../schemas.js";
 
 const attemptParams = z.object({ id: z.uuid(), attempt: z.uuid() });
@@ -155,7 +155,7 @@ function failWith(reply: FastifyReply | null) {
       if (reply !== null && error.retryAfterSeconds !== undefined) {
         void reply.header("retry-after", String(error.retryAfterSeconds));
       }
-      throw new ApiError(STATUS[error.code], error.code, error.message);
+      throw new ApiError(STATUS[error.code], error.code, error.message, error.params);
     }
     throw error;
   };
@@ -266,7 +266,7 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       if (!(await signIn.cancel(request.params.id, request.params.attempt))) {
-        throw new ApiError(404, "not_found", "The sign-in attempt was not found.");
+        throw notFound("sign_in");
       }
       return reply.code(204).send(null);
     },

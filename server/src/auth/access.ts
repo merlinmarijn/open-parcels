@@ -6,7 +6,14 @@ import type { AuthStore, Role } from "./store.js";
 
 const ADMIN_KEY = "OPENPARCELS_ADMIN_PASSWORD";
 
-export type AccessResult = { readonly ok: true } | { readonly ok: false; readonly error: string };
+/** `reason` picks the client's own text; `error` is English, for logs and scripts. */
+export type AccessResult =
+  | { readonly ok: true }
+  | {
+      readonly ok: false;
+      readonly reason: "wrong_current" | "too_short" | "no_environment_password";
+      readonly error: string;
+    };
 
 /**
  * The two passwords. The admin password may change anything; the reader password
@@ -82,10 +89,14 @@ export class AccessControl {
    */
   async changeAdminPassword(current: string | null, next: string): Promise<AccessResult> {
     if (current !== null && !(await this.#isAdminPassword(current))) {
-      return { ok: false, error: "The current admin password is wrong." };
+      return { ok: false, reason: "wrong_current", error: "The current admin password is wrong." };
     }
     if (next.length < MIN_ADMIN_PASSWORD) {
-      return { ok: false, error: `Use at least ${MIN_ADMIN_PASSWORD} characters.` };
+      return {
+        ok: false,
+        reason: "too_short",
+        error: `Use at least ${MIN_ADMIN_PASSWORD} characters.`,
+      };
     }
     await this.store.setOwnerPassword(next);
     this.#setSaved(true);
@@ -100,6 +111,7 @@ export class AccessControl {
     if (this.config.adminPassword === undefined) {
       return {
         ok: false,
+        reason: "no_environment_password",
         error:
           "There is no OPENPARCELS_ADMIN_PASSWORD in the environment to fall back to; change the password instead.",
       };

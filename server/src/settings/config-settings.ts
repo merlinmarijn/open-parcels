@@ -11,8 +11,10 @@ import {
   type AppConfig,
   type ApplyMode,
   type LiveAppConfig,
+  type SettingError,
   type SettingKey,
   type SettingKind,
+  type SettingProblem,
   type SettingValue,
   type SettingValues,
 } from "../config.js";
@@ -41,7 +43,12 @@ export interface SettingInfo {
 
 export type PatchResult =
   | { readonly ok: true; readonly changed: readonly SettingKey[] }
-  | { readonly ok: false; readonly error: string };
+  | { readonly ok: false; readonly error: SettingError };
+
+const refuse = (key: string, reason: SettingProblem, message: string): PatchResult => ({
+  ok: false,
+  error: { key, reason, message: `${key}: ${message}` },
+});
 
 const same = (a: unknown, b: unknown): boolean => JSON.stringify(a) === JSON.stringify(b);
 const isOwnForm = (key: SettingKey): boolean => "ownForm" in SETTINGS[key];
@@ -113,21 +120,19 @@ export class ConfigSettings {
   async patch(input: Readonly<Record<string, unknown>>): Promise<PatchResult> {
     const accepted: [SettingKey, SettingValue][] = [];
     for (const [key, raw] of Object.entries(input)) {
-      if (!isSettingKey(key)) return { ok: false, error: `${key}: there is no such setting.` };
-      if (isOwnForm(key)) return { ok: false, error: `${key}: change it with its own form.` };
+      if (!isSettingKey(key)) return refuse(key, "unknown", "there is no such setting.");
+      if (isOwnForm(key)) return refuse(key, "own_form", "change it with its own form.");
       if (SETTINGS[key].apply === "env") {
-        return {
-          ok: false,
-          error: `${key}: can only be set in the environment.`,
-        };
+        return refuse(key, "env_only", "can only be set in the environment.");
       }
       const parsed = parseSetting(key, raw);
       if (!parsed.ok) return parsed;
       if (parsed.value === undefined) {
-        return {
-          ok: false,
-          error: `${key}: a value is required. Reset the setting to go back to the environment or default.`,
-        };
+        return refuse(
+          key,
+          "required",
+          "a value is required. Reset the setting to go back to the environment or default.",
+        );
       }
       // A reader password set here follows the admin password's minimum; the environment's is
       // left as configured, so no running install breaks (OP-152).
@@ -137,7 +142,15 @@ export class ConfigSettings {
         parsed.value !== "" &&
         parsed.value.length < MIN_ADMIN_PASSWORD
       ) {
-        return { ok: false, error: `${key}: use at least ${MIN_ADMIN_PASSWORD} characters.` };
+        return {
+          ok: false,
+          error: {
+            key,
+            reason: "too_short",
+            message: `${key}: use at least ${MIN_ADMIN_PASSWORD} characters.`,
+            min: MIN_ADMIN_PASSWORD,
+          },
+        };
       }
       accepted.push([key, parsed.value]);
     }
@@ -165,8 +178,8 @@ export class ConfigSettings {
 
   /** Deletes the saved value, so the environment or default applies again. */
   async reset(key: string): Promise<PatchResult> {
-    if (!isSettingKey(key)) return { ok: false, error: `${key}: there is no such setting.` };
-    if (isOwnForm(key)) return { ok: false, error: `${key}: reset it with its own form.` };
+    if (!isSettingKey(key)) return refuse(key, "unknown", "there is no such setting.");
+    if (isOwnForm(key)) return refuse(key, "own_form", "reset it with its own form.");
     if (!this.#overrides.has(key)) return { ok: true, changed: [] };
     const previous = this.#overrides.get(key);
     await this.db.deleteFrom("setting_overrides").where("key", "=", key).execute();

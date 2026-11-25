@@ -86,7 +86,7 @@ export function registerTokenRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       if (!(await services.auth.deleteToken(request.params.id))) {
-        throw notFound("The token");
+        throw notFound("token");
       }
       return reply.code(204).send(null);
     },

@@ -107,6 +107,7 @@ export function registerDataRoutes(app: TypedApp, services: Services): void {
           500,
           "backup_failed",
           `The backup failed: ${result.error ?? "unknown error"}.`,
+          { detail: result.error ?? "" },
         );
       }
       return result;
@@ -151,14 +152,16 @@ export function registerDataRoutes(app: TypedApp, services: Services): void {
               400,
               "confirmation_required",
               `Type ${EVERYTHING_CONFIRMATION} to confirm deleting every parcel and order.`,
+              { phrase: EVERYTHING_CONFIRMATION },
             );
           }
           const backup = await services.backups.run("before_delete");
           if (!backup.ok || backup.file === null) {
             throw new ApiError(
               500,
-              "backup_failed",
+              "delete_backup_failed",
               `Nothing was deleted: the backup before deleting failed (${backup.error ?? "unknown error"}).`,
+              { detail: backup.error ?? "" },
             );
           }
           return {

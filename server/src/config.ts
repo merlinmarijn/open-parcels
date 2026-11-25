@@ -405,21 +405,40 @@ export function isSettingKey(key: string): key is SettingKey {
   return Object.hasOwn(SETTINGS, key);
 }
 
+/** Why a setting value was refused; clients show their own text per reason. */
+export type SettingProblem =
+  "unknown" | "own_form" | "env_only" | "required" | "too_short" | "wrong_type" | "invalid";
+
+export interface SettingError {
+  readonly key: string;
+  readonly reason: SettingProblem;
+  /** English, for logs and scripts. */
+  readonly message: string;
+  /** The validator's own words (`invalid`) or the minimum length (`too_short`). */
+  readonly detail?: string;
+  readonly min?: number;
+}
+
 export type ParseResult =
   | { readonly ok: true; readonly value: SettingValue | undefined }
-  | { readonly ok: false; readonly error: string };
+  | { readonly ok: false; readonly error: SettingError };
 
 /** Parses one value in its text form (environment) or typed form (saved in the UI). */
 export function parseSetting(key: SettingKey, raw: unknown): ParseResult {
   if (typeof raw !== "string" && typeof raw !== "number" && typeof raw !== "boolean") {
-    return { ok: false, error: `${key}: expected text, a number or true/false.` };
+    return {
+      ok: false,
+      error: {
+        key,
+        reason: "wrong_type",
+        message: `${key}: expected text, a number or true/false.`,
+      },
+    };
   }
   const parsed = SETTINGS[key].schema.safeParse(String(raw));
   if (!parsed.success) {
-    return {
-      ok: false,
-      error: `${key}: ${parsed.error.issues.map((issue) => issue.message).join("; ")}`,
-    };
+    const detail = parsed.error.issues.map((issue) => issue.message).join("; ");
+    return { ok: false, error: { key, reason: "invalid", message: `${key}: ${detail}`, detail } };
   }
   return { ok: true, value: parsed.data };
 }
@@ -452,7 +471,7 @@ export function parseEnv(
       values[key] = parsed.value;
       sources[key] = appOptions.has(key) ? "app" : "env";
     } else {
-      problems.push(parsed.error);
+      problems.push(parsed.error.message);
     }
   }
   if (problems.length > 0) {

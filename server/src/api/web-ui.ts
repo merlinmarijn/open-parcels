@@ -3,6 +3,7 @@ import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import fastifyStatic from "@fastify/static";
 import type { FastifyInstance, FastifyReply, FastifyRequest } from "fastify";
+import { routeNotFound } from "./errors.js";
 
 /** Paths the single-page app never answers, so an unknown API route stays a JSON 404. */
 const SERVER_PREFIXES = ["/api/", "/ical/", "/img/", "/tiles/"] as const;
@@ -107,9 +108,7 @@ export async function registerWebUi(app: FastifyInstance, options: WebUiOptions)
     if (request.method === "GET" && !isServerPath(request.url) && acceptsHtml) {
       return sendIndex(reply, template, basePath(request, options.trustIngressPath));
     }
-    return reply
-      .code(404)
-      .send({ error: "not_found", message: `Route ${request.method} ${request.url} not found.` });
+    return reply.code(404).send(routeNotFound(request.method, request.url));
   });
   return true;
 }

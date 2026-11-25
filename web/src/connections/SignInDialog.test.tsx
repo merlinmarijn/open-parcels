@@ -6,6 +6,7 @@ import { describe, expect, it, vi } from "vitest";
 import { createQueryClient } from "../api/client";
 import { connection, mockApi, type Recorded } from "../test/helpers";
 import { SignInDialog } from "./SignInDialog";
+import { t } from "../i18n";
 
 /* Every value here is made up. */
 
@@ -137,7 +138,7 @@ describe("interactive sign-in dialog", () => {
     await user.click(await screen.findByRole("button", { name: "Continue" }));
     await user.type(await screen.findByRole("textbox"), "000000");
     await user.click(screen.getByRole("button", { name: "Continue" }));
-    expect(await screen.findByRole("alert")).toHaveTextContent("Wrong code.");
+    expect(await screen.findByRole("alert")).toHaveTextContent(t.errors.byCode.sign_in_failed({}));
     // Still on the code step: the next try answers it, with no new start.
     await user.type(screen.getByRole("textbox"), "123456");
     await user.click(screen.getByRole("button", { name: "Continue" }));

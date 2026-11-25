@@ -17,7 +17,27 @@ import { fileUnderTracked } from "./tracked.js";
 
 export class InvalidConnectionConfigError extends Error {
   override readonly name = "InvalidConnectionConfigError";
+
+  constructor(
+    message: string,
+    /** Which check failed, for the client's own text; `provider` carries the provider's words in `detail`. */
+    readonly reason: InvalidConnectionReason,
+    readonly values: Readonly<Record<string, string>> = {},
+  ) {
+    super(message);
+  }
 }
+
+export type InvalidConnectionReason =
+  | "inbox_kind"
+  | "inbox_fields"
+  | "unknown_provider"
+  | "no_such_kind"
+  | "secret_mismatch"
+  | "invalid_fields"
+  | "no_such_sign_in"
+  | "no_tracking_provider"
+  | "provider";
 
 /** Everything a connection needs to call a provider, before config and secret are validated. */
 export type BaseContext = Omit<ProviderContext<unknown, unknown>, "config" | "secret">;
@@ -103,7 +123,7 @@ async function asConnectionConfigError<T>(work: Promise<T>): Promise<T> {
     return await work;
   } catch (error) {
     if (error instanceof InvalidConfigError) {
-      throw new InvalidConnectionConfigError(error.message);
+      throw new InvalidConnectionConfigError(error.message, "provider", { detail: error.message });
     }
     throw error;
   }
@@ -115,6 +135,8 @@ function parseWith<T>(schema: z.ZodType<T>, raw: unknown, what: string, provider
     const paths = parsed.error.issues.map((issue) => issue.path.join(".") || "(root)").join(", ");
     throw new InvalidConnectionConfigError(
       `The ${what} for ${providerId} is invalid at: ${paths}.`,
+      "invalid_fields",
+      { provider: providerId, fields: paths },
     );
   }
   return parsed.data;
@@ -170,6 +192,8 @@ async function runSignIn<Config, Secret>(
   if (flow?.type !== "interactive" || !applies(flow, call.kind, config)) {
     throw new InvalidConnectionConfigError(
       `${provider.name} has no interactive sign-in "${call.flowId}" for this connection.`,
+      "no_such_sign_in",
+      { provider: provider.name },
     );
   }
   const context = { config, kind: call.kind, http: call.http, clock: call.clock };
@@ -180,7 +204,11 @@ async function runSignIn<Config, Secret>(
     turn = await flow.continue(context, call.state, call.input ?? {});
   } else {
     if (flow.poll === undefined) {
-      throw new InvalidConnectionConfigError(`${provider.name}'s sign-in has nothing to wait for.`);
+      throw new InvalidConnectionConfigError(
+        `${provider.name}'s sign-in has nothing to wait for.`,
+        "no_such_sign_in",
+        { provider: provider.name },
+      );
     }
     turn = await flow.poll(context, call.state);
   }
@@ -239,13 +267,21 @@ export function register<Config, Secret>(
     },
     async fetchAccount(base, rawConfig, rawSecret) {
       if (provider.fetchAccount === undefined) {
-        throw new InvalidConnectionConfigError(`${provider.name} has no account connection.`);
+        throw new InvalidConnectionConfigError(
+          `${provider.name} has no account connection.`,
+          "no_such_kind",
+          { provider: provider.name, kind: "account" },
+        );
       }
       return asConnectionConfigError(provider.fetchAccount(context(base, rawConfig, rawSecret)));
     },
     async track(base, rawConfig, rawSecret, trackingNumbers) {
       if (provider.track === undefined) {
-        throw new InvalidConnectionConfigError(`${provider.name} cannot track codes.`);
+        throw new InvalidConnectionConfigError(
+          `${provider.name} cannot track codes.`,
+          "no_such_kind",
+          { provider: provider.name, kind: "tracking" },
+        );
       }
       const result = await asConnectionConfigError(
         provider.track(context(base, rawConfig, rawSecret), trackingNumbers),

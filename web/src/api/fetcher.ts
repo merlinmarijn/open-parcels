@@ -15,14 +15,20 @@ export function setCsrfToken(token: string | null): void {
   csrfToken = token;
 }
 
+/** Values the server sends for the code's text (`errors.ts` in each dictionary). */
+export type ErrorParams = Readonly<Record<string, string | number>>;
+
 export class ApiError extends Error {
   override readonly name = "ApiError";
 
   constructor(
     readonly status: number,
+    /** The server's error code, or `http_<status>` when the answer had none (a proxy's page). */
     readonly code: string,
+    /** The server's English explanation; the UI shows its own text for the code. */
     message: string,
     readonly retryAfterSeconds: number | null = null,
+    readonly params: ErrorParams = {},
   ) {
     super(message);
   }
@@ -37,6 +43,17 @@ export function apiUrl(path: string): string {
 interface ErrorBody {
   readonly error?: unknown;
   readonly message?: unknown;
+  readonly params?: unknown;
+}
+
+function readParams(value: unknown): ErrorParams {
+  if (typeof value !== "object" || value === null) return {};
+  return Object.fromEntries(
+    Object.entries(value).filter(
+      (entry): entry is [string, string | number] =>
+        typeof entry[1] === "string" || typeof entry[1] === "number",
+    ),
+  );
 }
 
 async function readBody(response: Response): Promise<unknown> {
@@ -77,6 +94,7 @@ function toApiError(response: Response, body: unknown): ApiError {
     code,
     message,
     parseRetryAfter(response.headers.get("retry-after")),
+    readParams(parsed.params),
   );
 }
 

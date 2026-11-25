@@ -209,6 +209,7 @@ export class ConnectionService {
       if (input.kind !== "mail" || input.provider !== MAIL_PROVIDER) {
         throw new InvalidConnectionConfigError(
           `Inboxes use the provider "${MAIL_PROVIDER}" and the kind "mail".`,
+          "inbox_kind",
         );
       }
       const config = mailConfigSchema.safeParse(input.config);
@@ -216,6 +217,7 @@ export class ConnectionService {
       if (!config.success || !secret.success) {
         throw new InvalidConnectionConfigError(
           "The inbox needs a host, a username and a password.",
+          "inbox_fields",
         );
       }
       return config.data;
@@ -224,17 +226,23 @@ export class ConnectionService {
     if (provider === undefined) {
       throw new InvalidConnectionConfigError(
         `There is no carrier provider called ${input.provider}.`,
+        "unknown_provider",
+        { provider: input.provider },
       );
     }
     if (!provider.info.connectionKinds.includes(input.kind)) {
       throw new InvalidConnectionConfigError(
         `${provider.info.name} has no ${input.kind} connection.`,
+        "no_such_kind",
+        { provider: provider.info.name, kind: input.kind },
       );
     }
     const config = provider.validateConfig(input.config);
     if (input.secret !== null && !provider.info.secretSchema.safeParse(input.secret).success) {
       throw new InvalidConnectionConfigError(
         `The sign-in data does not fit ${provider.info.name}.`,
+        "secret_mismatch",
+        { provider: provider.info.name },
       );
     }
     return config;
@@ -245,7 +253,7 @@ export class ConnectionService {
     if (row.kind === "mail") {
       const parsed = mailConfigSchema.safeParse(config);
       if (!parsed.success) {
-        throw new InvalidConnectionConfigError("The inbox needs a host.");
+        throw new InvalidConnectionConfigError("The inbox needs a host.", "inbox_fields");
       }
       return parsed.data;
     }
@@ -262,6 +270,8 @@ export class ConnectionService {
     if (id === undefined) {
       throw new InvalidConnectionConfigError(
         `There is no carrier provider that tracks ${providerId}.`,
+        "no_tracking_provider",
+        { provider: providerId },
       );
     }
     return id;
@@ -297,7 +307,10 @@ export class ConnectionService {
     }
     if (row.kind === "mail") {
       if (!mailSecretSchema.safeParse(secret).success) {
-        throw new InvalidConnectionConfigError("The inbox needs a username and a password.");
+        throw new InvalidConnectionConfigError(
+          "The inbox needs a username and a password.",
+          "inbox_fields",
+        );
       }
       return;
     }
@@ -305,6 +318,8 @@ export class ConnectionService {
     if (provider !== undefined && !provider.info.secretSchema.safeParse(secret).success) {
       throw new InvalidConnectionConfigError(
         `The sign-in data does not fit ${provider.info.name}.`,
+        "secret_mismatch",
+        { provider: provider.info.name },
       );
     }
   }

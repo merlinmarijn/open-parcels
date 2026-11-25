@@ -44,7 +44,7 @@ async function sendTile(
       .send(tile.body);
   } catch (error) {
     if (error instanceof TileError) {
-      throw new ApiError(error.statusCode, "tile", error.message);
+      throw new ApiError(error.statusCode, "tile", error.message, { status: error.statusCode });
     }
     throw error;
   }

@@ -3,7 +3,7 @@ import { ImageProxyError } from "../../images/proxy.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-import { ApiError } from "../errors.js";
+import { ApiError, notFound } from "../errors.js";
 
 const PROXY_PATH = /^\/img\/([A-Za-z0-9_-]+)\.([A-Za-z0-9_-]{32})$/;
 
@@ -35,7 +35,7 @@ export function registerImageRoutes(app: TypedApp, services: Services): void {
         }
       });
       if (png === null) {
-        throw new ApiError(404, "not_found", "No item pictures.");
+        throw notFound("pictures");
       }
       return reply
         .header("content-type", "image/png")
@@ -68,7 +68,9 @@ export function registerImageRoutes(app: TypedApp, services: Services): void {
           .send(image.body);
       } catch (error) {
         if (error instanceof ImageProxyError) {
-          throw new ApiError(error.statusCode, "image", error.message);
+          throw new ApiError(error.statusCode, "image", error.message, {
+            status: error.statusCode,
+          });
         }
         throw error;
       }

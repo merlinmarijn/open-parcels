@@ -19,7 +19,7 @@ import {
 import type { TrustProxy } from "../config.js";
 import type { Services } from "../services.js";
 import { registerAuth } from "./auth-plugin.js";
-import { ApiError } from "./errors.js";
+import { ApiError, routeNotFound, type ErrorBody } from "./errors.js";
 import { registerCalendarRoutes } from "./routes/calendar.js";
 import { registerDiagnosticsRoutes } from "./routes/diagnostics.js";
 import { registerEventRoutes } from "./routes/events.js";
@@ -54,30 +54,39 @@ export interface BuildAppOptions {
   readonly webDir?: string;
 }
 
-function handleError(
-  error: FastifyError,
-  services: Services,
-): { status: number; body: { error: string; message: string } } {
+function handleError(error: FastifyError, services: Services): { status: number; body: ErrorBody } {
   if (error instanceof ApiError) {
-    return { status: error.statusCode, body: { error: error.code, message: error.message } };
+    return {
+      status: error.statusCode,
+      body: { error: error.code, message: error.message, params: error.params },
+    };
   }
   if (hasZodFastifySchemaValidationErrors(error)) {
     const detail = error.validation
       .map((issue) => `${issue.instancePath || "/"} ${issue.message ?? ""}`.trim())
       .join("; ");
-    return {
-      status: 400,
-      body: { error: "invalid_request", message: `The request is invalid: ${detail}.` },
-    };
+    return invalidRequest(400, detail);
   }
   const status = error.statusCode ?? 500;
   if (status < 500) {
-    return { status, body: { error: error.code.toLowerCase(), message: error.message } };
+    // Fastify's own refusals (body too large, unknown content type, bad JSON).
+    return invalidRequest(status, error.message);
   }
   services.logger.error({ err: error }, "Request failed.");
   return {
     status: 500,
-    body: { error: "internal", message: "Something went wrong on the server." },
+    body: { error: "internal", message: "Something went wrong on the server.", params: {} },
+  };
+}
+
+function invalidRequest(status: number, detail: string): { status: number; body: ErrorBody } {
+  return {
+    status,
+    body: {
+      error: "invalid_request",
+      message: `The request is invalid: ${detail}.`,
+      params: { detail },
+    },
   };
 }
 
@@ -197,11 +206,16 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
   registerEventRoutes(typed, services);
 
   app.get("/api/v1/openapi.json", { schema: { hide: true } }, () => app.swagger());
-  if (options.webDir !== undefined) {
-    await registerWebUi(app, {
+  const servesWebUi =
+    options.webDir !== undefined &&
+    (await registerWebUi(app, {
       root: options.webDir,
       trustIngressPath: options.trustedIngressAddress !== undefined,
-    });
+    }));
+  if (!servesWebUi) {
+    app.setNotFoundHandler((request, reply) =>
+      reply.code(404).send(routeNotFound(request.method, request.url)),
+    );
   }
   await app.ready();
   return app;

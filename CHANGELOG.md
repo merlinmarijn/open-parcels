@@ -39,6 +39,19 @@ The web UI follows the browser's language (English or German) and can be set und
 German texts use the German terms in [`docs/glossary.md`](docs/glossary.md). Texts that come from
 the server (setting descriptions, error messages, sign-in steps, provider forms) stay English.
 
+### Changed (breaking): error bodies carry `params`, the UI shows its own texts
+
+Every error body is now `{ error, message, params }`. `error` is one of a fixed list of codes (see
+`docs/openapi.json`); `message` stays an English explanation for scripts and logs; `params` holds the
+values a client's own text needs (`resource` for `not_found`, `seconds`, `reason`, `detail`, …). The
+web UI shows an English or German text per code instead of the server's message.
+
+- Fastify's own refusals (unknown content type, bad JSON, body too large) are `invalid_request`
+  with the status they had, no longer `fst_err_…` codes.
+- A failed backup before deleting everything is `delete_backup_failed` (was `backup_failed`).
+- `DELETE /api/v1/settings/config/{key}` for a key that is no setting stays 404 `not_found`; other
+  refusals of that call are 400 `invalid_setting` with a `reason`.
+
 ### Changed: backups are private, versions name their commit
 
 - Backups (and the unfinished `.partial`) are written with mode 0600 and the backup folder with

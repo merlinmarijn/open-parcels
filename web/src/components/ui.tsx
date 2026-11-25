@@ -2,11 +2,16 @@
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ApiError } from "../api/fetcher";
 import { t } from "../i18n";
+import type { ErrorText } from "../i18n/params";
 
+/** The UI's own text for a server error code; the server's English message never reaches the page. */
 export function errorMessage(error: unknown): string {
-  if (error instanceof ApiError || error instanceof Error) {
-    return error.message;
+  if (error instanceof ApiError) {
+    const text = (t.errors.byCode as Readonly<Record<string, ErrorText | undefined>>)[error.code];
+    if (text !== undefined) return text(error.params);
+    return t.errors.http(error.status);
   }
+  if (error instanceof Error) return error.message;
   return t.common.somethingWentWrong;
 }
 

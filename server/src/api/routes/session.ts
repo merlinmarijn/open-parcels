@@ -81,6 +81,7 @@ function checkThrottle(
       429,
       "too_many_attempts",
       `Too many failed attempts. Try again in ${wait} seconds.`,
+      { seconds: wait },
     );
   }
 }
@@ -111,7 +112,12 @@ function registerAdminPasswordRoutes(app: TypedApp, services: Services): void {
         throw new ApiError(400, "current_required", "Enter the current admin password.");
       }
       const result = await services.access.changeAdminPassword(current, next);
-      if (!result.ok) throw new ApiError(400, "invalid_password", result.error);
+      if (!result.ok) {
+        throw new ApiError(400, "invalid_password", result.error, {
+          reason: result.reason,
+          min: MIN_ADMIN_PASSWORD,
+        });
+      }
       void reply.clearCookie(SESSION_COOKIE, { path: "/" });
       return reply.code(204).send(null);
     },

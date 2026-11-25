@@ -6,38 +6,17 @@
  * OpenAPI spec version: 2.0.0-dev.20261125
  */
 import { apiFetch } from "./fetcher";
-export type GetApiV1HealthLive200Status =
-  (typeof GetApiV1HealthLive200Status)[keyof typeof GetApiV1HealthLive200Status];
-
-export const GetApiV1HealthLive200Status = {
-  ok: "ok",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1HealthLive200Status = "ok" | "unavailable";
 export type GetApiV1HealthLive200 = {
   status: GetApiV1HealthLive200Status;
 };
 
-export type GetApiV1HealthReady200Status =
-  (typeof GetApiV1HealthReady200Status)[keyof typeof GetApiV1HealthReady200Status];
-
-export const GetApiV1HealthReady200Status = {
-  ok: "ok",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1HealthReady200Status = "ok" | "unavailable";
 export type GetApiV1HealthReady200 = {
   status: GetApiV1HealthReady200Status;
 };
 
-export type GetApiV1HealthReady503Status =
-  (typeof GetApiV1HealthReady503Status)[keyof typeof GetApiV1HealthReady503Status];
-
-export const GetApiV1HealthReady503Status = {
-  ok: "ok",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1HealthReady503Status = "ok" | "unavailable";
 export type GetApiV1HealthReady503 = {
   status: GetApiV1HealthReady503Status;
 };
@@ -45,69 +24,13 @@ export type GetApiV1HealthReady503 = {
 /**
  * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
  */
-export type GetApiV1Health200Status =
-  (typeof GetApiV1Health200Status)[keyof typeof GetApiV1Health200Status];
-
-export const GetApiV1Health200Status = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksDatabase =
-  (typeof GetApiV1Health200ChecksDatabase)[keyof typeof GetApiV1Health200ChecksDatabase];
-
-export const GetApiV1Health200ChecksDatabase = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksConnections =
-  (typeof GetApiV1Health200ChecksConnections)[keyof typeof GetApiV1Health200ChecksConnections];
-
-export const GetApiV1Health200ChecksConnections = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksInboxes =
-  (typeof GetApiV1Health200ChecksInboxes)[keyof typeof GetApiV1Health200ChecksInboxes];
-
-export const GetApiV1Health200ChecksInboxes = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksScheduler =
-  (typeof GetApiV1Health200ChecksScheduler)[keyof typeof GetApiV1Health200ChecksScheduler];
-
-export const GetApiV1Health200ChecksScheduler = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksEventStream =
-  (typeof GetApiV1Health200ChecksEventStream)[keyof typeof GetApiV1Health200ChecksEventStream];
-
-export const GetApiV1Health200ChecksEventStream = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health200ChecksBackups =
-  (typeof GetApiV1Health200ChecksBackups)[keyof typeof GetApiV1Health200ChecksBackups];
-
-export const GetApiV1Health200ChecksBackups = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1Health200Status = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksDatabase = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksConnections = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksInboxes = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksScheduler = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksEventStream = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health200ChecksBackups = "ok" | "degraded" | "unavailable";
 export type GetApiV1Health200Checks = {
   database: GetApiV1Health200ChecksDatabase;
   connections: GetApiV1Health200ChecksConnections;
@@ -126,69 +49,13 @@ export type GetApiV1Health200 = {
 /**
  * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
  */
-export type GetApiV1Health503Status =
-  (typeof GetApiV1Health503Status)[keyof typeof GetApiV1Health503Status];
-
-export const GetApiV1Health503Status = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksDatabase =
-  (typeof GetApiV1Health503ChecksDatabase)[keyof typeof GetApiV1Health503ChecksDatabase];
-
-export const GetApiV1Health503ChecksDatabase = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksConnections =
-  (typeof GetApiV1Health503ChecksConnections)[keyof typeof GetApiV1Health503ChecksConnections];
-
-export const GetApiV1Health503ChecksConnections = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksInboxes =
-  (typeof GetApiV1Health503ChecksInboxes)[keyof typeof GetApiV1Health503ChecksInboxes];
-
-export const GetApiV1Health503ChecksInboxes = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksScheduler =
-  (typeof GetApiV1Health503ChecksScheduler)[keyof typeof GetApiV1Health503ChecksScheduler];
-
-export const GetApiV1Health503ChecksScheduler = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksEventStream =
-  (typeof GetApiV1Health503ChecksEventStream)[keyof typeof GetApiV1Health503ChecksEventStream];
-
-export const GetApiV1Health503ChecksEventStream = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Health503ChecksBackups =
-  (typeof GetApiV1Health503ChecksBackups)[keyof typeof GetApiV1Health503ChecksBackups];
-
-export const GetApiV1Health503ChecksBackups = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1Health503Status = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksDatabase = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksConnections = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksInboxes = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksScheduler = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksEventStream = "ok" | "degraded" | "unavailable";
+export type GetApiV1Health503ChecksBackups = "ok" | "degraded" | "unavailable";
 export type GetApiV1Health503Checks = {
   database: GetApiV1Health503ChecksDatabase;
   connections: GetApiV1Health503ChecksConnections;
@@ -207,69 +74,13 @@ export type GetApiV1Health503 = {
 /**
  * `ok`; `degraded`: it works, but something needs attention (a connection or inbox in error or needing sign-in, a failing backup, a stalled scheduler); `unavailable`: the database does not answer.
  */
-export type GetApiV1Status200Status =
-  (typeof GetApiV1Status200Status)[keyof typeof GetApiV1Status200Status];
-
-export const GetApiV1Status200Status = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksDatabase =
-  (typeof GetApiV1Status200ChecksDatabase)[keyof typeof GetApiV1Status200ChecksDatabase];
-
-export const GetApiV1Status200ChecksDatabase = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksConnections =
-  (typeof GetApiV1Status200ChecksConnections)[keyof typeof GetApiV1Status200ChecksConnections];
-
-export const GetApiV1Status200ChecksConnections = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksInboxes =
-  (typeof GetApiV1Status200ChecksInboxes)[keyof typeof GetApiV1Status200ChecksInboxes];
-
-export const GetApiV1Status200ChecksInboxes = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksScheduler =
-  (typeof GetApiV1Status200ChecksScheduler)[keyof typeof GetApiV1Status200ChecksScheduler];
-
-export const GetApiV1Status200ChecksScheduler = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksEventStream =
-  (typeof GetApiV1Status200ChecksEventStream)[keyof typeof GetApiV1Status200ChecksEventStream];
-
-export const GetApiV1Status200ChecksEventStream = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
-export type GetApiV1Status200ChecksBackups =
-  (typeof GetApiV1Status200ChecksBackups)[keyof typeof GetApiV1Status200ChecksBackups];
-
-export const GetApiV1Status200ChecksBackups = {
-  ok: "ok",
-  degraded: "degraded",
-  unavailable: "unavailable",
-} as const;
-
+export type GetApiV1Status200Status = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksDatabase = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksConnections = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksInboxes = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksScheduler = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksEventStream = "ok" | "degraded" | "unavailable";
+export type GetApiV1Status200ChecksBackups = "ok" | "degraded" | "unavailable";
 export type GetApiV1Status200Checks = {
   database: GetApiV1Status200ChecksDatabase;
   connections: GetApiV1Status200ChecksConnections;
@@ -284,27 +95,9 @@ export type GetApiV1Status200Database = {
   detail: string | null;
 };
 
-export type GetApiV1Status200ConnectionsItemKind =
-  (typeof GetApiV1Status200ConnectionsItemKind)[keyof typeof GetApiV1Status200ConnectionsItemKind];
-
-export const GetApiV1Status200ConnectionsItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
+export type GetApiV1Status200ConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Status200ConnectionsItemState =
-  (typeof GetApiV1Status200ConnectionsItemState)[keyof typeof GetApiV1Status200ConnectionsItemState];
-
-export const GetApiV1Status200ConnectionsItemState = {
-  ok: "ok",
-  idle: "idle",
-  needs_sign_in: "needs_sign_in",
-  error: "error",
-  disabled: "disabled",
-} as const;
-
+  "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
 export type GetApiV1Status200ConnectionsItem = {
   id: string;
   provider: string;
@@ -331,27 +124,9 @@ export type GetApiV1Status200ConnectionsItem = {
   backoff_until: string | null;
 };
 
-export type GetApiV1Status200InboxesItemKind =
-  (typeof GetApiV1Status200InboxesItemKind)[keyof typeof GetApiV1Status200InboxesItemKind];
-
-export const GetApiV1Status200InboxesItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
+export type GetApiV1Status200InboxesItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Status200InboxesItemState =
-  (typeof GetApiV1Status200InboxesItemState)[keyof typeof GetApiV1Status200InboxesItemState];
-
-export const GetApiV1Status200InboxesItemState = {
-  ok: "ok",
-  idle: "idle",
-  needs_sign_in: "needs_sign_in",
-  error: "error",
-  disabled: "disabled",
-} as const;
-
+  "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
 export type GetApiV1Status200InboxesItem = {
   id: string;
   provider: string;
@@ -468,37 +243,13 @@ export type GetApiV1Status200 = {
 /**
  * @nullable
  */
-export type GetApiV1Session200Method =
-  (typeof GetApiV1Session200Method)[keyof typeof GetApiV1Session200Method] | null;
-
-export const GetApiV1Session200Method = {
-  ingress: "ingress",
-  token: "token",
-  session: "session",
-  anonymous: "anonymous",
-} as const;
-
+export type GetApiV1Session200Method = "ingress" | "token" | "session" | "anonymous" | null;
 /**
  * What the caller may do; reader when reading is open. Null: must log in first.
  * @nullable
  */
-export type GetApiV1Session200Role =
-  (typeof GetApiV1Session200Role)[keyof typeof GetApiV1Session200Role] | null;
-
-export const GetApiV1Session200Role = {
-  reader: "reader",
-  admin: "admin",
-} as const;
-
-export type GetApiV1Session200ScopesItem =
-  (typeof GetApiV1Session200ScopesItem)[keyof typeof GetApiV1Session200ScopesItem];
-
-export const GetApiV1Session200ScopesItem = {
-  read: "read",
-  write: "write",
-  admin: "admin",
-} as const;
-
+export type GetApiV1Session200Role = "reader" | "admin" | null;
+export type GetApiV1Session200ScopesItem = "read" | "write" | "admin";
 export type GetApiV1Session200 = {
   /** Logged in, or a token or Home Assistant ingress. */
   authenticated: boolean;
@@ -524,31 +275,116 @@ export type PostApiV1SessionBody = {
   password: string;
 };
 
-export type PostApiV1Session200Role =
-  (typeof PostApiV1Session200Role)[keyof typeof PostApiV1Session200Role];
-
-export const PostApiV1Session200Role = {
-  reader: "reader",
-  admin: "admin",
-} as const;
-
+export type PostApiV1Session200Role = "reader" | "admin";
 export type PostApiV1Session200 = {
   csrf_token: string;
   role: PostApiV1Session200Role;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Session401Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Session401Params = { [key: string]: string | number };
+
 export type PostApiV1Session401 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Session401Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Session401Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Session429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Session429Params = { [key: string]: string | number };
 
 export type PostApiV1Session429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Session429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Session429Params;
 };
 
 export type PostApiV1SetupBody = {
@@ -561,38 +397,169 @@ export type PostApiV1SetupBody = {
   password: string;
 };
 
-export type PostApiV1Setup200Role =
-  (typeof PostApiV1Setup200Role)[keyof typeof PostApiV1Setup200Role];
-
-export const PostApiV1Setup200Role = {
-  reader: "reader",
-  admin: "admin",
-} as const;
-
+export type PostApiV1Setup200Role = "reader" | "admin";
 export type PostApiV1Setup200 = {
   csrf_token: string;
   role: PostApiV1Setup200Role;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Setup403Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Setup403Params = { [key: string]: string | number };
+
 export type PostApiV1Setup403 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Setup403Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Setup403Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Setup409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Setup409Params = { [key: string]: string | number };
 
 export type PostApiV1Setup409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Setup409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Setup409Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Setup429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Setup429Params = { [key: string]: string | number };
 
 export type PostApiV1Setup429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Setup429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Setup429Params;
 };
 
 export type PutApiV1AdminPasswordBody = {
@@ -609,29 +576,113 @@ export type PutApiV1AdminPasswordBody = {
   next: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PutApiV1AdminPassword400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PutApiV1AdminPassword400Params = { [key: string]: string | number };
+
 export type PutApiV1AdminPassword400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PutApiV1AdminPassword400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PutApiV1AdminPassword400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1AdminPassword409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1AdminPassword409Params = { [key: string]: string | number };
 
 export type DeleteApiV1AdminPassword409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1AdminPassword409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1AdminPassword409Params;
 };
 
-export type GetApiV1Tokens200ItemScopesItem =
-  (typeof GetApiV1Tokens200ItemScopesItem)[keyof typeof GetApiV1Tokens200ItemScopesItem];
-
-export const GetApiV1Tokens200ItemScopesItem = {
-  read: "read",
-  write: "write",
-  admin: "admin",
-} as const;
-
+export type GetApiV1Tokens200ItemScopesItem = "read" | "write" | "admin";
 export type GetApiV1Tokens200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -644,15 +695,7 @@ export type GetApiV1Tokens200Item = {
   expires_at: string | null;
 };
 
-export type PostApiV1TokensBodyScopesItem =
-  (typeof PostApiV1TokensBodyScopesItem)[keyof typeof PostApiV1TokensBodyScopesItem];
-
-export const PostApiV1TokensBodyScopesItem = {
-  read: "read",
-  write: "write",
-  admin: "admin",
-} as const;
-
+export type PostApiV1TokensBodyScopesItem = "read" | "write" | "admin";
 export type PostApiV1TokensBody = {
   /**
    * @minLength 1
@@ -668,15 +711,7 @@ export type PostApiV1TokensBody = {
   expires_at?: string | null;
 };
 
-export type PostApiV1Tokens201InfoScopesItem =
-  (typeof PostApiV1Tokens201InfoScopesItem)[keyof typeof PostApiV1Tokens201InfoScopesItem];
-
-export const PostApiV1Tokens201InfoScopesItem = {
-  read: "read",
-  write: "write",
-  admin: "admin",
-} as const;
-
+export type PostApiV1Tokens201InfoScopesItem = "read" | "write" | "admin";
 export type PostApiV1Tokens201Info = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -694,11 +729,57 @@ export type PostApiV1Tokens201 = {
   info: PostApiV1Tokens201Info;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1TokensId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1TokensId404Params = { [key: string]: string | number };
+
 export type DeleteApiV1TokensId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1TokensId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1TokensId404Params;
 };
 
 /**
@@ -726,14 +807,7 @@ export type GetApiV1Settings200Home = {
 /**
  * How a parcel without a label is named: its tracking code, or its item names (max 100 characters).
  */
-export type GetApiV1Settings200ParcelLabel =
-  (typeof GetApiV1Settings200ParcelLabel)[keyof typeof GetApiV1Settings200ParcelLabel];
-
-export const GetApiV1Settings200ParcelLabel = {
-  tracking_number: "tracking_number",
-  items: "items",
-} as const;
-
+export type GetApiV1Settings200ParcelLabel = "tracking_number" | "items";
 export type GetApiV1Settings200 = {
   /**
    * Where parcels go: centres the maps and gives distances. Set by the user.
@@ -786,14 +860,7 @@ export type PutApiV1SettingsHome200 = {
   label: string | null;
 };
 
-export type PutApiV1SettingsParcelLabelBodyParcelLabel =
-  (typeof PutApiV1SettingsParcelLabelBodyParcelLabel)[keyof typeof PutApiV1SettingsParcelLabelBodyParcelLabel];
-
-export const PutApiV1SettingsParcelLabelBodyParcelLabel = {
-  tracking_number: "tracking_number",
-  items: "items",
-} as const;
-
+export type PutApiV1SettingsParcelLabelBodyParcelLabel = "tracking_number" | "items";
 export type PutApiV1SettingsParcelLabelBody = {
   parcel_label: PutApiV1SettingsParcelLabelBodyParcelLabel;
 };
@@ -823,14 +890,7 @@ export type PutApiV1SettingsParcelLabel200Home = {
 /**
  * How a parcel without a label is named: its tracking code, or its item names (max 100 characters).
  */
-export type PutApiV1SettingsParcelLabel200ParcelLabel =
-  (typeof PutApiV1SettingsParcelLabel200ParcelLabel)[keyof typeof PutApiV1SettingsParcelLabel200ParcelLabel];
-
-export const PutApiV1SettingsParcelLabel200ParcelLabel = {
-  tracking_number: "tracking_number",
-  items: "items",
-} as const;
-
+export type PutApiV1SettingsParcelLabel200ParcelLabel = "tracking_number" | "items";
 export type PutApiV1SettingsParcelLabel200 = {
   /**
    * Where parcels go: centres the maps and gives distances. Set by the user.
@@ -841,40 +901,15 @@ export type PutApiV1SettingsParcelLabel200 = {
   parcel_label: PutApiV1SettingsParcelLabel200ParcelLabel;
 };
 
-export type GetApiV1SettingsConfig200ItemKind =
-  (typeof GetApiV1SettingsConfig200ItemKind)[keyof typeof GetApiV1SettingsConfig200ItemKind];
-
-export const GetApiV1SettingsConfig200ItemKind = {
-  string: "string",
-  number: "number",
-  boolean: "boolean",
-} as const;
-
+export type GetApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
  */
-export type GetApiV1SettingsConfig200ItemApply =
-  (typeof GetApiV1SettingsConfig200ItemApply)[keyof typeof GetApiV1SettingsConfig200ItemApply];
-
-export const GetApiV1SettingsConfig200ItemApply = {
-  env: "env",
-  restart: "restart",
-  live: "live",
-} as const;
-
+export type GetApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
 /**
  * app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type GetApiV1SettingsConfig200ItemSource =
-  (typeof GetApiV1SettingsConfig200ItemSource)[keyof typeof GetApiV1SettingsConfig200ItemSource];
-
-export const GetApiV1SettingsConfig200ItemSource = {
-  env: "env",
-  default: "default",
-  app: "app",
-  override: "override",
-} as const;
-
+export type GetApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
 export type GetApiV1SettingsConfig200Item = {
   key: string;
   group: string;
@@ -898,40 +933,15 @@ export type GetApiV1SettingsConfig200Item = {
 
 export type PatchApiV1SettingsConfigBody = { [key: string]: string | number | boolean };
 
-export type PatchApiV1SettingsConfig200ItemKind =
-  (typeof PatchApiV1SettingsConfig200ItemKind)[keyof typeof PatchApiV1SettingsConfig200ItemKind];
-
-export const PatchApiV1SettingsConfig200ItemKind = {
-  string: "string",
-  number: "number",
-  boolean: "boolean",
-} as const;
-
+export type PatchApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
  */
-export type PatchApiV1SettingsConfig200ItemApply =
-  (typeof PatchApiV1SettingsConfig200ItemApply)[keyof typeof PatchApiV1SettingsConfig200ItemApply];
-
-export const PatchApiV1SettingsConfig200ItemApply = {
-  env: "env",
-  restart: "restart",
-  live: "live",
-} as const;
-
+export type PatchApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
 /**
  * app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type PatchApiV1SettingsConfig200ItemSource =
-  (typeof PatchApiV1SettingsConfig200ItemSource)[keyof typeof PatchApiV1SettingsConfig200ItemSource];
-
-export const PatchApiV1SettingsConfig200ItemSource = {
-  env: "env",
-  default: "default",
-  app: "app",
-  override: "override",
-} as const;
-
+export type PatchApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
 export type PatchApiV1SettingsConfig200Item = {
   key: string;
   group: string;
@@ -953,47 +963,68 @@ export type PatchApiV1SettingsConfig200Item = {
   pending_restart: boolean;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PatchApiV1SettingsConfig400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PatchApiV1SettingsConfig400Params = { [key: string]: string | number };
+
 export type PatchApiV1SettingsConfig400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PatchApiV1SettingsConfig400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PatchApiV1SettingsConfig400Params;
 };
 
-export type DeleteApiV1SettingsConfigKey200ItemKind =
-  (typeof DeleteApiV1SettingsConfigKey200ItemKind)[keyof typeof DeleteApiV1SettingsConfigKey200ItemKind];
-
-export const DeleteApiV1SettingsConfigKey200ItemKind = {
-  string: "string",
-  number: "number",
-  boolean: "boolean",
-} as const;
-
+export type DeleteApiV1SettingsConfigKey200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
  */
-export type DeleteApiV1SettingsConfigKey200ItemApply =
-  (typeof DeleteApiV1SettingsConfigKey200ItemApply)[keyof typeof DeleteApiV1SettingsConfigKey200ItemApply];
-
-export const DeleteApiV1SettingsConfigKey200ItemApply = {
-  env: "env",
-  restart: "restart",
-  live: "live",
-} as const;
-
+export type DeleteApiV1SettingsConfigKey200ItemApply = "env" | "restart" | "live";
 /**
  * app: an option of the Home Assistant app; override: saved in the UI.
  */
-export type DeleteApiV1SettingsConfigKey200ItemSource =
-  (typeof DeleteApiV1SettingsConfigKey200ItemSource)[keyof typeof DeleteApiV1SettingsConfigKey200ItemSource];
-
-export const DeleteApiV1SettingsConfigKey200ItemSource = {
-  env: "env",
-  default: "default",
-  app: "app",
-  override: "override",
-} as const;
-
+export type DeleteApiV1SettingsConfigKey200ItemSource = "env" | "default" | "app" | "override";
 export type DeleteApiV1SettingsConfigKey200Item = {
   key: string;
   group: string;
@@ -1015,11 +1046,110 @@ export type DeleteApiV1SettingsConfigKey200Item = {
   pending_restart: boolean;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1SettingsConfigKey400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1SettingsConfigKey400Params = { [key: string]: string | number };
+
+export type DeleteApiV1SettingsConfigKey400 = {
+  /** Stable machine-readable error code. */
+  error: DeleteApiV1SettingsConfigKey400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1SettingsConfigKey400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1SettingsConfigKey404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1SettingsConfigKey404Params = { [key: string]: string | number };
+
 export type DeleteApiV1SettingsConfigKey404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1SettingsConfigKey404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1SettingsConfigKey404Params;
 };
 
 export type GetApiV1GeocodeParams = {
@@ -1036,18 +1166,110 @@ export type GetApiV1Geocode200Item = {
   longitude: number;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1Geocode400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1Geocode400Params = { [key: string]: string | number };
+
 export type GetApiV1Geocode400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1Geocode400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1Geocode400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1Geocode502Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1Geocode502Params = { [key: string]: string | number };
 
 export type GetApiV1Geocode502 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1Geocode502Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1Geocode502Params;
 };
 
 export type GetApiV1ParcelsParams = {
@@ -1069,58 +1291,27 @@ export type GetApiV1ParcelsParams = {
   offset?: number;
 };
 
-export type GetApiV1ParcelsActive =
-  (typeof GetApiV1ParcelsActive)[keyof typeof GetApiV1ParcelsActive];
-
-export const GetApiV1ParcelsActive = {
-  true: "true",
-  false: "false",
-} as const;
-
+export type GetApiV1ParcelsActive = "true" | "false";
 export type GetApiV1ParcelsStatus =
-  (typeof GetApiV1ParcelsStatus)[keyof typeof GetApiV1ParcelsStatus];
-
-export const GetApiV1ParcelsStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
-export type GetApiV1ParcelsIncludeArchived =
-  (typeof GetApiV1ParcelsIncludeArchived)[keyof typeof GetApiV1ParcelsIncludeArchived];
-
-export const GetApiV1ParcelsIncludeArchived = {
-  true: "true",
-  false: "false",
-} as const;
-
-export type GetApiV1ParcelsIncludeHistory =
-  (typeof GetApiV1ParcelsIncludeHistory)[keyof typeof GetApiV1ParcelsIncludeHistory];
-
-export const GetApiV1ParcelsIncludeHistory = {
-  true: "true",
-  false: "false",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
+export type GetApiV1ParcelsIncludeArchived = "true" | "false";
+export type GetApiV1ParcelsIncludeHistory = "true" | "false";
 export type GetApiV1Parcels200ItemStatus =
-  (typeof GetApiV1Parcels200ItemStatus)[keyof typeof GetApiV1Parcels200ItemStatus];
-
-export const GetApiV1Parcels200ItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -1135,20 +1326,15 @@ export type GetApiV1Parcels200ItemExpectedDays = {
  * @nullable
  */
 export type GetApiV1Parcels200ItemHistoryItemStatus =
-  | (typeof GetApiV1Parcels200ItemHistoryItemStatus)[keyof typeof GetApiV1Parcels200ItemHistoryItemStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const GetApiV1Parcels200ItemHistoryItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type GetApiV1Parcels200ItemHistoryItem = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   timestamp: string;
@@ -1172,46 +1358,29 @@ export type GetApiV1Parcels200ItemHistoryItem = {
   approximate: boolean;
 };
 
-export type GetApiV1Parcels200ItemDirection =
-  (typeof GetApiV1Parcels200ItemDirection)[keyof typeof GetApiV1Parcels200ItemDirection];
-
-export const GetApiV1Parcels200ItemDirection = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type GetApiV1Parcels200ItemDirection = "receiving" | "sending";
 /**
  * @nullable
  */
 export type GetApiV1Parcels200ItemManualStatus =
-  | (typeof GetApiV1Parcels200ItemManualStatus)[keyof typeof GetApiV1Parcels200ItemManualStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const GetApiV1Parcels200ItemManualStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type GetApiV1Parcels200ItemCarrierStatus =
-  (typeof GetApiV1Parcels200ItemCarrierStatus)[keyof typeof GetApiV1Parcels200ItemCarrierStatus];
-
-export const GetApiV1Parcels200ItemCarrierStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 export type GetApiV1Parcels200ItemItemsItem = {
   title: string;
   /** @nullable */
@@ -1230,16 +1399,7 @@ export type GetApiV1Parcels200ItemItemsItem = {
   currency: string | null;
 };
 
-export type GetApiV1Parcels200ItemLiveState =
-  (typeof GetApiV1Parcels200ItemLiveState)[keyof typeof GetApiV1Parcels200ItemLiveState];
-
-export const GetApiV1Parcels200ItemLiveState = {
-  en_route: "en_route",
-  next_stop: "next_stop",
-  delivered: "delivered",
-  ended: "ended",
-} as const;
-
+export type GetApiV1Parcels200ItemLiveState = "en_route" | "next_stop" | "delivered" | "ended";
 /**
  * @nullable
  */
@@ -1279,23 +1439,8 @@ export type GetApiV1Parcels200ItemLive = {
   updated_at: string;
 } | null;
 
-export type GetApiV1Parcels200ItemLocationSource =
-  (typeof GetApiV1Parcels200ItemLocationSource)[keyof typeof GetApiV1Parcels200ItemLocationSource];
-
-export const GetApiV1Parcels200ItemLocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1Parcels200ItemLocationPrecision =
-  (typeof GetApiV1Parcels200ItemLocationPrecision)[keyof typeof GetApiV1Parcels200ItemLocationPrecision];
-
-export const GetApiV1Parcels200ItemLocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1Parcels200ItemLocationSource = "courier" | "event";
+export type GetApiV1Parcels200ItemLocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -1323,23 +1468,8 @@ export type GetApiV1Parcels200ItemLocation = {
   at: string | null;
 } | null;
 
-export type GetApiV1Parcels200ItemLastScanSource =
-  (typeof GetApiV1Parcels200ItemLastScanSource)[keyof typeof GetApiV1Parcels200ItemLastScanSource];
-
-export const GetApiV1Parcels200ItemLastScanSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1Parcels200ItemLastScanPrecision =
-  (typeof GetApiV1Parcels200ItemLastScanPrecision)[keyof typeof GetApiV1Parcels200ItemLastScanPrecision];
-
-export const GetApiV1Parcels200ItemLastScanPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1Parcels200ItemLastScanSource = "courier" | "event";
+export type GetApiV1Parcels200ItemLastScanPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -1401,25 +1531,8 @@ export type GetApiV1Parcels200ItemOrder = {
   id: string;
 } | null;
 
-export type GetApiV1Parcels200ItemConnectionsItemKind =
-  (typeof GetApiV1Parcels200ItemConnectionsItemKind)[keyof typeof GetApiV1Parcels200ItemConnectionsItemKind];
-
-export const GetApiV1Parcels200ItemConnectionsItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
-export type GetApiV1Parcels200ItemConnectionsItemRole =
-  (typeof GetApiV1Parcels200ItemConnectionsItemRole)[keyof typeof GetApiV1Parcels200ItemConnectionsItemRole];
-
-export const GetApiV1Parcels200ItemConnectionsItemRole = {
-  primary: "primary",
-  handoff: "handoff",
-  mail: "mail",
-} as const;
-
+export type GetApiV1Parcels200ItemConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
+export type GetApiV1Parcels200ItemConnectionsItemRole = "primary" | "handoff" | "mail";
 export type GetApiV1Parcels200ItemConnectionsItem = {
   connection_id: string;
   provider: string;
@@ -1430,15 +1543,7 @@ export type GetApiV1Parcels200ItemConnectionsItem = {
   last_seen_at: string;
 };
 
-export type GetApiV1Parcels200ItemLookupState =
-  (typeof GetApiV1Parcels200ItemLookupState)[keyof typeof GetApiV1Parcels200ItemLookupState];
-
-export const GetApiV1Parcels200ItemLookupState = {
-  pending: "pending",
-  found: "found",
-  not_found: "not_found",
-} as const;
-
+export type GetApiV1Parcels200ItemLookupState = "pending" | "found" | "not_found";
 export type GetApiV1Parcels200ItemLookup = {
   state: GetApiV1Parcels200ItemLookupState;
   /**
@@ -1519,14 +1624,7 @@ export type GetApiV1Parcels200Item = {
   updated_at: string;
 };
 
-export type PostApiV1ParcelsBodyDirection =
-  (typeof PostApiV1ParcelsBodyDirection)[keyof typeof PostApiV1ParcelsBodyDirection];
-
-export const PostApiV1ParcelsBodyDirection = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type PostApiV1ParcelsBodyDirection = "receiving" | "sending";
 export type PostApiV1ParcelsBody = {
   /**
    * @minLength 1
@@ -1547,19 +1645,14 @@ export type PostApiV1ParcelsBody = {
 };
 
 export type PostApiV1Parcels201Status =
-  (typeof PostApiV1Parcels201Status)[keyof typeof PostApiV1Parcels201Status];
-
-export const PostApiV1Parcels201Status = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -1574,20 +1667,15 @@ export type PostApiV1Parcels201ExpectedDays = {
  * @nullable
  */
 export type PostApiV1Parcels201HistoryItemStatus =
-  | (typeof PostApiV1Parcels201HistoryItemStatus)[keyof typeof PostApiV1Parcels201HistoryItemStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const PostApiV1Parcels201HistoryItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type PostApiV1Parcels201HistoryItem = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   timestamp: string;
@@ -1611,45 +1699,29 @@ export type PostApiV1Parcels201HistoryItem = {
   approximate: boolean;
 };
 
-export type PostApiV1Parcels201Direction =
-  (typeof PostApiV1Parcels201Direction)[keyof typeof PostApiV1Parcels201Direction];
-
-export const PostApiV1Parcels201Direction = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type PostApiV1Parcels201Direction = "receiving" | "sending";
 /**
  * @nullable
  */
 export type PostApiV1Parcels201ManualStatus =
-  (typeof PostApiV1Parcels201ManualStatus)[keyof typeof PostApiV1Parcels201ManualStatus] | null;
-
-export const PostApiV1Parcels201ManualStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
+  | null;
 export type PostApiV1Parcels201CarrierStatus =
-  (typeof PostApiV1Parcels201CarrierStatus)[keyof typeof PostApiV1Parcels201CarrierStatus];
-
-export const PostApiV1Parcels201CarrierStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 export type PostApiV1Parcels201ItemsItem = {
   title: string;
   /** @nullable */
@@ -1668,16 +1740,7 @@ export type PostApiV1Parcels201ItemsItem = {
   currency: string | null;
 };
 
-export type PostApiV1Parcels201LiveState =
-  (typeof PostApiV1Parcels201LiveState)[keyof typeof PostApiV1Parcels201LiveState];
-
-export const PostApiV1Parcels201LiveState = {
-  en_route: "en_route",
-  next_stop: "next_stop",
-  delivered: "delivered",
-  ended: "ended",
-} as const;
-
+export type PostApiV1Parcels201LiveState = "en_route" | "next_stop" | "delivered" | "ended";
 /**
  * @nullable
  */
@@ -1717,23 +1780,8 @@ export type PostApiV1Parcels201Live = {
   updated_at: string;
 } | null;
 
-export type PostApiV1Parcels201LocationSource =
-  (typeof PostApiV1Parcels201LocationSource)[keyof typeof PostApiV1Parcels201LocationSource];
-
-export const PostApiV1Parcels201LocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type PostApiV1Parcels201LocationPrecision =
-  (typeof PostApiV1Parcels201LocationPrecision)[keyof typeof PostApiV1Parcels201LocationPrecision];
-
-export const PostApiV1Parcels201LocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type PostApiV1Parcels201LocationSource = "courier" | "event";
+export type PostApiV1Parcels201LocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -1761,23 +1809,8 @@ export type PostApiV1Parcels201Location = {
   at: string | null;
 } | null;
 
-export type PostApiV1Parcels201LastScanSource =
-  (typeof PostApiV1Parcels201LastScanSource)[keyof typeof PostApiV1Parcels201LastScanSource];
-
-export const PostApiV1Parcels201LastScanSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type PostApiV1Parcels201LastScanPrecision =
-  (typeof PostApiV1Parcels201LastScanPrecision)[keyof typeof PostApiV1Parcels201LastScanPrecision];
-
-export const PostApiV1Parcels201LastScanPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type PostApiV1Parcels201LastScanSource = "courier" | "event";
+export type PostApiV1Parcels201LastScanPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -1839,25 +1872,8 @@ export type PostApiV1Parcels201Order = {
   id: string;
 } | null;
 
-export type PostApiV1Parcels201ConnectionsItemKind =
-  (typeof PostApiV1Parcels201ConnectionsItemKind)[keyof typeof PostApiV1Parcels201ConnectionsItemKind];
-
-export const PostApiV1Parcels201ConnectionsItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
-export type PostApiV1Parcels201ConnectionsItemRole =
-  (typeof PostApiV1Parcels201ConnectionsItemRole)[keyof typeof PostApiV1Parcels201ConnectionsItemRole];
-
-export const PostApiV1Parcels201ConnectionsItemRole = {
-  primary: "primary",
-  handoff: "handoff",
-  mail: "mail",
-} as const;
-
+export type PostApiV1Parcels201ConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
+export type PostApiV1Parcels201ConnectionsItemRole = "primary" | "handoff" | "mail";
 export type PostApiV1Parcels201ConnectionsItem = {
   connection_id: string;
   provider: string;
@@ -1868,15 +1884,7 @@ export type PostApiV1Parcels201ConnectionsItem = {
   last_seen_at: string;
 };
 
-export type PostApiV1Parcels201LookupState =
-  (typeof PostApiV1Parcels201LookupState)[keyof typeof PostApiV1Parcels201LookupState];
-
-export const PostApiV1Parcels201LookupState = {
-  pending: "pending",
-  found: "found",
-  not_found: "not_found",
-} as const;
-
+export type PostApiV1Parcels201LookupState = "pending" | "found" | "not_found";
 export type PostApiV1Parcels201Lookup = {
   state: PostApiV1Parcels201LookupState;
   /**
@@ -1957,34 +1965,121 @@ export type PostApiV1Parcels201 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Parcels400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Parcels400Params = { [key: string]: string | number };
+
 export type PostApiV1Parcels400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Parcels400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Parcels400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Parcels409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Parcels409Params = { [key: string]: string | number };
 
 export type PostApiV1Parcels409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Parcels409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Parcels409Params;
 };
 
 export type GetApiV1ParcelsId200Status =
-  (typeof GetApiV1ParcelsId200Status)[keyof typeof GetApiV1ParcelsId200Status];
-
-export const GetApiV1ParcelsId200Status = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -1999,20 +2094,15 @@ export type GetApiV1ParcelsId200ExpectedDays = {
  * @nullable
  */
 export type GetApiV1ParcelsId200HistoryItemStatus =
-  | (typeof GetApiV1ParcelsId200HistoryItemStatus)[keyof typeof GetApiV1ParcelsId200HistoryItemStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const GetApiV1ParcelsId200HistoryItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type GetApiV1ParcelsId200HistoryItem = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   timestamp: string;
@@ -2036,45 +2126,29 @@ export type GetApiV1ParcelsId200HistoryItem = {
   approximate: boolean;
 };
 
-export type GetApiV1ParcelsId200Direction =
-  (typeof GetApiV1ParcelsId200Direction)[keyof typeof GetApiV1ParcelsId200Direction];
-
-export const GetApiV1ParcelsId200Direction = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type GetApiV1ParcelsId200Direction = "receiving" | "sending";
 /**
  * @nullable
  */
 export type GetApiV1ParcelsId200ManualStatus =
-  (typeof GetApiV1ParcelsId200ManualStatus)[keyof typeof GetApiV1ParcelsId200ManualStatus] | null;
-
-export const GetApiV1ParcelsId200ManualStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
+  | null;
 export type GetApiV1ParcelsId200CarrierStatus =
-  (typeof GetApiV1ParcelsId200CarrierStatus)[keyof typeof GetApiV1ParcelsId200CarrierStatus];
-
-export const GetApiV1ParcelsId200CarrierStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 export type GetApiV1ParcelsId200ItemsItem = {
   title: string;
   /** @nullable */
@@ -2093,16 +2167,7 @@ export type GetApiV1ParcelsId200ItemsItem = {
   currency: string | null;
 };
 
-export type GetApiV1ParcelsId200LiveState =
-  (typeof GetApiV1ParcelsId200LiveState)[keyof typeof GetApiV1ParcelsId200LiveState];
-
-export const GetApiV1ParcelsId200LiveState = {
-  en_route: "en_route",
-  next_stop: "next_stop",
-  delivered: "delivered",
-  ended: "ended",
-} as const;
-
+export type GetApiV1ParcelsId200LiveState = "en_route" | "next_stop" | "delivered" | "ended";
 /**
  * @nullable
  */
@@ -2142,23 +2207,8 @@ export type GetApiV1ParcelsId200Live = {
   updated_at: string;
 } | null;
 
-export type GetApiV1ParcelsId200LocationSource =
-  (typeof GetApiV1ParcelsId200LocationSource)[keyof typeof GetApiV1ParcelsId200LocationSource];
-
-export const GetApiV1ParcelsId200LocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1ParcelsId200LocationPrecision =
-  (typeof GetApiV1ParcelsId200LocationPrecision)[keyof typeof GetApiV1ParcelsId200LocationPrecision];
-
-export const GetApiV1ParcelsId200LocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1ParcelsId200LocationSource = "courier" | "event";
+export type GetApiV1ParcelsId200LocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -2186,23 +2236,8 @@ export type GetApiV1ParcelsId200Location = {
   at: string | null;
 } | null;
 
-export type GetApiV1ParcelsId200LastScanSource =
-  (typeof GetApiV1ParcelsId200LastScanSource)[keyof typeof GetApiV1ParcelsId200LastScanSource];
-
-export const GetApiV1ParcelsId200LastScanSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1ParcelsId200LastScanPrecision =
-  (typeof GetApiV1ParcelsId200LastScanPrecision)[keyof typeof GetApiV1ParcelsId200LastScanPrecision];
-
-export const GetApiV1ParcelsId200LastScanPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1ParcelsId200LastScanSource = "courier" | "event";
+export type GetApiV1ParcelsId200LastScanPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -2264,25 +2299,8 @@ export type GetApiV1ParcelsId200Order = {
   id: string;
 } | null;
 
-export type GetApiV1ParcelsId200ConnectionsItemKind =
-  (typeof GetApiV1ParcelsId200ConnectionsItemKind)[keyof typeof GetApiV1ParcelsId200ConnectionsItemKind];
-
-export const GetApiV1ParcelsId200ConnectionsItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
-export type GetApiV1ParcelsId200ConnectionsItemRole =
-  (typeof GetApiV1ParcelsId200ConnectionsItemRole)[keyof typeof GetApiV1ParcelsId200ConnectionsItemRole];
-
-export const GetApiV1ParcelsId200ConnectionsItemRole = {
-  primary: "primary",
-  handoff: "handoff",
-  mail: "mail",
-} as const;
-
+export type GetApiV1ParcelsId200ConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
+export type GetApiV1ParcelsId200ConnectionsItemRole = "primary" | "handoff" | "mail";
 export type GetApiV1ParcelsId200ConnectionsItem = {
   connection_id: string;
   provider: string;
@@ -2293,15 +2311,7 @@ export type GetApiV1ParcelsId200ConnectionsItem = {
   last_seen_at: string;
 };
 
-export type GetApiV1ParcelsId200LookupState =
-  (typeof GetApiV1ParcelsId200LookupState)[keyof typeof GetApiV1ParcelsId200LookupState];
-
-export const GetApiV1ParcelsId200LookupState = {
-  pending: "pending",
-  found: "found",
-  not_found: "not_found",
-} as const;
-
+export type GetApiV1ParcelsId200LookupState = "pending" | "found" | "not_found";
 export type GetApiV1ParcelsId200Lookup = {
   state: GetApiV1ParcelsId200LookupState;
   /**
@@ -2382,31 +2392,72 @@ export type GetApiV1ParcelsId200 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ParcelsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ParcelsId404Params = { [key: string]: string | number };
+
 export type GetApiV1ParcelsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1ParcelsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ParcelsId404Params;
 };
 
 /**
  * @nullable
  */
 export type PatchApiV1ParcelsIdBodyManualStatus =
-  | (typeof PatchApiV1ParcelsIdBodyManualStatus)[keyof typeof PatchApiV1ParcelsIdBodyManualStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const PatchApiV1ParcelsIdBodyManualStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type PatchApiV1ParcelsIdBody = {
   /**
    * @maxLength 120
@@ -2419,19 +2470,14 @@ export type PatchApiV1ParcelsIdBody = {
 };
 
 export type PatchApiV1ParcelsId200Status =
-  (typeof PatchApiV1ParcelsId200Status)[keyof typeof PatchApiV1ParcelsId200Status];
-
-export const PatchApiV1ParcelsId200Status = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -2446,20 +2492,15 @@ export type PatchApiV1ParcelsId200ExpectedDays = {
  * @nullable
  */
 export type PatchApiV1ParcelsId200HistoryItemStatus =
-  | (typeof PatchApiV1ParcelsId200HistoryItemStatus)[keyof typeof PatchApiV1ParcelsId200HistoryItemStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const PatchApiV1ParcelsId200HistoryItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type PatchApiV1ParcelsId200HistoryItem = {
   /** @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))T(?:(?:[01]\d|2[0-3]):[0-5]\d:[0-5]\d(?:\.\d+)?(?:Z|([+-](?:[01]\d|2[0-3]):[0-5]\d)))$ */
   timestamp: string;
@@ -2483,46 +2524,29 @@ export type PatchApiV1ParcelsId200HistoryItem = {
   approximate: boolean;
 };
 
-export type PatchApiV1ParcelsId200Direction =
-  (typeof PatchApiV1ParcelsId200Direction)[keyof typeof PatchApiV1ParcelsId200Direction];
-
-export const PatchApiV1ParcelsId200Direction = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type PatchApiV1ParcelsId200Direction = "receiving" | "sending";
 /**
  * @nullable
  */
 export type PatchApiV1ParcelsId200ManualStatus =
-  | (typeof PatchApiV1ParcelsId200ManualStatus)[keyof typeof PatchApiV1ParcelsId200ManualStatus]
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown"
   | null;
-
-export const PatchApiV1ParcelsId200ManualStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
 export type PatchApiV1ParcelsId200CarrierStatus =
-  (typeof PatchApiV1ParcelsId200CarrierStatus)[keyof typeof PatchApiV1ParcelsId200CarrierStatus];
-
-export const PatchApiV1ParcelsId200CarrierStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 export type PatchApiV1ParcelsId200ItemsItem = {
   title: string;
   /** @nullable */
@@ -2541,16 +2565,7 @@ export type PatchApiV1ParcelsId200ItemsItem = {
   currency: string | null;
 };
 
-export type PatchApiV1ParcelsId200LiveState =
-  (typeof PatchApiV1ParcelsId200LiveState)[keyof typeof PatchApiV1ParcelsId200LiveState];
-
-export const PatchApiV1ParcelsId200LiveState = {
-  en_route: "en_route",
-  next_stop: "next_stop",
-  delivered: "delivered",
-  ended: "ended",
-} as const;
-
+export type PatchApiV1ParcelsId200LiveState = "en_route" | "next_stop" | "delivered" | "ended";
 /**
  * @nullable
  */
@@ -2590,23 +2605,8 @@ export type PatchApiV1ParcelsId200Live = {
   updated_at: string;
 } | null;
 
-export type PatchApiV1ParcelsId200LocationSource =
-  (typeof PatchApiV1ParcelsId200LocationSource)[keyof typeof PatchApiV1ParcelsId200LocationSource];
-
-export const PatchApiV1ParcelsId200LocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type PatchApiV1ParcelsId200LocationPrecision =
-  (typeof PatchApiV1ParcelsId200LocationPrecision)[keyof typeof PatchApiV1ParcelsId200LocationPrecision];
-
-export const PatchApiV1ParcelsId200LocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type PatchApiV1ParcelsId200LocationSource = "courier" | "event";
+export type PatchApiV1ParcelsId200LocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -2634,23 +2634,8 @@ export type PatchApiV1ParcelsId200Location = {
   at: string | null;
 } | null;
 
-export type PatchApiV1ParcelsId200LastScanSource =
-  (typeof PatchApiV1ParcelsId200LastScanSource)[keyof typeof PatchApiV1ParcelsId200LastScanSource];
-
-export const PatchApiV1ParcelsId200LastScanSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type PatchApiV1ParcelsId200LastScanPrecision =
-  (typeof PatchApiV1ParcelsId200LastScanPrecision)[keyof typeof PatchApiV1ParcelsId200LastScanPrecision];
-
-export const PatchApiV1ParcelsId200LastScanPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type PatchApiV1ParcelsId200LastScanSource = "courier" | "event";
+export type PatchApiV1ParcelsId200LastScanPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -2712,25 +2697,8 @@ export type PatchApiV1ParcelsId200Order = {
   id: string;
 } | null;
 
-export type PatchApiV1ParcelsId200ConnectionsItemKind =
-  (typeof PatchApiV1ParcelsId200ConnectionsItemKind)[keyof typeof PatchApiV1ParcelsId200ConnectionsItemKind];
-
-export const PatchApiV1ParcelsId200ConnectionsItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
-export type PatchApiV1ParcelsId200ConnectionsItemRole =
-  (typeof PatchApiV1ParcelsId200ConnectionsItemRole)[keyof typeof PatchApiV1ParcelsId200ConnectionsItemRole];
-
-export const PatchApiV1ParcelsId200ConnectionsItemRole = {
-  primary: "primary",
-  handoff: "handoff",
-  mail: "mail",
-} as const;
-
+export type PatchApiV1ParcelsId200ConnectionsItemKind = "account" | "tracking" | "shop" | "mail";
+export type PatchApiV1ParcelsId200ConnectionsItemRole = "primary" | "handoff" | "mail";
 export type PatchApiV1ParcelsId200ConnectionsItem = {
   connection_id: string;
   provider: string;
@@ -2741,15 +2709,7 @@ export type PatchApiV1ParcelsId200ConnectionsItem = {
   last_seen_at: string;
 };
 
-export type PatchApiV1ParcelsId200LookupState =
-  (typeof PatchApiV1ParcelsId200LookupState)[keyof typeof PatchApiV1ParcelsId200LookupState];
-
-export const PatchApiV1ParcelsId200LookupState = {
-  pending: "pending",
-  found: "found",
-  not_found: "not_found",
-} as const;
-
+export type PatchApiV1ParcelsId200LookupState = "pending" | "found" | "not_found";
 export type PatchApiV1ParcelsId200Lookup = {
   state: PatchApiV1ParcelsId200LookupState;
   /**
@@ -2830,18 +2790,110 @@ export type PatchApiV1ParcelsId200 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PatchApiV1ParcelsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PatchApiV1ParcelsId404Params = { [key: string]: string | number };
+
 export type PatchApiV1ParcelsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PatchApiV1ParcelsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PatchApiV1ParcelsId404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1ParcelsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1ParcelsId404Params = { [key: string]: string | number };
 
 export type DeleteApiV1ParcelsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1ParcelsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1ParcelsId404Params;
 };
 
 export type GetApiV1OrdersParams = {
@@ -2858,38 +2910,17 @@ export type GetApiV1OrdersParams = {
   offset?: number;
 };
 
-export type GetApiV1OrdersView = (typeof GetApiV1OrdersView)[keyof typeof GetApiV1OrdersView];
-
-export const GetApiV1OrdersView = {
-  open: "open",
-  delivered: "delivered",
-  archived: "archived",
-  all: "all",
-} as const;
-
+export type GetApiV1OrdersView = "open" | "delivered" | "archived" | "all";
 export type GetApiV1Orders200ItemStatus =
-  (typeof GetApiV1Orders200ItemStatus)[keyof typeof GetApiV1Orders200ItemStatus];
-
-export const GetApiV1Orders200ItemStatus = {
-  ordered: "ordered",
-  partly_shipped: "partly_shipped",
-  shipped: "shipped",
-  partly_delivered: "partly_delivered",
-  delivered: "delivered",
-  problem: "problem",
-  cancelled: "cancelled",
-  refunded: "refunded",
-} as const;
-
-export type GetApiV1Orders200ItemArchiveMode =
-  (typeof GetApiV1Orders200ItemArchiveMode)[keyof typeof GetApiV1Orders200ItemArchiveMode];
-
-export const GetApiV1Orders200ItemArchiveMode = {
-  automatic: "automatic",
-  archived: "archived",
-  kept: "kept",
-} as const;
-
+  | "ordered"
+  | "partly_shipped"
+  | "shipped"
+  | "partly_delivered"
+  | "delivered"
+  | "problem"
+  | "cancelled"
+  | "refunded";
+export type GetApiV1Orders200ItemArchiveMode = "automatic" | "archived" | "kept";
 /**
  * @nullable
  */
@@ -2923,31 +2954,17 @@ export type GetApiV1Orders200ItemItemsItem = {
 };
 
 export type GetApiV1Orders200ItemReturnsItemStatus =
-  (typeof GetApiV1Orders200ItemReturnsItemStatus)[keyof typeof GetApiV1Orders200ItemReturnsItemStatus];
-
-export const GetApiV1Orders200ItemReturnsItemStatus = {
-  requested: "requested",
-  label_created: "label_created",
-  dropped_off: "dropped_off",
-  in_transit: "in_transit",
-  received: "received",
-  refunded: "refunded",
-  rejected: "rejected",
-  cancelled: "cancelled",
-  expired: "expired",
-} as const;
-
+  | "requested"
+  | "label_created"
+  | "dropped_off"
+  | "in_transit"
+  | "received"
+  | "refunded"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 export type GetApiV1Orders200ItemReturnsItemDropOffItemKind =
-  (typeof GetApiV1Orders200ItemReturnsItemDropOffItemKind)[keyof typeof GetApiV1Orders200ItemReturnsItemDropOffItemKind];
-
-export const GetApiV1Orders200ItemReturnsItemDropOffItemKind = {
-  shop: "shop",
-  parcel_locker: "parcel_locker",
-  post_office: "post_office",
-  pickup: "pickup",
-  any: "any",
-} as const;
-
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
 export type GetApiV1Orders200ItemReturnsItemDropOffItem = {
   /** @nullable */
   carrier: string | null;
@@ -2968,14 +2985,7 @@ export type GetApiV1Orders200ItemReturnsItemCost = {
   currency: string | null;
 } | null;
 
-export type GetApiV1Orders200ItemReturnsItemRefundStatus =
-  (typeof GetApiV1Orders200ItemReturnsItemRefundStatus)[keyof typeof GetApiV1Orders200ItemReturnsItemRefundStatus];
-
-export const GetApiV1Orders200ItemReturnsItemRefundStatus = {
-  pending: "pending",
-  issued: "issued",
-} as const;
-
+export type GetApiV1Orders200ItemReturnsItemRefundStatus = "pending" | "issued";
 /**
  * @nullable
  */
@@ -3040,28 +3050,16 @@ export type GetApiV1Orders200ItemReturnsItem = {
   updated_at: string;
 };
 
-export type GetApiV1Orders200ItemParcelsItemDirection =
-  (typeof GetApiV1Orders200ItemParcelsItemDirection)[keyof typeof GetApiV1Orders200ItemParcelsItemDirection];
-
-export const GetApiV1Orders200ItemParcelsItemDirection = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type GetApiV1Orders200ItemParcelsItemDirection = "receiving" | "sending";
 export type GetApiV1Orders200ItemParcelsItemStatus =
-  (typeof GetApiV1Orders200ItemParcelsItemStatus)[keyof typeof GetApiV1Orders200ItemParcelsItemStatus];
-
-export const GetApiV1Orders200ItemParcelsItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -3072,23 +3070,8 @@ export type GetApiV1Orders200ItemParcelsItemExpectedDays = {
   to: string;
 } | null;
 
-export type GetApiV1Orders200ItemParcelsItemLocationSource =
-  (typeof GetApiV1Orders200ItemParcelsItemLocationSource)[keyof typeof GetApiV1Orders200ItemParcelsItemLocationSource];
-
-export const GetApiV1Orders200ItemParcelsItemLocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1Orders200ItemParcelsItemLocationPrecision =
-  (typeof GetApiV1Orders200ItemParcelsItemLocationPrecision)[keyof typeof GetApiV1Orders200ItemParcelsItemLocationPrecision];
-
-export const GetApiV1Orders200ItemParcelsItemLocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1Orders200ItemParcelsItemLocationSource = "courier" | "event";
+export type GetApiV1Orders200ItemParcelsItemLocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -3194,28 +3177,15 @@ export type GetApiV1Orders200Item = {
 };
 
 export type GetApiV1OrdersId200Status =
-  (typeof GetApiV1OrdersId200Status)[keyof typeof GetApiV1OrdersId200Status];
-
-export const GetApiV1OrdersId200Status = {
-  ordered: "ordered",
-  partly_shipped: "partly_shipped",
-  shipped: "shipped",
-  partly_delivered: "partly_delivered",
-  delivered: "delivered",
-  problem: "problem",
-  cancelled: "cancelled",
-  refunded: "refunded",
-} as const;
-
-export type GetApiV1OrdersId200ArchiveMode =
-  (typeof GetApiV1OrdersId200ArchiveMode)[keyof typeof GetApiV1OrdersId200ArchiveMode];
-
-export const GetApiV1OrdersId200ArchiveMode = {
-  automatic: "automatic",
-  archived: "archived",
-  kept: "kept",
-} as const;
-
+  | "ordered"
+  | "partly_shipped"
+  | "shipped"
+  | "partly_delivered"
+  | "delivered"
+  | "problem"
+  | "cancelled"
+  | "refunded";
+export type GetApiV1OrdersId200ArchiveMode = "automatic" | "archived" | "kept";
 /**
  * @nullable
  */
@@ -3249,31 +3219,17 @@ export type GetApiV1OrdersId200ItemsItem = {
 };
 
 export type GetApiV1OrdersId200ReturnsItemStatus =
-  (typeof GetApiV1OrdersId200ReturnsItemStatus)[keyof typeof GetApiV1OrdersId200ReturnsItemStatus];
-
-export const GetApiV1OrdersId200ReturnsItemStatus = {
-  requested: "requested",
-  label_created: "label_created",
-  dropped_off: "dropped_off",
-  in_transit: "in_transit",
-  received: "received",
-  refunded: "refunded",
-  rejected: "rejected",
-  cancelled: "cancelled",
-  expired: "expired",
-} as const;
-
+  | "requested"
+  | "label_created"
+  | "dropped_off"
+  | "in_transit"
+  | "received"
+  | "refunded"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 export type GetApiV1OrdersId200ReturnsItemDropOffItemKind =
-  (typeof GetApiV1OrdersId200ReturnsItemDropOffItemKind)[keyof typeof GetApiV1OrdersId200ReturnsItemDropOffItemKind];
-
-export const GetApiV1OrdersId200ReturnsItemDropOffItemKind = {
-  shop: "shop",
-  parcel_locker: "parcel_locker",
-  post_office: "post_office",
-  pickup: "pickup",
-  any: "any",
-} as const;
-
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
 export type GetApiV1OrdersId200ReturnsItemDropOffItem = {
   /** @nullable */
   carrier: string | null;
@@ -3294,14 +3250,7 @@ export type GetApiV1OrdersId200ReturnsItemCost = {
   currency: string | null;
 } | null;
 
-export type GetApiV1OrdersId200ReturnsItemRefundStatus =
-  (typeof GetApiV1OrdersId200ReturnsItemRefundStatus)[keyof typeof GetApiV1OrdersId200ReturnsItemRefundStatus];
-
-export const GetApiV1OrdersId200ReturnsItemRefundStatus = {
-  pending: "pending",
-  issued: "issued",
-} as const;
-
+export type GetApiV1OrdersId200ReturnsItemRefundStatus = "pending" | "issued";
 /**
  * @nullable
  */
@@ -3366,28 +3315,16 @@ export type GetApiV1OrdersId200ReturnsItem = {
   updated_at: string;
 };
 
-export type GetApiV1OrdersId200ParcelsItemDirection =
-  (typeof GetApiV1OrdersId200ParcelsItemDirection)[keyof typeof GetApiV1OrdersId200ParcelsItemDirection];
-
-export const GetApiV1OrdersId200ParcelsItemDirection = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type GetApiV1OrdersId200ParcelsItemDirection = "receiving" | "sending";
 export type GetApiV1OrdersId200ParcelsItemStatus =
-  (typeof GetApiV1OrdersId200ParcelsItemStatus)[keyof typeof GetApiV1OrdersId200ParcelsItemStatus];
-
-export const GetApiV1OrdersId200ParcelsItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -3398,23 +3335,8 @@ export type GetApiV1OrdersId200ParcelsItemExpectedDays = {
   to: string;
 } | null;
 
-export type GetApiV1OrdersId200ParcelsItemLocationSource =
-  (typeof GetApiV1OrdersId200ParcelsItemLocationSource)[keyof typeof GetApiV1OrdersId200ParcelsItemLocationSource];
-
-export const GetApiV1OrdersId200ParcelsItemLocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type GetApiV1OrdersId200ParcelsItemLocationPrecision =
-  (typeof GetApiV1OrdersId200ParcelsItemLocationPrecision)[keyof typeof GetApiV1OrdersId200ParcelsItemLocationPrecision];
-
-export const GetApiV1OrdersId200ParcelsItemLocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type GetApiV1OrdersId200ParcelsItemLocationSource = "courier" | "event";
+export type GetApiV1OrdersId200ParcelsItemLocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -3519,11 +3441,57 @@ export type GetApiV1OrdersId200 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1OrdersId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1OrdersId404Params = { [key: string]: string | number };
+
 export type GetApiV1OrdersId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1OrdersId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1OrdersId404Params;
 };
 
 export type PatchApiV1OrdersIdBody = {
@@ -3537,28 +3505,15 @@ export type PatchApiV1OrdersIdBody = {
 };
 
 export type PatchApiV1OrdersId200Status =
-  (typeof PatchApiV1OrdersId200Status)[keyof typeof PatchApiV1OrdersId200Status];
-
-export const PatchApiV1OrdersId200Status = {
-  ordered: "ordered",
-  partly_shipped: "partly_shipped",
-  shipped: "shipped",
-  partly_delivered: "partly_delivered",
-  delivered: "delivered",
-  problem: "problem",
-  cancelled: "cancelled",
-  refunded: "refunded",
-} as const;
-
-export type PatchApiV1OrdersId200ArchiveMode =
-  (typeof PatchApiV1OrdersId200ArchiveMode)[keyof typeof PatchApiV1OrdersId200ArchiveMode];
-
-export const PatchApiV1OrdersId200ArchiveMode = {
-  automatic: "automatic",
-  archived: "archived",
-  kept: "kept",
-} as const;
-
+  | "ordered"
+  | "partly_shipped"
+  | "shipped"
+  | "partly_delivered"
+  | "delivered"
+  | "problem"
+  | "cancelled"
+  | "refunded";
+export type PatchApiV1OrdersId200ArchiveMode = "automatic" | "archived" | "kept";
 /**
  * @nullable
  */
@@ -3592,31 +3547,17 @@ export type PatchApiV1OrdersId200ItemsItem = {
 };
 
 export type PatchApiV1OrdersId200ReturnsItemStatus =
-  (typeof PatchApiV1OrdersId200ReturnsItemStatus)[keyof typeof PatchApiV1OrdersId200ReturnsItemStatus];
-
-export const PatchApiV1OrdersId200ReturnsItemStatus = {
-  requested: "requested",
-  label_created: "label_created",
-  dropped_off: "dropped_off",
-  in_transit: "in_transit",
-  received: "received",
-  refunded: "refunded",
-  rejected: "rejected",
-  cancelled: "cancelled",
-  expired: "expired",
-} as const;
-
+  | "requested"
+  | "label_created"
+  | "dropped_off"
+  | "in_transit"
+  | "received"
+  | "refunded"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 export type PatchApiV1OrdersId200ReturnsItemDropOffItemKind =
-  (typeof PatchApiV1OrdersId200ReturnsItemDropOffItemKind)[keyof typeof PatchApiV1OrdersId200ReturnsItemDropOffItemKind];
-
-export const PatchApiV1OrdersId200ReturnsItemDropOffItemKind = {
-  shop: "shop",
-  parcel_locker: "parcel_locker",
-  post_office: "post_office",
-  pickup: "pickup",
-  any: "any",
-} as const;
-
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
 export type PatchApiV1OrdersId200ReturnsItemDropOffItem = {
   /** @nullable */
   carrier: string | null;
@@ -3637,14 +3578,7 @@ export type PatchApiV1OrdersId200ReturnsItemCost = {
   currency: string | null;
 } | null;
 
-export type PatchApiV1OrdersId200ReturnsItemRefundStatus =
-  (typeof PatchApiV1OrdersId200ReturnsItemRefundStatus)[keyof typeof PatchApiV1OrdersId200ReturnsItemRefundStatus];
-
-export const PatchApiV1OrdersId200ReturnsItemRefundStatus = {
-  pending: "pending",
-  issued: "issued",
-} as const;
-
+export type PatchApiV1OrdersId200ReturnsItemRefundStatus = "pending" | "issued";
 /**
  * @nullable
  */
@@ -3709,28 +3643,16 @@ export type PatchApiV1OrdersId200ReturnsItem = {
   updated_at: string;
 };
 
-export type PatchApiV1OrdersId200ParcelsItemDirection =
-  (typeof PatchApiV1OrdersId200ParcelsItemDirection)[keyof typeof PatchApiV1OrdersId200ParcelsItemDirection];
-
-export const PatchApiV1OrdersId200ParcelsItemDirection = {
-  receiving: "receiving",
-  sending: "sending",
-} as const;
-
+export type PatchApiV1OrdersId200ParcelsItemDirection = "receiving" | "sending";
 export type PatchApiV1OrdersId200ParcelsItemStatus =
-  (typeof PatchApiV1OrdersId200ParcelsItemStatus)[keyof typeof PatchApiV1OrdersId200ParcelsItemStatus];
-
-export const PatchApiV1OrdersId200ParcelsItemStatus = {
-  registered: "registered",
-  in_transit: "in_transit",
-  out_for_delivery: "out_for_delivery",
-  at_pickup_point: "at_pickup_point",
-  delivered: "delivered",
-  returning: "returning",
-  problem: "problem",
-  unknown: "unknown",
-} as const;
-
+  | "registered"
+  | "in_transit"
+  | "out_for_delivery"
+  | "at_pickup_point"
+  | "delivered"
+  | "returning"
+  | "problem"
+  | "unknown";
 /**
  * @nullable
  */
@@ -3741,23 +3663,8 @@ export type PatchApiV1OrdersId200ParcelsItemExpectedDays = {
   to: string;
 } | null;
 
-export type PatchApiV1OrdersId200ParcelsItemLocationSource =
-  (typeof PatchApiV1OrdersId200ParcelsItemLocationSource)[keyof typeof PatchApiV1OrdersId200ParcelsItemLocationSource];
-
-export const PatchApiV1OrdersId200ParcelsItemLocationSource = {
-  courier: "courier",
-  event: "event",
-} as const;
-
-export type PatchApiV1OrdersId200ParcelsItemLocationPrecision =
-  (typeof PatchApiV1OrdersId200ParcelsItemLocationPrecision)[keyof typeof PatchApiV1OrdersId200ParcelsItemLocationPrecision];
-
-export const PatchApiV1OrdersId200ParcelsItemLocationPrecision = {
-  exact: "exact",
-  street: "street",
-  area: "area",
-} as const;
-
+export type PatchApiV1OrdersId200ParcelsItemLocationSource = "courier" | "event";
+export type PatchApiV1OrdersId200ParcelsItemLocationPrecision = "exact" | "street" | "area";
 /**
  * @nullable
  */
@@ -3862,58 +3769,129 @@ export type PatchApiV1OrdersId200 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PatchApiV1OrdersId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PatchApiV1OrdersId404Params = { [key: string]: string | number };
+
 export type PatchApiV1OrdersId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PatchApiV1OrdersId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PatchApiV1OrdersId404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1OrdersId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1OrdersId404Params = { [key: string]: string | number };
 
 export type DeleteApiV1OrdersId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1OrdersId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1OrdersId404Params;
 };
 
 export type GetApiV1ReturnsParams = {
   view?: GetApiV1ReturnsView;
 };
 
-export type GetApiV1ReturnsView = (typeof GetApiV1ReturnsView)[keyof typeof GetApiV1ReturnsView];
-
-export const GetApiV1ReturnsView = {
-  open: "open",
-  closed: "closed",
-  all: "all",
-} as const;
-
+export type GetApiV1ReturnsView = "open" | "closed" | "all";
 export type GetApiV1Returns200ItemStatus =
-  (typeof GetApiV1Returns200ItemStatus)[keyof typeof GetApiV1Returns200ItemStatus];
-
-export const GetApiV1Returns200ItemStatus = {
-  requested: "requested",
-  label_created: "label_created",
-  dropped_off: "dropped_off",
-  in_transit: "in_transit",
-  received: "received",
-  refunded: "refunded",
-  rejected: "rejected",
-  cancelled: "cancelled",
-  expired: "expired",
-} as const;
-
+  | "requested"
+  | "label_created"
+  | "dropped_off"
+  | "in_transit"
+  | "received"
+  | "refunded"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 export type GetApiV1Returns200ItemDropOffItemKind =
-  (typeof GetApiV1Returns200ItemDropOffItemKind)[keyof typeof GetApiV1Returns200ItemDropOffItemKind];
-
-export const GetApiV1Returns200ItemDropOffItemKind = {
-  shop: "shop",
-  parcel_locker: "parcel_locker",
-  post_office: "post_office",
-  pickup: "pickup",
-  any: "any",
-} as const;
-
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
 export type GetApiV1Returns200ItemDropOffItem = {
   /** @nullable */
   carrier: string | null;
@@ -3934,14 +3912,7 @@ export type GetApiV1Returns200ItemCost = {
   currency: string | null;
 } | null;
 
-export type GetApiV1Returns200ItemRefundStatus =
-  (typeof GetApiV1Returns200ItemRefundStatus)[keyof typeof GetApiV1Returns200ItemRefundStatus];
-
-export const GetApiV1Returns200ItemRefundStatus = {
-  pending: "pending",
-  issued: "issued",
-} as const;
-
+export type GetApiV1Returns200ItemRefundStatus = "pending" | "issued";
 /**
  * @nullable
  */
@@ -4007,31 +3978,17 @@ export type GetApiV1Returns200Item = {
 };
 
 export type GetApiV1ReturnsId200Status =
-  (typeof GetApiV1ReturnsId200Status)[keyof typeof GetApiV1ReturnsId200Status];
-
-export const GetApiV1ReturnsId200Status = {
-  requested: "requested",
-  label_created: "label_created",
-  dropped_off: "dropped_off",
-  in_transit: "in_transit",
-  received: "received",
-  refunded: "refunded",
-  rejected: "rejected",
-  cancelled: "cancelled",
-  expired: "expired",
-} as const;
-
+  | "requested"
+  | "label_created"
+  | "dropped_off"
+  | "in_transit"
+  | "received"
+  | "refunded"
+  | "rejected"
+  | "cancelled"
+  | "expired";
 export type GetApiV1ReturnsId200DropOffItemKind =
-  (typeof GetApiV1ReturnsId200DropOffItemKind)[keyof typeof GetApiV1ReturnsId200DropOffItemKind];
-
-export const GetApiV1ReturnsId200DropOffItemKind = {
-  shop: "shop",
-  parcel_locker: "parcel_locker",
-  post_office: "post_office",
-  pickup: "pickup",
-  any: "any",
-} as const;
-
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
 export type GetApiV1ReturnsId200DropOffItem = {
   /** @nullable */
   carrier: string | null;
@@ -4052,14 +4009,7 @@ export type GetApiV1ReturnsId200Cost = {
   currency: string | null;
 } | null;
 
-export type GetApiV1ReturnsId200RefundStatus =
-  (typeof GetApiV1ReturnsId200RefundStatus)[keyof typeof GetApiV1ReturnsId200RefundStatus];
-
-export const GetApiV1ReturnsId200RefundStatus = {
-  pending: "pending",
-  issued: "issued",
-} as const;
-
+export type GetApiV1ReturnsId200RefundStatus = "pending" | "issued";
 /**
  * @nullable
  */
@@ -4124,41 +4074,63 @@ export type GetApiV1ReturnsId200 = {
   updated_at: string;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ReturnsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ReturnsId404Params = { [key: string]: string | number };
+
 export type GetApiV1ReturnsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1ReturnsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ReturnsId404Params;
 };
 
-export type GetApiV1Carriers200ItemConnectionKindsItem =
-  (typeof GetApiV1Carriers200ItemConnectionKindsItem)[keyof typeof GetApiV1Carriers200ItemConnectionKindsItem];
-
-export const GetApiV1Carriers200ItemConnectionKindsItem = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-} as const;
-
+export type GetApiV1Carriers200ItemConnectionKindsItem = "account" | "tracking" | "shop";
 export type GetApiV1Carriers200ItemSignInFlowsItemType =
-  (typeof GetApiV1Carriers200ItemSignInFlowsItemType)[keyof typeof GetApiV1Carriers200ItemSignInFlowsItemType];
-
-export const GetApiV1Carriers200ItemSignInFlowsItemType = {
-  none: "none",
-  credentials: "credentials",
-  api_key: "api_key",
-  interactive: "interactive",
-} as const;
-
-export type GetApiV1Carriers200ItemSignInFlowsItemKindsItem =
-  (typeof GetApiV1Carriers200ItemSignInFlowsItemKindsItem)[keyof typeof GetApiV1Carriers200ItemSignInFlowsItemKindsItem];
-
-export const GetApiV1Carriers200ItemSignInFlowsItemKindsItem = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-} as const;
-
+  "none" | "credentials" | "api_key" | "interactive";
+export type GetApiV1Carriers200ItemSignInFlowsItemKindsItem = "account" | "tracking" | "shop";
 export type GetApiV1Carriers200ItemSignInFlowsItem = {
   id: string;
   label: string;
@@ -4185,27 +4157,9 @@ export type GetApiV1Carriers200Item = {
   secret_schema: unknown;
 };
 
-export type GetApiV1Connections200ItemKind =
-  (typeof GetApiV1Connections200ItemKind)[keyof typeof GetApiV1Connections200ItemKind];
-
-export const GetApiV1Connections200ItemKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
+export type GetApiV1Connections200ItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Connections200ItemState =
-  (typeof GetApiV1Connections200ItemState)[keyof typeof GetApiV1Connections200ItemState];
-
-export const GetApiV1Connections200ItemState = {
-  ok: "ok",
-  idle: "idle",
-  needs_sign_in: "needs_sign_in",
-  error: "error",
-  disabled: "disabled",
-} as const;
-
+  "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
 export type GetApiV1Connections200Item = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4229,16 +4183,7 @@ export type GetApiV1Connections200Item = {
 /**
  * Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.
  */
-export type PostApiV1ConnectionsBodyKind =
-  (typeof PostApiV1ConnectionsBodyKind)[keyof typeof PostApiV1ConnectionsBodyKind];
-
-export const PostApiV1ConnectionsBodyKind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
+export type PostApiV1ConnectionsBodyKind = "account" | "tracking" | "shop" | "mail";
 export type PostApiV1ConnectionsBody = {
   /**
    * @minLength 1
@@ -4256,27 +4201,8 @@ export type PostApiV1ConnectionsBody = {
   secret?: unknown;
 };
 
-export type PostApiV1Connections201Kind =
-  (typeof PostApiV1Connections201Kind)[keyof typeof PostApiV1Connections201Kind];
-
-export const PostApiV1Connections201Kind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
-export type PostApiV1Connections201State =
-  (typeof PostApiV1Connections201State)[keyof typeof PostApiV1Connections201State];
-
-export const PostApiV1Connections201State = {
-  ok: "ok",
-  idle: "idle",
-  needs_sign_in: "needs_sign_in",
-  error: "error",
-  disabled: "disabled",
-} as const;
-
+export type PostApiV1Connections201Kind = "account" | "tracking" | "shop" | "mail";
+export type PostApiV1Connections201State = "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
 export type PostApiV1Connections201 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4297,11 +4223,57 @@ export type PostApiV1Connections201 = {
   last_ok_at: string | null;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1Connections400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1Connections400Params = { [key: string]: string | number };
+
 export type PostApiV1Connections400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1Connections400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1Connections400Params;
 };
 
 export type PatchApiV1ConnectionsIdBody = {
@@ -4314,27 +4286,9 @@ export type PatchApiV1ConnectionsIdBody = {
   enabled?: boolean;
 };
 
-export type PatchApiV1ConnectionsId200Kind =
-  (typeof PatchApiV1ConnectionsId200Kind)[keyof typeof PatchApiV1ConnectionsId200Kind];
-
-export const PatchApiV1ConnectionsId200Kind = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "mail",
-} as const;
-
+export type PatchApiV1ConnectionsId200Kind = "account" | "tracking" | "shop" | "mail";
 export type PatchApiV1ConnectionsId200State =
-  (typeof PatchApiV1ConnectionsId200State)[keyof typeof PatchApiV1ConnectionsId200State];
-
-export const PatchApiV1ConnectionsId200State = {
-  ok: "ok",
-  idle: "idle",
-  needs_sign_in: "needs_sign_in",
-  error: "error",
-  disabled: "disabled",
-} as const;
-
+  "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
 export type PatchApiV1ConnectionsId200 = {
   /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
   id: string;
@@ -4355,57 +4309,379 @@ export type PatchApiV1ConnectionsId200 = {
   last_ok_at: string | null;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PatchApiV1ConnectionsId400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PatchApiV1ConnectionsId400Params = { [key: string]: string | number };
+
 export type PatchApiV1ConnectionsId400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PatchApiV1ConnectionsId400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PatchApiV1ConnectionsId400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PatchApiV1ConnectionsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PatchApiV1ConnectionsId404Params = { [key: string]: string | number };
 
 export type PatchApiV1ConnectionsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PatchApiV1ConnectionsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PatchApiV1ConnectionsId404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1ConnectionsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1ConnectionsId404Params = { [key: string]: string | number };
 
 export type DeleteApiV1ConnectionsId404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1ConnectionsId404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1ConnectionsId404Params;
 };
 
 export type PutApiV1ConnectionsIdSecretBody = {
   secret: unknown;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PutApiV1ConnectionsIdSecret400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PutApiV1ConnectionsIdSecret400Params = { [key: string]: string | number };
+
 export type PutApiV1ConnectionsIdSecret400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PutApiV1ConnectionsIdSecret400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PutApiV1ConnectionsIdSecret400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PutApiV1ConnectionsIdSecret404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PutApiV1ConnectionsIdSecret404Params = { [key: string]: string | number };
 
 export type PutApiV1ConnectionsIdSecret404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PutApiV1ConnectionsIdSecret404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PutApiV1ConnectionsIdSecret404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSync404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSync404Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSync404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSync404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSync404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSync429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSync429Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSync429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSync429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSync429Params;
 };
 
 export type GetApiV1ConnectionsIdData200 = {
@@ -4429,11 +4705,57 @@ export type GetApiV1ConnectionsIdData200 = {
   shared: number;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdData404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdData404Params = { [key: string]: string | number };
+
 export type GetApiV1ConnectionsIdData404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1ConnectionsIdData404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdData404Params;
 };
 
 export type PostApiV1ConnectionsIdClear200 = {
@@ -4457,11 +4779,57 @@ export type PostApiV1ConnectionsIdClear200 = {
   shared: number;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdClear404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdClear404Params = { [key: string]: string | number };
+
 export type PostApiV1ConnectionsIdClear404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdClear404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdClear404Params;
 };
 
 export type GetApiV1Data200CacheBytes = {
@@ -4524,15 +4892,7 @@ export type GetApiV1Data200 = {
   cache_bytes: GetApiV1Data200CacheBytes;
 };
 
-export type GetApiV1DataBackups200LastReason =
-  (typeof GetApiV1DataBackups200LastReason)[keyof typeof GetApiV1DataBackups200LastReason];
-
-export const GetApiV1DataBackups200LastReason = {
-  scheduled: "scheduled",
-  manual: "manual",
-  before_delete: "before_delete",
-} as const;
-
+export type GetApiV1DataBackups200LastReason = "scheduled" | "manual" | "before_delete";
 /**
  * The newest backup attempt; null before the first.
  * @nullable
@@ -4606,15 +4966,7 @@ export type GetApiV1DataBackups200 = {
   files: GetApiV1DataBackups200FilesItem[];
 };
 
-export type PostApiV1DataBackups200Reason =
-  (typeof PostApiV1DataBackups200Reason)[keyof typeof PostApiV1DataBackups200Reason];
-
-export const PostApiV1DataBackups200Reason = {
-  scheduled: "scheduled",
-  manual: "manual",
-  before_delete: "before_delete",
-} as const;
-
+export type PostApiV1DataBackups200Reason = "scheduled" | "manual" | "before_delete";
 export type PostApiV1DataBackups200 = {
   ok: boolean;
   reason: PostApiV1DataBackups200Reason;
@@ -4643,11 +4995,57 @@ export type PostApiV1DataBackups200 = {
   pruned: number;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1DataBackups500Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1DataBackups500Params = { [key: string]: string | number };
+
 export type PostApiV1DataBackups500 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1DataBackups500Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1DataBackups500Params;
 };
 
 export type PostApiV1DataClearBody =
@@ -4704,39 +5102,115 @@ export type PostApiV1DataClear200 = {
   backup: string | null;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1DataClear400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1DataClear400Params = { [key: string]: string | number };
+
 export type PostApiV1DataClear400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1DataClear400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1DataClear400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1DataClear500Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1DataClear500Params = { [key: string]: string | number };
 
 export type PostApiV1DataClear500 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1DataClear500Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1DataClear500Params;
 };
 
 export type GetApiV1ConnectionsIdSignInFlows200ItemType =
-  (typeof GetApiV1ConnectionsIdSignInFlows200ItemType)[keyof typeof GetApiV1ConnectionsIdSignInFlows200ItemType];
-
-export const GetApiV1ConnectionsIdSignInFlows200ItemType = {
-  none: "none",
-  credentials: "credentials",
-  api_key: "api_key",
-  interactive: "interactive",
-} as const;
-
-export type GetApiV1ConnectionsIdSignInFlows200ItemKindsItem =
-  (typeof GetApiV1ConnectionsIdSignInFlows200ItemKindsItem)[keyof typeof GetApiV1ConnectionsIdSignInFlows200ItemKindsItem];
-
-export const GetApiV1ConnectionsIdSignInFlows200ItemKindsItem = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-} as const;
-
+  "none" | "credentials" | "api_key" | "interactive";
+export type GetApiV1ConnectionsIdSignInFlows200ItemKindsItem = "account" | "tracking" | "shop";
 export type GetApiV1ConnectionsIdSignInFlows200Item = {
   id: string;
   label: string;
@@ -4747,11 +5221,57 @@ export type GetApiV1ConnectionsIdSignInFlows200Item = {
   secret_schema: unknown;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdSignInFlows404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdSignInFlows404Params = { [key: string]: string | number };
+
 export type GetApiV1ConnectionsIdSignInFlows404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1ConnectionsIdSignInFlows404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdSignInFlows404Params;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsBody = {
@@ -4824,39 +5344,269 @@ export type PostApiV1ConnectionsIdSignInAttempts200 =
       status: "done";
     };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts400Params = { [key: string]: string | number };
+
 export type PostApiV1ConnectionsIdSignInAttempts400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttempts400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttempts400Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts404Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSignInAttempts404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttempts404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttempts404Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts409Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSignInAttempts409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttempts409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttempts409Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts429Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSignInAttempts429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttempts429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttempts429Params;
 };
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts503Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttempts503Params = { [key: string]: string | number };
 
 export type PostApiV1ConnectionsIdSignInAttempts503 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttempts503Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttempts503Params;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinueBodyInput = {
@@ -4932,39 +5682,279 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200 =
       status: "done";
     };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Params = {
+  [key: string]: string | number;
+};
+
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Params;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll200 =
@@ -5032,46 +6022,334 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll200 =
       status: "done";
     };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Params = {
+  [key: string]: string | number;
+};
+
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Params = {
+  [key: string]: string | number;
 };
 
 export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Params = {
+  [key: string]: string | number;
 };
 
 export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Params;
 };
 
 export type GetApiV1CalendarParams = {
@@ -5084,15 +6362,7 @@ export type GetApiV1CalendarParams = {
 /**
  * `return_by`: the last day to hand a return in (all day).
  */
-export type GetApiV1Calendar200ItemKind =
-  (typeof GetApiV1Calendar200ItemKind)[keyof typeof GetApiV1Calendar200ItemKind];
-
-export const GetApiV1Calendar200ItemKind = {
-  expected: "expected",
-  delivered: "delivered",
-  return_by: "return_by",
-} as const;
-
+export type GetApiV1Calendar200ItemKind = "expected" | "delivered" | "return_by";
 export type GetApiV1Calendar200Item = {
   uid: string;
   /**
@@ -5145,11 +6415,57 @@ export type GetApiV1Calendar200Item = {
   pickup_point: string | null;
 };
 
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1Calendar400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1Calendar400Params = { [key: string]: string | number };
+
 export type GetApiV1Calendar400 = {
   /** Stable machine-readable error code. */
-  error: string;
-  /** Human-readable explanation. */
+  error: GetApiV1Calendar400Error;
+  /** English explanation, for logs and scripts. */
   message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1Calendar400Params;
 };
 
 export type PostApiV1CalendarFeed201 = {
@@ -5158,14 +6474,7 @@ export type PostApiV1CalendarFeed201 = {
   url: string | null;
 };
 
-export type GetApiV1MapLayers200LayersItemKind =
-  (typeof GetApiV1MapLayers200LayersItemKind)[keyof typeof GetApiV1MapLayers200LayersItemKind];
-
-export const GetApiV1MapLayers200LayersItemKind = {
-  base: "base",
-  overlay: "overlay",
-} as const;
-
+export type GetApiV1MapLayers200LayersItemKind = "base" | "overlay";
 export type GetApiV1MapLayers200LayersItem = {
   id: string;
   label: string;
@@ -5200,38 +6509,33 @@ export type GetApiV1EventsParams = {
 };
 
 export type GetApiV1Events200Event =
-  (typeof GetApiV1Events200Event)[keyof typeof GetApiV1Events200Event];
-
-export const GetApiV1Events200Event = {
-  parcelregistered: "parcel.registered",
-  parcelstatus_changed: "parcel.status_changed",
-  parceldelivered: "parcel.delivered",
-  parceldelivery_time_changed: "parcel.delivery_time_changed",
-  parcelsending_registered: "parcel.sending_registered",
-  parcelsending_delivered: "parcel.sending_delivered",
-  parcellive_updated: "parcel.live_updated",
-  parcellocation_changed: "parcel.location_changed",
-  parcelremoved: "parcel.removed",
-  parceldeleted: "parcel.deleted",
-  parcelarchived: "parcel.archived",
-  connectionadded: "connection.added",
-  connectionupdated: "connection.updated",
-  connectionstate_changed: "connection.state_changed",
-  connectionrun_finished: "connection.run_finished",
-  connectionremoved: "connection.removed",
-  ordercreated: "order.created",
-  orderupdated: "order.updated",
-  orderdeleted: "order.deleted",
-  returncreated: "return.created",
-  returnupdated: "return.updated",
-  settingsupdated: "settings.updated",
-  backupfinished: "backup.finished",
-  vocabunknown: "vocab.unknown",
-  parcellive_position: "parcel.live_position",
-  ready: "ready",
-  resync: "resync",
-} as const;
-
+  | "parcel.registered"
+  | "parcel.status_changed"
+  | "parcel.delivered"
+  | "parcel.delivery_time_changed"
+  | "parcel.sending_registered"
+  | "parcel.sending_delivered"
+  | "parcel.live_updated"
+  | "parcel.location_changed"
+  | "parcel.removed"
+  | "parcel.deleted"
+  | "parcel.archived"
+  | "connection.added"
+  | "connection.updated"
+  | "connection.state_changed"
+  | "connection.run_finished"
+  | "connection.removed"
+  | "order.created"
+  | "order.updated"
+  | "order.deleted"
+  | "return.created"
+  | "return.updated"
+  | "settings.updated"
+  | "backup.finished"
+  | "vocab.unknown"
+  | "parcel.live_position"
+  | "ready"
+  | "resync";
 export type GetApiV1Events200 = {
   event: GetApiV1Events200Event;
   /**

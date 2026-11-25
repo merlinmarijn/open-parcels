@@ -2,6 +2,7 @@ import { admin } from "./en/admin";
 import { calendar } from "./en/calendar";
 import { common } from "./en/common";
 import { connections } from "./en/connections";
+import { errors } from "./en/errors";
 import { map } from "./en/map";
 import { orders } from "./en/orders";
 import { parcels } from "./en/parcels";
@@ -24,6 +25,7 @@ export const en = {
   returns,
   calendar,
   map,
+  errors,
 };
 
 /** The shape every language provides: the German dictionary is checked against it. */

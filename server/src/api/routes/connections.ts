@@ -100,7 +100,10 @@ function flowSummary(flow: SignInFlowInfo): z.infer<typeof carrierSchema>["sign_
 
 function asBadRequest(error: unknown): never {
   if (error instanceof InvalidConnectionConfigError) {
-    throw new ApiError(400, "invalid_connection", error.message);
+    throw new ApiError(400, "invalid_connection", error.message, {
+      reason: error.reason,
+      ...error.values,
+    });
   }
   throw error;
 }
@@ -213,7 +216,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
           : services.mail.connect(updated.id));
       }
       if (updated === undefined) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       if (body.enabled === true) {
         // Enabling makes the connection due at once; without a wake the run waited for the next
@@ -238,7 +241,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
     },
     async (request, reply) => {
       if ((await services.connections.get(request.params.id)) === undefined) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       // Checked against the provider's own schema before anything is stored.
       await services.connections
@@ -269,7 +272,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
     },
     async (request, reply) => {
       if ((await services.connections.get(request.params.id)) === undefined) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       const { deferredUntil } = await services.connections.requestRun(request.params.id);
       if (deferredUntil !== null) {
@@ -282,6 +285,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
           429,
           "connection_backing_off",
           `The carrier asked us to wait; this connection runs again in ${waitText(seconds)}.`,
+          { seconds },
         );
       }
       services.scheduler.wake();
@@ -303,7 +307,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
     async (request, reply) => {
       await services.mail.disconnect(request.params.id);
       if (!(await services.connections.delete(request.params.id))) {
-        throw notFound("The connection");
+        throw notFound("connection");
       }
       return reply.code(204).send(null);
     },

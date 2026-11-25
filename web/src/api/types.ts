@@ -13,10 +13,13 @@ import type {
   GetApiV1ConnectionsIdSignInFlows200Item,
   GetApiV1Tokens200Item,
   PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200,
+  PostApiV1Session401Error,
 } from "./generated";
 import { listingEvery } from "../lib/exhaustive";
 
 export type Session = GetApiV1Session200;
+/** Every error code the server sends (each error body has the same list). */
+export type ErrorCode = PostApiV1Session401Error;
 export type Parcel = GetApiV1Parcels200Item;
 export type ParcelDetail = GetApiV1ParcelsId200;
 export type ParcelStatus = Parcel["status"];
