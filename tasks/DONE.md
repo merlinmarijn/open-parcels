@@ -4,6 +4,11 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- TODO §2 production readiness: scheduled database backups with retention, folder setting, back up
+  now, `backup.finished` and the restore tool (`b5918b6`); status API and health levels, inbox
+  backoff fix (`c584917`); rate-limit review of every provider with a per-host pause after 429,
+  documented in `docs/third-party-services.md` (`c7819e2`); Backups card and status page
+  (`7d47392`); accounts decided as one household per installation, `docs/decisions/0003-accounts.md`
 - OP-079 third-party services: background place lookup opt-in with migration 0023, configurable
   Nominatim endpoint and contact (`24fe477`); tile cache headers, conditional refresh, built-in tile
   URL overrides, OSM map-issue link, EOX non-commercial label and year (`6cd2b6a`);

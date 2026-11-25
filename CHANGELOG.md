@@ -58,6 +58,13 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
 
 ### Fixed
 
+- **A carrier host that answers 429 (or 503 with `Retry-After`) is left alone by every
+  connection** until the pause it asked for is over (at least 60 s, at most 24 h). Before, only
+  the connection that met the limit waited, and a second account, a live read or a sign-in step
+  could ask the same host again at once. The pacing of every provider is documented in
+  [`docs/third-party-services.md`](docs/third-party-services.md).
+- An inbox whose mail server accepts the connection but fails every sync backs off up to 15
+  minutes instead of reconnecting every 30 seconds: the backoff now resets only after a whole sync.
 - The web UI refreshes when retention archives a parcel (`parcel.archived`) and when an email
   starts an order (`order.created`); it ignored both before. The stream's message types are now
   listed in the API document, so the UI's handling is checked against the server's list (OP-052).
@@ -77,6 +84,25 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
   at most once a minute.
 
 ### Added
+
+- **Scheduled database backups** while the server runs (`OPENPARCELS_BACKUP_HOURS`, default 24;
+  `OPENPARCELS_BACKUP_KEEP`, default 7; `OPENPARCELS_BACKUP_DIR`, default `backups/` in the data
+  folder; all three also under **Settings → Backups**). A Backups card on the Settings page shows
+  the newest result and the files kept and has **Back up now**; `GET`/`POST /api/v1/data/backups`;
+  live event `backup.finished` (`ok`, `reason`, `file`, `bytes`, `error`). A restore tool,
+  `node server/dist/tools/restore-backup.js <file> [--dry-run] [--force]`, checks a backup and puts
+  it in place with the server stopped (README, "Backups and restore"). "Delete everything" now uses
+  the same backup and deletes nothing when it fails (500 `backup_failed`); its backups count
+  towards the number kept.
+- **Status of every part:** `GET /api/v1/status` (readers) lists every connection and inbox with
+  its state, failures, next run and any pause a carrier asked for, the scheduler, the live event
+  stream and backups; `GET /api/v1/health` (public, no details) answers `ok`, `degraded` (a
+  connection or inbox in error or needing sign-in, failing backups, a stalled scheduler) or
+  `unavailable` (503, the database does not answer). `/api/v1/health/ready`, which the Docker
+  health check uses, still only checks the database, so a carrier's bad day never marks the
+  container unhealthy. The Status page shows all of it and refreshes on live events.
+- [`docs/decisions/0003-accounts.md`](docs/decisions/0003-accounts.md): one household per
+  installation (admin and reader password, API tokens), no user accounts.
 
 - **Orders from order emails.** Inbox connections now act on the rules' order emails
   (`order_placed`, `order_confirmed`, `order_shipped`, `order_delivered`, `order_cancelled`):

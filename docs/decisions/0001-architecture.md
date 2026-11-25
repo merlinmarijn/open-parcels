@@ -241,7 +241,8 @@ It implements the suite's polling rules:
 
 On top of that:
 
-- a token bucket per carrier host;
+- a token bucket per carrier host, and a pause per host after it answered 429 (or 503 with
+  `Retry-After`), so no other connection asks it again until the pause is over;
 - at most one request at a time per account;
 - **a network error never triggers a new sign-in.** Only an explicit rejection does, once. After
   that the connection is marked "needs sign-in".
@@ -307,7 +308,10 @@ There is one owner per container, so tables carry no user column.
 - `parcel_raw` is dropped 30 days after delivery;
 - the outbox is kept for 24 hours (courier positions and finished runs for 15 minutes), at
   most 2000 rows;
-- the image cache is capped at 200 MB.
+- the image cache is capped at 200 MB;
+- a database backup is taken every 24 hours while the server runs (`VACUUM INTO`, consistent while
+  it writes) into `backups/` in the data folder, and the newest 7 are kept. The encryption key is
+  not part of a backup. A restore tool puts one back with the server stopped (README).
 
 ### 2.6 API and event contract
 
@@ -360,7 +364,13 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
   parcels, removed ones and deleted ones do not appear.
 - `GET /orders` and `GET /orders/{id}`.
 - `/tokens` and `/settings`.
-- `/health/live`, `/health/ready`, and `/diagnostics`, which is redacted.
+- `GET`/`POST /data/backups`: the backup schedule, the newest result and the files kept; back up
+  now.
+- `/health/live` (the process runs) and `/health/ready` (the database answers), which container
+  health checks use; `/health` (public, no details): `ok`, `degraded` when a connection or inbox is
+  in error or needs sign-in, backups fail or the scheduler stalled, `unavailable` (503) when the
+  database does not answer; `/status` (readers): the same per connection, inbox, scheduler, event
+  stream and backups; `/diagnostics`, which is redacted.
 
 #### Push
 
@@ -397,6 +407,7 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 | `connection.state_changed` | A connection changes state, including "needs sign-in" |
 | `connection.run_finished` | A connection run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the provider skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone and puts the reason in the detail |
 | `connection.removed` | A connection was deleted, or merged into another (`merged_into`: its id). Clients drop its device |
+| `backup.finished` | A database backup ended, successfully or not (`ok`, `reason`, `file`, `bytes`, `error`) |
 | `vocab.unknown` | An unmapped status value is seen for the first time |
 
 The payload is the normalised parcel without `raw`, with `live` stripped of coordinates and the
@@ -538,7 +549,8 @@ automatic triggers stay commented out, with the reason written above them.
 - `backup_exclude` covers the image cache;
 - the app's options map to environment variables.
 
-**Visibility:** JSON logs, a Status page in the UI, and downloadable diagnostics with redaction
+**Visibility:** JSON logs, a Status page in the UI (every connection, inbox, the scheduler, the
+event stream and backups), the health levels of §2.6, and downloadable diagnostics with redaction
 applied.
 
 ### 2.9 First carriers

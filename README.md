@@ -111,6 +111,40 @@ Tailnet visitors reach the app through `tailscale serve` on 127.0.0.1, so the im
 visitor's own address.
 Set `OPENPARCELS_PUBLIC_URL` to the tailnet address so links point there.
 
+## Backups and restore
+
+open-parcels backs its database up by itself while it runs: every 24 hours
+(`OPENPARCELS_BACKUP_HOURS`, 0 turns it off), keeping the newest 7 (`OPENPARCELS_BACKUP_KEEP`),
+in `backups/` in the data folder unless `OPENPARCELS_BACKUP_DIR` names another folder (best on
+another disk). All three can also be changed under **Settings → Backups**. Each backup is a
+consistent copy taken with SQLite's `VACUUM INTO`, written as `.partial` and renamed when complete,
+so a file named `openparcels-<UTC time>.db` is always whole. The Backups card on the Settings page
+shows the newest result and the files kept and has **Back up now**; the Status page and
+`/api/v1/health` report failing backups, and each result is sent as the live event `backup.finished`.
+
+**The encryption key is not in the backup.** Keep a copy of `secret.key` from the data folder (or
+your `OPENPARCELS_SECRET_KEY`) somewhere safe; without it a restored database has every sign-in
+and inbox password locked, and each connection must be signed in again.
+
+To restore, **stop open-parcels**, then run the restore tool in a one-off container with the same
+data volume and environment (it refuses while the server has the database open):
+
+```sh
+# Docker Compose (the service is stopped)
+docker compose run --rm --entrypoint node open-parcels \
+  server/dist/tools/restore-backup.js openparcels-2026-11-25T03-00-00-000Z.db --dry-run
+# then without --dry-run, and start the service again
+```
+
+On Unraid, stop the container and run the same `docker run --rm -v <your data path>:/data
+--entrypoint node <image> server/dist/tools/restore-backup.js <file>` from the terminal. A bare
+file name is looked up in the backup folder; a path is used as given. The tool checks the backup
+(SQLite's integrity check, an open-parcels database, no newer version than the one installed),
+says whether the installation's key opens its sign-ins, keeps the replaced database next to it as
+`openparcels.db.before-restore-<time>`, and copies the backup into place. `--dry-run` only checks.
+`--force` restores although a `-wal` file is left next to the database, which happens only when the
+server did not shut down cleanly. Newer database migrations run when the server starts again.
+
 ## Migrating
 
 Two one-time tools carry data over from earlier setups. Both read the server's own `OPENPARCELS_*`

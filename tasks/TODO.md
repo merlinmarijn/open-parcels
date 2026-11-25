@@ -26,12 +26,7 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 ## 2. Production readiness
 
-- [ ] Real accounts (per-user) or a documented single-household model; decide and document
-- [ ] Backups: built-in scheduled database backup with retention, and a documented restore
 - [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
-- [ ] Observability: structured status page covering every connection, inbox, scheduler and event
-      stream; health endpoint covers connections in error
-- [ ] Rate-limit and failure behaviour reviewed for every carrier (no carrier may be hammered)
 - [ ] Internationalisation of the web UI (at least English and German), dates in the user's locale
 - [ ] Accessibility pass (keyboard, screen reader, contrast) on every page
 - [ ] Mobile layout pass on every page
@@ -39,6 +34,9 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 - [ ] Release 2.0.0: changelog, tags `2.0.0`, `2.0`, `latest` on Docker Hub and GHCR, website and
       Unraid template switched from `:dev` to `:latest`, HA app on the release
 - [ ] Make `ghcr.io/open-parcels/open-parcels` public (owner click) and switch docs to it
+- [ ] Backups: look at the Backups card and the Status page in a browser (built and tested, not
+      yet seen); the HA app's `backup_exclude` may want `backups/` once backups are on by default
+- [ ] OP-161 follow-up: a `health.changed` live event, so the status page needs no 30 s refetch
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
