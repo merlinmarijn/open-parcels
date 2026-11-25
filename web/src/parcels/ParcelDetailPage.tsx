@@ -19,7 +19,8 @@ import { formatDistance } from "../lib/geo";
 import { safeHref } from "../lib/links";
 import { useHome } from "../settings/home";
 import { kmToHome } from "./distance";
-import { EditableStatus, EditableTitle, ParcelActions, useCanEdit } from "./InlineEdit";
+import { useIsAdmin } from "../auth/session";
+import { EditableStatus, EditableTitle, ParcelActions } from "./InlineEdit";
 import { ItemList } from "./ItemList";
 
 const LocationMap = lazy(() => import("../map/LocationMap"));
@@ -211,7 +212,7 @@ function Connections({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
 function Header({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const carrierName = useCarrierName(parcel.carrier);
   const update = useUpdateParcel(parcel.id);
-  const canEdit = useCanEdit();
+  const canEdit = useIsAdmin();
   const markedDelivered = parcel.manual_status === "delivered";
   return (
     <div className="detail-head">

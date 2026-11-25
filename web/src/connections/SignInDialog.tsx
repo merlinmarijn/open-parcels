@@ -137,7 +137,7 @@ export function SignInDialog(props: {
   const connection = props.connection;
   const isMail = connection?.provider === INBOX_PROVIDER;
   const flows = useQuery({
-    queryKey: ["sign-in-flows", connection?.id],
+    queryKey: keys.signInFlows(connection?.id),
     queryFn: ({ signal }) =>
       connection === null || isMail
         ? Promise.resolve(INBOX_FLOWS)

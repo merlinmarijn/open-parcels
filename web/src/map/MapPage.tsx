@@ -9,7 +9,7 @@ import { ErrorNotice, Spinner } from "../components/ui";
 import { boundsAround } from "../lib/geo";
 import { formatRelative, STATUS_LABELS } from "../lib/format";
 import { useHome } from "../settings/home";
-import { ParcelCard, parcelName } from "../parcels/ParcelCard";
+import { ParcelCard } from "../parcels/ParcelCard";
 import { AnimatedRoute } from "./AnimatedRoute";
 import {
   determineTransportMethod,
@@ -39,11 +39,11 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
           <Marker position={pin.from} icon={iconSource} title="Last carrier event" />
         </>
       )}
-      <Marker position={pin.point} icon={icon} title={parcelName(pin.parcel)} zIndexOffset={1000}>
+      <Marker position={pin.point} icon={icon} title={pin.parcel.display_name} zIndexOffset={1000}>
         <Popup>
           <div className="popup-content">
             <Link to="/parcels/$parcelId" params={{ parcelId: pin.parcel.id }}>
-              {parcelName(pin.parcel)}
+              {pin.parcel.display_name}
             </Link>
             <span className="muted">{pin.parcel.carrier}</span>
             <span>

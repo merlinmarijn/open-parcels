@@ -4,7 +4,7 @@ import { useHome } from "../settings/home";
 import type { LatLng } from "./mapIcons";
 
 /** The place on OpenStreetMap, with a marker, in a new tab. */
-export function mapLink(point: LatLng): string {
+function mapLink(point: LatLng): string {
   const [lat, lng] = point.map((value) => value.toFixed(5));
   return `https://www.openstreetmap.org/?mlat=${lat ?? ""}&mlon=${lng ?? ""}#map=14/${lat ?? ""}/${lng ?? ""}`;
 }

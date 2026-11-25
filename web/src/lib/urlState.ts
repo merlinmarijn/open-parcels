@@ -1,5 +1,5 @@
 import { useRouter, useRouterState } from "@tanstack/react-router";
-import { useCallback, useState } from "react";
+import { useCallback } from "react";
 
 /**
  * Page state kept in the address (`?status=delivered`, `?view=week`), so a filtered view can be
@@ -25,15 +25,6 @@ export function useUrlParam(key: string): [string | null, (value: string | null)
     [router, key],
   );
   return [value, setValue];
-}
-
-/** Like `useUrlParam`, but only in memory when no key is given (pages that do not link state). */
-export function useMaybeUrlParam(
-  key: string | undefined,
-): [string | null, (value: string | null) => void] {
-  const fromUrl = useUrlParam(key ?? "");
-  const local = useState<string | null>(null);
-  return key === undefined ? local : fromUrl;
 }
 
 /** The allowed value matching `raw` regardless of case ("Delivered" finds "delivered"), else the fallback. */

@@ -16,7 +16,7 @@ import {
   type Home,
   type ParcelLabelMode,
 } from "./home";
-import { useIsAdmin } from "./server-settings";
+import { useIsAdmin } from "../auth/session";
 import { DataCard } from "./DataCard";
 import { ServerSettingsCards } from "./ServerSettings";
 

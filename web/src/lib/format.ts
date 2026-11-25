@@ -144,3 +144,13 @@ export function describeLookup(
       : `last asked ${formatRelative(lookup.checked_at, now)}`;
   return `${LOOKUP_PHRASES[lookup.state]}${since}, ${asked}`;
 }
+
+/** An amount in its currency; a bare number when the currency is unknown, never a guessed one (OP-151). */
+export function formatMoney(amount: number, currency: string | null): string {
+  if (currency === null) return amount.toFixed(2);
+  try {
+    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+  } catch {
+    return amount.toFixed(2);
+  }
+}

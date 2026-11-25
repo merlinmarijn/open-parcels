@@ -10,7 +10,7 @@ import {
 } from "@tanstack/react-table";
 import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
 import { useId, type ReactNode } from "react";
-import { useMaybeUrlParam } from "../lib/urlState";
+import { useUrlParam } from "../lib/urlState";
 
 export interface DataTableProps<TData> {
   /** Column definitions; build them with `createColumnHelper<TData>()`. */
@@ -24,7 +24,7 @@ export interface DataTableProps<TData> {
   readonly extraControls?: ReactNode;
   readonly defaultSort?: SortingState;
   /** Keep search and sorting in the address under these keys (`?q=…&sort=-column`). */
-  readonly urlKeys?: { readonly search: string; readonly sort: string };
+  readonly urlKeys: { readonly search: string; readonly sort: string };
   readonly rowClassName?: (row: TData) => string | undefined;
 }
 
@@ -58,8 +58,8 @@ function SortIcon({ sorted }: { readonly sorted: false | "asc" | "desc" }): Reac
 
 /** A sortable, searchable table built on TanStack Table. Headers are buttons, so sorting works by keyboard. */
 export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
-  const [sortParam, setSortParam] = useMaybeUrlParam(props.urlKeys?.sort);
-  const [searchParam, setSearchParam] = useMaybeUrlParam(props.urlKeys?.search);
+  const [sortParam, setSortParam] = useUrlParam(props.urlKeys.sort);
+  const [searchParam, setSearchParam] = useUrlParam(props.urlKeys.search);
   const ids = new Set(props.columns.map((column) => column.id));
   const sorting = parseSort(sortParam, ids) ?? props.defaultSort ?? [];
   const filter = searchParam ?? "";

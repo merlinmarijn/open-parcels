@@ -6,13 +6,8 @@ import { CarrierLogo } from "../components/CarrierLogo";
 import { formatRelative, formatExpected } from "../lib/format";
 import { LookupBadge, StatusBadge } from "./badges";
 
-/** The parcel's name as the server gives it (label, item names or tracking code per Settings). */
-export function parcelName(parcel: Pick<Parcel, "display_name">): string {
-  return parcel.display_name;
-}
-
 /** "Expected Thu 20 Nov", "4 stops away", "Delivered 2 hours ago", or nothing. */
-export function etaText(parcel: Parcel): string | null {
+function etaText(parcel: Parcel): string | null {
   if (parcel.delivered) {
     return `Delivered ${formatRelative(parcel.delivered_at)}`;
   }
@@ -32,7 +27,7 @@ export function ParcelCard({ parcel }: { readonly parcel: Parcel }): ReactNode {
     <Link to="/parcels/$parcelId" params={{ parcelId: parcel.id }} className="parcel-card">
       <CarrierLogo carrier={parcel.carrier} />
       <div className="parcel-card-body">
-        <div className="parcel-card-title">{parcelName(parcel)}</div>
+        <div className="parcel-card-title">{parcel.display_name}</div>
         <div className="parcel-card-meta">
           {parcel.raw_status ?? `${parcel.carrier} · ${parcel.tracking_number}`}
         </div>

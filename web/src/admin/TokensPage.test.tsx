@@ -12,7 +12,7 @@ describe("API tokens", () => {
     expires_at: null,
   };
 
-  it("re-reads 'last used' when the window regains focus and shows it", async () => {
+  it("re-reads 'last used' once when the tab comes back into view and shows it (OP-161)", async () => {
     let used: string | null = null;
     const calls = mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
@@ -25,9 +25,9 @@ describe("API tokens", () => {
     const before = calls.filter((call) => call.path === "/api/v1/tokens").length;
 
     used = new Date(Date.now() - 60_000).toISOString();
-    window.dispatchEvent(new Event("focus"));
+    window.dispatchEvent(new Event("visibilitychange"));
     await waitFor(() => {
-      expect(calls.filter((call) => call.path === "/api/v1/tokens").length).toBeGreaterThan(before);
+      expect(calls.filter((call) => call.path === "/api/v1/tokens").length).toBe(before + 1);
     });
     const updated = (await screen.findByText("Made-up client")).closest("tr") as HTMLElement;
     await waitFor(() => {

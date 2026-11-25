@@ -12,6 +12,13 @@ import type { LatLngTuple } from "../lib/geo";
 
 export const settingsKey = ["settings"] as const;
 
+/** One read of the settings, shared by every hook that needs a part of them. */
+const settingsQuery = {
+  queryKey: settingsKey,
+  queryFn: ({ signal }: { readonly signal: AbortSignal }) => getApiV1Settings({ signal }),
+  staleTime: 5 * 60_000,
+};
+
 export interface Home {
   readonly point: LatLngTuple;
   readonly label: string | null;
@@ -19,11 +26,7 @@ export interface Home {
 
 /** The home location set on the Settings page, or null. Read by the maps and distances. */
 export function useHome(): { readonly home: Home | null; readonly loading: boolean } {
-  const query = useQuery({
-    queryKey: settingsKey,
-    queryFn: ({ signal }) => getApiV1Settings({ signal }),
-    staleTime: 5 * 60_000,
-  });
+  const query = useQuery(settingsQuery);
   const home = query.data?.home;
   // The same object until the stored home changes, so maps derived from it are not redrawn on
   // every render (OP-149).
@@ -67,12 +70,7 @@ export type ParcelLabelMode = "tracking_number" | "items";
 
 /** How parcels without a label are named; "tracking_number" until the settings arrive. */
 export function useParcelLabel(): ParcelLabelMode {
-  const query = useQuery({
-    queryKey: settingsKey,
-    queryFn: ({ signal }) => getApiV1Settings({ signal }),
-    staleTime: 5 * 60_000,
-  });
-  return query.data?.parcel_label ?? "tracking_number";
+  return useQuery(settingsQuery).data?.parcel_label ?? "tracking_number";
 }
 
 export function useSaveParcelLabel() {

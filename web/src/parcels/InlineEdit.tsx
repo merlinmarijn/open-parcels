@@ -15,11 +15,6 @@ import { ErrorNotice } from "../components/ui";
 import { STATUS_LABELS } from "../lib/format";
 import { StatusBadge } from "./badges";
 
-/** Editing needs the admin; readers just see the values. */
-export function useCanEdit(): boolean {
-  return useIsAdmin();
-}
-
 function PencilButton(props: { readonly label: string; readonly onClick: () => void }): ReactNode {
   return (
     <button
@@ -61,7 +56,7 @@ function keepFocus(event: MouseEvent<HTMLButtonElement>): void {
 
 /** A page heading renamed in place: Enter, Save or leaving saves; Escape or Cancel cancels. */
 export function InlineTitle(props: InlineTitleProps): ReactNode {
-  const canEdit = useCanEdit();
+  const canEdit = useIsAdmin();
   const [draft, setDraft] = useState<string | null>(null);
 
   const finish = (save: boolean): void => {
@@ -160,7 +155,7 @@ const FROM_CARRIER = "";
  * moving through the list, so arrow keys can browse; Escape or Cancel closes it unsaved.
  */
 export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
-  const canEdit = useCanEdit();
+  const canEdit = useIsAdmin();
   const update = useUpdateParcel(parcel.id);
   const [choice, setChoice] = useState<string | null>(null);
 
@@ -239,7 +234,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
 
 /** Archive or restore, and delete, as small buttons in the header. */
 export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
-  const canEdit = useCanEdit();
+  const canEdit = useIsAdmin();
   const update = useUpdateParcel(parcel.id);
   const remove = useDeleteParcel();
   const client = useQueryClient();

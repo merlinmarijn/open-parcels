@@ -5,10 +5,10 @@ import type { ReactNode } from "react";
 import { apiUrl } from "../api/fetcher";
 import type { Order, OrderStatus, OrderView, ParcelStatus } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
-import { formatRelative, formatExpected } from "../lib/format";
+import { formatExpected, formatMoney, formatRelative } from "../lib/format";
 import { ArchivedBadge, StatusBadge } from "../parcels/badges";
 
-export const ORDER_STATUS_LABELS: Readonly<Record<OrderStatus, string>> = {
+const ORDER_STATUS_LABELS: Readonly<Record<OrderStatus, string>> = {
   ordered: "Ordered",
   partly_shipped: "Partly shipped",
   shipped: "Shipped",
@@ -60,7 +60,7 @@ export const ORDER_VIEW_TABS: readonly {
   { view: "all", label: "All", help: "Every order, open, delivered and archived." },
 ];
 
-export function OrderStatusBadge({ status }: { readonly status: OrderStatus }): ReactNode {
+function OrderStatusBadge({ status }: { readonly status: OrderStatus }): ReactNode {
   return (
     <span className={`badge status-${STATUS_COLOUR[status]}`}>{ORDER_STATUS_LABELS[status]}</span>
   );
@@ -77,15 +77,7 @@ export function OrderBadges({ order }: { readonly order: Order }): ReactNode {
 
 export function formatTotal(total: Order["total"]): string | null {
   if (total === null) return null;
-  let amount: string;
-  try {
-    amount = new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: total.currency,
-    }).format(total.amount);
-  } catch {
-    amount = total.amount.toFixed(2);
-  }
+  const amount = formatMoney(total.amount, total.currency);
   // Some lines have no price: the order cost at least this much.
   return total.partial ? `from ${amount}` : amount;
 }
@@ -133,7 +125,9 @@ export function OrderProgress({ order }: { readonly order: Order }): ReactNode {
 
 /** Up to `limit` item pictures; the rest is counted. */
 export function PictureGrid(props: { readonly order: Order; readonly limit: number }): ReactNode {
-  const pictures = props.order.items.filter((item) => item.image_url !== null);
+  const pictures = props.order.items.flatMap((item) =>
+    item.image_url === null ? [] : [{ title: item.title, imageUrl: item.image_url }],
+  );
   if (pictures.length === 0) return null;
   const shown = pictures.slice(0, props.limit);
   const more = pictures.length - shown.length;
@@ -141,7 +135,7 @@ export function PictureGrid(props: { readonly order: Order; readonly limit: numb
     <ul className="order-pictures" aria-label="Items">
       {shown.map((item, index) => (
         <li key={`${item.title}-${String(index)}`} title={item.title}>
-          <img src={apiUrl(item.image_url ?? "")} alt={item.title} loading="lazy" />
+          <img src={apiUrl(item.imageUrl)} alt={item.title} loading="lazy" />
         </li>
       ))}
       {more > 0 ? <li>+{more}</li> : null}

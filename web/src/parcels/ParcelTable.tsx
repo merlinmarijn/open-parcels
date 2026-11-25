@@ -15,7 +15,7 @@ export type ParcelFilter = (typeof PARCEL_FILTERS)[number];
 const column = createColumnHelper<Parcel>();
 
 /** Up to three item pictures beside the parcel name, as the original list showed them. */
-export function ItemThumbs({ items }: { readonly items: Parcel["items"] }): ReactNode {
+function ItemThumbs({ items }: { readonly items: Parcel["items"] }): ReactNode {
   const images = items.flatMap((item) => (item.image_url === null ? [] : [item.image_url]));
   if (images.length === 0) {
     return null;

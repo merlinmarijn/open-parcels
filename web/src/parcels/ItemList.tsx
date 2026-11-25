@@ -1,5 +1,6 @@
 import type { ReactNode } from "react";
 import { apiUrl } from "../api/fetcher";
+import { formatMoney } from "../lib/format";
 import { safeHref } from "../lib/links";
 
 export interface ListedItem {
@@ -12,17 +13,7 @@ export interface ListedItem {
 }
 
 export function priceText(item: ListedItem): string | null {
-  if (item.price === null) return null;
-  // No currency known: a bare number, never a guessed one (OP-151).
-  if (item.currency === null) return item.price.toFixed(2);
-  try {
-    return new Intl.NumberFormat(undefined, {
-      style: "currency",
-      currency: item.currency,
-    }).format(item.price);
-  } catch {
-    return item.price.toFixed(2);
-  }
+  return item.price === null ? null : formatMoney(item.price, item.currency);
 }
 
 /** Items with picture, quantity, title (linked to the shop's page) and price; `note` per item. */

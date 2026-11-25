@@ -7,7 +7,8 @@ import { keys, useDeleteOrder, useOrder, useUpdateOrder } from "../api/queries";
 import type { Order } from "../api/types";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { formatDateTime } from "../lib/format";
-import { InlineTitle, useCanEdit } from "../parcels/InlineEdit";
+import { useIsAdmin } from "../auth/session";
+import { InlineTitle } from "../parcels/InlineEdit";
 import { ItemList } from "../parcels/ItemList";
 import { formatDay, ReturnCard } from "../returns/parts";
 import { noParcelText, OrderBadges, OrderParcels, OrderProgress, orderSummary } from "./parts";
@@ -32,7 +33,7 @@ export function archiveExplanation(order: Order): string {
 }
 
 function Actions({ order }: { readonly order: Order }): ReactNode {
-  const canEdit = useCanEdit();
+  const canEdit = useIsAdmin();
   const update = useUpdateOrder(order.id);
   const remove = useDeleteOrder();
   const client = useQueryClient();

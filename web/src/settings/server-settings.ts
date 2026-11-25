@@ -7,8 +7,6 @@ import {
 } from "../api/generated";
 import { mapLayersKey } from "../map/layers";
 
-export { useIsAdmin } from "../auth/session";
-
 export type ServerSetting = GetApiV1SettingsConfig200Item;
 export type ServerSettingValue = string | number | boolean;
 

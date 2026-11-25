@@ -9,7 +9,6 @@ import {
   useQueryClient,
   type QueryClient,
 } from "@tanstack/react-query";
-import { useEffect } from "react";
 import {
   deleteApiV1OrdersId,
   deleteApiV1ParcelsId,
@@ -57,6 +56,7 @@ export const keys = {
   returns: ["returns"] as const,
   returnList: (view: ReturnView) => ["returns", "list", { view }] as const,
   connections: ["connections"] as const,
+  signInFlows: (connectionId: string | undefined) => ["sign-in-flows", connectionId] as const,
   carriers: ["carriers"] as const,
   tokens: ["tokens"] as const,
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
@@ -128,7 +128,7 @@ export function useConnections() {
 }
 
 /** Tokens are used by other clients, so "last used" changes without any event: re-read it. */
-export const TOKENS_REFRESH_MS = 30_000;
+const TOKENS_REFRESH_MS = 30_000;
 
 /**
  * The interval pauses while the tab is in the background, so coming back to it re-reads at once:
@@ -136,7 +136,8 @@ export const TOKENS_REFRESH_MS = 30_000;
  * visible tab in an unfocused window) is caught here.
  */
 export function useTokens() {
-  const query = useQuery({
+  // A tab coming back into view re-reads them through refetchOnWindowFocus.
+  return useQuery({
     queryKey: keys.tokens,
     queryFn: ({ signal }) => getApiV1Tokens({ signal }),
     staleTime: 0,
@@ -145,17 +146,6 @@ export function useTokens() {
     refetchOnReconnect: "always",
     refetchInterval: TOKENS_REFRESH_MS,
   });
-  const { refetch } = query;
-  useEffect(() => {
-    const onFocus = (): void => {
-      void refetch();
-    };
-    window.addEventListener("focus", onFocus);
-    return () => {
-      window.removeEventListener("focus", onFocus);
-    };
-  }, [refetch]);
-  return query;
 }
 
 /** The calendar's entries in a range; nothing is asked before the range is known (OP-153). */
