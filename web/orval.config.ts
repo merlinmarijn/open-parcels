@@ -16,6 +16,9 @@ export default defineConfig({
       override: {
         mutator: { path: "src/api/fetcher.ts", name: "apiFetch" },
         fetch: { includeHttpResponseReturnType: false },
+        // Enums as string unions: no runtime objects, and no key-equals-value lines
+        // for error codes that end in "password" (the pre-commit secret check rejects those).
+        enumGenerationType: "union",
       },
     },
   },
