@@ -195,6 +195,36 @@ describe("reading with OPENPARCELS_PASSWORD", () => {
     });
     expect(blocked.statusCode).toBe(429);
   });
+
+  it("throttles each client behind a trusted proxy apart, and everyone together otherwise", async () => {
+    const attempt = (app: App, client: string, password: string) =>
+      app.inject({
+        method: "POST",
+        url: "/api/v1/session",
+        headers: { "x-forwarded-for": client },
+        payload: { password },
+      });
+    const failFiveTimes = async (app: App): Promise<void> => {
+      for (let count = 0; count < 5; count += 1) {
+        expect((await attempt(app, "203.0.113.1", WRONG_PASSWORD)).statusCode).toBe(401);
+      }
+    };
+
+    const trusted = await start({
+      env: { OPENPARCELS_PASSWORD: READER_PASSWORD, OPENPARCELS_TRUST_PROXY: "127.0.0.1" },
+    });
+    await signIn(trusted.ctx, trusted.app);
+    await failFiveTimes(trusted.app);
+    expect((await attempt(trusted.app, "203.0.113.1", READER_PASSWORD)).statusCode).toBe(429);
+    expect((await attempt(trusted.app, "203.0.113.2", READER_PASSWORD)).statusCode).toBe(200);
+    await trusted.ctx.close();
+
+    // Without trust the forwarded address is the client's own claim: it must not escape the throttle.
+    const untrusted = await start({ env: { OPENPARCELS_PASSWORD: READER_PASSWORD } });
+    await signIn(untrusted.ctx, untrusted.app);
+    await failFiveTimes(untrusted.app);
+    expect((await attempt(untrusted.app, "203.0.113.2", READER_PASSWORD)).statusCode).toBe(429);
+  });
 });
 
 describe("the notice that reading is open", () => {
