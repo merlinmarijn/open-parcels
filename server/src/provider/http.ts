@@ -15,17 +15,50 @@ export interface HostLimit {
   readonly burst: number;
 }
 
-/** Token bucket per host, shared by every connection of the same carrier. */
+/** A pause a host asked for without saying how long (or for 0 s): as the scheduler's first backoff. */
+const HOST_PAUSE_DEFAULT_S = 60;
+/** The longest pause a host's Retry-After imposes, as the scheduler honours it. */
+const HOST_PAUSE_MAX_S = 24 * 60 * 60;
+
+/**
+ * Token bucket per host, shared by every connection of the same carrier, plus the pause a host
+ * asked for: after a 429 (or a 503 with Retry-After) no connection sends it anything until the
+ * pause is over, so a second account or a live read cannot run into the same limit again.
+ */
 export class HostLimiter {
   readonly #buckets = new Map<
     string,
     { tokens: number; updatedAt: number; queue: Promise<void> }
   >();
+  /** Host → end of its pause, in ms since the epoch. */
+  readonly #pauses = new Map<string, number>();
 
   constructor(
     private readonly clock: Clock,
     private readonly sleep: Sleep,
   ) {}
+
+  /** Seconds left of a pause `host` asked for; undefined when there is none. */
+  pausedFor(host: string): number | undefined {
+    const until = this.#pauses.get(host);
+    if (until === undefined) return undefined;
+    const left = until - this.clock.now().getTime();
+    if (left <= 0) {
+      this.#pauses.delete(host);
+      return undefined;
+    }
+    return Math.ceil(left / 1000);
+  }
+
+  /** Records that `host` asked to be left alone; a shorter request never shortens a pause. */
+  pause(host: string, retryAfterSeconds: number | undefined): void {
+    const seconds = Math.min(
+      Math.max(retryAfterSeconds ?? 0, HOST_PAUSE_DEFAULT_S),
+      HOST_PAUSE_MAX_S,
+    );
+    const until = this.clock.now().getTime() + seconds * 1000;
+    this.#pauses.set(host, Math.max(until, this.#pauses.get(host) ?? 0));
+  }
 
   /** Resolves when a request to `host` may be sent. Calls for one host are served in order. */
   acquire(host: string, limit: HostLimit): Promise<void> {
@@ -237,6 +270,13 @@ export class ProviderHttp {
     if (isNonPublicHostLiteral(url.hostname)) {
       throw new TransientError("Refusing a request to a non-public address.");
     }
+    const paused = this.limiter.pausedFor(url.hostname);
+    if (paused !== undefined) {
+      throw new RateLimitedError(
+        `${url.hostname} asked us to slow down; waiting ${String(paused)} s more before asking again.`,
+        paused,
+      );
+    }
     const limit = this.policy.limits[url.hostname] ?? this.policy.limits["*"] ?? DEFAULT_LIMIT;
     await this.limiter.acquire(url.hostname, limit);
     const headers = new Headers(hop.headers);
@@ -260,6 +300,7 @@ export class ProviderHttp {
     const retryAfter = parseRetryAfter(response.headers.get("retry-after"), this.clock.now());
     if (response.status === 429 || (response.status === 503 && retryAfter !== undefined)) {
       await response.body?.cancel();
+      this.limiter.pause(url.hostname, retryAfter);
       throw new RateLimitedError(
         `${url.hostname} asked us to slow down (HTTP ${response.status}).`,
         retryAfter,

@@ -19,7 +19,7 @@ function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string
     limits: { "*": { intervalMs: 1000, burst: 2 } },
     ...(userAgent === undefined ? {} : { userAgent }),
   };
-  return { http: new ProviderHttp(policy, limiter, clock, fetchImpl), waits, clock };
+  return { http: new ProviderHttp(policy, limiter, clock, fetchImpl), waits, clock, limiter };
 }
 
 const ok: FetchLike = () => Promise.resolve(new Response('{"a":1}', { status: 200 }));
@@ -66,6 +66,58 @@ describe("provider HTTP client", () => {
     await expect(
       setup(plain503).http.request(new URL("https://a.example.invalid/")),
     ).resolves.toMatchObject({ status: 503 });
+  });
+
+  it("leaves a host alone for the pause it asked for, across every client of the limiter", async () => {
+    const hosts: string[] = [];
+    let status = 429;
+    const answer: FetchLike = (url) => {
+      hosts.push(url.hostname);
+      return Promise.resolve(
+        url.hostname === "busy.example.invalid"
+          ? new Response("", { status, headers: { "retry-after": "120" } })
+          : new Response("ok"),
+      );
+    };
+    const { http, clock, limiter } = setup(answer);
+    // A second connection of the same carrier shares the limiter.
+    const other = new ProviderHttp(
+      { limits: { "*": { intervalMs: 1000, burst: 2 } } },
+      limiter,
+      clock,
+      answer,
+    );
+    const busy = new URL("https://busy.example.invalid/");
+    await expect(http.request(busy)).rejects.toMatchObject({ retryAfterSeconds: 120 });
+    await expect(other.request(busy)).rejects.toMatchObject({
+      name: "RateLimitedError",
+      retryAfterSeconds: 120,
+    });
+    clock.advance(60_000);
+    await expect(http.request(busy)).rejects.toMatchObject({ retryAfterSeconds: 60 });
+    // Nothing was sent during the pause; other hosts were never held up.
+    await http.request(new URL("https://calm.example.invalid/"));
+    expect(hosts).toEqual(["busy.example.invalid", "calm.example.invalid"]);
+    clock.advance(61_000);
+    status = 200;
+    await expect(other.request(busy)).resolves.toMatchObject({ status: 200 });
+  });
+
+  it("pauses a host for a minute when it asks to slow down without saying how long", async () => {
+    let sent = 0;
+    const limited: FetchLike = () => {
+      sent += 1;
+      return Promise.resolve(new Response("", { status: 429, headers: { "retry-after": "0" } }));
+    };
+    const { http, clock } = setup(limited);
+    const url = new URL("https://a.example.invalid/");
+    await expect(http.request(url)).rejects.toBeInstanceOf(RateLimitedError);
+    clock.advance(59_000);
+    await expect(http.request(url)).rejects.toMatchObject({ retryAfterSeconds: 1 });
+    expect(sent).toBe(1);
+    clock.advance(1_000);
+    await expect(http.request(url)).rejects.toBeInstanceOf(RateLimitedError);
+    expect(sent).toBe(2);
   });
 
   it("wraps network failures as transient errors", async () => {
