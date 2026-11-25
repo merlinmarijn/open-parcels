@@ -7,7 +7,7 @@ Shipped work, newest first, with the commit that shipped it.
 - TODO §2: "Add a connection" picker like Home Assistant's "Add integration" (search over name,
   aliases, countries; logo or monogram, country badges; inbox and fallback services apart;
   keyboard, axe test; full height on phones; EN/DE); provider `aliases` and `logo`, logos
-  served under a content-hashed path, sources in `server/logos/manifest.json` (`PICKER_COMMIT`)
+  served under a content-hashed path, sources in `server/logos/manifest.json` (`bf90f29`)
 - TODO §2b: HA app builds the bundled server without npm/npx (open-parcels-ha-apps `95be083`,
   amd64 347 → 283 MB; no Tailscale there, the HA app never shipped it)
 - TODO §2b (decision record 0004 §6): token logins (access + rotating refresh, admin/reader,
