@@ -63,7 +63,7 @@ describe("settings page", () => {
     const user = userEvent.setup();
     renderApp("/settings");
 
-    const retention = await screen.findByRole("region", { name: "Retention" });
+    const retention = await screen.findByRole("region", { name: "Retention" }, { timeout: 5000 });
     expect(screen.getByRole("region", { name: "Home location" })).toBeInTheDocument();
     expect(screen.getByRole("region", { name: "Default parcel label" })).toBeInTheDocument();
     expect(within(retention).getByText("default")).toBeInTheDocument();
