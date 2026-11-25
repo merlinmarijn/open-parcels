@@ -26,7 +26,6 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 
 ## 2. Production readiness
 
-- [ ] Upgrade path from v1 (`legacy-ts`) documented and tested on a copy of a real v1 database
 - [ ] Internationalisation leftovers (web UI EN/DE, error codes, settings, provider texts, map
       layers, connection state reasons, scheduler and backup error codes, calendar and ICS texts
       done, see `DONE.md`). Still English: the database check's own error text on the Status page
@@ -42,7 +41,9 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
       phone: the parcels table (scrolls, maybe cards), the split map/list pages and Leaflet's
       controls, FullCalendar's week/day views, the sign-in dialog's steps, the Settings place
       picker map, and Safari's dialog height (`100dvh`)
-- [ ] Performance with 10,000 parcels / 5,000 orders (history import scale)
+- [ ] Performance follow-ups (`docs/performance.md`, "Left as it is"): a stored order status so
+      the order list pages in SQL; the web UI loads every page of parcels and orders (fine for the
+      default views, ~4 MB with "Include archived" at 10,000 parcels); measure on the Pi
 - [ ] Release 2.0.0: changelog, tags `2.0.0`, `2.0`, `latest` on Docker Hub and GHCR, website and
       Unraid template switched from `:dev` to `:latest`, HA app on the release
 - [ ] Make `ghcr.io/open-parcels/open-parcels` public (owner click) and switch docs to it

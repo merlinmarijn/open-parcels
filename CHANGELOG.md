@@ -2,6 +2,14 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Changed: faster lists at 10,000 parcels
+
+Measured with 10,000 parcels and 5,000 orders in a 384 MB container
+([`docs/performance.md`](docs/performance.md)): every list endpoint stays under 200 ms p95.
+Migration `0028-list-order-index` adds an index for the parcel list's order; parcel and order
+visibility is checked once per query instead of per row. The web UI's parcel table and order list
+draw 200 entries at a time with a "Show 200 more" button; search and counts cover all of them.
+
 ### Fixed: the v1 import's dry run on a fresh installation
 
 `import-legacy --dry-run` (README, "Migrating") failed with "There is no encryption key" until the

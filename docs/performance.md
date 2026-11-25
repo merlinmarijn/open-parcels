@@ -1,0 +1,77 @@
+# Performance at history-import scale
+
+Target (TODO §2): 10,000 parcels and 5,000 orders, list endpoints under 200 ms p95 on the NAS in a
+container capped at 384 MB, memory stable.
+
+## How to reproduce
+
+From a built checkout (`npm run build -w server`), in `server/`, without network access (the seeded
+connections are made up; a server that cannot reach a carrier only logs network errors):
+
+```sh
+docker run --rm --network none --memory=384m --cpus=2 -e OPENPARCELS_DATA_DIR=/data \
+  -v "$PWD/..:/w:ro" -v /some/empty/dir:/data -w /w/server node:26 bash -c '
+    node dist/tools/seed-scale.js > /data/seed.json &&
+    OPENPARCELS_BENCH_TOKEN=$(node -p "JSON.parse(require(\"fs\").readFileSync(\"/data/seed.json\")).token") \
+      node dist/tools/bench-scale.js --runs 40'
+```
+
+- `seed-scale` (`--parcels`, `--orders`) refuses a database that holds parcels. It writes, from a
+  fixed seed: 5 connections, 5,000 orders (1–4 lines with picture addresses, about 1 in 25 with a
+  return), 10,000 parcels over four years (three in four in an order, about 1 % active, older ones
+  archived), 4–12 events each (about 80,000; 40 % with a position), 1–2 items each. The database
+  is about 56 MB.
+- `bench-scale` starts `dist/main.js`, asks each endpoint `--runs` times in a row after two warm-up
+  calls, and prints p50/p95/max and the server's resident memory.
+
+## Results (NAS, 384 MB, 2 CPUs, 2026-11-25)
+
+The NAS was busy (load 7–16) during the runs; p95 moves by ±50 % between runs, p50 much less.
+
+| Endpoint | Before p50 / p95 ms | After p50 / p95 ms | KB |
+| --- | --- | --- | --- |
+| parcels, first page (100) | 23 / 48 | 26 / 68 | 203 |
+| parcels, web UI page (1000; ~100 active) | 34 / 43 | 36 / 71 | 410 |
+| parcels + archived, page at offset 5000 | 89 / 119 | 17 / 26 | 204 |
+| parcels, status filter | 5 / 6 | 5 / 7 | 21 |
+| parcels + archived, carrier filter | 24 / 41 | 19 / 28 | 202 |
+| parcels, active (map) | 11 / 14 | 11 / 21 | 91 |
+| orders, open (100) | 129 / 263 | 79 / 192 | 101 |
+| orders, web UI page (500) | 109 / 209 | 82 / 164 | 101 |
+| orders, all, page at offset 2000 | 166 / 381 | 87 / 162 | 178 |
+| returns, open | 11 / 14 | 9 / 16 | 3 |
+| calendar, six weeks | 39 / 52 | 41 / 56 | 80 |
+| status | 4 / 8 | 2 / 5 | 2 |
+| sync from the start (one page) | 56 / 84 | 41 / 56 | 228 |
+| sync since a cursor | 56 / 105 | 58 / 137 | 220 |
+
+Server memory: 210–225 MB after start, 200–230 MB after all runs (peak 232–239 MB); no growth
+over the runs.
+
+## What changed
+
+- **Visibility check** (`db/visibility.ts`): "shown unless every connection is disabled" was two
+  correlated subqueries per parcel or order. It is now "not in the hidden set", a list built once
+  per query from the disabled connections (empty when none is disabled). The parcel query no
+  longer reads every row to check it.
+- **Sort index** `parcels_updated (updated_at desc, id)` (migration 0028): deep pages walk the
+  index instead of sorting all parcels.
+- **Order list**: sorted by plain string comparison instead of `localeCompare`.
+- **Web UI**: the parcel table and the order grid draw 200 rows or cards and a "Show 200 more"
+  button; search, sort and counts still cover the whole list. Chosen over a virtualised table:
+  no new dependency, rows stay real table rows for screen readers and the browser's find.
+
+## Left as it is
+
+- The order list still derives each order's status from its parcels in JavaScript, so it reads all
+  orders and their parcels' states per request (two scans, ~30 ms of the time). A stored order
+  status would make it a plain indexed page; worth it only well beyond this scale.
+- The web UI still loads every page of parcels and orders (search and counts run in the browser).
+  With the default views (archived left out) that is a few hundred rows; "Include archived" loads
+  all 10,000 parcels (~4 MB of JSON).
+
+## Regression test
+
+`server/test/api/scale.test.ts` seeds the same data in the test run and checks every list endpoint
+against a 2 s budget (ten times the NAS figures, so slow machines pass) and the query plans: the
+parcel page uses `parcels_updated` without a temporary sort, and visibility is a list subquery.

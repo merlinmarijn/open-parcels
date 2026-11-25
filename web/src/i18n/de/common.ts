@@ -14,6 +14,7 @@ export const common: Messages["common"] = {
   search: "Suchen",
   yes: "Ja",
   countOf: (shown, total) => `${formatNumber(shown)} von ${formatNumber(total)}`,
+  showMore: (count) => `${formatNumber(count)} weitere anzeigen`,
   nothingYet: "Noch nichts hier.",
   nothingMatches: "Keine Treffer.",
   resizePanels: "Bereiche anpassen",

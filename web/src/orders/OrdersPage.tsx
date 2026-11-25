@@ -5,6 +5,7 @@ import type { ReactNode } from "react";
 import { pickOne, useUrlParam } from "../lib/urlState";
 import { useOrders } from "../api/queries";
 import type { Order, OrderView } from "../api/types";
+import { useShowMore } from "../components/ShowMore";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { t } from "../i18n";
 import {
@@ -54,6 +55,7 @@ export function OrdersPage(): ReactNode {
   };
   const orders = useOrders(view);
   const tab = ORDER_VIEW_TABS.find((entry) => entry.view === view);
+  const { visible, more } = useShowMore(orders.data ?? [], view);
 
   return (
     <section aria-labelledby="orders-title" className="stack">
@@ -93,11 +95,14 @@ export function OrdersPage(): ReactNode {
           <p>{t.orders.views[view].empty}</p>
         </div>
       ) : (
-        <div className="order-grid">
-          {orders.data.map((order) => (
-            <OrderCard key={order.id} order={order} />
-          ))}
-        </div>
+        <>
+          <div className="order-grid">
+            {visible.map((order) => (
+              <OrderCard key={order.id} order={order} />
+            ))}
+          </div>
+          {more}
+        </>
       )}
     </section>
   );

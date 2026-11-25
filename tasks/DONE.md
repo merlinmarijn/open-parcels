@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- TODO §2: upgrade path from v1 checked on a copy of a real v1 database (409 orders, 69 parcels,
+  296 events imported; a repeat imports nothing; the server starts on the result); the dry run
+  now works on a fresh installation; made-up v1 database in the tests (`49aeef8`)
+- TODO §2: performance at 10,000 parcels / 5,000 orders: seed and measuring tools, visibility
+  as one list subquery, sort index (migration 0028), "Show 200 more" in long lists, scale test;
+  numbers in `docs/performance.md` (commit: see the log, "perf:")
+
 - TODO §2: "Add a connection" picker like Home Assistant's "Add integration" (search over name,
   aliases, countries; logo or monogram, country badges; inbox and fallback services apart;
   keyboard, axe test; full height on phones; EN/DE); provider `aliases` and `logo`, logos

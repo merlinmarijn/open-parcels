@@ -146,7 +146,8 @@ export class OrderService {
         const { status, archivedAt } = orderState(row, states.get(row.id) ?? [], now);
         return inView(filter.view, status, archivedAt !== null);
       })
-      .sort((a, b) => newest(b).localeCompare(newest(a)) || a.id.localeCompare(b.id));
+      // Plain code-unit order: ISO times and UUIDs need no locale rules, which cost ~10x per call.
+      .sort((a, b) => compare(newest(b), newest(a)) || compare(a.id, b.id));
     return {
       orders: await this.#build(shown.slice(filter.offset, filter.offset + filter.limit)),
       more: shown.length > filter.offset + filter.limit,
@@ -277,6 +278,10 @@ export class OrderService {
       ),
     );
   }
+}
+
+function compare(a: string, b: string): number {
+  return a < b ? -1 : a > b ? 1 : 0;
 }
 
 /** Sorted by when the order was placed, else when it was first seen. */

@@ -9,7 +9,6 @@ import { parseLegacyImap } from "../../src/migrate/legacy-imap.js";
 import { LEGACY_V1_DDL } from "../fakes/legacy-v1.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
-
 function legacyEncrypt(text: string, key: Buffer): string {
   const iv = randomBytes(16);
   const cipher = createCipheriv("aes-256-gcm", key, iv);

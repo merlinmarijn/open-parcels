@@ -12,6 +12,7 @@ import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
 import { useId, type ReactNode } from "react";
 import { useUrlParam } from "../lib/urlState";
 import { t } from "../i18n";
+import { useShowMore } from "./ShowMore";
 
 export interface DataTableProps<TData> {
   /** Column definitions; build them with `createColumnHelper<TData>()`. */
@@ -84,6 +85,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
     getFilteredRowModel: getFilteredRowModel(),
   });
   const rows = table.getRowModel().rows;
+  const { visible, more } = useShowMore(rows, `${filter}|${formatSort(sorting)}`);
 
   return (
     <div className="data-table">
@@ -148,7 +150,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
                 </td>
               </tr>
             ) : (
-              rows.map((row) => (
+              visible.map((row) => (
                 <tr key={row.id} className={props.rowClassName?.(row.original)}>
                   {row.getVisibleCells().map((cell) => (
                     <td key={cell.id}>
@@ -161,6 +163,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
           </tbody>
         </table>
       </div>
+      {more}
     </div>
   );
 }

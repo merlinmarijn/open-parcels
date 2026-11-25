@@ -35,7 +35,11 @@ export function parseImportArgs(
  */
 function importKey(
   dryRun: boolean,
-  config: { readonly secretKey: string | undefined; readonly dataDir: string; readonly databasePath: string },
+  config: {
+    readonly secretKey: string | undefined;
+    readonly dataDir: string;
+    readonly databasePath: string;
+  },
 ): Buffer {
   const fresh =
     config.secretKey === undefined &&

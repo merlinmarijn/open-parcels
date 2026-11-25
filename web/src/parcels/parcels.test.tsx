@@ -67,6 +67,35 @@ describe("parcel list", () => {
     expect(within(table).queryByText("Book")).not.toBeInTheDocument();
   });
 
+  it("draws a long list in steps of 200 rows, searching all of them", async () => {
+    const many = Array.from({ length: 450 }, (_, n) =>
+      parcel({
+        id: `00000000-0000-4000-8000-${String(n).padStart(12, "0")}`,
+        tracking_number: `TEST${String(n).padStart(10, "0")}`,
+        label: `Scale ${String(n)}`,
+      }),
+    );
+    mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/parcels": () => ({ body: many }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+    });
+    const user = userEvent.setup();
+    renderApp();
+    const table = await screen.findByRole("table", { name: "Parcels" });
+    // A header row and the first 200 parcels; the count still names all 450.
+    expect(within(table).getAllByRole("row")).toHaveLength(201);
+    expect(screen.getByText("450 of 450")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show 200 more" }));
+    expect(within(table).getAllByRole("row")).toHaveLength(401);
+    await user.click(screen.getByRole("button", { name: "Show 50 more" }));
+    expect(within(table).getAllByRole("row")).toHaveLength(451);
+    expect(screen.queryByRole("button", { name: /^Show \d+ more$/ })).not.toBeInTheDocument();
+    // The search covers parcels that were never drawn.
+    await user.type(screen.getByLabelText("Search parcels"), "Scale 449");
+    expect(within(table).getByText("Scale 449")).toBeInTheDocument();
+  });
+
   it("adds a parcel with carrier detection and sends the CSRF header", async () => {
     const calls = mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),

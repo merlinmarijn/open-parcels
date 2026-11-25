@@ -32,7 +32,18 @@ export function writeLegacyV1Database(file: string): void {
     "insert into parcels (id, tracking_number, name, courier, status, order_id, last_event_description, added_at, updated_at, is_manual_status) values (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)",
   );
   parcel.run("p-1", "00340434000000000001", null, "DHL", "sent", "o-1", "On its way", T, T, 0);
-  parcel.run("p-2", "LP00000000000001", null, "Aliexpress Standard Shipping", "delivered", "o-2", null, T, T, 0);
+  parcel.run(
+    "p-2",
+    "LP00000000000001",
+    null,
+    "Aliexpress Standard Shipping",
+    "delivered",
+    "o-2",
+    null,
+    T,
+    T,
+    0,
+  );
   parcel.run("p-3", "0000000001", null, "Unknown", "ordered", null, null, T, T, 0);
   parcel.run("p-4", "RR000000001CN", null, "China", "arriving", null, null, T, T, 1);
   parcel.run("p-5", "000000000001", "example-shop.de", "17track", "delivered", null, null, T, T, 0);
