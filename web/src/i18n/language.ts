@@ -40,7 +40,7 @@ export function browserLanguage(
   return "en";
 }
 
-export function resolveLanguage(choice: LanguageChoice): Language {
+function resolveLanguage(choice: LanguageChoice): Language {
   return choice === "automatic" ? browserLanguage() : choice;
 }
 

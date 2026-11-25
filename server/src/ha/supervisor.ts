@@ -12,7 +12,7 @@ import type { Database } from "../db/schema.js";
 export const APP_INGRESS_PORT = 8099;
 const SUPERVISOR_URL = "http://supervisor";
 /** Integration domain the app announces itself to. */
-export const DISCOVERY_SERVICE = "open_parcels";
+const DISCOVERY_SERVICE = "open_parcels";
 const DISCOVERY_TOKEN_NAME = "Home Assistant (discovery)";
 
 /**
@@ -28,7 +28,7 @@ const optionsSchema = z
   .loose();
 
 /** The variables the app's options set; shown as "Home Assistant app option" on the Settings page. */
-export const APP_OPTION_KEYS = [
+const APP_OPTION_KEYS = [
   "OPENPARCELS_LOG_LEVEL",
   "OPENPARCELS_PUBLIC_URL",
   "OPENPARCELS_QUIET_WINDOW",

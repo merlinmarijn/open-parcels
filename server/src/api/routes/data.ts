@@ -8,7 +8,7 @@ import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema } from "../errors.js";
 
 /** The text the owner types to confirm deleting everything. */
-export const EVERYTHING_CONFIRMATION = "DELETE";
+const EVERYTHING_CONFIRMATION = "DELETE";
 
 const summarySchema = z.object({
   parcels: z.number().int(),

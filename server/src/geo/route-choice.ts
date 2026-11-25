@@ -13,16 +13,16 @@ export interface Candidate extends Point {
 }
 
 /** Answers this close to an earlier one are the same place (a town and its municipality). */
-export const SAME_PLACE_KM = 25;
+const SAME_PLACE_KM = 25;
 /**
  * A stop between two known ones is implausible when it lengthens the way by more than this and
  * by more than `DETOUR_FACTOR` times the direct way: 3,400 km off a 100 km leg is another place
  * of that name, while a hub 300 km to the side, or any stop on a long-haul leg, is not.
  */
-export const MAX_DETOUR_KM = 1_000;
-export const DETOUR_FACTOR = 2;
+const MAX_DETOUR_KM = 1_000;
+const DETOUR_FACTOR = 2;
 /** Without any context the first answer counts only when it leads every other by this much. */
-export const PROMINENCE_GAP = 0.1;
+const PROMINENCE_GAP = 0.1;
 
 /**
  * A match the search itself rates below this is weak: a little-known place that happens to share
@@ -30,8 +30,8 @@ export const PROMINENCE_GAP = 0.1;
  * towns found rightly rate 0.28 and up). A weak match is kept only with a carrier position or a
  * well-known place of the same parcel within `CONFIRM_KM`.
  */
-export const WEAK_IMPORTANCE = 0.25;
-export const CONFIRM_KM = 1_000;
+const WEAK_IMPORTANCE = 0.25;
+const CONFIRM_KM = 1_000;
 
 /** The mean Earth radius (IUGG); the web UI uses the same, so both measure alike. */
 const EARTH_RADIUS_KM = 6_371.0088;

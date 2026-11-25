@@ -10,7 +10,7 @@ export type ReturnView = (typeof RETURN_VIEWS)[number];
 
 const CLOSED: ReadonlySet<ReturnStatus> = new Set(["refunded", "rejected", "cancelled", "expired"]);
 
-export function inReturnView(view: ReturnView, status: ReturnStatus): boolean {
+function inReturnView(view: ReturnView, status: ReturnStatus): boolean {
   switch (view) {
     case "all":
       return true;

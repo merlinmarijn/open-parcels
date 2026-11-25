@@ -13,7 +13,7 @@ export const STARTED_AT = new Date();
  * failing backup); `unavailable`: it cannot work (the database does not answer).
  */
 export const CHECK_STATES = ["ok", "degraded", "unavailable"] as const;
-export type CheckState = (typeof CHECK_STATES)[number];
+type CheckState = (typeof CHECK_STATES)[number];
 
 export const CHECK_NAMES = [
   "database",
@@ -25,7 +25,7 @@ export const CHECK_NAMES = [
 ] as const;
 export type CheckName = (typeof CHECK_NAMES)[number];
 
-export interface ConnectionStatus {
+interface ConnectionStatus {
   readonly id: string;
   readonly provider: string;
   readonly label: string;
@@ -41,7 +41,7 @@ export interface ConnectionStatus {
   readonly backoff_until: string | null;
 }
 
-export interface InboxStatus extends ConnectionStatus {
+interface InboxStatus extends ConnectionStatus {
   readonly connected: boolean;
   readonly reconnect_at: string | null;
 }

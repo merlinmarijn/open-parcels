@@ -24,7 +24,7 @@ export function localDay(now: Date, timeZone: string): string {
 }
 
 /** The stored drop-off list; anything malformed reads as no options rather than failing a read. */
-export function parseDropOff(value: string): DropOffOption[] {
+function parseDropOff(value: string): DropOffOption[] {
   try {
     const parsed = dropOffOptionSchema.array().safeParse(JSON.parse(value));
     return parsed.success ? parsed.data : [];

@@ -67,7 +67,7 @@ export interface SignInCall {
 }
 
 /** Public description of a provider for the API and the UI. */
-export interface ProviderInfo {
+interface ProviderInfo {
   readonly id: string;
   readonly name: string;
   readonly countries: readonly string[];

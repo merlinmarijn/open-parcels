@@ -8,7 +8,6 @@ import type {
   GetApiV1ParcelsId200,
   GetApiV1Returns200Item,
   GetApiV1ReturnsView,
-  GetApiV1Session200,
   GetApiV1Status200,
   GetApiV1Connections200Item,
   GetApiV1ConnectionsIdSignInFlows200Item,
@@ -18,7 +17,6 @@ import type {
 } from "./generated";
 import { listingEvery } from "../lib/exhaustive";
 
-export type Session = GetApiV1Session200;
 /** Every error code the server sends (each error body has the same list). */
 export type ErrorCode = PostApiV1Session401Error;
 export type Parcel = GetApiV1Parcels200Item;

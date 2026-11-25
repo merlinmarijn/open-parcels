@@ -5,7 +5,7 @@ import { z } from "zod";
  * language in `web/src/i18n/*\/errors.ts`); `message` is an English explanation for logs and
  * scripts, and `params` carries the values a client text needs.
  */
-export const ERROR_CODES = [
+const ERROR_CODES = [
   "unauthorized",
   "forbidden",
   "csrf",
@@ -47,20 +47,18 @@ export const ERROR_CODES = [
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
 /** What `not_found` was about (`params.resource`). */
-export const NOT_FOUND_RESOURCES = [
-  "route",
-  "connection",
-  "order",
-  "parcel",
-  "return",
-  "token",
-  "login",
-  "calendar_feed",
-  "sign_in",
-  "setting",
-  "pictures",
-] as const;
-export type NotFoundResource = (typeof NOT_FOUND_RESOURCES)[number];
+export type NotFoundResource =
+  | "route"
+  | "connection"
+  | "order"
+  | "parcel"
+  | "return"
+  | "token"
+  | "login"
+  | "calendar_feed"
+  | "sign_in"
+  | "setting"
+  | "pictures";
 
 export type ErrorParams = Readonly<Record<string, string | number>>;
 

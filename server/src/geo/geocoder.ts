@@ -18,7 +18,7 @@ export interface Place {
 /** Settlement types that name a town even when Nominatim ranks the boundary as a state. */
 const SETTLEMENTS = new Set(["city", "town", "village", "municipality", "hamlet", "suburb"]);
 /** `place_rank` from which a match is a city or finer (13–16 city, 17+ town, suburb, postcode…). */
-export const MIN_STOP_RANK = 13;
+const MIN_STOP_RANK = 13;
 
 /**
  * Whether a match is precise enough to stand for a scan's place on a route: a city, town,

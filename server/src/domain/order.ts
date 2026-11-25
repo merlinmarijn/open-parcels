@@ -89,7 +89,7 @@ export function isDigitalShop(shop: string): boolean {
  * What an email says about an order, in the order's status words. `ordered` covers placed and
  * confirmed; `refunded` means the money came back without a return.
  */
-export const REPORTED_ORDER_STATUSES = [
+const REPORTED_ORDER_STATUSES = [
   "ordered",
   "shipped",
   "delivered",

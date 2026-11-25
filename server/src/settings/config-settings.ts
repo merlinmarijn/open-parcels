@@ -22,7 +22,7 @@ import {
 import type { Database } from "../db/schema.js";
 
 /** `ha_app`: an option of the Home Assistant app; `override`: saved on the Settings page. */
-export type SettingSource = "env" | "default" | "ha_app" | "override";
+type SettingSource = "env" | "default" | "ha_app" | "override";
 
 export interface SettingInfo {
   readonly key: SettingKey;

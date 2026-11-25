@@ -20,7 +20,7 @@ import { inImportTransaction } from "../shared.js";
  * connection it created instead of adding another. The report holds labels and counts, never secrets.
  */
 
-export interface HaConnectionReport {
+interface HaConnectionReport {
   readonly entryId: string;
   readonly domain: string;
   readonly label: string;
@@ -38,7 +38,7 @@ export interface HaConnectionReport {
   readonly notCarriedOver: readonly string[];
 }
 
-export interface HaEntryNote {
+interface HaEntryNote {
   readonly entryId: string;
   readonly domain: string;
   readonly title: string;

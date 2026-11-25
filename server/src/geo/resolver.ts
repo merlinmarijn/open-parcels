@@ -45,7 +45,7 @@ export const KEYS_PER_QUERY = 500;
 const MAX_TEXT = 200;
 
 /** The cache key of a place text: trimmed, single-spaced, lower case. */
-export function placeKey(text: string): string {
+function placeKey(text: string): string {
   return text.normalize("NFC").trim().replace(/\s+/gu, " ").toLowerCase();
 }
 

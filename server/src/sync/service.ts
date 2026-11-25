@@ -11,10 +11,10 @@ import type { ParcelRepository } from "../parcels/repository.js";
 import type { ReturnService } from "../returns/service.js";
 
 export const SYNC_ENTITIES = ["parcel", "event", "order", "return", "connection"] as const;
-export type SyncEntity = SyncChangeTable["entity"];
+type SyncEntity = SyncChangeTable["entity"];
 
 /** Tombstones are kept this long; a client that has not synced for longer loads everything. */
-export const TOMBSTONE_DAYS = 90;
+const TOMBSTONE_DAYS = 90;
 /** The newest `seq` whose tombstones were pruned: cursors before it are too old. */
 const FLOOR_KEY = "sync_floor";
 

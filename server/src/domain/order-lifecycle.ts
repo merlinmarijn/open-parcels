@@ -21,7 +21,7 @@ import { returnSchema } from "./return.js";
  * An order without parcels takes the shop's word: shipped or delivered (a shop delivering itself,
  * digital goods, which are delivered when they are bought).
  */
-export const ORDER_STATUSES = [
+const ORDER_STATUSES = [
   "ordered",
   "partly_shipped",
   "shipped",
@@ -32,21 +32,20 @@ export const ORDER_STATUSES = [
   "refunded",
 ] as const;
 export type OrderStatus = (typeof ORDER_STATUSES)[number];
-export const orderStatusSchema = z.enum(ORDER_STATUSES);
+const orderStatusSchema = z.enum(ORDER_STATUSES);
 
 /** Which orders a list shows: open (not delivered), delivered, archived, or all of them. */
 export const ORDER_VIEWS = ["open", "delivered", "archived", "all"] as const;
 export type OrderView = (typeof ORDER_VIEWS)[number];
 
 /** How an order got (or stays out of) the archive. */
-export const ARCHIVE_MODES = ["automatic", "archived", "kept"] as const;
-export type ArchiveMode = (typeof ARCHIVE_MODES)[number];
+const ARCHIVE_MODES = ["automatic", "archived", "kept"] as const;
 
 const NOT_SHIPPED: ReadonlySet<ParcelStatus> = new Set(["registered", "unknown"]);
 const TROUBLE: ReadonlySet<ParcelStatus> = new Set(["problem", "returning"]);
 
 /** Days after it was placed before an order that never got a parcel is archived. */
-export const PARCELLESS_ARCHIVE_DAYS = 30;
+const PARCELLESS_ARCHIVE_DAYS = 30;
 
 export interface ParcelState {
   readonly status: ParcelStatus;
@@ -151,7 +150,7 @@ export function orderTotal(
 const isoDateTime = z.iso.datetime({ offset: true });
 
 /** A parcel of an order, as much as an order view needs. */
-export const orderParcelSchema = z.object({
+const orderParcelSchema = z.object({
   id: z.uuid(),
   carrier: z.string(),
   tracking_number: z.string(),

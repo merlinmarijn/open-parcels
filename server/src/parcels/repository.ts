@@ -89,10 +89,10 @@ export const RAW_PRESENTATION: Presentation = {
 };
 
 /** Item names joined, for the "Item names" label mode: at most this many characters. */
-export const ITEM_LABEL_MAX = 100;
+const ITEM_LABEL_MAX = 100;
 
 /** A parcel's name: its label, else its item names (in that mode), else the tracking code. */
-export function displayName(
+function displayName(
   label: string | null,
   trackingNumber: string,
   items: readonly { readonly title: string }[],

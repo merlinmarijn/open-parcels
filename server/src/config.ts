@@ -479,7 +479,7 @@ export interface ParsedEnv {
 }
 
 /** `app`: an option of the Home Assistant app, passed in as a variable. */
-export type EnvSource = "env" | "default" | "ha_app";
+type EnvSource = "env" | "default" | "ha_app";
 
 export function parseEnv(
   env: NodeJS.ProcessEnv,

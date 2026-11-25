@@ -30,7 +30,7 @@ import { ReturnService } from "../returns/service.js";
 import { maskIdentifiers, recordUnknown, type UnknownValue } from "./vocab.js";
 
 /** A parcel missing from every complete listing for this long, undelivered, counts as removed. */
-export const REMOVAL_GRACE_MS = 6 * 60 * 60 * 1000;
+const REMOVAL_GRACE_MS = 6 * 60 * 60 * 1000;
 
 type Trx = Transaction<Database>;
 

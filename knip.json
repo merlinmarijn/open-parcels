@@ -1,0 +1,20 @@
+{
+  "$schema": "https://unpkg.com/knip@6/schema.json",
+  "workspaces": {
+    "server": {
+      "entry": ["src/tools/*.ts"],
+      "project": ["src/**/*.ts", "test/**/*.ts"],
+      "ignore": ["src/db/migrations/*.ts"],
+      "ignoreDependencies": ["@types/mailparser"]
+    },
+    "web": {
+      "project": ["src/**/*.{ts,tsx}"],
+      "ignore": ["src/api/generated.ts"]
+    }
+  },
+  "ignoreIssues": {
+    "server/src/carriers/**": ["exports", "types"],
+    "server/src/provider/api.ts": ["exports", "types"],
+    "server/src/provider/kit/**": ["exports", "types"]
+  }
+}

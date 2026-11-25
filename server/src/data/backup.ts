@@ -17,7 +17,7 @@ const DUE_SLACK_MS = 5 * 60 * 1000;
 const OVERDUE_GRACE_MS = 2 * HOUR_MS;
 
 /** Why a backup was taken: by the schedule, by the admin, or before "Delete everything". */
-export const BACKUP_REASONS = ["scheduled", "manual", "before_delete"] as const;
+const BACKUP_REASONS = ["scheduled", "manual", "before_delete"] as const;
 export type BackupReason = (typeof BACKUP_REASONS)[number];
 
 /** Backups are named by their UTC time, so names sort by age: `openparcels-2026-11-25T10-00-00-000Z.db`. */
@@ -36,7 +36,7 @@ const DIRECTORY_MODE = 0o700;
  * `read_only`: the folder is on a read-only file system. `not_a_folder`: the path is a file.
  * `failed`: anything else.
  */
-export const BACKUP_ERRORS = [
+const BACKUP_ERRORS = [
   "no_space",
   "permission_denied",
   "read_only",
@@ -51,7 +51,7 @@ export const backupErrorSchema = z
   .describe("Why the backup failed, as a code (the server log has the details); null on success.");
 
 /** The code for a file system error. */
-export function backupError(error: unknown): BackupError {
+function backupError(error: unknown): BackupError {
   const code =
     typeof error === "object" && error !== null && "code" in error ? error.code : undefined;
   switch (code) {

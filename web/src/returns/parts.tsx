@@ -7,7 +7,7 @@ import { t } from "../i18n";
 import { formatMoney } from "../lib/format";
 import { UI_LOCALE } from "../lib/locale";
 
-export const RETURN_STATUS_LABELS: Readonly<Record<ReturnStatus, string>> = t.returns.status;
+const RETURN_STATUS_LABELS: Readonly<Record<ReturnStatus, string>> = t.returns.status;
 
 /** The parcel status whose colour a return status borrows. */
 const STATUS_COLOUR: Readonly<Record<ReturnStatus, ParcelStatus>> = {
@@ -44,7 +44,7 @@ export function costLabel(cost: Return["cost"]): string | null {
     : t.returns.costs(formatMoney(cost.amount, cost.currency));
 }
 
-export function refundLabel(refund: Return["refund"]): string | null {
+function refundLabel(refund: Return["refund"]): string | null {
   if (refund === null) return null;
   const amount = refund.amount === null ? null : formatMoney(refund.amount, refund.currency);
   return refund.status === "issued" ? t.returns.refunded(amount) : t.returns.refundExpected(amount);
@@ -57,7 +57,7 @@ export function dropOffLabel(option: Return["drop_off"][number]): string {
   );
 }
 
-export function ReturnStatusBadge({ status }: { readonly status: ReturnStatus }): ReactNode {
+function ReturnStatusBadge({ status }: { readonly status: ReturnStatus }): ReactNode {
   return (
     <span className={`badge status-${STATUS_COLOUR[status]}`}>{RETURN_STATUS_LABELS[status]}</span>
   );

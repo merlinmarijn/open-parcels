@@ -14,7 +14,7 @@ export const LIVE_FAST_MS = 30_000;
 /** Probe for a session on parcels out for delivery that have no map yet. */
 export const LIVE_PROBE_MS = 5 * 60_000;
 /** Failed passes in a row before reading stops until the next full poll, as the carrier's page does. */
-export const LIVE_MAX_FAILURES = 3;
+const LIVE_MAX_FAILURES = 3;
 
 interface Session {
   readonly state: LiveState;

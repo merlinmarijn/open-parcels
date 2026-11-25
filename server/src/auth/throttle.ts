@@ -1,7 +1,7 @@
 import type { Clock } from "../clock.js";
 
 /** Addresses remembered at most; beyond this the expired ones go, then the oldest. */
-export const MAX_TRACKED_ADDRESSES = 10_000;
+const MAX_TRACKED_ADDRESSES = 10_000;
 
 /**
  * Limits failed login attempts per client address to slow down password guessing. Addresses are

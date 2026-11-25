@@ -12,7 +12,7 @@ import { mapLayersKey } from "../map/layers";
 export type ServerSetting = GetApiV1SettingsConfig200Item;
 export type ServerSettingValue = string | number | boolean;
 
-export const serverSettingsKey = ["settings", "config"] as const;
+const serverSettingsKey = ["settings", "config"] as const;
 
 /** The passwords' group: edited on the Security card, not the generic editor. */
 export const SECURITY_GROUP: ServerSettingGroup = "security";

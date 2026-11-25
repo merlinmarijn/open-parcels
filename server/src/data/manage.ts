@@ -36,7 +36,7 @@ async function fileBytes(file: string): Promise<number> {
 }
 
 /** Total size of the files below `dir`; 0 when it does not exist. */
-export async function directoryBytes(dir: string): Promise<number> {
+async function directoryBytes(dir: string): Promise<number> {
   let entries: string[];
   try {
     entries = await readdir(dir, { recursive: true });

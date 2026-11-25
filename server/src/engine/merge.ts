@@ -37,7 +37,7 @@ function newest(events: readonly SnapshotEvent[]): SnapshotEvent | undefined {
 }
 
 /** The newest history entry that maps, across every connection's history given. */
-export function newestMapped(
+function newestMapped(
   ...histories: readonly (readonly SnapshotEvent[])[]
 ): SnapshotEvent | undefined {
   return newest(histories.flat().filter((event) => event.status !== null));

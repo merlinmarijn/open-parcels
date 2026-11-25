@@ -23,18 +23,8 @@ export {
   parseArrival,
   pastDayOffset,
   resolveStatus,
-  trackingUrl,
 } from "open-parcels-rules";
-export type {
-  ArrivalOptions,
-  ArrivalWindow,
-  CarrierInfo,
-  EmailEvent,
-  MappedStatus,
-  RawStatus,
-  ResolvedStatus,
-  Rules,
-} from "open-parcels-rules";
+export type { MappedStatus, RawStatus, Rules } from "open-parcels-rules";
 
 type RuleStatus = MappedStatus["status"];
 
@@ -42,7 +32,7 @@ type RuleStatus = MappedStatus["status"];
  * The bundled rules lack a value the provider cannot work without. This is a packaging error,
  * never something to fall back from or to ask the user about.
  */
-export class RulesConfigurationError extends ProviderError {
+class RulesConfigurationError extends ProviderError {
   override readonly name = "RulesConfigurationError";
 }
 

@@ -103,7 +103,7 @@ function bodyText(body: RequestInit["body"]): string | null {
 /** What an unanswered request gets. Default: HTTP 599 "no route", so nothing passes silently. */
 export type Fallback = () => Response;
 
-export const noRoute: Fallback = () => new Response("no route", { status: 599 });
+const noRoute: Fallback = () => new Response("no route", { status: 599 });
 
 export interface FakeNetwork {
   readonly fetchImpl: FetchLike;
@@ -323,7 +323,7 @@ export class World<Config = unknown, Secret = unknown> {
 }
 
 /** Throws unless every snapshot of a lookup is filed under one of the codes asked for. */
-export function assertFiledAsTracked(
+function assertFiledAsTracked(
   carrier: string,
   codes: readonly string[],
   result: FetchResult,

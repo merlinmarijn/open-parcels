@@ -31,10 +31,7 @@ type Editing =
  * `none`), so a "Sign in" button would lead nowhere. Inboxes always sign in; unknown providers
  * and a connection the server says needs a sign-in keep the button.
  */
-export function canSignIn(
-  connection: Connection,
-  carriers: readonly Carrier[] | undefined,
-): boolean {
+function canSignIn(connection: Connection, carriers: readonly Carrier[] | undefined): boolean {
   if (connection.provider === INBOX_PROVIDER || connection.state === "needs_sign_in") return true;
   const carrier = carriers?.find((c) => c.id === connection.provider);
   if (carrier === undefined) return true;

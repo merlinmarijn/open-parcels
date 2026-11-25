@@ -70,7 +70,7 @@ const staticProvider: MigrationProvider = {
   getMigrations: () => Promise.resolve(MIGRATIONS),
 };
 
-export class MigrationError extends Error {
+class MigrationError extends Error {
   override readonly name = "MigrationError";
 }
 

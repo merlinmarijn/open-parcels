@@ -5,7 +5,7 @@ import { z } from "zod";
  * own vocabulary onto exactly these values, so automations can target `out_for_delivery`
  * regardless of the carrier. Do not extend or rename.
  */
-export const PARCEL_STATUSES = [
+const PARCEL_STATUSES = [
   "registered",
   "in_transit",
   "out_for_delivery",
@@ -34,11 +34,11 @@ export const DIRECTIONS = ["receiving", "sending"] as const;
 export type Direction = (typeof DIRECTIONS)[number];
 
 /** States of a courier map session (parcel-live/1). */
-export const LIVE_STATES = ["en_route", "next_stop", "delivered", "ended"] as const;
+const LIVE_STATES = ["en_route", "next_stop", "delivered", "ended"] as const;
 export type LiveState = (typeof LIVE_STATES)[number];
 
-export const LOCATION_SOURCES = ["courier", "event"] as const;
-export const LOCATION_PRECISIONS = ["exact", "street", "area"] as const;
+const LOCATION_SOURCES = ["courier", "event"] as const;
+const LOCATION_PRECISIONS = ["exact", "street", "area"] as const;
 
 const isoDateTime = z.iso.datetime({ offset: true });
 const localDate = z.iso.date();
@@ -59,7 +59,7 @@ export const historyEntrySchema = z.object({
 export type HistoryEntry = z.infer<typeof historyEntrySchema>;
 
 /** parcel-items/1: what is in the parcel. Images are served through the image proxy. */
-export const itemSchema = z.object({
+const itemSchema = z.object({
   title: z.string(),
   image_url: z.string().nullable(),
   url: z.string().nullable(),
@@ -82,7 +82,7 @@ export type ParcelLabelMode = (typeof PARCEL_LABEL_MODES)[number];
  * destination's, shown while the courier is on the road (the last stops included) and null once
  * the session has ended.
  */
-export const liveSchema = z.object({
+const liveSchema = z.object({
   state: z.enum(LIVE_STATES),
   stops_away: z.number().int().nonnegative().nullable(),
   latitude: z.number().min(-90).max(90).nullable(),
@@ -104,12 +104,11 @@ export const locationSchema = z.object({
   address: z.string().nullable(),
   at: isoDateTime.nullable(),
 });
-export type Location = z.infer<typeof locationSchema>;
 
 /** Every connection kind: the providers' and the inbox. */
 export const connectionKindSchema = z.enum(["account", "tracking", "shop", "mail"]);
 
-export const parcelConnectionRefSchema = z.object({
+const parcelConnectionRefSchema = z.object({
   connection_id: z.string(),
   provider: z.string(),
   label: z.string(),
@@ -118,20 +117,18 @@ export const parcelConnectionRefSchema = z.object({
   last_seen_at: isoDateTime,
 });
 
-export const LOOKUP_STATES = ["pending", "found", "not_found"] as const;
-export type LookupState = (typeof LOOKUP_STATES)[number];
+const LOOKUP_STATES = ["pending", "found", "not_found"] as const;
 
 /**
  * What the carrier said the last time a tracking connection asked about the code. `pending`: never
  * answered (or not followed by any tracking connection); `not_found`: the carrier was asked and did
  * not return the code. `since` is when the state began, `checked_at` the last time it was asked.
  */
-export const lookupSchema = z.object({
+const lookupSchema = z.object({
   state: z.enum(LOOKUP_STATES),
   since: isoDateTime.nullable(),
   checked_at: isoDateTime.nullable(),
 });
-export type Lookup = z.infer<typeof lookupSchema>;
 
 /**
  * The normalised parcel every client sees. The first block mirrors the Home Assistant suite's

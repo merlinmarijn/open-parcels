@@ -25,9 +25,12 @@ The TypeScript implementation from before the rewrite is on branch `legacy-ts` (
 Run it before every commit; it must pass with zero warnings:
 
 ```sh
-npm run gate   # prettier check, eslint (strict type-checked + size limits), tsc, vitest, build
+npm run gate   # prettier check, eslint (strict type-checked + size limits), knip, tsc, vitest, build
 ```
 
+- **knip** (`knip.json`) fails on unused files, dependencies and exports. Carrier providers'
+  internals and the provider API (`server/src/provider/api.ts`, `kit/`) are left out until the
+  provider rewrite; migrations are loaded as namespaces.
 - **Build on NTFS (`G:\_TEMP\...`), never on the Btrfs drives** `D:`, `E:` or `F:` from Windows.
 - **npm 11 runs install scripts only for packages listed in `allowScripts`** in the root
   `package.json`. Add a package there deliberately, never blanket-allow.

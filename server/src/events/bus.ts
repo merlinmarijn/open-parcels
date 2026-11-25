@@ -14,10 +14,7 @@ export const OUTBOX_RETENTION_MS = 24 * 60 * 60 * 1000;
  * replayed hours later; they stay just long enough for a quick reconnect.
  */
 export const SHORT_LIVED_RETENTION_MS = 15 * 60 * 1000;
-export const SHORT_LIVED_TYPES: readonly EventType[] = [
-  "parcel.live_updated",
-  "connection.run_finished",
-];
+const SHORT_LIVED_TYPES: readonly EventType[] = ["parcel.live_updated", "connection.run_finished"];
 /** The most rows kept, whatever their age, so a burst (a history import) cannot grow it. */
 export const OUTBOX_MAX_ROWS = 2000;
 const REPLAY_LIMIT = 1000;

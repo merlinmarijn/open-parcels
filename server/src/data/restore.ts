@@ -6,11 +6,11 @@ import { MIGRATIONS } from "../db/database.js";
 import { secretAad } from "../engine/connections.js";
 
 /** A backup that cannot or must not be restored; the message says why and what to do. */
-export class RestoreError extends Error {
+class RestoreError extends Error {
   override readonly name = "RestoreError";
 }
 
-export interface BackupContents {
+interface BackupContents {
   readonly parcels: number;
   readonly orders: number;
   readonly connections: number;
@@ -62,7 +62,7 @@ function keyMatches(sqlite: SQLite.Database, secrets: SecretBox | undefined): bo
  * is an open-parcels database, and no migration in it is unknown to this version (a backup of a
  * newer version would be downgraded silently otherwise).
  */
-export function inspectBackup(file: string, secrets?: SecretBox): BackupContents {
+function inspectBackup(file: string, secrets?: SecretBox): BackupContents {
   if (!existsSync(file)) {
     throw new RestoreError(`There is no file at ${file}.`);
   }

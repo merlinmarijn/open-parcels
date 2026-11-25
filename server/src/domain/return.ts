@@ -5,7 +5,7 @@ import { z } from "zod";
  * order's items, and once the shop or carrier gives a tracking number it is tracked like any
  * parcel (an outgoing one).
  */
-export const RETURN_STATUSES = [
+const RETURN_STATUSES = [
   "requested",
   "label_created",
   "dropped_off",
@@ -19,10 +19,10 @@ export const RETURN_STATUSES = [
 export type ReturnStatus = (typeof RETURN_STATUSES)[number];
 
 /** Where a return may be handed in. `any`: any shop or point of the carrier. */
-export const DROP_OFF_KINDS = ["shop", "parcel_locker", "post_office", "pickup", "any"] as const;
+const DROP_OFF_KINDS = ["shop", "parcel_locker", "post_office", "pickup", "any"] as const;
 export type DropOffKind = (typeof DROP_OFF_KINDS)[number];
 
-export const REFUND_STATUSES = ["pending", "issued"] as const;
+const REFUND_STATUSES = ["pending", "issued"] as const;
 export type RefundStatus = (typeof REFUND_STATUSES)[number];
 
 export interface DropOffOption {

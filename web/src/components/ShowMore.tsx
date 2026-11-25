@@ -6,7 +6,7 @@ import { t } from "../i18n";
  * thousands of parcels and orders; drawing them all at once makes the page slow to open, while
  * search, sorting and counts still work on the whole list.
  */
-export const LIST_STEP = 200;
+const LIST_STEP = 200;
 
 /**
  * The first `shown` entries of a list and a button for the next step. `reset` (for example the

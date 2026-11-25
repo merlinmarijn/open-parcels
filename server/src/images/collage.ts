@@ -4,7 +4,7 @@ import path from "node:path";
 import sharp from "sharp";
 
 /** Width and height of a parcel picture, in pixels. */
-export const COLLAGE_SIZE = 256;
+const COLLAGE_SIZE = 256;
 const MAX_TILES = 9;
 /** Collages not rebuilt for this long are deleted by `prune()`; a parcel still shown builds anew. */
 const MAX_AGE_MS = 30 * 24 * 60 * 60 * 1000;

@@ -8,14 +8,14 @@ export const POLL_HOT_MS = 15 * MINUTE;
 export const POLL_MID_MS = 45 * MINUTE;
 /** Accounts and shops with nothing in flight still poll: that is how they discover new parcels. */
 export const POLL_IDLE_MS = 3 * HOUR;
-export const HOT_LOOKAHEAD_MS = HOUR;
-export const QUIET_START_HOUR = 0;
-export const QUIET_END_HOUR = 6;
-export const CAPTCHA_PAUSE_MS = 6 * HOUR;
+const HOT_LOOKAHEAD_MS = HOUR;
+const QUIET_START_HOUR = 0;
+const QUIET_END_HOUR = 6;
+const CAPTCHA_PAUSE_MS = 6 * HOUR;
 /** The longest our own backoff after a 429 grows to. */
-export const RATE_LIMIT_MAX_MS = HOUR;
+const RATE_LIMIT_MAX_MS = HOUR;
 /** The longest `Retry-After` honoured; a carrier asking for more is asked again after a day. */
-export const RETRY_AFTER_MAX_MS = 24 * HOUR;
+const RETRY_AFTER_MAX_MS = 24 * HOUR;
 
 export interface ActiveParcel {
   readonly status: ParcelStatus;

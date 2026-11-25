@@ -62,7 +62,7 @@ export interface LegacyReport {
   readonly statuses: Readonly<Record<string, number>>;
 }
 
-export interface SkippedCredential {
+interface SkippedCredential {
   readonly service: string;
   readonly reason: string;
 }

@@ -11,11 +11,11 @@ import { isNonPublicHostLiteral } from "../net/address.js";
  * Upstream URLs and keys never leave the server: the web only sees ids, labels and attribution.
  * Labels and attributions are kept per language; the layer list answers in the one asked for.
  */
-export type LayerKind = "base" | "overlay";
-export type TileFormat = "png" | "jpg";
+type LayerKind = "base" | "overlay";
+type TileFormat = "png" | "jpg";
 
 /** A text in every language the server speaks. */
-export type Localized = Readonly<Record<Language, string>>;
+type Localized = Readonly<Record<Language, string>>;
 
 const both = (text: string): Localized => ({ en: text, de: text });
 
@@ -145,7 +145,7 @@ const CARTO: Localized = { en: `${OSM.en} ${CARTO_LINK}`, de: `${OSM.de} ${CARTO
  * carto.com/basemaps/apikey); without one CARTO only serves "API key required" tiles. Dark Matter
  * is what open-parcels used before the rewrite.
  */
-export const CARTO_LAYERS: readonly TileLayerDef[] = (
+const CARTO_LAYERS: readonly TileLayerDef[] = (
   [
     [
       "carto_dark",

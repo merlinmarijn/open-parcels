@@ -18,7 +18,7 @@ interface HaEntry {
   readonly disabled: boolean;
 }
 
-export interface ParcelPlan {
+interface ParcelPlan {
   readonly trackingNumber: string;
   readonly direction: "receiving" | "sending";
 }

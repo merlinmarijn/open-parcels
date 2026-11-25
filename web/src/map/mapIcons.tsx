@@ -17,7 +17,7 @@ import { createRoot } from "react-dom/client";
 
 export type LatLng = [number, number];
 
-export function createDivIcon(iconNode: ReactNode, color: string, containerSize = 32): L.DivIcon {
+function createDivIcon(iconNode: ReactNode, color: string, containerSize = 32): L.DivIcon {
   // Rendered once into a detached element: react-dom/server would add React's server renderer to
   // the bundle just for these icons.
   const container = document.createElement("div");
@@ -52,12 +52,12 @@ export function createDivIcon(iconNode: ReactNode, color: string, containerSize 
 }
 
 export const iconHome = createDivIcon(<Home size={28} />, "#10b981", 36);
-export const iconPackage = createDivIcon(<Package size={24} />, "#818cf8", 32);
-export const iconTruck = createDivIcon(<Truck size={24} />, "#ea580c", 32);
+const iconPackage = createDivIcon(<Package size={24} />, "#818cf8", 32);
+const iconTruck = createDivIcon(<Truck size={24} />, "#ea580c", 32);
 export const iconVan = createDivIcon(<Van size={24} />, "#f59e0b", 32);
-export const iconPlane = createDivIcon(<Plane size={24} />, "#60a5fa", 32);
-export const iconShip = createDivIcon(<Ship size={24} />, "#3b82f6", 32);
-export const iconTrain = createDivIcon(<Train size={24} />, "#a855f7", 32);
+const iconPlane = createDivIcon(<Plane size={24} />, "#60a5fa", 32);
+const iconShip = createDivIcon(<Ship size={24} />, "#3b82f6", 32);
+const iconTrain = createDivIcon(<Train size={24} />, "#a855f7", 32);
 export const iconSource = createDivIcon(<MapPin size={24} />, "#ef4444", 28);
 export const iconIntermediate = createDivIcon(<MapPin size={20} />, "#9ca3af", 24);
 /** A stop placed from its place name only: hollow and fainter, as its spot is a town's centre. */
@@ -66,9 +66,8 @@ export const iconApproximate = createDivIcon(
   "#9ca3af",
   24,
 );
-export const iconCurrent = createDivIcon(<MapPin size={24} fill="#3b82f6" />, "#3b82f6", 28);
-export const iconHeli = createDivIcon(<Helicopter size={24} />, "#06b6d4", 32);
-export const iconBike = createDivIcon(<Bike size={24} />, "#22c55e", 32);
+const iconHeli = createDivIcon(<Helicopter size={24} />, "#06b6d4", 32);
+const iconBike = createDivIcon(<Bike size={24} />, "#22c55e", 32);
 
 const TRANSPORT_ICONS: Readonly<Record<string, L.DivIcon>> = {
   plane: iconPlane,
@@ -134,7 +133,7 @@ export function determineTransportMethod(
 }
 
 /** A quadratic Bézier curve between two coordinates, bowed to one side. */
-export function getBezierCurve(start: LatLng, end: LatLng, segments = 50): LatLng[] {
+function getBezierCurve(start: LatLng, end: LatLng, segments = 50): LatLng[] {
   const [lat1, lng1] = start;
   const [lat2, lng2] = end;
   const dLat = lat2 - lat1;

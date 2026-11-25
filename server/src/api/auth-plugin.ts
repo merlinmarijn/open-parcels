@@ -24,7 +24,7 @@ interface Caller {
   readonly scopes: readonly Scope[];
 }
 
-export type AuthContext =
+type AuthContext =
   | (Caller & { readonly kind: "ingress" })
   | (Caller & { readonly kind: "token"; readonly tokenId: string })
   /** A token login (log in with a password, access + refresh token), e.g. the Android app. */

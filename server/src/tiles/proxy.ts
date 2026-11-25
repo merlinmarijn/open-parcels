@@ -15,7 +15,7 @@ import { BUILTIN_LAYERS, tileUrl, type TileLayerDef } from "./layers.js";
  * the tile servers when they ask directly, and the providers never see the user's browser, so the
  * web UI always goes through here. Each layer has its own cache folder.
  */
-export const TILE_MAX_ZOOM = 19;
+const TILE_MAX_ZOOM = 19;
 /** No provider serves deeper than this; the route refuses anything beyond it up front. */
 export const TILE_MAX_ZOOM_ANY = 22;
 /** How long a tile counts as fresh when its server sent no caching headers (policy minimum). */

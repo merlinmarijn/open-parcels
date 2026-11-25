@@ -92,5 +92,3 @@ export function fetchAccount(context: Context): Promise<FetchResult> {
   }
   return dhl.fetchAccount(context);
 }
-
-export { dhl };

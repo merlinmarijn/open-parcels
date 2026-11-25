@@ -4,7 +4,7 @@ import type { Database } from "../db/schema.js";
 import type { ProviderRegistry } from "./registry.js";
 
 /** How long a parcel's carrier (or a fallback before) has to not find it before the next is asked. */
-export const FALLBACK_AFTER_MS = 24 * 60 * 60 * 1000;
+const FALLBACK_AFTER_MS = 24 * 60 * 60 * 1000;
 
 /** Fallback providers in the order they are asked: the user's own service first, then 17TRACK. */
 const ORDER = ["universal_lookup", "17track"];

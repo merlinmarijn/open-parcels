@@ -11,14 +11,14 @@ import type { StateReason } from "../engine/state-reason.js";
 type Bool = 0 | 1;
 type Timestamp = string;
 
-export interface OwnerTable {
+interface OwnerTable {
   id: ColumnType<1, 1, never>;
   password_hash: string;
   created_at: Timestamp;
   updated_at: Timestamp;
 }
 
-export interface SessionTable {
+interface SessionTable {
   /** SHA-256 of the session cookie value; the raw value is never stored. */
   id_hash: string;
   csrf_token: string;
@@ -30,7 +30,7 @@ export interface SessionTable {
   role: string;
 }
 
-export interface ApiTokenTable {
+interface ApiTokenTable {
   id: string;
   name: string;
   /** SHA-256 of the token; the raw value is shown once at creation. */
@@ -61,7 +61,7 @@ export interface LoginTable {
   last_used_at: Timestamp;
 }
 
-export interface SettingTable {
+interface SettingTable {
   key: string;
   /** JSON value. */
   value: string;
@@ -118,7 +118,7 @@ export interface OrderTable {
   total_source: ColumnType<"shop" | "payment" | null, "shop" | "payment" | null | undefined>;
 }
 
-export interface ParcelTable {
+interface ParcelTable {
   id: string;
   carrier: string;
   tracking_number: string;
@@ -160,7 +160,7 @@ export interface ParcelTable {
   lookup_checked_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
 }
 
-export interface ParcelConnectionTable {
+interface ParcelConnectionTable {
   parcel_id: string;
   connection_id: string;
   external_ref: string | null;
@@ -171,7 +171,7 @@ export interface ParcelConnectionTable {
 }
 
 /** Which connections reported an order. See migration 0015. */
-export interface OrderConnectionTable {
+interface OrderConnectionTable {
   order_id: string;
   connection_id: string;
 }
@@ -201,12 +201,12 @@ export interface ReturnTable {
   updated_at: Timestamp;
 }
 
-export interface ReturnConnectionTable {
+interface ReturnConnectionTable {
   return_id: string;
   connection_id: string;
 }
 
-export interface ReturnItemTable {
+interface ReturnItemTable {
   id: Generated<number>;
   return_id: string;
   position: number;
@@ -214,7 +214,7 @@ export interface ReturnItemTable {
   order_item_id: number | null;
 }
 
-export interface ParcelEventTable {
+interface ParcelEventTable {
   id: Generated<number>;
   parcel_id: string;
   connection_id: string | null;
@@ -242,14 +242,14 @@ export interface SyncChangeTable {
   changed_at: Timestamp;
 }
 
-export interface ParcelRawTable {
+interface ParcelRawTable {
   parcel_id: string;
   connection_id: string;
   fetched_at: Timestamp;
   payload: string;
 }
 
-export interface ItemTable {
+interface ItemTable {
   id: Generated<number>;
   parcel_id: string;
   position: number;
@@ -277,7 +277,7 @@ export interface OrderItemTable {
   parcel_id: string | null;
 }
 
-export interface LiveStateTable {
+interface LiveStateTable {
   parcel_id: string;
   /** The connection following the session; only its runs may end it. See migration 0022. */
   connection_id: string;
@@ -289,14 +289,14 @@ export interface LiveStateTable {
 }
 
 /** Place-name lookups, keyed by the normalised name. See migration 0014. */
-export interface PlaceTable {
+interface PlaceTable {
   key: string;
   /** JSON array of the places the name may stand for, best first; `[]` when none was found. */
   candidates: string;
   looked_at: Timestamp;
 }
 
-export interface OutboxTable {
+interface OutboxTable {
   seq: Generated<number>;
   type: string;
   parcel_id: string | null;
@@ -304,7 +304,7 @@ export interface OutboxTable {
   created_at: Timestamp;
 }
 
-export interface UnknownVocabTable {
+interface UnknownVocabTable {
   provider: string;
   kind: string;
   key: string;
@@ -313,7 +313,7 @@ export interface UnknownVocabTable {
   count: number;
 }
 
-export interface SignInAttemptTable {
+interface SignInAttemptTable {
   id: string;
   connection_id: string;
   flow: string;
@@ -358,5 +358,4 @@ export type ParcelRow = Selectable<ParcelTable>;
 export type NewParcelRow = Insertable<ParcelTable>;
 export type ParcelUpdate = Updateable<ParcelTable>;
 export type ConnectionRow = Selectable<ConnectionTable>;
-export type ApiTokenRow = Selectable<ApiTokenTable>;
 export type OutboxRow = Selectable<OutboxTable>;

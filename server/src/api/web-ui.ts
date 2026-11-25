@@ -18,7 +18,7 @@ const INGRESS_PATH = /^\/api\/hassio_ingress\/[\w-]{1,128}$/;
  * leaflet-ant-path ships its CSS through a style-loader runtime that injects <style> elements;
  * inline CSS cannot run code, so the script rule is what matters.
  */
-export const CONTENT_SECURITY_POLICY = [
+const CONTENT_SECURITY_POLICY = [
   "default-src 'self'",
   "script-src 'self'",
   "style-src 'self' 'unsafe-inline'",
@@ -33,7 +33,7 @@ export const CONTENT_SECURITY_POLICY = [
 ].join("; ");
 
 /** Headers for the HTML page; the hashed assets only carry caching headers. */
-export const PAGE_HEADERS: Readonly<Record<string, string>> = {
+const PAGE_HEADERS: Readonly<Record<string, string>> = {
   "cache-control": "no-cache",
   "content-security-policy": CONTENT_SECURITY_POLICY,
   "x-content-type-options": "nosniff",
@@ -61,7 +61,7 @@ export function isServerPath(url: string): boolean {
 }
 
 /** The base path the UI is served under: `/`, or the ingress prefix followed by `/`. */
-export function basePath(request: FastifyRequest, trustIngressPath: boolean): string {
+function basePath(request: FastifyRequest, trustIngressPath: boolean): string {
   const header = request.headers["x-ingress-path"];
   if (trustIngressPath && typeof header === "string" && INGRESS_PATH.test(header)) {
     return `${header}/`;

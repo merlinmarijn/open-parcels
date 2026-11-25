@@ -72,7 +72,7 @@ export function isWholeDays(start: Date, end: Date, timeZone: string): boolean {
 }
 
 /** A time at local midnight carries a date only: the connection knew the day, not the hour. */
-export function isDateOnly(at: Date, timeZone: string): boolean {
+function isDateOnly(at: Date, timeZone: string): boolean {
   const parts = localParts(at, timeZone);
   return parts.hour === 0 && parts.minute === 0;
 }
@@ -85,7 +85,7 @@ function isoDay(year: number, month: number, day: number): string {
  * The local days an all-day entry covers, end exclusive. An end that is not at midnight (an
  * inclusive 23:59) belongs to its own day, so the exclusive end is the day after it.
  */
-export function allDayRange(
+function allDayRange(
   start: Date,
   end: Date,
   timeZone: string,

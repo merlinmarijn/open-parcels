@@ -10,6 +10,5 @@ export const t: Messages = DICTIONARIES[LANGUAGE];
 /** The product name, the same in every language. */
 export const BRAND = "Open Parcels";
 
-export { plural } from "./plural";
 export { chooseLanguage, LANGUAGE, LANGUAGES, storedLanguageChoice } from "./language";
-export type { Language, LanguageChoice } from "./language";
+export type { LanguageChoice } from "./language";

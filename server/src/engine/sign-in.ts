@@ -25,11 +25,11 @@ import {
 import type { ConnectionService, ConnectionView } from "./connections.js";
 
 /** How long a step waits for the user's answer. Approval steps use their own timeout. */
-export const ATTEMPT_TTL_MS = 15 * 60_000;
+const ATTEMPT_TTL_MS = 15 * 60_000;
 /** Refused codes, wrong pastes and the like before the attempt is dropped. */
-export const MAX_FAILURES = 5;
+const MAX_FAILURES = 5;
 /** How long to wait after a captcha before the same step is tried again. */
-export const CAPTCHA_RETRY_SECONDS = 15 * 60;
+const CAPTCHA_RETRY_SECONDS = 15 * 60;
 
 export type SignInErrorCode =
   | "sign_in_expired"

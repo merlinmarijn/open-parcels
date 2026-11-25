@@ -27,7 +27,7 @@ const SECRET_PATH_PREFIXES = [
  * The path a log line may show: the query string is dropped (it can carry tokens), and a path
  * under a secret prefix is reduced to its route pattern, matched or not, with or without ingress.
  */
-export function loggablePath(url: string): string {
+function loggablePath(url: string): string {
   const path = url.split("?", 1)[0] ?? "";
   for (const { prefix, pattern } of SECRET_PATH_PREFIXES) {
     const index = path.indexOf(prefix);
