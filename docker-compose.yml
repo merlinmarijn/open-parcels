@@ -14,6 +14,8 @@ services:
       OPENPARCELS_LOG_LEVEL: info
       # OPENPARCELS_PUBLIC_URL: https://parcels.example.com
       # OPENPARCELS_SECURE_COOKIES: "true"
+      # A web UI or other web page on another address (exact origins, comma-separated):
+      # OPENPARCELS_CORS_ORIGINS: https://parcels-ui.example.com
       # Without a reader password anyone who can reach the server can read (not change) everything.
       # OPENPARCELS_PASSWORD: change-me-reader
       # Without an admin password, the first start asks for the setup code from the log.

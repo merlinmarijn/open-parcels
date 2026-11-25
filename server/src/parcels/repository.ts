@@ -279,6 +279,19 @@ export class ParcelRepository {
     return new Map(rows.map((row) => [row.id, this.#toParcel(row, related)]));
   }
 
+  /** These parcels while the owner may see them, without history; others are left out. */
+  async visibleByIds(ids: readonly string[]): Promise<Parcel[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.db
+      .selectFrom("parcels")
+      .selectAll()
+      .where("id", "in", ids)
+      .where(parcelVisible)
+      .execute();
+    const related = await this.#loadRelated(rows, false);
+    return rows.map((row) => this.#toParcel(row, related));
+  }
+
   /** Every visible parcel of these orders, archived ones included, without history. */
   async byOrders(orderIds: readonly string[]): Promise<{ orderId: string; parcel: Parcel }[]> {
     if (orderIds.length === 0) return [];

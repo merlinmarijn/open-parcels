@@ -44,6 +44,11 @@ export class ReturnService {
     return found;
   }
 
+  /** These returns; ids hidden or unknown are left out. */
+  async byIds(ids: readonly string[]): Promise<Return[]> {
+    return loadReturns(this.db, { ids }, this.today());
+  }
+
   async byOrders(orderIds: readonly string[]): Promise<Return[]> {
     return loadReturns(this.db, { orderIds }, this.today());
   }

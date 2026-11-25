@@ -72,5 +72,14 @@ export const admin: Messages["admin"] = {
     none: "Noch keine Tokens.",
     revokeConfirm: (name: string) => `Den Token „${name}“ widerrufen?`,
     revoke: "Widerrufen",
+    logins: "Logins",
+    loginsHint:
+      "Apps und Weboberflächen an anderer Stelle, die sich mit einem Passwort eingeloggt haben. Sie enden von selbst nach 30 Tagen ohne Nutzung und wenn sich das Passwort ändert.",
+    role: "Rolle",
+    roleNames: { admin: "Admin", reader: "Leser" },
+    expires: "Endet",
+    noLogins: "Keine Logins.",
+    endConfirm: (name: string) => `„${name}“ ausloggen?`,
+    end: "Ausloggen",
   },
 };

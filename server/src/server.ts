@@ -30,13 +30,15 @@ export interface RunningServer {
 
 async function runMaintenance(services: Services): Promise<void> {
   const sessions = await services.auth.pruneExpiredSessions();
+  const logins = await services.logins.pruneExpired();
+  const tombstones = await services.sync.pruneTombstones();
   const events = await services.bus.pruneExpired();
   const images = await services.images.prune();
   const tiles = await services.tiles.prune();
   const collages = await services.collages.prune();
   const retention = await services.parcels.applyRetention(services.config.retention);
   services.logger.debug(
-    { sessions, events, images, tiles, collages, ...retention },
+    { sessions, logins, tombstones, events, images, tiles, collages, ...retention },
     "Maintenance finished.",
   );
 }

@@ -303,6 +303,7 @@ describe("percent-encoded paths (OP-001)", () => {
     await bare.register(cookie);
     registerAuth(bare, {
       store: ctx.services.auth,
+      logins: ctx.services.logins,
       access: ctx.services.access,
       trustedIngressAddress: undefined,
     });
@@ -333,7 +334,14 @@ describe("writes", () => {
         .filter((op) => op.isPublic)
         .map((op) => `${op.method} ${op.url}`)
         .sort(),
-    ).toEqual(["DELETE /api/v1/session", "POST /api/v1/session", "POST /api/v1/setup"]);
+    ).toEqual([
+      "DELETE /api/v1/session",
+      "POST /api/v1/logins",
+      "POST /api/v1/logins/logout",
+      "POST /api/v1/logins/refresh",
+      "POST /api/v1/session",
+      "POST /api/v1/setup",
+    ]);
     for (const op of writes.filter((candidate) => !candidate.isPublic)) {
       const label = `${op.method} ${op.url}`;
       const method = op.method as "POST" | "PUT" | "PATCH" | "DELETE";

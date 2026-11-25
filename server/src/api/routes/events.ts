@@ -1,3 +1,4 @@
+import type { OutgoingHttpHeaders } from "node:http";
 import { z } from "zod";
 import { EVENT_TYPES, type OutboxEvent } from "../../events/types.js";
 import type { Services } from "../../services.js";
@@ -52,7 +53,15 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
           "`parcel.live_position` messages carry the courier's position while on the road until " +
           "the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and " +
           "`stops_away`; they have no `id` and are never replayed.",
-        querystring: z.object({ last_event_id: z.coerce.number().int().nonnegative().optional() }),
+        querystring: z.object({
+          last_event_id: z.coerce.number().int().nonnegative().optional(),
+          access_token: z
+            .string()
+            .optional()
+            .describe(
+              "A login's access token (`POST /api/v1/logins`), for clients that cannot send headers (browsers' EventSource). API tokens go in the Authorization header only.",
+            ),
+        }),
         produces: ["text/event-stream"],
         response: { 200: streamMessageSchema },
       },
@@ -67,6 +76,8 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
       reply.hijack();
       const raw = reply.raw;
       raw.writeHead(200, {
+        // What hooks set before the hijack (CORS), which Fastify no longer sends once hijacked.
+        ...(reply.getHeaders() as OutgoingHttpHeaders),
         "content-type": "text/event-stream; charset=utf-8",
         "cache-control": "no-cache, no-transform",
         connection: "keep-alive",
@@ -141,7 +152,11 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
       );
       // Each heartbeat also checks the credential: a signed-out session or a revoked token ends
       // the stream within one heartbeat instead of streaming on until the client goes away.
-      const stillAllowed = credentialCheck(request, services.auth, services.access);
+      const stillAllowed = credentialCheck(request, {
+        store: services.auth,
+        logins: services.logins,
+        access: services.access,
+      });
       const heartbeat = setInterval(() => {
         stillAllowed().then(
           (allowed) => {

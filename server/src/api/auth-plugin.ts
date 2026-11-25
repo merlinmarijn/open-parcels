@@ -1,6 +1,7 @@
 import type { FastifyInstance, FastifyReply, FastifyRequest, preHandlerHookHandler } from "fastify";
 import type { AccessControl } from "../auth/access.js";
 import { safeEqual } from "../auth/crypto.js";
+import { ACCESS_PREFIX, type LoginStore } from "../auth/logins.js";
 import {
   ROLE_SCOPES,
   roleOfScopes,
@@ -26,6 +27,8 @@ interface Caller {
 export type AuthContext =
   | (Caller & { readonly kind: "ingress" })
   | (Caller & { readonly kind: "token"; readonly tokenId: string })
+  /** A token login (log in with a password, access + refresh token), e.g. the Android app. */
+  | (Caller & { readonly kind: "login"; readonly loginId: string })
   | (Caller & { readonly kind: "session"; readonly csrfToken: string })
   /** No credential, but reading is open because OPENPARCELS_PASSWORD is empty. */
   | (Caller & { readonly kind: "anonymous" });
@@ -40,6 +43,7 @@ const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
 export interface AuthPluginOptions {
   readonly store: AuthStore;
+  readonly logins: LoginStore;
   readonly access: AccessControl;
   /**
    * When set, this server instance is the Home Assistant ingress listener and requests from this
@@ -48,13 +52,21 @@ export interface AuthPluginOptions {
   readonly trustedIngressAddress: string | undefined;
 }
 
-function bearerToken(request: Pick<FastifyRequest, "headers">): string | undefined {
+/** The live event stream: browsers' EventSource cannot send headers. */
+const EVENTS_PATH = "/api/v1/events";
+
+/**
+ * The bearer token of the Authorization header; on the live event stream also a login's access
+ * token in `?access_token=` (short-lived, and the logger never writes query strings). Long-lived
+ * API tokens are never accepted in an address.
+ */
+function bearerToken(request: Pick<FastifyRequest, "headers" | "url">): string | undefined {
   const header = request.headers.authorization;
-  if (header === undefined) {
-    return undefined;
-  }
-  const match = /^Bearer\s+(\S+)$/i.exec(header);
-  return match?.[1];
+  if (header !== undefined) return /^Bearer\s+(\S+)$/i.exec(header)?.[1];
+  const [path, query] = request.url.split("?", 2);
+  if (path !== EVENTS_PATH || query === undefined) return undefined;
+  const token = new URLSearchParams(query).get("access_token");
+  return token?.startsWith(ACCESS_PREFIX) === true ? token : undefined;
 }
 
 async function resolveAuth(
@@ -68,6 +80,12 @@ async function resolveAuth(
       : null;
   }
   const token = bearerToken(request);
+  if (token?.startsWith(ACCESS_PREFIX) === true) {
+    const login = await options.logins.findByAccess(token);
+    return login === undefined
+      ? null
+      : { kind: "login", loginId: login.id, role: login.role, scopes: ROLE_SCOPES[login.role] };
+  }
   if (token !== undefined) {
     const found = await options.store.findToken(token);
     return found === undefined
@@ -100,13 +118,13 @@ async function resolveAuth(
  * call it to end themselves when their access ends.
  */
 /** The parts of a request whose credentials a long-lived stream re-checks. */
-export type CredentialRequest = Pick<FastifyRequest, "auth" | "headers" | "cookies">;
+export type CredentialRequest = Pick<FastifyRequest, "auth" | "headers" | "cookies" | "url">;
 
 export function credentialCheck(
   request: CredentialRequest,
-  store: AuthStore,
-  access: AccessControl,
+  options: Pick<AuthPluginOptions, "store" | "logins" | "access">,
 ): () => Promise<boolean> {
+  const { store, logins, access } = options;
   const auth = request.auth;
   if (auth === null) {
     return () => Promise.resolve(false);
@@ -116,6 +134,10 @@ export function credentialCheck(
       return () => Promise.resolve(true);
     case "anonymous":
       return () => Promise.resolve(!access.readerRequired);
+    // The login, not its access token: a stream outlives the token it was opened with until the
+    // login is logged out, revoked or runs out.
+    case "login":
+      return () => logins.alive(auth.loginId);
     case "token": {
       const token = bearerToken(request) ?? "";
       return async () => (await store.tokenAlive(token)) === auth.tokenId;

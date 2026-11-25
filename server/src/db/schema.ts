@@ -42,6 +42,25 @@ export interface ApiTokenTable {
   expires_at: Timestamp | null;
 }
 
+/** A token login of a client without cookies. See migration 0026. */
+export interface LoginTable {
+  id: string;
+  /** What the client called itself, e.g. "Android app on Pixel 8". */
+  name: string;
+  /** `admin` or `reader`. */
+  role: string;
+  /** SHA-256 of the current access token. */
+  access_hash: string;
+  access_expires_at: Timestamp;
+  /** SHA-256 of the current refresh token. */
+  refresh_hash: string;
+  /** SHA-256 of the refresh token the last refresh replaced: presenting it again ends the login. */
+  previous_refresh_hash: string | null;
+  refresh_expires_at: Timestamp;
+  created_at: Timestamp;
+  last_used_at: Timestamp;
+}
+
 export interface SettingTable {
   key: string;
   /** JSON value. */
@@ -210,6 +229,17 @@ export interface ParcelEventTable {
   geocoded: ColumnType<number, number | undefined, number>;
   /** Hash of (at, raw_status, location) so a re-fetched history never duplicates entries. */
   fingerprint: string;
+  /** Set by a trigger on every change (see `db/sync-triggers.ts`). */
+  updated_at: ColumnType<Timestamp, never, never>;
+}
+
+/** The newest change of each synced entity, and tombstones. See migration 0027. */
+export interface SyncChangeTable {
+  seq: Generated<number>;
+  entity: "parcel" | "event" | "order" | "return" | "connection";
+  entity_id: string;
+  deleted: Bool;
+  changed_at: Timestamp;
 }
 
 export interface ParcelRawTable {
@@ -300,6 +330,7 @@ export interface Database {
   owner: OwnerTable;
   sessions: SessionTable;
   api_tokens: ApiTokenTable;
+  logins: LoginTable;
   settings: SettingTable;
   /** OPENPARCELS_* values saved in the UI; same shape as `settings`. See migration 0011. */
   setting_overrides: SettingTable;
@@ -320,6 +351,7 @@ export interface Database {
   outbox: OutboxTable;
   unknown_vocab: UnknownVocabTable;
   sign_in_attempts: SignInAttemptTable;
+  sync_changes: SyncChangeTable;
 }
 
 export type ParcelRow = Selectable<ParcelTable>;

@@ -13,6 +13,7 @@ import {
   deleteApiV1OrdersId,
   deleteApiV1ParcelsId,
   deleteApiV1ConnectionsId,
+  deleteApiV1LoginsId,
   deleteApiV1TokensId,
   getApiV1Calendar,
   getApiV1Carriers,
@@ -28,6 +29,7 @@ import {
   getApiV1ParcelsId,
   getApiV1Connections,
   getApiV1ConnectionsIdData,
+  getApiV1Logins,
   getApiV1Tokens,
   patchApiV1OrdersId,
   patchApiV1ParcelsId,
@@ -61,6 +63,7 @@ export const keys = {
   signInFlows: (connectionId: string | undefined) => ["sign-in-flows", connectionId] as const,
   carriers: ["carriers"] as const,
   tokens: ["tokens"] as const,
+  logins: ["logins"] as const,
   calendar: (from: string, to: string) => ["calendar", from, to] as const,
   status: ["status"] as const,
   backups: ["backups"] as const,
@@ -418,5 +421,25 @@ export function useRevokeToken() {
   return useMutation({
     mutationFn: (id: string) => deleteApiV1TokensId(id),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.tokens }),
+  });
+}
+
+/** Token logins, re-read like the tokens: their "last used" changes without any event. */
+export function useLogins() {
+  return useQuery({
+    queryKey: keys.logins,
+    queryFn: ({ signal }) => getApiV1Logins({ signal }),
+    staleTime: 0,
+    refetchOnMount: "always",
+    refetchOnWindowFocus: "always",
+    refetchInterval: TOKENS_REFRESH_MS,
+  });
+}
+
+export function useEndLogin() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (id: string) => deleteApiV1LoginsId(id),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.logins }),
   });
 }

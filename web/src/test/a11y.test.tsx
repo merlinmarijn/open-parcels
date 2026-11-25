@@ -23,6 +23,7 @@ function mockAll(): void {
     "GET /api/v1/returns": () => ({ body: [] }),
     "GET /api/v1/calendar": () => ({ body: [] }),
     "GET /api/v1/tokens": () => ({ body: [] }),
+    "GET /api/v1/logins": () => ({ body: [] }),
     "GET /api/v1/settings": () => ({ body: { home: null, parcel_label: "tracking_number" } }),
     "GET /api/v1/settings/config": () => ({ body: [] }),
     "GET /api/v1/map/layers": () => ({

@@ -19,6 +19,7 @@ const NOT_FOUND: Readonly<Record<NotFoundResource, ErrorText>> = {
   parcel: () => "The parcel was not found.",
   return: () => "The return was not found.",
   token: () => "The token was not found.",
+  login: () => "The login was not found.",
   calendar_feed: () => "This calendar feed does not exist.",
   sign_in: () => "The sign-in was not found. Start it again.",
   setting: () => "There is no such setting.",
@@ -85,6 +86,8 @@ export const errors: ErrorTexts = {
     already_set_up: () => "The admin password is already set.",
     bad_setup_code: () => "The setup code does not match the one in the container log.",
     wrong_password: () => "That password is not correct.",
+    login_ended: () => "The login has ended. Log in again.",
+    sync_expired: () => "This copy is too old to update. Load everything again.",
     invalid_connection: pick(
       INVALID_CONNECTION,
       "reason",

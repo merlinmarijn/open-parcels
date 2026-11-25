@@ -26,6 +26,8 @@ import * as m0022 from "./migrations/0022-live-state-connection.js";
 import * as m0023 from "./migrations/0023-geocoding-opt-in.js";
 import * as m0024 from "./migrations/0024-dead-schema.js";
 import * as m0025 from "./migrations/0025-state-reasons.js";
+import * as m0026 from "./migrations/0026-logins.js";
+import * as m0027 from "./migrations/0027-sync-changes.js";
 import type { Database } from "./schema.js";
 
 /**
@@ -58,6 +60,8 @@ export const MIGRATIONS: Readonly<Record<string, Migration>> = {
   "0023-geocoding-opt-in": m0023,
   "0024-dead-schema": m0024,
   "0025-state-reasons": m0025,
+  "0026-logins": m0026,
+  "0027-sync-changes": m0027,
 };
 
 const staticProvider: MigrationProvider = {

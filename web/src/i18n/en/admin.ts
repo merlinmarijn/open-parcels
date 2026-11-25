@@ -71,5 +71,14 @@ export const admin = {
     none: "No tokens yet.",
     revokeConfirm: (name: string) => `Revoke the token “${name}”?`,
     revoke: "Revoke",
+    logins: "Logins",
+    loginsHint:
+      "Apps and web UIs elsewhere that logged in with a password. They end on their own after 30 days without use, and when the password changes.",
+    role: "Role",
+    roleNames: { admin: "admin", reader: "reader" },
+    expires: "Ends",
+    noLogins: "No logins.",
+    endConfirm: (name: string) => `Log out “${name}”?`,
+    end: "Log out",
   },
 };

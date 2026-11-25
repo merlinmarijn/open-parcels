@@ -1,6 +1,6 @@
 import { screen, waitFor, within } from "@testing-library/react";
 import userEvent from "@testing-library/user-event";
-import { describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { mockApi, renderApp, SIGNED_IN } from "../test/helpers";
 
 describe("API tokens", () => {
@@ -17,6 +17,7 @@ describe("API tokens", () => {
     const calls = mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
       "GET /api/v1/tokens": () => ({ body: [{ ...token, last_used_at: used }] }),
+      "GET /api/v1/logins": () => ({ body: [] }),
     });
     renderApp("/tokens");
     const row = (await screen.findByText("Made-up client")).closest("tr");
@@ -40,6 +41,7 @@ describe("API tokens", () => {
     mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),
       "GET /api/v1/tokens": () => ({ body: [] }),
+      "GET /api/v1/logins": () => ({ body: [] }),
       "POST /api/v1/tokens": () => ({
         status: 201,
         body: { ...token, last_used_at: null, token: "opt_made_up_value" },
@@ -55,5 +57,35 @@ describe("API tokens", () => {
     expect(await screen.findByText(/copy it by hand/)).toBeInTheDocument();
     expect(window.getSelection()?.toString()).toBe("opt_made_up_value");
     Reflect.deleteProperty(window, "isSecureContext");
+  });
+
+  it("lists token logins and logs one out", async () => {
+    const login = {
+      id: "00000000-0000-4000-8000-0000000000d1",
+      name: "Made-up phone",
+      role: "reader",
+      created_at: "2026-11-18T09:00:00.000Z",
+      last_used_at: "2026-11-18T09:00:00.000Z",
+      expires_at: "2026-12-18T09:00:00.000Z",
+    };
+    let logins = [login];
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/tokens": () => ({ body: [] }),
+      "GET /api/v1/logins": () => ({ body: logins }),
+      [`DELETE /api/v1/logins/${login.id}`]: () => {
+        logins = [];
+        return { status: 204 };
+      },
+    });
+    const confirm = vi.spyOn(window, "confirm").mockReturnValue(true);
+    const user = userEvent.setup();
+    renderApp("/tokens");
+    const row = (await screen.findByText("Made-up phone")).closest("tr") as HTMLElement;
+    expect(within(row).getByText("reader")).toBeInTheDocument();
+    await user.click(within(row).getByRole("button", { name: "Log out" }));
+    expect(await screen.findByText("No logins.")).toBeInTheDocument();
+    expect(calls.some((call) => call.method === "DELETE")).toBe(true);
+    confirm.mockRestore();
   });
 });

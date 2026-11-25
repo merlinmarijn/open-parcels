@@ -2,6 +2,7 @@ import type { Logger } from "pino";
 import { MIN_ADMIN_PASSWORD, type AppConfig } from "../config.js";
 import type { ConfigSettings } from "../settings/config-settings.js";
 import { humanCode, safeEqual } from "./crypto.js";
+import type { LoginStore } from "./logins.js";
 import type { AuthStore, Role } from "./store.js";
 
 const ADMIN_KEY = "OPENPARCELS_ADMIN_PASSWORD";
@@ -29,7 +30,7 @@ export class AccessControl {
   #setupCode: string | undefined;
 
   private constructor(
-    private readonly store: AuthStore,
+    private readonly stores: { readonly auth: AuthStore; readonly logins: LoginStore },
     private readonly config: AppConfig,
     private readonly settings: ConfigSettings,
     private readonly logger: Logger,
@@ -42,11 +43,18 @@ export class AccessControl {
 
   static async create(
     store: AuthStore,
+    logins: LoginStore,
     config: AppConfig,
     settings: ConfigSettings,
     logger: Logger,
   ): Promise<AccessControl> {
-    return new AccessControl(store, config, settings, logger, await store.hasOwner());
+    return new AccessControl(
+      { auth: store, logins },
+      config,
+      settings,
+      logger,
+      await store.hasOwner(),
+    );
   }
 
   /** Reading needs a login (reader or admin). */
@@ -78,14 +86,14 @@ export class AccessControl {
 
   /** First start: chooses the admin password, saved hashed. */
   async completeSetup(password: string): Promise<void> {
-    await this.store.setOwnerPassword(password);
+    await this.stores.auth.setOwnerPassword(password);
     this.#setSaved(true);
     this.#setupCode = undefined;
   }
 
   /**
-   * Replaces the admin password with one saved here (hashed). Signs every session out, the
-   * caller's included. `current` may be null only when Home Assistant ingress vouches.
+   * Replaces the admin password with one saved here (hashed). Signs every session and token
+   * login out, the caller's included. `current` may be null only when Home Assistant ingress vouches.
    */
   async changeAdminPassword(current: string | null, next: string): Promise<AccessResult> {
     if (current !== null && !(await this.#isAdminPassword(current))) {
@@ -98,10 +106,10 @@ export class AccessControl {
         error: `Use at least ${MIN_ADMIN_PASSWORD} characters.`,
       };
     }
-    await this.store.setOwnerPassword(next);
+    await this.stores.auth.setOwnerPassword(next);
     this.#setSaved(true);
     this.#setupCode = undefined;
-    await this.store.deleteAllSessions();
+    await this.#logOutEveryone();
     this.logger.info("Admin password changed in the UI; every session was logged out.");
     return { ok: true };
   }
@@ -117,16 +125,23 @@ export class AccessControl {
       };
     }
     if (!this.#saved) return { ok: true };
-    await this.store.clearOwnerPassword();
+    await this.stores.auth.clearOwnerPassword();
     this.#setSaved(false);
-    await this.store.deleteAllSessions();
+    await this.#logOutEveryone();
     this.logger.info("Admin password reset to the environment's; every session was logged out.");
     return { ok: true };
   }
 
   /** After the reader password changed: readers log in again with the new one. */
   async readerPasswordChanged(): Promise<void> {
-    await this.store.deleteSessionsWithRole("reader");
+    await this.stores.auth.deleteSessionsWithRole("reader");
+    await this.stores.logins.deleteAll("reader");
+  }
+
+  /** Browser sessions and token logins alike; API tokens stay (they hold no password). */
+  async #logOutEveryone(): Promise<void> {
+    await this.stores.auth.deleteAllSessions();
+    await this.stores.logins.deleteAll();
   }
 
   #adminConfigured(): boolean {
@@ -134,7 +149,7 @@ export class AccessControl {
   }
 
   async #isAdminPassword(password: string): Promise<boolean> {
-    if (this.#saved) return this.store.verifyOwnerPassword(password);
+    if (this.#saved) return this.stores.auth.verifyOwnerPassword(password);
     const fromEnv = this.config.adminPassword;
     return fromEnv !== undefined && safeEqual(password, fromEnv);
   }

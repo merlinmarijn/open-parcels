@@ -95,3 +95,27 @@ What a household that needs more does instead:
 
 Either needs option B, planned as its own decision record with the migration and the clients'
 lockstep changes.
+
+## 6. Token logins for clients without cookies (added 2026-11-25)
+
+Decision record 0004 §3.2 needs a login for clients that cannot use the session cookie: the web UI
+on another origin, the Android app, the client libraries. It stays inside option A: the same two
+passwords, the same two roles, no user accounts.
+
+| | API token (`opk_…`) | Token login (`opa_…` access, `opr_…` refresh) |
+| --- | --- | --- |
+| For | Programs: Home Assistant, scripts, the extension | People in a client: another web UI, the Android app, a library used interactively |
+| Made by | The admin on the Tokens page | Logging in (`POST /api/v1/logins`) with the admin or reader password |
+| Rights | The scopes chosen (`read`, `write`, `admin`) | The password's role (`admin` or `reader`); the admin password may ask for `reader` |
+| Lifetime | Until revoked or its optional expiry | Access token 15 minutes; refresh token 30 days, renewed by every refresh |
+| Rotation | None | Every refresh replaces both tokens; a replaced refresh token used again ends the login |
+| Ends when | Revoked on the Tokens page | Logged out (`POST /api/v1/logins/logout`), ended on the Tokens page, 30 days unused, or either password changes (the reader password ends reader logins only) |
+| Live event stream | `Authorization` header only | Header, or `?access_token=` (browsers' EventSource cannot send headers); the stream lasts as long as the login |
+
+Both are bearer tokens, stored only as SHA-256 hashes, listed on the Tokens page and revocable
+there. They stay separate because they answer different questions: an API token is a standing
+grant the admin hands to a program, a token login is a person's password login without a cookie.
+Changing a password ends every login made with it but no API token, as before.
+
+Cross-origin pages are allowed by `OPENPARCELS_CORS_ORIGINS` (exact origins, never `*`) and get no
+credentials: the session cookie stays same-origin, so a listed origin cannot ride on it.

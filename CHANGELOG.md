@@ -2,6 +2,26 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: token logins, CORS and delta sync for clients elsewhere (decision record 0004 §6)
+
+- **Token logins** for clients without cookies (a web UI on another origin, the Android app,
+  client libraries): `POST /api/v1/logins` with the admin or reader password returns a 15-minute
+  access token and a refresh token; `POST /api/v1/logins/refresh` rotates both,
+  `POST /api/v1/logins/logout` ends the login. A refresh token used twice ends its login. Logins
+  are listed and ended on the Tokens page (`GET`/`DELETE /api/v1/logins`) and end when a password
+  changes. API tokens are unchanged; how both relate: decision record 0003 §6.
+- **`OPENPARCELS_CORS_ORIGINS`**: exact origins (never `*`) that may call the API from a browser,
+  without cookies. Changeable on the Settings page.
+- **Live event stream with a token login:** `GET /api/v1/events?access_token=<access token>` for
+  browsers' EventSource; API tokens still go in the `Authorization` header only.
+- **Delta sync:** `GET /api/v1/sync?since=<cursor>` returns the parcels, events, orders, returns
+  and connections changed after the cursor and the deleted ones ([`docs/sync.md`](docs/sync.md)).
+  Migration `0027-sync-changes` lists every existing row once, so a client's first sync gets
+  everything. Events now carry `updated_at` in the database.
+- Unchanged items and order lines are no longer rewritten on every provider run, so return items
+  keep their link to the order line.
+- `docs/openapi.json` is published with each release ([`AGENT.md`](AGENT.md), "The API contract").
+
 ### Changed (breaking): one word per concept ([`docs/glossary.md`](docs/glossary.md))
 
 Code, API, database, live events, web UI and docs now use the glossary's terms. The old names are

@@ -21,7 +21,7 @@ export function roleOfScopes(scopes: readonly Scope[]): Role {
   return scopes.includes("write") || scopes.includes("admin") ? "admin" : "reader";
 }
 
-function parseRole(value: string): Role {
+export function parseRole(value: string): Role {
   // Anything unexpected is the lesser role.
   return value === "admin" ? "admin" : "reader";
 }

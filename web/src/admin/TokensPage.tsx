@@ -1,5 +1,5 @@
 import { useRef, useState, type SyntheticEvent, type ReactNode } from "react";
-import { useCreateToken, useRevokeToken, useTokens } from "../api/queries";
+import { useCreateToken, useEndLogin, useLogins, useRevokeToken, useTokens } from "../api/queries";
 import type { ApiToken } from "../api/types";
 import { useIsAdmin } from "../auth/session";
 import { ErrorNotice, Field, ReadOnlyHint, Spinner } from "../components/ui";
@@ -142,7 +142,14 @@ export function TokensPage(): ReactNode {
       <div className="page-header">
         <h1 id="tokens-title">{t.admin.tokens.title}</h1>
       </div>
-      {admin ? <TokenList /> : <ReadOnlyHint>{t.admin.tokens.adminOnly}</ReadOnlyHint>}
+      {admin ? (
+        <>
+          <TokenList />
+          <LoginList />
+        </>
+      ) : (
+        <ReadOnlyHint>{t.admin.tokens.adminOnly}</ReadOnlyHint>
+      )}
     </section>
   );
 }
@@ -208,5 +215,69 @@ function TokenList(): ReactNode {
         </div>
       )}
     </>
+  );
+}
+
+/** Token logins of clients without cookies (another web UI, the Android app): ended by hand here. */
+function LoginList(): ReactNode {
+  const logins = useLogins();
+  const end = useEndLogin();
+  return (
+    <section className="card" aria-labelledby="logins-title">
+      <h2 id="logins-title">{t.admin.tokens.logins}</h2>
+      <p className="muted">{t.admin.tokens.loginsHint}</p>
+      <ErrorNotice error={logins.error ?? end.error} />
+      {logins.data === undefined ? (
+        <Spinner />
+      ) : (
+        <div className="table-scroll">
+          <table>
+            <thead>
+              <tr>
+                <th scope="col">{t.admin.tokens.name}</th>
+                <th scope="col">{t.admin.tokens.role}</th>
+                <th scope="col">{t.admin.tokens.created}</th>
+                <th scope="col">{t.admin.tokens.lastUsed}</th>
+                <th scope="col">{t.admin.tokens.expires}</th>
+                <th scope="col">
+                  <span className="visually-hidden">{t.admin.tokens.actions}</span>
+                </th>
+              </tr>
+            </thead>
+            <tbody>
+              {logins.data.length === 0 ? (
+                <tr>
+                  <td colSpan={6} className="muted empty">
+                    {t.admin.tokens.noLogins}
+                  </td>
+                </tr>
+              ) : null}
+              {logins.data.map((login) => (
+                <tr key={login.id}>
+                  <td>{login.name}</td>
+                  <td>{t.admin.tokens.roleNames[login.role]}</td>
+                  <td>{formatDateTime(login.created_at)}</td>
+                  <td>{formatRelative(login.last_used_at)}</td>
+                  <td>{formatDateTime(login.expires_at)}</td>
+                  <td>
+                    <button
+                      type="button"
+                      className="button danger"
+                      onClick={() => {
+                        if (window.confirm(t.admin.tokens.endConfirm(login.name))) {
+                          end.mutate(login.id);
+                        }
+                      }}
+                    >
+                      {t.admin.tokens.end}
+                    </button>
+                  </td>
+                </tr>
+              ))}
+            </tbody>
+          </table>
+        </div>
+      )}
+    </section>
   );
 }

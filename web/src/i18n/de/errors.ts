@@ -19,6 +19,7 @@ const NOT_FOUND: Readonly<Record<NotFoundResource, ErrorText>> = {
   parcel: () => "Das Paket wurde nicht gefunden.",
   return: () => "Die Rücksendung wurde nicht gefunden.",
   token: () => "Das Token wurde nicht gefunden.",
+  login: () => "Der Login wurde nicht gefunden.",
   calendar_feed: () => "Diesen Kalender-Feed gibt es nicht.",
   sign_in: () => "Die Anmeldung wurde nicht gefunden. Bitte neu beginnen.",
   setting: () => "Diese Einstellung gibt es nicht.",
@@ -92,6 +93,8 @@ export const errors: ErrorTexts = {
     already_set_up: () => "Das Admin-Passwort ist bereits gesetzt.",
     bad_setup_code: () => "Der Einrichtungscode stimmt nicht mit dem im Container-Log überein.",
     wrong_password: () => "Das Passwort ist nicht richtig.",
+    login_ended: () => "Der Login ist abgelaufen. Bitte erneut einloggen.",
+    sync_expired: () => "Diese Kopie ist zu alt zum Aktualisieren. Bitte alles neu laden.",
     invalid_connection: pick(
       INVALID_CONNECTION,
       "reason",

@@ -22,6 +22,8 @@ export const serverSettings: Messages["serverSettings"] = {
       "Port des eigenen Listeners für den Home-Assistant-Ingress. Ohne Wert ist er aus.",
     OPENPARCELS_TRUST_PROXY:
       "Reverse-Proxys, deren X-Forwarded-For geglaubt wird, damit die Anmeldebremse echte Client-Adressen sieht: Adressen oder CIDR-Bereiche, durch Kommas getrennt. Ohne Wert wird niemandem vertraut; nie Adressen eintragen, von denen Clients direkt verbinden können.",
+    OPENPARCELS_CORS_ORIGINS:
+      "Webseiten unter anderen Adressen, die die API aufrufen dürfen, z. B. eine anderswo gehostete Weboberfläche: exakte Origins (https://parcels-ui.example), durch Kommas getrennt. Sie loggen sich mit Tokens ein, nie mit Cookies. Ohne Wert ist keine erlaubt; * wird nie angenommen.",
     OPENPARCELS_SECURE_COOKIES:
       "Sitzungs-Cookies als Secure markieren. Nur einschalten, wenn ausschließlich über HTTPS ausgeliefert wird. Nur über die Umgebung: über reines HTTP eingeschaltet würde es das Login blockieren, das zum Ausschalten nötig ist.",
     OPENPARCELS_ADMIN_PASSWORD:

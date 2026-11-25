@@ -27,7 +27,7 @@ export function waitText(seconds: number): string {
   return `${String(Math.ceil(minutes / 60))} hours`;
 }
 
-const connectionSchema = z.object({
+export const connectionSchema = z.object({
   id: z.uuid(),
   provider: z.string(),
   kind: connectionKindSchema,
@@ -79,7 +79,7 @@ const carrierSchema = z.object({
     ),
 });
 
-function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
+export function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
   return {
     id: view.id,
     provider: view.provider,

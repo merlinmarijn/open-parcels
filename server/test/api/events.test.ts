@@ -85,6 +85,12 @@ async function track(trackingNumber: string): Promise<void> {
   expect(response.status).toBe(201);
 }
 
+const stores = () => ({
+  store: context.services.auth,
+  logins: context.services.logins,
+  access: context.services.access,
+});
+
 describe("SSE event stream", () => {
   it("requires authentication when reading needs a sign-in", async () => {
     await context.services.configSettings.patch({ OPENPARCELS_PASSWORD: READER_PASSWORD });
@@ -98,8 +104,9 @@ describe("SSE event stream", () => {
       auth: { kind: "token", tokenId, role: "reader", scopes: ["read"] },
       headers: { authorization: `Bearer ${token}` },
       cookies: {},
+      url: "/api/v1/events",
     };
-    const tokenAllowed = credentialCheck(byToken, context.services.auth, context.services.access);
+    const tokenAllowed = credentialCheck(byToken, stores());
     expect(await tokenAllowed()).toBe(true);
     await context.services.auth.deleteToken(tokenId);
     expect(await tokenAllowed()).toBe(false);
@@ -109,12 +116,9 @@ describe("SSE event stream", () => {
       auth: { kind: "session", csrfToken: session.csrfToken, role: "admin", scopes: ["read"] },
       headers: {},
       cookies: { op_session: session.cookieValue },
+      url: "/api/v1/events",
     };
-    const sessionAllowed = credentialCheck(
-      bySession,
-      context.services.auth,
-      context.services.access,
-    );
+    const sessionAllowed = credentialCheck(bySession, stores());
     expect(await sessionAllowed()).toBe(true);
     await context.services.auth.deleteSession(session.cookieValue);
     expect(await sessionAllowed()).toBe(false);

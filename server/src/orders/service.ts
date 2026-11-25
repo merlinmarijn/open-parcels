@@ -166,6 +166,19 @@ export class OrderService {
     return order;
   }
 
+  /** These orders as `get` shows them; ids deleted, hidden or unknown are left out. */
+  async byIds(ids: readonly string[]): Promise<Order[]> {
+    if (ids.length === 0) return [];
+    const rows = await this.db
+      .selectFrom("orders")
+      .selectAll()
+      .where("id", "in", ids)
+      .where("deleted_at", "is", null)
+      .where(orderVisible)
+      .execute();
+    return this.#build(rows);
+  }
+
   async update(id: string, patch: OrderPatch): Promise<Order | undefined> {
     if ((await this.get(id)) === undefined) return undefined;
     const now = isoNow(this.clock);

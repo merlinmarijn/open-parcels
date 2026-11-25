@@ -156,6 +156,23 @@ export const SETTINGS = {
     apply: "restart",
     kind: "string",
   }),
+  OPENPARCELS_CORS_ORIGINS: setting({
+    group: "security",
+    description:
+      "Web pages on other addresses that may call the API, e.g. a web UI hosted elsewhere: exact origins (https://parcels-ui.example), separated by commas. They log in with tokens, never cookies. Unset allows none; * is never accepted.",
+    schema: z
+      .string()
+      .trim()
+      .min(1)
+      .refine(
+        (value) => value.split(",").every((part) => isOrigin(part.trim())),
+        "List exact origins such as https://parcels-ui.example, separated by commas.",
+      )
+      .optional(),
+    default: undefined,
+    apply: "live",
+    kind: "string",
+  }),
   OPENPARCELS_SECURE_COOKIES: setting({
     group: "server",
     description:
@@ -499,6 +516,13 @@ export function parseEnv(
 /** False, or the proxy addresses and ranges whose X-Forwarded-For is believed. */
 export type TrustProxy = false | readonly string[];
 
+/** `scheme://host[:port]` exactly as browsers send it in `Origin`: no path, no wildcard. */
+function isOrigin(value: string): boolean {
+  if (!URL.canParse(value)) return false;
+  const url = new URL(value);
+  return (url.protocol === "https:" || url.protocol === "http:") && url.origin === value;
+}
+
 function parseTrustProxy(value: string | undefined): TrustProxy {
   return value === undefined ? false : value.split(",").map((part) => part.trim());
 }
@@ -535,6 +559,8 @@ export interface AppConfig {
   readonly contactEmail: string | undefined;
   readonly webDir: string | undefined;
   readonly trustProxy: TrustProxy;
+  /** Origins allowed to call the API from a browser (OPENPARCELS_CORS_ORIGINS). */
+  readonly corsOrigins: readonly string[];
   readonly retention: {
     readonly archiveAfterDays: number;
     readonly deleteAfterDays: number;
@@ -596,6 +622,10 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
         ? undefined
         : path.resolve(values.OPENPARCELS_WEB_DIR),
     trustProxy: parseTrustProxy(values.OPENPARCELS_TRUST_PROXY),
+    corsOrigins:
+      values.OPENPARCELS_CORS_ORIGINS === undefined
+        ? []
+        : values.OPENPARCELS_CORS_ORIGINS.split(",").map((part) => part.trim()),
     retention: {
       archiveAfterDays: values.OPENPARCELS_ARCHIVE_DAYS,
       deleteAfterDays: values.OPENPARCELS_DELETE_DAYS,

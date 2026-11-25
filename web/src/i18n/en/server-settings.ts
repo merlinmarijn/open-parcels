@@ -29,6 +29,8 @@ export const serverSettings: {
       "Port of the separate Home Assistant ingress listener. Unset disables it.",
     OPENPARCELS_TRUST_PROXY:
       "Reverse proxies whose X-Forwarded-For is believed, so the sign-in throttle sees real client addresses: comma-separated addresses or CIDR ranges. Unset trusts nobody; never list addresses clients could connect from directly.",
+    OPENPARCELS_CORS_ORIGINS:
+      "Web pages on other addresses that may call the API, e.g. a web UI hosted elsewhere: exact origins (https://parcels-ui.example), separated by commas. They log in with tokens, never cookies. Unset allows none; * is never accepted.",
     OPENPARCELS_SECURE_COOKIES:
       "Mark session cookies Secure. Turn on when served over HTTPS only. Environment only: turned on over plain HTTP it would block the sign-in needed to turn it off again.",
     OPENPARCELS_ADMIN_PASSWORD:

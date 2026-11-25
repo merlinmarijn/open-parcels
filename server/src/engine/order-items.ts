@@ -7,6 +7,19 @@ function itemKey(item: { readonly externalId: string | null; readonly title: str
   return item.externalId ?? `title:${item.title}`;
 }
 
+/** Whether stored rows hold exactly `next`, field by field and in order (ids aside). */
+export function sameRows(
+  stored: readonly Readonly<Record<string, unknown>>[],
+  next: readonly Readonly<Record<string, unknown>>[],
+): boolean {
+  return (
+    stored.length === next.length &&
+    next.every((row, index) =>
+      Object.entries(row).every(([key, value]) => stored[index]?.[key] === value),
+    )
+  );
+}
+
 /**
  * Keeps the order's item list. With `orderItems` the list is replaced by the connection's, keeping
  * links to parcels that other snapshots made; items this snapshot lists for its parcel are linked
@@ -44,9 +57,12 @@ export async function writeOrderItems(
     parcel_id: inParcel.has(itemKey(item)) ? parcelId : (linked.get(itemKey(item)) ?? null),
   });
   if (snapshot.orderItems !== undefined) {
+    const next = snapshot.orderItems.map(row);
+    // Unchanged lists are left alone: rewriting them would count as a change for delta sync.
+    if (sameRows(stored, next)) return;
     await trx.deleteFrom("order_items").where("order_id", "=", orderId).execute();
     if (snapshot.orderItems.length > 0) {
-      await trx.insertInto("order_items").values(snapshot.orderItems.map(row)).execute();
+      await trx.insertInto("order_items").values(next).execute();
     }
     return;
   }

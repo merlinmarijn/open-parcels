@@ -3,6 +3,7 @@ import path from "node:path";
 import type { Kysely } from "kysely";
 import type { Logger } from "pino";
 import { AccessControl } from "./auth/access.js";
+import { LoginStore } from "./auth/logins.js";
 import { AuthStore } from "./auth/store.js";
 import { CalendarService } from "./calendar/service.js";
 import { BUILTIN_CARRIERS } from "./engine/builtin-carriers.js";
@@ -36,6 +37,7 @@ import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
 import { ParcelService } from "./parcels/service.js";
 import { OrderService } from "./orders/service.js";
+import { SyncService } from "./sync/service.js";
 import { HostLimiter } from "./provider/http.js";
 import type { FetchLike } from "./net/guarded-fetch.js";
 import { availableLayers } from "./tiles/layers.js";
@@ -67,6 +69,7 @@ export interface Services {
   readonly secrets: SecretBox;
   readonly installId: string;
   readonly auth: AuthStore;
+  readonly logins: LoginStore;
   readonly bus: EventBus;
   readonly registry: ProviderRegistry;
   readonly connections: ConnectionService;
@@ -88,6 +91,7 @@ export interface Services {
   readonly parcels: ParcelService;
   readonly orders: OrderService;
   readonly returns: ReturnService;
+  readonly sync: SyncService;
   readonly access: AccessControl;
   readonly backups: BackupService;
 }
@@ -198,6 +202,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   });
   await configSettings.load();
   const auth = new AuthStore(db, clock);
+  const logins = new LoginStore(db, clock);
   const bus = new EventBus(db, clock, logger);
   await bus.start();
   const settings = new SettingsStore(db, clock, bus);
@@ -320,12 +325,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
       }
     },
   });
-  const access = await AccessControl.create(auth, deps.config, configSettings, logger);
+  const access = await AccessControl.create(auth, logins, deps.config, configSettings, logger);
   const returns = new ReturnService(db, clock, deps.config.timeZone);
+  const orders = new OrderService(db, bus, clock, presentation, returns);
   return {
     ...deps,
     installId,
     auth,
+    logins,
     bus,
     registry,
     connections,
@@ -353,8 +360,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
       exclusive: (connectionId, work) => runner.exclusive(connectionId, work),
     }),
     parcels,
-    orders: new OrderService(db, bus, clock, presentation, returns),
+    orders,
     returns,
+    sync: new SyncService(db, clock, {
+      parcels: parcels.repository,
+      orders,
+      returns,
+      connections,
+    }),
     access,
     backups: new BackupService({
       db,

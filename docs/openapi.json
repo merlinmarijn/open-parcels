@@ -2,7 +2,7 @@
   "openapi": "3.0.3",
   "info": {
     "title": "open-parcels",
-    "description": "Self-hosted parcel and order tracking.",
+    "description": "Self-hosted parcel and order tracking. API version 1: every path starts with /api/v1. `info.version` is the server release this document belongs to; each release publishes its document, and clients are generated from a released one.",
     "version": "2.0.0-dev.20261125"
   },
   "components": {
@@ -789,6 +789,7 @@
                       "enum": [
                         "ingress",
                         "token",
+                        "login",
                         "session",
                         "anonymous"
                       ]
@@ -933,6 +934,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1010,6 +1013,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1197,6 +1202,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1274,6 +1281,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1351,6 +1360,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1479,6 +1490,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1578,6 +1591,684 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logins": {
+      "post": {
+        "summary": "Log in without a cookie: the admin password or OPENPARCELS_PASSWORD gives an access token and a refresh token.",
+        "tags": [
+          "session"
+        ],
+        "description": "The access token is valid for 15 minutes; trade the refresh token at `POST /api/v1/logins/refresh` for new ones. A login not refreshed for 30 days ends. `role: reader` with the admin password gives a login that may only read.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "password": {
+                    "type": "string",
+                    "maxLength": 256
+                  },
+                  "name": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 80,
+                    "description": "Shown on the tokens page."
+                  },
+                  "role": {
+                    "description": "At most the password's role.",
+                    "type": "string",
+                    "enum": [
+                      "reader",
+                      "admin"
+                    ]
+                  }
+                },
+                "required": [
+                  "password",
+                  "name"
+                ]
+              }
+            }
+          }
+        },
+        "security": [],
+        "responses": {
+          "201": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "Send as `Authorization: Bearer`; valid for 15 minutes."
+                    },
+                    "access_expires_at": {
+                      "type": "string"
+                    },
+                    "refresh_token": {
+                      "type": "string",
+                      "description": "Trade for new tokens before it expires; each one works once."
+                    },
+                    "refresh_expires_at": {
+                      "type": "string"
+                    },
+                    "login": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "reader",
+                            "admin"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "last_used_at": {
+                          "type": "string"
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "description": "When the login ends unless it is refreshed before."
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "role",
+                        "created_at",
+                        "last_used_at",
+                        "expires_at"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "access_token",
+                    "access_expires_at",
+                    "refresh_token",
+                    "refresh_expires_at",
+                    "login"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "get": {
+        "summary": "Token logins that have not ended (tokens are never shown).",
+        "tags": [
+          "tokens"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "name": {
+                        "type": "string"
+                      },
+                      "role": {
+                        "type": "string",
+                        "enum": [
+                          "reader",
+                          "admin"
+                        ]
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "last_used_at": {
+                        "type": "string"
+                      },
+                      "expires_at": {
+                        "type": "string",
+                        "description": "When the login ends unless it is refreshed before."
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "name",
+                      "role",
+                      "created_at",
+                      "last_used_at",
+                      "expires_at"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logins/refresh": {
+      "post": {
+        "summary": "Trade a refresh token for a new access token and refresh token.",
+        "tags": [
+          "session"
+        ],
+        "description": "Each refresh token works once. Presenting one that was already traded ends the login (someone else holds a copy), so refresh from one place at a time.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ]
+              }
+            }
+          }
+        },
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "access_token": {
+                      "type": "string",
+                      "description": "Send as `Authorization: Bearer`; valid for 15 minutes."
+                    },
+                    "access_expires_at": {
+                      "type": "string"
+                    },
+                    "refresh_token": {
+                      "type": "string",
+                      "description": "Trade for new tokens before it expires; each one works once."
+                    },
+                    "refresh_expires_at": {
+                      "type": "string"
+                    },
+                    "login": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "name": {
+                          "type": "string"
+                        },
+                        "role": {
+                          "type": "string",
+                          "enum": [
+                            "reader",
+                            "admin"
+                          ]
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "last_used_at": {
+                          "type": "string"
+                        },
+                        "expires_at": {
+                          "type": "string",
+                          "description": "When the login ends unless it is refreshed before."
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "name",
+                        "role",
+                        "created_at",
+                        "last_used_at",
+                        "expires_at"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "access_token",
+                    "access_expires_at",
+                    "refresh_token",
+                    "refresh_expires_at",
+                    "login"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "401": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logins/logout": {
+      "post": {
+        "summary": "Log out a token login: its access and refresh tokens stop working.",
+        "tags": [
+          "session"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "refresh_token": {
+                    "type": "string",
+                    "maxLength": 200
+                  }
+                },
+                "required": [
+                  "refresh_token"
+                ]
+              }
+            }
+          }
+        },
+        "security": [],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/logins/{id}": {
+      "delete": {
+        "summary": "End a token login: its tokens stop working and its live event streams close.",
+        "tags": [
+          "tokens"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -1867,6 +2558,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -2179,6 +2872,7 @@
                           "OPENPARCELS_PORT",
                           "OPENPARCELS_INGRESS_PORT",
                           "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_CORS_ORIGINS",
                           "OPENPARCELS_SECURE_COOKIES",
                           "OPENPARCELS_ADMIN_PASSWORD",
                           "OPENPARCELS_PASSWORD",
@@ -2369,6 +3063,7 @@
                           "OPENPARCELS_PORT",
                           "OPENPARCELS_INGRESS_PORT",
                           "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_CORS_ORIGINS",
                           "OPENPARCELS_SECURE_COOKIES",
                           "OPENPARCELS_ADMIN_PASSWORD",
                           "OPENPARCELS_PASSWORD",
@@ -2543,6 +3238,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -2625,6 +3322,7 @@
                           "OPENPARCELS_PORT",
                           "OPENPARCELS_INGRESS_PORT",
                           "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_CORS_ORIGINS",
                           "OPENPARCELS_SECURE_COOKIES",
                           "OPENPARCELS_ADMIN_PASSWORD",
                           "OPENPARCELS_PASSWORD",
@@ -2799,6 +3497,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -2876,6 +3576,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -3005,6 +3707,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -3082,6 +3786,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -4555,6 +5261,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -4632,6 +5340,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -5356,6 +6066,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -6112,6 +6824,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -6223,6 +6937,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -7466,6 +8182,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -8131,6 +8849,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -8243,6 +8963,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -8779,6 +9501,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9241,6 +9965,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9461,6 +10187,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9538,6 +10266,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9649,6 +10379,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9778,6 +10510,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9855,6 +10589,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -9969,6 +10705,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -10046,6 +10784,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -10181,6 +10921,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -10317,6 +11059,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -10708,6 +11452,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -10957,6 +11703,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11034,6 +11782,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11190,6 +11940,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11570,6 +12322,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11647,6 +12401,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11724,6 +12480,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11801,6 +12559,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -11878,6 +12638,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12273,6 +13035,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12350,6 +13114,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12427,6 +13193,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12504,6 +13272,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12581,6 +13351,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -12954,6 +13726,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13031,6 +13805,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13108,6 +13884,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13185,6 +13963,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13262,6 +14042,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13385,6 +14167,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -13672,6 +14456,8 @@
                         "already_set_up",
                         "bad_setup_code",
                         "wrong_password",
+                        "login_ended",
+                        "sync_expired",
                         "invalid_connection",
                         "connection_backing_off",
                         "sign_in_expired",
@@ -14038,6 +14824,15 @@
             "in": "query",
             "name": "last_event_id",
             "required": false
+          },
+          {
+            "schema": {
+              "type": "string"
+            },
+            "in": "query",
+            "name": "access_token",
+            "required": false,
+            "description": "A login's access token (`POST /api/v1/logins`), for clients that cannot send headers (browsers' EventSource). API tokens go in the Authorization header only."
           }
         ],
         "responses": {
@@ -14090,6 +14885,1646 @@
                   "required": [
                     "event",
                     "data"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/sync": {
+      "get": {
+        "summary": "Everything that changed after a cursor, deletions included (docs/sync.md).",
+        "tags": [
+          "sync"
+        ],
+        "description": "Without `since` (or with `0`) the first page of everything. Each answer carries `cursor`; while `more` is true, call again at once with it, then later to pick up new changes. Parcels come without `history`: their events are listed under `events`. `410 sync_expired`: the cursor is older than the kept deletions (90 days) or newer than the server's data (restored from a backup); drop the copy and sync from the start.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^\\d{1,15}$"
+            },
+            "in": "query",
+            "name": "since",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 1000
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "cursor": {
+                      "type": "string",
+                      "description": "Pass as `since` on the next call. Opaque: never compute with it."
+                    },
+                    "more": {
+                      "type": "boolean",
+                      "description": "Another page follows at once: call again with `cursor`."
+                    },
+                    "parcels": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "carrier": {
+                            "type": "string"
+                          },
+                          "tracking_number": {
+                            "type": "string"
+                          },
+                          "sender": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "receiver": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "registered",
+                              "in_transit",
+                              "out_for_delivery",
+                              "at_pickup_point",
+                              "delivered",
+                              "returning",
+                              "problem",
+                              "unknown"
+                            ]
+                          },
+                          "raw_status": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "delivered": {
+                            "type": "boolean"
+                          },
+                          "delivered_at": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_from": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_to": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "expected_days": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "from": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              },
+                              "to": {
+                                "type": "string",
+                                "format": "date",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                              }
+                            },
+                            "required": [
+                              "from",
+                              "to"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "pickup": {
+                            "type": "boolean"
+                          },
+                          "pickup_point": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "url": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "direction": {
+                            "type": "string",
+                            "enum": [
+                              "receiving",
+                              "sending"
+                            ]
+                          },
+                          "label": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "manual_status": {
+                            "nullable": true,
+                            "type": "string",
+                            "enum": [
+                              "registered",
+                              "in_transit",
+                              "out_for_delivery",
+                              "at_pickup_point",
+                              "delivered",
+                              "returning",
+                              "problem",
+                              "unknown"
+                            ]
+                          },
+                          "carrier_status": {
+                            "type": "string",
+                            "enum": [
+                              "registered",
+                              "in_transit",
+                              "out_for_delivery",
+                              "at_pickup_point",
+                              "delivered",
+                              "returning",
+                              "problem",
+                              "unknown"
+                            ]
+                          },
+                          "carrier_delivered": {
+                            "type": "boolean"
+                          },
+                          "archived_at": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "image_url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "quantity": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "price": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "image_url",
+                                "url",
+                                "quantity",
+                                "price",
+                                "currency"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "live": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "en_route",
+                                  "next_stop",
+                                  "delivered",
+                                  "ended"
+                                ]
+                              },
+                              "stops_away": {
+                                "nullable": true,
+                                "type": "integer",
+                                "minimum": 0,
+                                "maximum": 9007199254740991
+                              },
+                              "latitude": {
+                                "nullable": true,
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "nullable": true,
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "accuracy": {
+                                "nullable": true,
+                                "type": "number",
+                                "minimum": 0
+                              },
+                              "position_at": {
+                                "nullable": true,
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              "message": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "updated_at": {
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              }
+                            },
+                            "required": [
+                              "state",
+                              "stops_away",
+                              "latitude",
+                              "longitude",
+                              "accuracy",
+                              "position_at",
+                              "message",
+                              "updated_at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "location": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "source": {
+                                "type": "string",
+                                "enum": [
+                                  "courier",
+                                  "event"
+                                ]
+                              },
+                              "precision": {
+                                "type": "string",
+                                "enum": [
+                                  "exact",
+                                  "street",
+                                  "area"
+                                ]
+                              },
+                              "name": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "address": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "at": {
+                                "nullable": true,
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude",
+                              "source",
+                              "precision",
+                              "name",
+                              "address",
+                              "at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "last_scan": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "latitude": {
+                                "type": "number",
+                                "minimum": -90,
+                                "maximum": 90
+                              },
+                              "longitude": {
+                                "type": "number",
+                                "minimum": -180,
+                                "maximum": 180
+                              },
+                              "source": {
+                                "type": "string",
+                                "enum": [
+                                  "courier",
+                                  "event"
+                                ]
+                              },
+                              "precision": {
+                                "type": "string",
+                                "enum": [
+                                  "exact",
+                                  "street",
+                                  "area"
+                                ]
+                              },
+                              "name": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "address": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "at": {
+                                "nullable": true,
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              }
+                            },
+                            "required": [
+                              "latitude",
+                              "longitude",
+                              "source",
+                              "precision",
+                              "name",
+                              "address",
+                              "at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "order": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "items": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "title": {
+                                      "type": "string"
+                                    },
+                                    "image_url": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "url": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "quantity": {
+                                      "nullable": true,
+                                      "type": "integer",
+                                      "minimum": 0,
+                                      "exclusiveMinimum": true,
+                                      "maximum": 9007199254740991
+                                    },
+                                    "price": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "currency": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "parcel_id": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "format": "uuid",
+                                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                    }
+                                  },
+                                  "required": [
+                                    "title",
+                                    "image_url",
+                                    "url",
+                                    "quantity",
+                                    "price",
+                                    "currency",
+                                    "parcel_id"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "id": {
+                                "type": "string",
+                                "format": "uuid",
+                                "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "items",
+                              "id"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "connections": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "connection_id": {
+                                  "type": "string"
+                                },
+                                "provider": {
+                                  "type": "string"
+                                },
+                                "label": {
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "account",
+                                    "tracking",
+                                    "shop",
+                                    "mail"
+                                  ]
+                                },
+                                "role": {
+                                  "type": "string",
+                                  "enum": [
+                                    "primary",
+                                    "handoff",
+                                    "mail"
+                                  ]
+                                },
+                                "last_seen_at": {
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                }
+                              },
+                              "required": [
+                                "connection_id",
+                                "provider",
+                                "label",
+                                "kind",
+                                "role",
+                                "last_seen_at"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "lookup": {
+                            "type": "object",
+                            "properties": {
+                              "state": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "found",
+                                  "not_found"
+                                ]
+                              },
+                              "since": {
+                                "nullable": true,
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              },
+                              "checked_at": {
+                                "nullable": true,
+                                "type": "string",
+                                "format": "date-time",
+                                "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                              }
+                            },
+                            "required": [
+                              "state",
+                              "since",
+                              "checked_at"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "first_seen_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "updated_at": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          }
+                        },
+                        "required": [
+                          "carrier",
+                          "tracking_number",
+                          "sender",
+                          "receiver",
+                          "status",
+                          "raw_status",
+                          "delivered",
+                          "delivered_at",
+                          "expected_from",
+                          "expected_to",
+                          "expected_days",
+                          "pickup",
+                          "pickup_point",
+                          "url",
+                          "id",
+                          "direction",
+                          "label",
+                          "display_name",
+                          "manual_status",
+                          "carrier_status",
+                          "carrier_delivered",
+                          "archived_at",
+                          "items",
+                          "live",
+                          "location",
+                          "last_scan",
+                          "order",
+                          "connections",
+                          "lookup",
+                          "first_seen_at",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "events": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "timestamp": {
+                            "type": "string",
+                            "format": "date-time",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                          },
+                          "status": {
+                            "nullable": true,
+                            "type": "string",
+                            "enum": [
+                              "registered",
+                              "in_transit",
+                              "out_for_delivery",
+                              "at_pickup_point",
+                              "delivered",
+                              "returning",
+                              "problem",
+                              "unknown"
+                            ]
+                          },
+                          "raw_status": {
+                            "type": "string"
+                          },
+                          "location": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "latitude": {
+                            "nullable": true,
+                            "type": "number",
+                            "minimum": -90,
+                            "maximum": 90
+                          },
+                          "longitude": {
+                            "nullable": true,
+                            "type": "number",
+                            "minimum": -180,
+                            "maximum": 180
+                          },
+                          "approximate": {
+                            "type": "boolean"
+                          },
+                          "id": {
+                            "type": "string"
+                          },
+                          "parcel_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "timestamp",
+                          "status",
+                          "raw_status",
+                          "location",
+                          "latitude",
+                          "longitude",
+                          "approximate",
+                          "id",
+                          "parcel_id",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "orders": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "shop": {
+                            "type": "string"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "label": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "display_name": {
+                            "type": "string"
+                          },
+                          "placed_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "ordered",
+                              "partly_shipped",
+                              "shipped",
+                              "partly_delivered",
+                              "delivered",
+                              "problem",
+                              "cancelled",
+                              "refunded"
+                            ]
+                          },
+                          "digital": {
+                            "type": "boolean"
+                          },
+                          "archived": {
+                            "type": "boolean"
+                          },
+                          "archived_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "archive_mode": {
+                            "type": "string",
+                            "enum": [
+                              "automatic",
+                              "archived",
+                              "kept"
+                            ]
+                          },
+                          "parcel_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "delivered_count": {
+                            "type": "integer",
+                            "minimum": 0,
+                            "maximum": 9007199254740991
+                          },
+                          "total": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "type": "number"
+                              },
+                              "currency": {
+                                "type": "string"
+                              },
+                              "partial": {
+                                "type": "boolean"
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency",
+                              "partial"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "image_url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "quantity": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": 0,
+                                  "exclusiveMinimum": true,
+                                  "maximum": 9007199254740991
+                                },
+                                "price": {
+                                  "nullable": true,
+                                  "type": "number"
+                                },
+                                "currency": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "parcel_id": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "image_url",
+                                "url",
+                                "quantity",
+                                "price",
+                                "currency",
+                                "parcel_id"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "return_until": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "returns": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "order_id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "shop": {
+                                  "type": "string"
+                                },
+                                "order_number": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "requested",
+                                    "label_created",
+                                    "dropped_off",
+                                    "in_transit",
+                                    "received",
+                                    "refunded",
+                                    "rejected",
+                                    "cancelled",
+                                    "expired"
+                                  ]
+                                },
+                                "reason": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "return_by": {
+                                  "nullable": true,
+                                  "description": "The last local day to hand the return in.",
+                                  "type": "string",
+                                  "format": "date",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                },
+                                "drop_off": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "carrier": {
+                                        "nullable": true,
+                                        "type": "string"
+                                      },
+                                      "kind": {
+                                        "type": "string",
+                                        "enum": [
+                                          "shop",
+                                          "parcel_locker",
+                                          "post_office",
+                                          "pickup",
+                                          "any"
+                                        ]
+                                      },
+                                      "description": {
+                                        "nullable": true,
+                                        "type": "string"
+                                      }
+                                    },
+                                    "required": [
+                                      "carrier",
+                                      "kind",
+                                      "description"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "cost": {
+                                  "nullable": true,
+                                  "description": "What sending it back costs; null when not known.",
+                                  "type": "object",
+                                  "properties": {
+                                    "free": {
+                                      "type": "boolean"
+                                    },
+                                    "amount": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "currency": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "free",
+                                    "amount",
+                                    "currency"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "label_url": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "description": "An http(s) address."
+                                },
+                                "carrier": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "tracking_number": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "parcel_id": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "refund": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "amount": {
+                                      "nullable": true,
+                                      "type": "number"
+                                    },
+                                    "currency": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "type": "string",
+                                      "enum": [
+                                        "pending",
+                                        "issued"
+                                      ]
+                                    }
+                                  },
+                                  "required": [
+                                    "amount",
+                                    "currency",
+                                    "status"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "items": {
+                                  "type": "array",
+                                  "items": {
+                                    "type": "object",
+                                    "properties": {
+                                      "title": {
+                                        "type": "string"
+                                      },
+                                      "order_item_position": {
+                                        "nullable": true,
+                                        "type": "integer",
+                                        "minimum": -9007199254740991,
+                                        "maximum": 9007199254740991
+                                      }
+                                    },
+                                    "required": [
+                                      "title",
+                                      "order_item_position"
+                                    ],
+                                    "additionalProperties": false
+                                  }
+                                },
+                                "created_at": {
+                                  "type": "string"
+                                },
+                                "updated_at": {
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "order_id",
+                                "shop",
+                                "order_number",
+                                "status",
+                                "reason",
+                                "return_by",
+                                "drop_off",
+                                "cost",
+                                "label_url",
+                                "carrier",
+                                "tracking_number",
+                                "parcel_id",
+                                "refund",
+                                "items",
+                                "created_at",
+                                "updated_at"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "parcels": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "id": {
+                                  "type": "string",
+                                  "format": "uuid",
+                                  "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                                },
+                                "carrier": {
+                                  "type": "string"
+                                },
+                                "tracking_number": {
+                                  "type": "string"
+                                },
+                                "direction": {
+                                  "type": "string",
+                                  "enum": [
+                                    "receiving",
+                                    "sending"
+                                  ]
+                                },
+                                "display_name": {
+                                  "type": "string"
+                                },
+                                "status": {
+                                  "type": "string",
+                                  "enum": [
+                                    "registered",
+                                    "in_transit",
+                                    "out_for_delivery",
+                                    "at_pickup_point",
+                                    "delivered",
+                                    "returning",
+                                    "problem",
+                                    "unknown"
+                                  ]
+                                },
+                                "delivered": {
+                                  "type": "boolean"
+                                },
+                                "delivered_at": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                },
+                                "expected_from": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                },
+                                "expected_to": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                },
+                                "expected_days": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "from": {
+                                      "type": "string",
+                                      "format": "date",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                    },
+                                    "to": {
+                                      "type": "string",
+                                      "format": "date",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                                    }
+                                  },
+                                  "required": [
+                                    "from",
+                                    "to"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "archived_at": {
+                                  "nullable": true,
+                                  "type": "string",
+                                  "format": "date-time",
+                                  "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                },
+                                "location": {
+                                  "nullable": true,
+                                  "type": "object",
+                                  "properties": {
+                                    "latitude": {
+                                      "type": "number",
+                                      "minimum": -90,
+                                      "maximum": 90
+                                    },
+                                    "longitude": {
+                                      "type": "number",
+                                      "minimum": -180,
+                                      "maximum": 180
+                                    },
+                                    "source": {
+                                      "type": "string",
+                                      "enum": [
+                                        "courier",
+                                        "event"
+                                      ]
+                                    },
+                                    "precision": {
+                                      "type": "string",
+                                      "enum": [
+                                        "exact",
+                                        "street",
+                                        "area"
+                                      ]
+                                    },
+                                    "name": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "address": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "at": {
+                                      "nullable": true,
+                                      "type": "string",
+                                      "format": "date-time",
+                                      "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))T(?:(?:[01]\\d|2[0-3]):[0-5]\\d:[0-5]\\d(?:\\.\\d+)?(?:Z|([+-](?:[01]\\d|2[0-3]):[0-5]\\d)))$"
+                                    }
+                                  },
+                                  "required": [
+                                    "latitude",
+                                    "longitude",
+                                    "source",
+                                    "precision",
+                                    "name",
+                                    "address",
+                                    "at"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "url": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "id",
+                                "carrier",
+                                "tracking_number",
+                                "direction",
+                                "display_name",
+                                "status",
+                                "delivered",
+                                "delivered_at",
+                                "expected_from",
+                                "expected_to",
+                                "expected_days",
+                                "archived_at",
+                                "location",
+                                "url"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "shop",
+                          "order_number",
+                          "label",
+                          "display_name",
+                          "placed_at",
+                          "status",
+                          "digital",
+                          "archived",
+                          "archived_at",
+                          "archive_mode",
+                          "parcel_count",
+                          "delivered_count",
+                          "total",
+                          "items",
+                          "return_until",
+                          "returns",
+                          "parcels",
+                          "created_at",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "returns": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "order_id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "shop": {
+                            "type": "string"
+                          },
+                          "order_number": {
+                            "type": "string"
+                          },
+                          "status": {
+                            "type": "string",
+                            "enum": [
+                              "requested",
+                              "label_created",
+                              "dropped_off",
+                              "in_transit",
+                              "received",
+                              "refunded",
+                              "rejected",
+                              "cancelled",
+                              "expired"
+                            ]
+                          },
+                          "reason": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "return_by": {
+                            "nullable": true,
+                            "description": "The last local day to hand the return in.",
+                            "type": "string",
+                            "format": "date",
+                            "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+                          },
+                          "drop_off": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "carrier": {
+                                  "nullable": true,
+                                  "type": "string"
+                                },
+                                "kind": {
+                                  "type": "string",
+                                  "enum": [
+                                    "shop",
+                                    "parcel_locker",
+                                    "post_office",
+                                    "pickup",
+                                    "any"
+                                  ]
+                                },
+                                "description": {
+                                  "nullable": true,
+                                  "type": "string"
+                                }
+                              },
+                              "required": [
+                                "carrier",
+                                "kind",
+                                "description"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "cost": {
+                            "nullable": true,
+                            "description": "What sending it back costs; null when not known.",
+                            "type": "object",
+                            "properties": {
+                              "free": {
+                                "type": "boolean"
+                              },
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "free",
+                              "amount",
+                              "currency"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "label_url": {
+                            "nullable": true,
+                            "type": "string",
+                            "description": "An http(s) address."
+                          },
+                          "carrier": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "tracking_number": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "parcel_id": {
+                            "nullable": true,
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "refund": {
+                            "nullable": true,
+                            "type": "object",
+                            "properties": {
+                              "amount": {
+                                "nullable": true,
+                                "type": "number"
+                              },
+                              "currency": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "status": {
+                                "type": "string",
+                                "enum": [
+                                  "pending",
+                                  "issued"
+                                ]
+                              }
+                            },
+                            "required": [
+                              "amount",
+                              "currency",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "items": {
+                            "type": "array",
+                            "items": {
+                              "type": "object",
+                              "properties": {
+                                "title": {
+                                  "type": "string"
+                                },
+                                "order_item_position": {
+                                  "nullable": true,
+                                  "type": "integer",
+                                  "minimum": -9007199254740991,
+                                  "maximum": 9007199254740991
+                                }
+                              },
+                              "required": [
+                                "title",
+                                "order_item_position"
+                              ],
+                              "additionalProperties": false
+                            }
+                          },
+                          "created_at": {
+                            "type": "string"
+                          },
+                          "updated_at": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "order_id",
+                          "shop",
+                          "order_number",
+                          "status",
+                          "reason",
+                          "return_by",
+                          "drop_off",
+                          "cost",
+                          "label_url",
+                          "carrier",
+                          "tracking_number",
+                          "parcel_id",
+                          "refund",
+                          "items",
+                          "created_at",
+                          "updated_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "connections": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "id": {
+                            "type": "string",
+                            "format": "uuid",
+                            "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                          },
+                          "provider": {
+                            "type": "string"
+                          },
+                          "kind": {
+                            "type": "string",
+                            "enum": [
+                              "account",
+                              "tracking",
+                              "shop",
+                              "mail"
+                            ]
+                          },
+                          "label": {
+                            "type": "string"
+                          },
+                          "config": {},
+                          "has_secret": {
+                            "type": "boolean",
+                            "description": "Whether sign-in data is stored. The data itself is never returned."
+                          },
+                          "state": {
+                            "type": "string",
+                            "enum": [
+                              "ok",
+                              "idle",
+                              "needs_sign_in",
+                              "error",
+                              "disabled"
+                            ]
+                          },
+                          "state_reason": {
+                            "nullable": true,
+                            "description": "Why the connection is in its state, as a code; null when there is nothing to say.",
+                            "type": "string",
+                            "enum": [
+                              "not_run_yet",
+                              "not_signed_in_yet",
+                              "sign_in_rejected",
+                              "sign_in_unreadable",
+                              "imported_without_sign_in",
+                              "rate_limited",
+                              "captcha",
+                              "invalid_config",
+                              "provider_missing",
+                              "update_failed",
+                              "provider_idle",
+                              "inbox_sign_in_rejected",
+                              "inbox_settings_invalid",
+                              "inbox_unreachable"
+                            ]
+                          },
+                          "carrier_message": {
+                            "nullable": true,
+                            "description": "What the provider or carrier said about the state (an HTTP status, a changed response, why it did nothing), as written; null when it said nothing.",
+                            "type": "string"
+                          },
+                          "next_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "last_run_at": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "last_ok_at": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "id",
+                          "provider",
+                          "kind",
+                          "label",
+                          "config",
+                          "has_secret",
+                          "state",
+                          "state_reason",
+                          "carrier_message",
+                          "next_run_at",
+                          "last_run_at",
+                          "last_ok_at"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "deleted": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "type": {
+                            "type": "string",
+                            "enum": [
+                              "parcel",
+                              "event",
+                              "order",
+                              "return",
+                              "connection"
+                            ]
+                          },
+                          "id": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "type",
+                          "id"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "Deleted, or no longer shown (every connection that reported it is disabled)."
+                    }
+                  },
+                  "required": [
+                    "cursor",
+                    "more",
+                    "parcels",
+                    "events",
+                    "orders",
+                    "returns",
+                    "connections",
+                    "deleted"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "410": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
                   ],
                   "additionalProperties": false
                 }

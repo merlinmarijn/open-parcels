@@ -21,7 +21,7 @@ import { normaliseTrackingNumber } from "./tracking-number.js";
 import { foldParcel } from "./fold.js";
 import { scrubRaw } from "./raw-scrub.js";
 import { withSafeLinks } from "./links.js";
-import { writeOrderItems } from "./order-items.js";
+import { sameRows, writeOrderItems } from "./order-items.js";
 import { createOrder, findOrder } from "./order-rows.js";
 import { applyReturns } from "./returns.js";
 import { applyOrders } from "./orders.js";
@@ -772,23 +772,28 @@ export class Reconciler {
       await stale.execute();
     }
     if (snapshot.items.length > 0 && (await this.#mayWriteItems(trx, parcelId, connectionKind))) {
-      await trx.deleteFrom("items").where("parcel_id", "=", parcelId).execute();
-      await trx
-        .insertInto("items")
-        .values(
-          snapshot.items.map((item, position) => ({
-            parcel_id: parcelId,
-            position,
-            title: item.title,
-            image_ref: item.imageUrl,
-            url: item.url,
-            external_id: item.externalId,
-            quantity: item.quantity,
-            price: item.price,
-            currency: item.currency,
-          })),
-        )
+      const next = snapshot.items.map((item, position) => ({
+        parcel_id: parcelId,
+        position,
+        title: item.title,
+        image_ref: item.imageUrl,
+        url: item.url,
+        external_id: item.externalId,
+        quantity: item.quantity,
+        price: item.price,
+        currency: item.currency,
+      }));
+      const stored = await trx
+        .selectFrom("items")
+        .selectAll()
+        .where("parcel_id", "=", parcelId)
+        .orderBy("position")
         .execute();
+      // Unchanged items are left alone: rewriting them would count as a change for delta sync.
+      if (!sameRows(stored, next)) {
+        await trx.deleteFrom("items").where("parcel_id", "=", parcelId).execute();
+        await trx.insertInto("items").values(next).execute();
+      }
     }
     if (snapshot.raw !== null) {
       // Codes that open something and personal data (names, addresses) never reach storage.

@@ -19,6 +19,7 @@ import {
 import type { TrustProxy } from "../config.js";
 import type { Services } from "../services.js";
 import { registerAuth } from "./auth-plugin.js";
+import { registerCors } from "./cors.js";
 import { ApiError, routeNotFound, type ErrorBody } from "./errors.js";
 import { registerCalendarRoutes } from "./routes/calendar.js";
 import { registerDiagnosticsRoutes } from "./routes/diagnostics.js";
@@ -35,6 +36,7 @@ import { registerSignInRoutes } from "./routes/sign-in.js";
 import { registerDataRoutes } from "./routes/data.js";
 import { registerConnectionDataRoutes } from "./routes/connection-data.js";
 import { registerConnectionRoutes } from "./routes/connections.js";
+import { registerSyncRoutes } from "./routes/sync.js";
 import { registerTokenRoutes } from "./routes/tokens.js";
 import { registerWebUi } from "./web-ui.js";
 
@@ -168,7 +170,10 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
     openapi: {
       info: {
         title: "open-parcels",
-        description: "Self-hosted parcel and order tracking.",
+        description:
+          "Self-hosted parcel and order tracking. API version 1: every path starts with /api/v1. " +
+          "`info.version` is the server release this document belongs to; each release publishes " +
+          "its document, and clients are generated from a released one.",
         version: VERSION,
       },
       components: {
@@ -181,8 +186,10 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
     },
     transform: jsonSchemaTransform,
   });
+  registerCors(app, services.config);
   registerAuth(app, {
     store: services.auth,
+    logins: services.logins,
     access: services.access,
     trustedIngressAddress: options.trustedIngressAddress,
   });
@@ -204,6 +211,7 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
   registerTileRoutes(typed, services);
   registerDiagnosticsRoutes(typed, services);
   registerEventRoutes(typed, services);
+  registerSyncRoutes(typed, services);
 
   app.get("/api/v1/openapi.json", { schema: { hide: true } }, () => app.swagger());
   const servesWebUi =

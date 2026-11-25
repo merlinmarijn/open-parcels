@@ -53,6 +53,7 @@ export type NotFoundResource =
   | "parcel"
   | "return"
   | "token"
+  | "login"
   | "calendar_feed"
   | "sign_in"
   | "setting"
