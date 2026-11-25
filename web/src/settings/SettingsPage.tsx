@@ -3,6 +3,7 @@ import { Search, X } from "lucide-react";
 import { useMemo, useState, type ReactNode, type SyntheticEvent } from "react";
 import { Marker, useMapEvents } from "react-leaflet";
 import { ErrorNotice, ReadOnlyHint, Spinner, errorMessage } from "../components/ui";
+import { chooseLanguage, LANGUAGES, storedLanguageChoice, t, type LanguageChoice } from "../i18n";
 import { formatLatLng, parseLatLng, type LatLngTuple } from "../lib/geo";
 import { iconHome } from "../map/mapIcons";
 import { SharedMap } from "../map/SharedMap";
@@ -87,20 +88,19 @@ function HomeSection(): ReactNode {
   if (loading) return <Spinner />;
   return (
     <section className="card stack" aria-labelledby="home-title">
-      <h2 id="home-title">Home location</h2>
+      <h2 id="home-title">{t.settings.home.title}</h2>
       <p className="muted">
-        Where your parcels go. The maps centre on it, draw the way still ahead and show how far a
-        parcel is.
-        {admin ? " Type an address or coordinates (“52.520008, 13.404954”), or click the map." : ""}
+        {t.settings.home.intro}
+        {admin ? t.settings.home.introAdmin : null}
       </p>
       {admin ? null : <ReadOnlyHint />}
       {admin ? (
         <form className="search-row" onSubmit={submit}>
           <div className="input-with-clear">
             <input
-              aria-label="Address or coordinates"
+              aria-label={t.settings.home.inputLabel}
               value={shown}
-              placeholder="Address, place or “latitude, longitude”"
+              placeholder={t.settings.home.placeholder}
               autoComplete="off"
               spellCheck={false}
               onChange={(e) => {
@@ -112,7 +112,7 @@ function HomeSection(): ReactNode {
               <button
                 type="button"
                 className="clear-button"
-                aria-label="Clear the box"
+                aria-label={t.settings.home.clear}
                 onClick={() => {
                   setText("");
                   setPlaces(null);
@@ -124,7 +124,8 @@ function HomeSection(): ReactNode {
             ) : null}
           </div>
           <button type="submit" className="button primary" disabled={searching || save.isPending}>
-            <Search size={16} aria-hidden="true" /> {searching ? "Searching…" : "Find"}
+            <Search size={16} aria-hidden="true" />{" "}
+            {searching ? t.settings.home.searching : t.settings.home.find}
           </button>
         </form>
       ) : null}
@@ -132,15 +133,15 @@ function HomeSection(): ReactNode {
         // Nominatim's usage policy asks for the ODbL credit wherever its results are shown; the
         // search runs only when the form is submitted, never while typing.
         <p className="muted">
-          Address search: data &copy;{" "}
+          {t.settings.home.attribution}{" "}
           <a
             href="https://www.openstreetmap.org/copyright"
             target="_blank"
             rel="noreferrer noopener"
           >
-            OpenStreetMap contributors
+            {t.settings.home.osmContributors}
           </a>
-          , ODbL.
+          {t.settings.home.license}
         </p>
       ) : null}
       {/* Announced and styled like every other error (OP-157). */}
@@ -150,9 +151,9 @@ function HomeSection(): ReactNode {
         </p>
       )}
       {places === null ? null : places.length === 0 ? (
-        <p className="muted">Nothing found. Try a fuller address or coordinates.</p>
+        <p className="muted">{t.settings.home.nothingFound}</p>
       ) : (
-        <ul className="place-results" aria-label="Places found">
+        <ul className="place-results" aria-label={t.settings.home.placesFound}>
           {places.map((found) => (
             <li key={`${String(found.latitude)},${String(found.longitude)}`}>
               <button
@@ -170,7 +171,7 @@ function HomeSection(): ReactNode {
       )}
       <div className="settings-map">
         <SharedMap
-          label="Home location"
+          label={t.settings.home.title}
           {...(point === null ? {} : { center: point, zoom: 16 })}
           {...(bounds === undefined ? {} : { bounds, fitMaxZoom: 17 })}
         >
@@ -198,10 +199,10 @@ function HomeSection(): ReactNode {
       </div>
       <p className="muted" role="status" aria-live="polite">
         {save.isPending
-          ? "Saving…"
+          ? t.settings.home.saving
           : point === null
-            ? "No home location set."
-            : `Saved: ${formatLatLng(point)}`}
+            ? t.settings.home.notSet
+            : t.settings.home.saved(formatLatLng(point))}
       </p>
       <ErrorNotice error={save.error ?? clear.error} />
       {home === null || !admin ? null : (
@@ -215,7 +216,7 @@ function HomeSection(): ReactNode {
               clear.mutate();
             }}
           >
-            Remove home location
+            {t.settings.home.remove}
           </button>
         </div>
       )}
@@ -229,26 +230,50 @@ function LabelSection(): ReactNode {
   const save = useSaveParcelLabel();
   return (
     <section className="card stack" aria-labelledby="label-title">
-      <h2 id="label-title">Default parcel label</h2>
-      <p className="muted">
-        How a parcel is named when you have not given it a label yourself, here and in Home
-        Assistant.
-      </p>
+      <h2 id="label-title">{t.settings.label.title}</h2>
+      <p className="muted">{t.settings.label.intro}</p>
       <label className="field">
-        <span>Name parcels by</span>
+        <span>{t.settings.label.nameBy}</span>
         <select
           value={save.isPending ? save.variables : mode}
           disabled={save.isPending || !admin}
-          title={admin ? undefined : "Log in as admin to change this."}
+          title={admin ? undefined : t.settings.label.adminOnly}
           onChange={(e) => {
             save.mutate(e.target.value as ParcelLabelMode);
           }}
         >
-          <option value="tracking_number">Tracking number (default)</option>
-          <option value="items">Item names (max 100 characters)</option>
+          <option value="tracking_number">{t.settings.label.trackingNumber}</option>
+          <option value="items">{t.settings.label.items}</option>
         </select>
       </label>
       <ErrorNotice error={save.error} />
+    </section>
+  );
+}
+
+/** The UI language in this browser; a change reloads the page. */
+function LanguageSection(): ReactNode {
+  const choice = storedLanguageChoice();
+  return (
+    <section className="card stack" aria-labelledby="language-title">
+      <h2 id="language-title">{t.settings.language.title}</h2>
+      <p className="muted">{t.settings.language.intro}</p>
+      <label className="field">
+        <span>{t.settings.language.label}</span>
+        <select
+          value={choice}
+          onChange={(e) => {
+            chooseLanguage(e.target.value as LanguageChoice);
+          }}
+        >
+          <option value="automatic">{t.settings.language.automatic}</option>
+          {LANGUAGES.map((language) => (
+            <option key={language} value={language} lang={language}>
+              {t.settings.language[language]}
+            </option>
+          ))}
+        </select>
+      </label>
     </section>
   );
 }
@@ -258,11 +283,12 @@ export function SettingsPage(): ReactNode {
   return (
     <section aria-labelledby="settings-title" className="stack">
       <div className="page-header">
-        <h1 id="settings-title">Settings</h1>
+        <h1 id="settings-title">{t.settings.title}</h1>
       </div>
       <div className="settings-grid">
         <HomeSection />
         <LabelSection />
+        <LanguageSection />
         {admin ? (
           <>
             <ServerSettingsCards />
@@ -271,8 +297,8 @@ export function SettingsPage(): ReactNode {
           </>
         ) : (
           <section className="card stack">
-            <h2>Server settings</h2>
-            <ReadOnlyHint>Server settings and passwords are for the admin only.</ReadOnlyHint>
+            <h2>{t.settings.serverSettings}</h2>
+            <ReadOnlyHint>{t.settings.serverSettingsAdminOnly}</ReadOnlyHint>
           </section>
         )}
       </div>

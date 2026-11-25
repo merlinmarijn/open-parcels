@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-25
 
+- Rules 2.0.0-dev.14 on the server: every tracking number of a plural multi-number sentence
+  (`4e83baf`); backups and the backup folder private (0600/0700, existing ones fixed on start,
+  `f0c9eed`); version 2.0.0-dev.20261125 with the image's commit on the Status page (`6ab1715`)
+- TODO §2 internationalisation: web UI in English and German, language setting, locale formats,
+  German glossary terms, lint rule against hard-coded UI text (see the i18n commit; leftovers in
+  `TODO.md`)
+
 - TODO §2 production readiness: scheduled database backups with retention, folder setting, back up
   now, `backup.finished` and the restore tool (`b5918b6`); status API and health levels, inbox
   backoff fix (`c584917`); rate-limit review of every provider with a per-host pause after 429,

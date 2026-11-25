@@ -3,6 +3,7 @@ import { useState, type ReactNode } from "react";
 import { SetupPage, SignInPage } from "./auth/AuthPages";
 import { useSession } from "./auth/session";
 import { ErrorNotice, Spinner } from "./components/ui";
+import { t } from "./i18n";
 import { createAppRouter, type AppRouter } from "./router";
 
 /**
@@ -14,7 +15,7 @@ export function App(props: { readonly router?: AppRouter }): ReactNode {
   const [router] = useState(() => props.router ?? createAppRouter());
 
   if (session.isPending) {
-    return <Spinner label="Starting…" />;
+    return <Spinner label={t.shell.starting} />;
   }
   if (session.isError) {
     return (
@@ -27,7 +28,7 @@ export function App(props: { readonly router?: AppRouter }): ReactNode {
             void session.refetch();
           }}
         >
-          Try again
+          {t.shell.tryAgain}
         </button>
       </main>
     );

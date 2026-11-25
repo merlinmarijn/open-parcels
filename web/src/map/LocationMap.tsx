@@ -2,6 +2,7 @@ import { MapPin } from "lucide-react";
 import { useMemo, type ReactNode } from "react";
 import { Marker, Popup } from "react-leaflet";
 import type { ParcelDetail } from "../api/types";
+import { t } from "../i18n";
 import { formatDateTime } from "../lib/format";
 import { useHome } from "../settings/home";
 import { AnimatedRoute } from "./AnimatedRoute";
@@ -90,8 +91,8 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
     return (
       <div className="map-empty">
         <MapPin size={48} aria-hidden="true" />
-        <h2>Location map not available</h2>
-        <p>This parcel has no place on the map yet. Its updates still appear in the history.</p>
+        <h2>{t.map.unavailable}</h2>
+        <p>{t.map.unavailableHint}</p>
       </div>
     );
   }
@@ -101,7 +102,7 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
 
   return (
     <div className="route-map">
-      <SharedMap label="Parcel route" center={current} zoom={12} bounds={bounds}>
+      <SharedMap label={t.map.parcelRoute} center={current} zoom={12} bounds={bounds}>
         {reachedPath === null ? null : <AnimatedRoute positions={reachedPath} color="#3b82f6" />}
         {aheadPath === null ? null : (
           <AnimatedRoute positions={aheadPath} color="#a78bfa" opacity={0.45} />
@@ -127,7 +128,9 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
                 <div className="popup-content">
                   <strong>{stop.label}</strong>
                   <PopupMeta when={formatDateTime(stop.at)} point={stop.point} />
-                  {stop.approximate ? <span className="muted">Approximate place</span> : null}
+                  {stop.approximate ? (
+                    <span className="muted">{t.map.approximatePlace}</span>
+                  ) : null}
                 </div>
               </Popup>
             </Marker>
@@ -137,7 +140,7 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
           <Marker position={courier} icon={iconVan} zIndexOffset={1000}>
             <Popup>
               <div className="popup-content">
-                <strong>Courier</strong>
+                <strong>{t.map.courier}</strong>
                 <PopupMeta when={formatDateTime(live?.position_at)} point={courier} />
               </div>
             </Popup>
@@ -147,7 +150,7 @@ export default function LocationMap({ parcel }: { readonly parcel: ParcelDetail 
           <Marker position={homePoint} icon={iconHome} zIndexOffset={-100}>
             <Popup>
               <div className="popup-content">
-                <strong>Home</strong>
+                <strong>{t.map.home}</strong>
                 {home?.label === null || home?.label === undefined ? null : (
                   <span className="muted">{home.label}</span>
                 )}

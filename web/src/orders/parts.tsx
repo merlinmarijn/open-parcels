@@ -6,18 +6,8 @@ import { apiUrl } from "../api/fetcher";
 import type { Order, OrderStatus, OrderView, ParcelStatus } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { formatExpected, formatMoney, formatRelative } from "../lib/format";
+import { t } from "../i18n";
 import { ArchivedBadge, StatusBadge } from "../parcels/badges";
-
-const ORDER_STATUS_LABELS: Readonly<Record<OrderStatus, string>> = {
-  ordered: "Ordered",
-  partly_shipped: "Partly shipped",
-  shipped: "Shipped",
-  partly_delivered: "Partly delivered",
-  delivered: "Delivered",
-  problem: "Problem",
-  cancelled: "Cancelled",
-  refunded: "Refunded",
-};
 
 /** The parcel status whose colour an order status borrows. */
 const STATUS_COLOUR: Readonly<Record<OrderStatus, ParcelStatus>> = {
@@ -31,39 +21,19 @@ const STATUS_COLOUR: Readonly<Record<OrderStatus, ParcelStatus>> = {
   refunded: "unknown",
 };
 
-/** The list's tabs, with what each one holds. */
+/** The list's tabs, with what each one holds; "all" is reachable from the page (OP-153). */
 export const ORDER_VIEW_TABS: readonly {
   readonly view: OrderView;
   readonly label: string;
   readonly help: string;
-}[] = [
-  {
-    view: "open",
-    label: "Open",
-    help: "Orders still on their way: at least one parcel has not arrived yet.",
-  },
-  {
-    view: "delivered",
-    label: "Delivered",
-    help:
-      "Every parcel has arrived. Delivered parcels are archived after the retention period, " +
-      "and an order moves to Archived once all its parcels are archived.",
-  },
-  {
-    view: "archived",
-    label: "Archived",
-    help:
-      "Orders whose parcels are all archived, orders that never got a parcel 30 days after " +
-      "they were placed, and orders you archived yourself. Open one to bring it back.",
-  },
-  // Reachable from the page, not only by address (OP-153).
-  { view: "all", label: "All", help: "Every order, open, delivered and archived." },
-];
+}[] = (["open", "delivered", "archived", "all"] as const).map((view) => ({
+  view,
+  label: t.orders.views[view].label,
+  help: t.orders.views[view].help,
+}));
 
 function OrderStatusBadge({ status }: { readonly status: OrderStatus }): ReactNode {
-  return (
-    <span className={`badge status-${STATUS_COLOUR[status]}`}>{ORDER_STATUS_LABELS[status]}</span>
-  );
+  return <span className={`badge status-${STATUS_COLOUR[status]}`}>{t.orders.status[status]}</span>;
 }
 
 export function OrderBadges({ order }: { readonly order: Order }): ReactNode {
@@ -79,7 +49,7 @@ export function formatTotal(total: Order["total"]): string | null {
   if (total === null) return null;
   const amount = formatMoney(total.amount, total.currency);
   // Some lines have no price: the order cost at least this much.
-  return total.partial ? `from ${amount}` : amount;
+  return total.partial ? t.orders.totalFrom(amount) : amount;
 }
 
 /** "Placed 3 days ago · 2 items · 39,90 €" */
@@ -87,8 +57,8 @@ export function orderSummary(order: Order): string {
   const total = formatTotal(order.total);
   const count = order.items.reduce((sum, item) => sum + (item.quantity ?? 1), 0);
   return [
-    order.placed_at === null ? null : `Placed ${formatRelative(order.placed_at)}`,
-    count === 0 ? null : `${String(count)} ${count === 1 ? "item" : "items"}`,
+    order.placed_at === null ? null : t.orders.placed(formatRelative(order.placed_at)),
+    count === 0 ? null : t.orders.itemCount(count),
     total,
   ]
     .filter((part) => part !== null)
@@ -99,20 +69,19 @@ export function OrderProgress({ order }: { readonly order: Order }): ReactNode {
   if (order.parcel_count === 0) {
     return (
       <div className="eta-label">
-        {order.digital ? "Digital order, no parcel" : noParcelText(order.status)}
+        {order.digital ? t.orders.digitalNoParcel : noParcelText(order.status)}
       </div>
     );
   }
   return (
     <div>
       <div className="eta-label">
-        {order.delivered_count} of {order.parcel_count}{" "}
-        {order.parcel_count === 1 ? "parcel" : "parcels"} delivered
+        {t.orders.deliveredOf(order.delivered_count, order.parcel_count)}
       </div>
       <div
         className="order-progress"
         role="progressbar"
-        aria-label="Delivered parcels"
+        aria-label={t.orders.deliveredParcels}
         aria-valuemin={0}
         aria-valuemax={order.parcel_count}
         aria-valuenow={order.delivered_count}
@@ -132,7 +101,7 @@ export function PictureGrid(props: { readonly order: Order; readonly limit: numb
   const shown = pictures.slice(0, props.limit);
   const more = pictures.length - shown.length;
   return (
-    <ul className="order-pictures" aria-label="Items">
+    <ul className="order-pictures" aria-label={t.orders.items}>
       {shown.map((item, index) => (
         <li key={`${item.title}-${String(index)}`} title={item.title}>
           <img src={apiUrl(item.imageUrl)} alt={item.title} loading="lazy" />
@@ -146,9 +115,9 @@ export function PictureGrid(props: { readonly order: Order; readonly limit: numb
 type OrderParcel = Order["parcels"][number];
 
 function parcelLine(parcel: OrderParcel): string | null {
-  if (parcel.delivered) return `Delivered ${formatRelative(parcel.delivered_at)}`;
+  if (parcel.delivered) return t.orders.parcelDelivered(formatRelative(parcel.delivered_at));
   if (parcel.expected_from !== null || parcel.expected_to !== null) {
-    return `Expected ${formatExpected(parcel)}`;
+    return t.orders.parcelExpected(formatExpected(parcel));
   }
   return null;
 }
@@ -191,14 +160,14 @@ export function noParcelText(status: OrderStatus): string {
   switch (status) {
     case "cancelled":
     case "refunded":
-      return "No parcel";
+      return t.orders.noParcel;
     case "shipped":
     case "delivered":
-      return "No tracked parcel";
+      return t.orders.noTrackedParcel;
     case "ordered":
     case "partly_shipped":
     case "partly_delivered":
     case "problem":
-      return "No parcel known yet";
+      return t.orders.noParcelYet;
   }
 }

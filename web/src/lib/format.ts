@@ -1,37 +1,16 @@
 import type { LookupState, ParcelStatus, Connection, ConnectionState } from "../api/types";
-import { UI_LOCALE } from "./locale";
+import { t } from "../i18n";
+import { formatNumber, UI_LOCALE } from "./locale";
 
-export const STATUS_LABELS: Readonly<Record<ParcelStatus, string>> = {
-  registered: "Registered",
-  in_transit: "In transit",
-  out_for_delivery: "Out for delivery",
-  at_pickup_point: "At pickup point",
-  delivered: "Delivered",
-  returning: "Returning",
-  problem: "Problem",
-  unknown: "Unknown",
-};
+export const STATUS_LABELS: Readonly<Record<ParcelStatus, string>> = t.common.parcelStatus;
 
-export const LOOKUP_LABELS: Readonly<Record<LookupState, string>> = {
-  pending: "Waiting for carrier",
-  found: "Found",
-  not_found: "Not found by carrier",
-};
+export const LOOKUP_LABELS: Readonly<Record<LookupState, string>> = t.common.lookupState;
 
-export const CONNECTION_STATE_LABELS: Readonly<Record<ConnectionState, string>> = {
-  ok: "OK",
-  idle: "Idle",
-  needs_sign_in: "Needs sign-in",
-  error: "Error",
-  disabled: "Disabled",
-};
+export const CONNECTION_STATE_LABELS: Readonly<Record<ConnectionState, string>> =
+  t.common.connectionState;
 
-export const CONNECTION_KIND_LABELS: Readonly<Record<Connection["kind"], string>> = {
-  account: "account",
-  tracking: "tracking",
-  shop: "shop",
-  mail: "inbox",
-};
+export const CONNECTION_KIND_LABELS: Readonly<Record<Connection["kind"], string>> =
+  t.common.connectionKind;
 
 const locales = UI_LOCALE;
 const dateTime = new Intl.DateTimeFormat(locales, { dateStyle: "medium", timeStyle: "short" });
@@ -105,7 +84,7 @@ const UNITS: readonly [Intl.RelativeTimeFormatUnit, number][] = [
 
 export function formatRelative(value: string | null | undefined, now = Date.now()): string {
   if (value === null || value === undefined) {
-    return "never";
+    return t.common.never;
   }
   const diff = new Date(value).getTime() - now;
   if (Number.isNaN(diff)) {
@@ -116,14 +95,8 @@ export function formatRelative(value: string | null | undefined, now = Date.now(
       return relative.format(Math.round(diff / ms), unit);
     }
   }
-  return "just now";
+  return t.common.justNow;
 }
-
-const LOOKUP_PHRASES: Readonly<Record<LookupState, string>> = {
-  pending: "Waiting for the carrier",
-  found: "Found by the carrier",
-  not_found: "Not found by the carrier",
-};
 
 /**
  * "Found by the carrier 2 days ago, last asked 1 hour ago". Unknown times are left out rather
@@ -140,24 +113,30 @@ export function describeLookup(
   const since = lookup.since === null ? "" : ` ${formatRelative(lookup.since, now)}`;
   const asked =
     lookup.checked_at === null
-      ? "not asked yet"
-      : `last asked ${formatRelative(lookup.checked_at, now)}`;
-  return `${LOOKUP_PHRASES[lookup.state]}${since}, ${asked}`;
+      ? t.common.notAskedYet
+      : t.common.lastAsked(formatRelative(lookup.checked_at, now));
+  return `${t.common.lookupPhrase[lookup.state]}${since}, ${asked}`;
 }
+
+const plainMoney = new Intl.NumberFormat(UI_LOCALE, {
+  minimumFractionDigits: 2,
+  maximumFractionDigits: 2,
+  useGrouping: false,
+});
 
 /** An amount in its currency; a bare number when the currency is unknown, never a guessed one (OP-151). */
 export function formatMoney(amount: number, currency: string | null): string {
-  if (currency === null) return amount.toFixed(2);
+  if (currency === null) return plainMoney.format(amount);
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+    return new Intl.NumberFormat(UI_LOCALE, { style: "currency", currency }).format(amount);
   } catch {
-    return amount.toFixed(2);
+    return plainMoney.format(amount);
   }
 }
 
 /** "512 B", "3.4 MB", "120 MB". */
 export function formatBytes(bytes: number): string {
-  if (bytes < 1024) return `${String(bytes)} B`;
+  if (bytes < 1024) return `${formatNumber(bytes)} B`;
   const units = ["KB", "MB", "GB", "TB"];
   let value = bytes / 1024;
   let unit = 0;
@@ -165,5 +144,10 @@ export function formatBytes(bytes: number): string {
     value /= 1024;
     unit += 1;
   }
-  return `${value.toFixed(value < 10 ? 1 : 0)} ${units[unit] ?? "TB"}`;
+  const digits = value < 10 ? 1 : 0;
+  const number = new Intl.NumberFormat(UI_LOCALE, {
+    minimumFractionDigits: digits,
+    maximumFractionDigits: digits,
+  }).format(value);
+  return `${number} ${units[unit] ?? "TB"}`;
 }

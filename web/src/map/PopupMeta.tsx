@@ -1,4 +1,5 @@
 import type { ReactNode } from "react";
+import { t } from "../i18n";
 import { distanceKm, formatDistance } from "../lib/geo";
 import { useHome } from "../settings/home";
 import type { LatLng } from "./mapIcons";
@@ -17,8 +18,8 @@ export function PopupMeta(props: { readonly when: string; readonly point: LatLng
   const { home } = useHome();
   const label =
     home === null
-      ? "Open map"
-      : `${formatDistance(distanceKm([home.point[0], home.point[1]], props.point))} away`;
+      ? t.map.openMap
+      : t.map.away(formatDistance(distanceKm([home.point[0], home.point[1]], props.point)));
   return (
     <span className="muted">
       {props.when} ·{" "}

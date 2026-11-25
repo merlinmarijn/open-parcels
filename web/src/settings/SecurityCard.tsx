@@ -8,6 +8,7 @@ import {
 } from "../auth/session";
 import { MIN_PASSWORD } from "../auth/password";
 import { ErrorNotice, Field } from "../components/ui";
+import { t } from "../i18n";
 import {
   SOURCE_LABELS,
   useResetServerSetting,
@@ -57,11 +58,11 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
   const submit = (event: SyntheticEvent): void => {
     event.preventDefault();
     if (next.length < MIN_PASSWORD) {
-      setProblem(`Use at least ${MIN_PASSWORD} characters.`);
+      setProblem(t.settings.security.tooShort(MIN_PASSWORD));
       return;
     }
     if (next !== repeat) {
-      setProblem("The new passwords do not match.");
+      setProblem(t.settings.security.newMismatch);
       return;
     }
     setProblem(null);
@@ -70,31 +71,31 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
 
   return (
     <div className="stack">
-      <h3>Admin password</h3>
+      <h3>{t.settings.security.adminTitle}</h3>
       <p className="muted">
-        Needed to change anything. Currently{" "}
-        {setting === undefined ? "unknown" : SOURCE_LABELS[setting.source]}
-        {setting?.source === "override" ? " (stored hashed)" : ""}. Changing or resetting it signs
-        everyone out, you included.
+        {t.settings.security.adminIntro}{" "}
+        {setting === undefined ? t.settings.security.unknown : SOURCE_LABELS[setting.source]}
+        {setting?.source === "override" ? t.settings.security.storedHashed : null}
+        {t.settings.security.adminSignsOut}
       </p>
       <form className="stack" onSubmit={submit}>
         <PasswordInput
-          label="Current admin password"
+          label={t.settings.security.current}
           value={current}
           onChange={setCurrent}
           autoComplete="current-password"
           required={!ingress}
-          {...(ingress ? { hint: "Not needed through Home Assistant." } : {})}
+          {...(ingress ? { hint: t.settings.security.notNeededIngress } : {})}
         />
         <PasswordInput
-          label="New admin password"
-          hint={`At least ${MIN_PASSWORD} characters.`}
+          label={t.settings.security.newAdmin}
+          hint={t.settings.security.atLeast(MIN_PASSWORD)}
           value={next}
           onChange={setNext}
           autoComplete="new-password"
         />
         <PasswordInput
-          label="Repeat the new password"
+          label={t.settings.security.repeatNew}
           value={repeat}
           onChange={setRepeat}
           autoComplete="new-password"
@@ -107,25 +108,21 @@ function AdminPassword({ setting }: { readonly setting: ServerSetting | undefine
         <ErrorNotice error={change.error ?? reset.error} />
         <div className="actions">
           <button type="submit" className="button primary" disabled={change.isPending}>
-            {change.isPending ? "Saving…" : "Change admin password"}
+            {change.isPending ? t.settings.security.saving : t.settings.security.changeAdmin}
           </button>
           {setting?.source === "override" ? (
             <button
               type="button"
               className="button"
               disabled={reset.isPending}
-              title="Back to OPENPARCELS_ADMIN_PASSWORD from the environment"
+              title={t.settings.security.adminResetTitle}
               onClick={() => {
-                if (
-                  window.confirm(
-                    "Use the environment's admin password again? Everyone is logged out.",
-                  )
-                ) {
+                if (window.confirm(t.settings.security.adminResetConfirm)) {
                   reset.mutate();
                 }
               }}
             >
-              Reset to environment
+              {t.settings.security.resetToEnvironment}
             </button>
           ) : null}
         </div>
@@ -160,12 +157,10 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
 
   return (
     <div className="stack">
-      <h3>Reader password</h3>
+      <h3>{t.settings.security.readerTitle}</h3>
       <p className="muted">
-        {set
-          ? "Set: reading needs a login with this password (or the admin password)."
-          : "Not set: anyone who can reach the server can read everything, but not change it."}{" "}
-        Changing it signs readers out.
+        {set ? t.settings.security.readerSet : t.settings.security.readerUnset}{" "}
+        {t.settings.security.readerSignsOut}
       </p>
       <form
         className="setting-edit"
@@ -174,9 +169,9 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
           // The same rules as the admin password: a mistyped one would lock every reader out
           // (OP-152).
           if (next.length < MIN_PASSWORD) {
-            setProblem(`Use at least ${MIN_PASSWORD} characters.`);
+            setProblem(t.settings.security.tooShort(MIN_PASSWORD));
           } else if (next !== repeat) {
-            setProblem("The passwords do not match.");
+            setProblem(t.settings.security.mismatch);
           } else {
             setProblem(null);
             store(next);
@@ -185,8 +180,8 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
       >
         <input
           type="password"
-          aria-label="New reader password"
-          placeholder={set ? "set; type to replace" : "unset"}
+          aria-label={t.settings.security.newReader}
+          placeholder={set ? t.settings.server.setTypeToReplace : t.settings.server.unset}
           autoComplete="new-password"
           value={next}
           onChange={(e) => {
@@ -195,8 +190,8 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
         />
         <input
           type="password"
-          aria-label="Repeat the reader password"
-          placeholder="repeat"
+          aria-label={t.settings.security.repeatReader}
+          placeholder={t.settings.security.repeat}
           autoComplete="new-password"
           value={repeat}
           onChange={(e) => {
@@ -204,7 +199,7 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
           }}
         />
         <button type="submit" className="button primary" disabled={save.isPending || next === ""}>
-          {set ? "Change" : "Set"}
+          {set ? t.settings.security.change : t.settings.security.set}
         </button>
         {set ? (
           <button
@@ -212,12 +207,12 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
             className="button"
             disabled={save.isPending}
             onClick={() => {
-              if (window.confirm("Let anyone who can reach the server read without a password?")) {
+              if (window.confirm(t.settings.security.clearConfirm)) {
                 store("");
               }
             }}
           >
-            Clear
+            {t.settings.security.clear}
           </button>
         ) : null}
         {setting?.source === "override" ? (
@@ -225,12 +220,12 @@ function ReaderPassword({ setting }: { readonly setting: ServerSetting | undefin
             type="button"
             className="button"
             disabled={reset.isPending}
-            title="Back to OPENPARCELS_PASSWORD from the environment"
+            title={t.settings.security.readerResetTitle}
             onClick={() => {
               reset.mutate(READER_KEY, { onSuccess: refreshSession });
             }}
           >
-            Reset
+            {t.settings.security.reset}
           </button>
         ) : null}
       </form>
@@ -252,7 +247,7 @@ export function SecurityCard({
 }): ReactNode {
   return (
     <section className="card stack" aria-labelledby="settings-security">
-      <h2 id="settings-security">Security</h2>
+      <h2 id="settings-security">{t.settings.security.title}</h2>
       <AdminPassword setting={settings.find((s) => s.key === ADMIN_KEY)} />
       <ReaderPassword setting={settings.find((s) => s.key === READER_KEY)} />
     </section>

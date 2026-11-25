@@ -19,6 +19,8 @@ import { ConnectionStateBadge } from "../parcels/badges";
 import { INBOX_PROVIDER } from "./inbox";
 import { SignInDialog } from "./SignInDialog";
 import { ConnectionDialog } from "./ConnectionDialog";
+import { t } from "../i18n";
+import { formatNumber } from "../lib/locale";
 
 type Editing =
   { readonly mode: "add" } | { readonly mode: "edit"; readonly connection: Connection } | null;
@@ -108,16 +110,16 @@ function ConnectionRow(props: {
         <p className="muted connection-detail">{connection.state_detail}</p>
       )}
       <div className="connection-stats">
-        <Stat label="on the way" value={stats.active} />
-        <Stat label="delivered" value={stats.delivered} />
-        <Stat label="parcels found" value={stats.total} />
+        <Stat label={t.connections.statOnTheWay} value={stats.active} />
+        <Stat label={t.connections.statDelivered} value={stats.delivered} />
+        <Stat label={t.connections.statFound} value={stats.total} />
       </div>
       <dl className="connection-times">
-        <dt>Last run</dt>
+        <dt>{t.connections.lastRun}</dt>
         <dd>{formatRelative(connection.last_run_at)}</dd>
-        <dt>Last success</dt>
+        <dt>{t.connections.lastSuccess}</dt>
         <dd>{formatRelative(connection.last_ok_at)}</dd>
-        <dt>Next run</dt>
+        <dt>{t.connections.nextRun}</dt>
         <dd>{connection.next_run_at === null ? "—" : formatRelative(connection.next_run_at)}</dd>
       </dl>
       {props.admin ? <ConnectionActions {...props} /> : null}
@@ -152,7 +154,7 @@ function ConnectionActions(props: {
             }
             onClick={props.onSignIn}
           >
-            {connection.has_secret ? "Sign in again" : "Sign in"}
+            {connection.has_secret ? t.connections.signInAgain : t.connections.signIn}
           </button>
         ) : null}
         {enabled ? (
@@ -164,15 +166,15 @@ function ConnectionActions(props: {
               sync.mutate(connection.id);
             }}
           >
-            {sync.isPending ? "Syncing…" : "Sync now"}
+            {sync.isPending ? t.connections.syncing : t.connections.syncNow}
           </button>
         ) : null}
         <span className="connection-icon-actions">
           <button
             type="button"
             className="icon-button"
-            aria-label="Edit"
-            title="Edit"
+            aria-label={t.connections.edit}
+            title={t.connections.edit}
             onClick={props.onEdit}
           >
             <Pencil size={16} aria-hidden="true" />
@@ -180,8 +182,8 @@ function ConnectionActions(props: {
           <button
             type="button"
             className="icon-button"
-            aria-label={enabled ? "Disable" : "Enable"}
-            title={enabled ? "Disable" : "Enable"}
+            aria-label={enabled ? t.connections.disable : t.connections.enable}
+            title={enabled ? t.connections.disable : t.connections.enable}
             aria-pressed={!enabled}
             onClick={() => {
               update.mutate({ id: connection.id, body: { enabled: !enabled } });
@@ -196,21 +198,21 @@ function ConnectionActions(props: {
           <button
             type="button"
             className="icon-button"
-            aria-label="Clear data"
-            title="Clear data: remove what this connection imported, so it syncs again from scratch"
+            aria-label={t.connections.clearData}
+            title={t.connections.clearDataHint}
             disabled={counting || clear.isPending}
             onClick={() => {
               setCounting(true);
               void connectionDataCounts(connection.id)
                 .then((counts) => {
                   const shared =
-                    counts.shared > 0
-                      ? ` ${String(counts.shared)} that other connections also reported stay.`
-                      : "";
-                  const question =
-                    `Clear the data of “${connection.label}”? This deletes ${String(counts.parcels)} ` +
-                    `parcels and ${String(counts.orders)} orders only it reported.${shared} The ` +
-                    "connection and its sign-in stay, and it syncs again from scratch.";
+                    counts.shared > 0 ? t.connections.clearShared(formatNumber(counts.shared)) : "";
+                  const question = t.connections.clearQuestion(
+                    connection.label,
+                    formatNumber(counts.parcels),
+                    formatNumber(counts.orders),
+                    shared,
+                  );
                   if (window.confirm(question)) {
                     clear.mutate(connection.id);
                   }
@@ -225,10 +227,10 @@ function ConnectionActions(props: {
           <button
             type="button"
             className="icon-button danger"
-            aria-label="Remove"
-            title="Remove"
+            aria-label={t.connections.remove}
+            title={t.connections.remove}
             onClick={() => {
-              if (window.confirm(`Remove “${connection.label}” and its stored sign-in?`)) {
+              if (window.confirm(t.connections.removeQuestion(connection.label))) {
                 remove.mutate(connection.id);
               }
             }}
@@ -261,14 +263,14 @@ export function ConnectionsPage(): ReactNode {
   return (
     <section aria-labelledby="connections-title">
       <div className="page-header">
-        <h1 id="connections-title">Connections</h1>
+        <h1 id="connections-title">{t.connections.title}</h1>
         {list.length === 0 ? null : (
           <div className="connection-summary">
-            <Stat label="connections" value={list.length} />
-            <Stat label="working" value={working} />
-            <Stat label="need attention" value={attention} />
+            <Stat label={t.connections.statConnections} value={list.length} />
+            <Stat label={t.connections.statWorking} value={working} />
+            <Stat label={t.connections.statAttention} value={attention} />
             <Stat
-              label="parcels on the way"
+              label={t.connections.statOnTheWayTotal}
               value={
                 parcels.data?.filter((p) => !p.delivered && p.archived_at === null).length ?? "…"
               }
@@ -283,7 +285,7 @@ export function ConnectionsPage(): ReactNode {
               setEditing({ mode: "add" });
             }}
           >
-            Add a connection
+            {t.connections.add}
           </button>
         ) : null}
       </div>
@@ -294,7 +296,7 @@ export function ConnectionsPage(): ReactNode {
           <Spinner />
         ) : null
       ) : connections.data.length === 0 ? (
-        <p className="muted">No connections yet. Add a carrier account, a shop or an inbox.</p>
+        <p className="muted">{t.connections.empty}</p>
       ) : (
         <ul className="plain-list connection-grid">
           {connections.data.map((connection) => (

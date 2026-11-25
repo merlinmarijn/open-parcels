@@ -1,0 +1,66 @@
+import type { Messages } from "../messages";
+
+export const admin: Messages["admin"] = {
+  status: {
+    title: "Status",
+    states: { ok: "OK", degraded: "Braucht Aufmerksamkeit", unavailable: "Nicht verfügbar" },
+    checks: {
+      database: "Datenbank",
+      connections: "Verbindungen",
+      inboxes: "Postfächer",
+      scheduler: "Planer",
+      event_stream: "Live-Ereignisstrom",
+      backups: "Sicherungen",
+    },
+    service: "Dienst",
+    version: (version: string, commit: string | null, since: string) =>
+      `Version ${version}${commit === null ? "" : ` (${commit})`}, läuft seit ${since}`,
+    databaseDetail: (detail: string) => `Datenbank: ${detail}`,
+    connectionLine: (extra: string | undefined, lastRun: string, lastOk: string) =>
+      `${extra === undefined ? "" : `${extra}, `}letzter Lauf ${lastRun}, letzter Erfolg ${lastOk}`,
+    pausedUntil: (until: string) => `, vom Paketdienst pausiert bis ${until}`,
+    background: "Hintergrundarbeit",
+    scheduler: (running: boolean, inFlight: number, lastPass: string, next: string) =>
+      `${running ? "läuft" : "gestoppt"}, ${String(inFlight)} Läufe in Arbeit, letzter Durchgang ${lastPass}, nächster Lauf ${next}`,
+    stream: (clients: number, stored: number, live: number) =>
+      `${String(clients)} Clients verbunden, ${String(stored)} Ereignisse zum Nachspielen gespeichert, ${String(live)} Zusteller live verfolgt`,
+    backupsNext: (next: string) => `nächste ${next}`,
+    backupsOff: "automatische Sicherungen aus",
+    backupsNone: ", noch keine",
+    backupsLast: (when: string, ok: boolean) =>
+      `, letzte ${when} (${ok ? "erfolgreich" : "fehlgeschlagen"})`,
+    noneYet: "Noch keine.",
+    watching: "wartet auf neue E-Mails",
+    notConnected: "nicht verbunden",
+    reconnecting: (when: string) => `verbindet neu ${when}`,
+    diagnostics: "Diagnose",
+    diagnosticsAdminOnly: "Die Diagnose ist nur für den Admin.",
+    redacted: "Auf dem Server geschwärzt: keine Sendungsnummern, Adressen oder Anmeldedaten.",
+    download: "Diagnose herunterladen",
+    show: "Anzeigen",
+  },
+  tokens: {
+    title: "API-Tokens",
+    adminOnly: "API-Tokens sind nur für den Admin.",
+    newToken: "Neuer Token",
+    name: "Name",
+    nameHint: "Was ihn verwendet, zum Beispiel „Home Assistant“.",
+    scopes: "Berechtigungen",
+    scopeNames: { read: "lesen", write: "schreiben", admin: "Admin" },
+    create: "Token erstellen",
+    copyNow: "Den Token jetzt kopieren. Er wird",
+    onlyOnce: "nur einmal",
+    copyNowEnd: " angezeigt.",
+    copied: "Kopiert.",
+    copyUnavailable:
+      "Kopieren ist hier nicht möglich: Der Token ist markiert, bitte von Hand kopieren.",
+    copy: "Kopieren",
+    done: "Fertig",
+    created: "Erstellt",
+    lastUsed: "Zuletzt verwendet",
+    actions: "Aktionen",
+    none: "Noch keine Tokens.",
+    revokeConfirm: (name: string) => `Den Token „${name}“ widerrufen?`,
+    revoke: "Widerrufen",
+  },
+};

@@ -9,6 +9,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useMemo, useState, type ReactNode } from "react";
 import { useCalendar, useCarriers } from "../api/queries";
 import { ErrorNotice } from "../components/ui";
+import { t } from "../i18n";
 import { pickOne, useUrlParam } from "../lib/urlState";
 import { UI_HOUR12, UI_LOCALE } from "../lib/locale";
 import { toCalendarEvent } from "./events";
@@ -98,7 +99,7 @@ export default function CalendarPage(): ReactNode {
   return (
     <section aria-labelledby="calendar-title">
       <div className="page-header">
-        <h1 id="calendar-title">Calendar</h1>
+        <h1 id="calendar-title">{t.calendar.title}</h1>
       </div>
       <ErrorNotice error={calendar.error} />
       <div className="card calendar">

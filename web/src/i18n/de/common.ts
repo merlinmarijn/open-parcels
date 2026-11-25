@@ -1,0 +1,57 @@
+import { formatNumber } from "../../lib/locale";
+import type { Messages } from "../messages";
+
+export const common: Messages["common"] = {
+  somethingWentWrong: "Etwas ist schiefgelaufen.",
+  readOnly: "Nur lesen. Als Admin einloggen, um das zu ändern.",
+  loading: "Wird geladen…",
+  close: "Schließen",
+  cancel: "Abbrechen",
+  save: "Speichern",
+  delete: "Löschen",
+  rename: "Umbenennen",
+  label: "Bezeichnung",
+  search: "Suchen",
+  yes: "Ja",
+  countOf: (shown, total) => `${formatNumber(shown)} von ${formatNumber(total)}`,
+  nothingYet: "Noch nichts hier.",
+  nothingMatches: "Keine Treffer.",
+  resizePanels: "Bereiche anpassen",
+  parcelStatus: {
+    registered: "Angemeldet",
+    in_transit: "Unterwegs",
+    out_for_delivery: "In Zustellung",
+    at_pickup_point: "An der Abholstelle",
+    delivered: "Zugestellt",
+    returning: "Auf dem Rückweg",
+    problem: "Problem",
+    unknown: "Unbekannt",
+  },
+  lookupState: {
+    pending: "Wartet auf den Paketdienst",
+    found: "Gefunden",
+    not_found: "Vom Paketdienst nicht gefunden",
+  },
+  lookupPhrase: {
+    pending: "Wartet auf den Paketdienst",
+    found: "Vom Paketdienst gefunden",
+    not_found: "Vom Paketdienst nicht gefunden",
+  },
+  notAskedYet: "noch nicht abgefragt",
+  lastAsked: (relative) => `zuletzt abgefragt ${relative}`,
+  connectionState: {
+    ok: "OK",
+    idle: "Ruht",
+    needs_sign_in: "Anmeldung nötig",
+    error: "Fehler",
+    disabled: "Deaktiviert",
+  },
+  connectionKind: {
+    account: "Konto",
+    tracking: "Sendungsverfolgung",
+    shop: "Shop",
+    mail: "Postfach",
+  },
+  never: "nie",
+  justNow: "gerade eben",
+};

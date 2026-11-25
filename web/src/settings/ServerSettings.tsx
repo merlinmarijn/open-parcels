@@ -1,6 +1,7 @@
 import { RotateCcw, Save } from "lucide-react";
 import { useState, type ReactNode, type SyntheticEvent } from "react";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { FALLBACK_LAYER, useMapLayers } from "../map/layers";
 import { SharedMap } from "../map/SharedMap";
 import { SecurityCard } from "./SecurityCard";
@@ -24,7 +25,7 @@ function Editor(props: {
   readonly onText: (text: string) => void;
 }): ReactNode {
   const { setting, text, onText } = props;
-  const label = `${shortKey(setting.key)} value`;
+  const label = t.settings.server.valueLabel(shortKey(setting.key));
   if (setting.kind === "boolean") {
     return (
       <select
@@ -35,9 +36,9 @@ function Editor(props: {
         }}
       >
         {/* Without a value nothing is chosen yet, so choosing "on" is a change (OP-152). */}
-        {text === "" ? <option value="">unset</option> : null}
-        <option value="true">on</option>
-        <option value="false">off</option>
+        {text === "" ? <option value="">{t.settings.server.unset}</option> : null}
+        <option value="true">{t.settings.server.on}</option>
+        <option value="false">{t.settings.server.off}</option>
       </select>
     );
   }
@@ -66,11 +67,9 @@ function Editor(props: {
       placeholder={
         setting.secret
           ? setting.set
-            ? "set; type to replace"
-            : "unset"
-          : setting.default === null
-            ? "unset"
-            : formatValue(setting.default)
+            ? t.settings.server.setTypeToReplace
+            : t.settings.server.unset
+          : formatValue(setting.default)
       }
       spellCheck={false}
       autoComplete="off"
@@ -118,16 +117,18 @@ function SettingRow({ setting }: { readonly setting: ServerSetting }): ReactNode
           {APPLY_LABELS[setting.apply]}
         </span>
         {setting.pending_restart ? (
-          <span className="badge setting-pending">saved, restart to apply</span>
+          <span className="badge setting-pending">{t.settings.server.pendingRestart}</span>
         ) : null}
       </div>
       <p className="muted setting-description">{setting.description}</p>
       {setting.secret ? (
-        <p className="setting-values muted">{setting.set ? "Set (hidden)" : "Not set"}</p>
+        <p className="setting-values muted">
+          {setting.set ? t.settings.server.secretSet : t.settings.server.secretNotSet}
+        </p>
       ) : (
         <p className="setting-values muted">
-          Current <strong>{formatValue(setting.value)}</strong> · default{" "}
-          {formatValue(setting.default)}
+          {t.settings.server.current} <strong>{formatValue(setting.value)}</strong>{" "}
+          {t.settings.server.defaultIs} {formatValue(setting.default)}
         </p>
       )}
       {editable ? (
@@ -137,17 +138,17 @@ function SettingRow({ setting }: { readonly setting: ServerSetting }): ReactNode
             type="submit"
             className="button primary"
             disabled={busy || value === null || shown === current}
-            aria-label={`Save ${shortKey(setting.key)}`}
+            aria-label={t.settings.server.saveLabel(shortKey(setting.key))}
           >
-            <Save size={14} aria-hidden="true" /> Save
+            <Save size={14} aria-hidden="true" /> {t.settings.server.save}
           </button>
           {setting.source === "override" ? (
             <button
               type="button"
               className="button"
               disabled={busy}
-              aria-label={`Reset ${shortKey(setting.key)}`}
-              title="Back to the environment or default"
+              aria-label={t.settings.server.resetLabel(shortKey(setting.key))}
+              title={t.settings.server.resetTitle}
               onClick={() => {
                 reset.mutate(setting.key, {
                   onSuccess: () => {
@@ -156,7 +157,7 @@ function SettingRow({ setting }: { readonly setting: ServerSetting }): ReactNode
                 });
               }}
             >
-              <RotateCcw size={14} aria-hidden="true" /> Reset
+              <RotateCcw size={14} aria-hidden="true" /> {t.settings.server.reset}
             </button>
           ) : null}
         </form>
@@ -179,7 +180,7 @@ function MapPreview({ settings }: { readonly settings: readonly ServerSetting[] 
     layers.find((l) => l.kind === "overlay" && l.id === value("OPENPARCELS_MAP_OVERLAY")) ?? null;
   return (
     <div className="settings-map">
-      <SharedMap label="Default map style preview" zoom={4} style={{ base, overlay }} />
+      <SharedMap label={t.settings.server.mapPreview} zoom={4} style={{ base, overlay }} />
     </div>
   );
 }

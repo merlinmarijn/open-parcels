@@ -2,6 +2,7 @@ import { useState, type SyntheticEvent, type ReactNode } from "react";
 import type { SignInStep } from "../api/types";
 import { Field } from "../components/ui";
 import { OpenUrlStep } from "./OpenUrlStep";
+import { t } from "../i18n";
 
 export type StepInput = Record<string, string>;
 
@@ -17,7 +18,7 @@ function Message({ text }: { readonly text: string | undefined }): ReactNode {
 
 function Submit({
   busy,
-  label = "Continue",
+  label = t.connections.continue,
 }: {
   readonly busy: boolean;
   readonly label?: string;
@@ -25,7 +26,7 @@ function Submit({
   return (
     <div className="actions">
       <button type="submit" className="button primary" disabled={busy}>
-        {busy ? "Working…" : label}
+        {busy ? t.connections.working : label}
       </button>
     </div>
   );
@@ -107,13 +108,6 @@ function CodeStep(props: {
   );
 }
 
-const CHANNELS: Readonly<Record<Extract<SignInStep, { kind: "otp_code" }>["channel"], string>> = {
-  sms: "by text message",
-  email: "by email",
-  app: "in the carrier's app",
-  other: "",
-};
-
 function ChooseStep({ step, busy, onSubmit }: StepProps<"choose_method">): ReactNode {
   const [choice, setChoice] = useState(step.options[0]?.id ?? "");
   const submit = (event: SyntheticEvent): void => {
@@ -123,7 +117,7 @@ function ChooseStep({ step, busy, onSubmit }: StepProps<"choose_method">): React
   return (
     <form onSubmit={submit} className="stack">
       <fieldset>
-        <legend>{step.message ?? "How do you want to sign in?"}</legend>
+        <legend>{step.message ?? t.connections.howToSignIn}</legend>
         {step.options.map((option) => (
           <label key={option.id} className="checkbox">
             <input
@@ -153,8 +147,8 @@ function ApprovalStep({
     <div className="stack" role="status" aria-live="polite">
       <p className="step-message">{step.message}</p>
       <p className="muted">
-        <span className="pulse" aria-hidden="true" /> Waiting for your approval. This page checks
-        every {step.poll_interval_seconds} seconds.
+        <span className="pulse" aria-hidden="true" />{" "}
+        {t.connections.waitingApproval(step.poll_interval_seconds)}
       </p>
     </div>
   );
@@ -175,8 +169,8 @@ export function StepRenderer(props: {
     case "email_link":
       return (
         <CodeStep
-          intro={`We sent a sign-in email${step.destination === null ? "" : ` to ${step.destination}`}. Copy the link (or the code) from it and paste it here.`}
-          label="Link or code from the email"
+          intro={t.connections.emailLinkIntro(step.destination)}
+          label={t.connections.emailLinkLabel}
           message={step.message}
           busy={busy}
           onSubmit={onSubmit}
@@ -186,8 +180,8 @@ export function StepRenderer(props: {
     case "otp_code":
       return (
         <CodeStep
-          intro={`Enter the code you received ${CHANNELS[step.channel]}${step.destination === null ? "" : ` (${step.destination})`}.`}
-          label="Code"
+          intro={t.connections.otpIntro(step.channel, step.destination)}
+          label={t.connections.code}
           message={step.message}
           busy={busy}
           onSubmit={onSubmit}

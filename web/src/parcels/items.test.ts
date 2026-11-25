@@ -33,7 +33,8 @@ describe("the order's other items on a parcel (OP-151)", () => {
 describe("an item price (OP-151)", () => {
   it("shows a bare number when the currency is unknown, never euros", () => {
     const priced = { title: "Test", image_url: null, url: null, quantity: 1, price: 5 };
-    expect(priceText({ ...priced, currency: null })).toBe("5.00");
+    // Formatted in the test machine's region: "5.00" or "5,00".
+    expect(priceText({ ...priced, currency: null })).toMatch(/^5[.,]00$/);
     expect(priceText({ ...priced, currency: "USD" })).toMatch(/\$|US/);
   });
 });

@@ -6,6 +6,7 @@ import { ErrorNotice, Spinner } from "../components/ui";
 import { AddParcelDialog } from "./AddParcelDialog";
 import { flag, pickOne, useUrlParam } from "../lib/urlState";
 import { PARCEL_FILTERS, ParcelTable, type ParcelFilter } from "./ParcelTable";
+import { t } from "../i18n";
 
 /** Linkable: `?status=active|delivered|all`, `?archived=1`, `?carrier=dhl`, `?q=…`, `?sort=-updated_at`. */
 export function ParcelsPage(): ReactNode {
@@ -28,7 +29,7 @@ export function ParcelsPage(): ReactNode {
       <div className="page-header glass-panel">
         <div className="page-title-row">
           <Package size={22} className="page-icon" aria-hidden="true" />
-          <h1 id="parcels-title">Parcels</h1>
+          <h1 id="parcels-title">{t.parcels.title}</h1>
           {parcels.data === undefined ? null : (
             <span className="page-count">{parcels.data.length}</span>
           )}
@@ -41,7 +42,7 @@ export function ParcelsPage(): ReactNode {
               setArchived(e.target.checked);
             }}
           />
-          Include archived
+          {t.parcels.includeArchived}
         </label>
         {/* Readers cannot add parcels: the button would only lead to a refusal. */}
         {admin ? (
@@ -53,7 +54,7 @@ export function ParcelsPage(): ReactNode {
             }}
           >
             <Plus size={16} aria-hidden="true" />
-            Track a parcel
+            {t.parcels.track}
           </button>
         ) : null}
       </div>

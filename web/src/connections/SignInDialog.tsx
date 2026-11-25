@@ -9,6 +9,7 @@ import { SchemaFields } from "./SchemaForm";
 import { asSchema, cleanValues, type FormValues } from "./schema";
 import { StepRenderer } from "./StepRenderer";
 import { useSignInAttempt } from "./useSignInAttempt";
+import { t } from "../i18n";
 
 /** Credentials and API keys: a form from the carrier's sign-in schema, sent once with PUT. */
 function StaticSecretForm(props: {
@@ -46,7 +47,7 @@ function StaticSecretForm(props: {
       <ErrorNotice error={save.error} />
       <div className="actions">
         <button type="submit" className="button primary" disabled={save.isPending}>
-          Save sign-in
+          {t.connections.saveSignIn}
         </button>
       </div>
     </form>
@@ -64,11 +65,11 @@ function InteractiveSignIn(props: {
     return (
       <div className="stack">
         <p className="notice" role="status">
-          Signed in. The connection runs now.
+          {t.connections.signedIn}
         </p>
         <div className="actions">
           <button type="button" className="button primary" onClick={props.onDone}>
-            Close
+            {t.connections.close}
           </button>
         </div>
       </div>
@@ -87,7 +88,7 @@ function InteractiveSignIn(props: {
               void attempt.start(props.flow.id);
             }}
           >
-            {attempt.busy ? "Starting…" : `Start: ${props.flow.label}`}
+            {attempt.busy ? t.connections.starting : t.connections.startFlow(props.flow.label)}
           </button>
         </div>
       ) : (
@@ -103,7 +104,7 @@ function InteractiveSignIn(props: {
           />
           <div className="actions">
             <button type="button" className="button" onClick={attempt.cancel}>
-              Cancel sign-in
+              {t.connections.cancelSignIn}
             </button>
           </div>
         </>
@@ -119,7 +120,7 @@ function FlowBody(props: {
 }): ReactNode {
   switch (props.flow.type) {
     case "none":
-      return <p className="muted">This connection needs no sign-in.</p>;
+      return <p className="muted">{t.connections.noSignIn}</p>;
     case "credentials":
     case "api_key":
       return (
@@ -150,7 +151,9 @@ export function SignInDialog(props: {
 
   return (
     <Dialog
-      title={connection === null ? "Sign in" : `Sign in: ${connection.label}`}
+      title={
+        connection === null ? t.connections.signIn : t.connections.signInTitle(connection.label)
+      }
       open={connection !== null}
       onClose={() => {
         setChosen(null);
@@ -162,7 +165,7 @@ export function SignInDialog(props: {
       {flows.isPending ? <Spinner /> : null}
       {list.length > 1 ? (
         <label className="field">
-          <span>Sign-in method</span>
+          <span>{t.connections.signInMethod}</span>
           <select
             value={flow?.id ?? ""}
             onChange={(e) => {

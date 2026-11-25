@@ -2,6 +2,7 @@ import { useState, type ReactNode } from "react";
 import type { PostApiV1DataClearBody } from "../api/generated";
 import { useClearData, useDataSummary } from "../api/queries";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { formatBytes } from "../lib/format";
 
 const EVERYTHING_CONFIRMATION = "DELETE";
@@ -49,13 +50,12 @@ export function DataCard(): ReactNode {
     clear.mutate(body, {
       onSuccess: (done) => {
         const parts = [
-          done.parcels > 0 ? `${String(done.parcels)} parcels` : null,
-          done.orders > 0 ? `${String(done.orders)} orders` : null,
-          done.rows > 0 ? `${String(done.rows)} rows` : null,
+          done.parcels > 0 ? t.settings.data.countParcels(done.parcels) : null,
+          done.orders > 0 ? t.settings.data.countOrders(done.orders) : null,
+          done.rows > 0 ? t.settings.data.countRows(done.rows) : null,
           done.bytes > 0 ? formatBytes(done.bytes) : null,
         ].filter((part): part is string => part !== null);
-        const backup = done.backup === null ? "" : ` A backup was saved as ${done.backup}.`;
-        setResult(`Removed ${parts.length > 0 ? parts.join(", ") : "nothing"}.${backup}`);
+        setResult(t.settings.data.removed(parts, done.backup));
       },
     });
   }
@@ -64,11 +64,8 @@ export function DataCard(): ReactNode {
   const busy = clear.isPending;
   return (
     <section className="card stack" aria-labelledby="settings-data">
-      <h2 id="settings-data">Data</h2>
-      <p className="muted">
-        Everything is kept until you delete it here. To re-import one connection, use “Clear data”
-        on its card on the Connections page.
-      </p>
+      <h2 id="settings-data">{t.settings.data.title}</h2>
+      <p className="muted">{t.settings.data.intro}</p>
       <ErrorNotice error={summary.error ?? clear.error} />
       {result === null ? null : <p role="status">{result}</p>}
       {data === undefined ? (
@@ -76,58 +73,50 @@ export function DataCard(): ReactNode {
       ) : (
         <table className="data-table">
           <tbody>
-            <Row label="Database" value={formatBytes(data.database_bytes)} busy={busy} />
-            <Row label="Parcels" value={String(data.parcels)} busy={busy} />
             <Row
-              label="Archived parcels"
+              label={t.settings.data.database}
+              value={formatBytes(data.database_bytes)}
+              busy={busy}
+            />
+            <Row label={t.settings.data.parcels} value={String(data.parcels)} busy={busy} />
+            <Row
+              label={t.settings.data.archivedParcels}
               value={String(data.archived_parcels)}
-              action="Delete"
+              action={t.settings.data.delete}
               busy={busy || data.archived_parcels === 0}
               onAction={() => {
-                run(
-                  { what: "archived" },
-                  `Delete ${String(data.archived_parcels)} archived parcels with their history?`,
-                );
+                run({ what: "archived" }, t.settings.data.confirmArchived(data.archived_parcels));
               }}
             />
-            <Row label="Orders" value={String(data.orders)} busy={busy} />
+            <Row label={t.settings.data.orders} value={String(data.orders)} busy={busy} />
             <Row
-              label="Tracking events"
+              label={t.settings.data.events}
               value={String(data.scans)}
-              action="Delete those of archived parcels"
+              action={t.settings.data.deleteArchivedEvents}
               busy={busy}
               onAction={() => {
-                run(
-                  { what: "archived_scans" },
-                  "Delete the tracking events of archived parcels? The parcels stay.",
-                );
+                run({ what: "archived_scans" }, t.settings.data.confirmArchivedEvents);
               }}
             />
             <Row
-              label="Raw carrier answers"
+              label={t.settings.data.rawPayloads}
               value={String(data.raw_payloads)}
-              action="Delete"
+              action={t.settings.data.delete}
               busy={busy || data.raw_payloads === 0}
               onAction={() => {
-                run(
-                  { what: "raw_payloads" },
-                  "Delete the raw carrier answers? They only help diagnosing a provider.",
-                );
+                run({ what: "raw_payloads" }, t.settings.data.confirmRaw);
               }}
             />
-            <Row label="Live event log" value={String(data.events)} busy={busy} />
+            <Row label={t.settings.data.eventLog} value={String(data.events)} busy={busy} />
             {(["images", "tiles", "collages"] as const).map((name) => (
               <Row
                 key={name}
-                label={`${name[0]?.toUpperCase() ?? ""}${name.slice(1)} cache`}
+                label={t.settings.data.caches[name]}
                 value={formatBytes(data.cache_bytes[name])}
-                action="Clear"
+                action={t.settings.data.clear}
                 busy={busy || data.cache_bytes[name] === 0}
                 onAction={() => {
-                  run(
-                    { what: "cache", cache: name },
-                    `Clear the ${name} cache? It refills itself.`,
-                  );
+                  run({ what: "cache", cache: name }, t.settings.data.confirmCache[name]);
                 }}
               />
             ))}
@@ -136,7 +125,7 @@ export function DataCard(): ReactNode {
       )}
       <div className="stack">
         <label className="field">
-          <span>Delete finished parcels and orders older than</span>
+          <span>{t.settings.data.olderThan}</span>
           <input
             type="date"
             value={before}
@@ -151,13 +140,10 @@ export function DataCard(): ReactNode {
             className="button small"
             disabled={busy || before === ""}
             onClick={() => {
-              run(
-                { what: "older_than", before },
-                `Delete delivered or archived parcels last seen before ${before}, and orders placed before it without parcels? Parcels still on their way stay.`,
-              );
+              run({ what: "older_than", before }, t.settings.data.confirmOlder(before));
             }}
           >
-            Delete older data
+            {t.settings.data.deleteOlder}
           </button>
           <button
             type="button"
@@ -165,7 +151,7 @@ export function DataCard(): ReactNode {
             disabled={busy}
             onClick={() => {
               const typed = window.prompt(
-                `Delete every parcel and order? Connections, sign-ins and settings stay, and a database backup is saved first. Type ${EVERYTHING_CONFIRMATION} to confirm.`,
+                t.settings.data.confirmEverything(EVERYTHING_CONFIRMATION),
               );
               if (typed === null) return;
               setResult(null);
@@ -174,14 +160,14 @@ export function DataCard(): ReactNode {
                 {
                   onSuccess: (done) => {
                     setResult(
-                      `Removed ${String(done.parcels)} parcels and ${String(done.orders)} orders. Backup: ${done.backup ?? "none"}.`,
+                      t.settings.data.removedEverything(done.parcels, done.orders, done.backup),
                     );
                   },
                 },
               );
             }}
           >
-            Delete everything…
+            {t.settings.data.deleteEverything}
           </button>
         </div>
       </div>

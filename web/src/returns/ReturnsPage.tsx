@@ -4,22 +4,15 @@ import type { ReactNode } from "react";
 import { useReturns } from "../api/queries";
 import type { ReturnView } from "../api/types";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { pickOne, useUrlParam } from "../lib/urlState";
 import { ReturnCard } from "./parts";
 
-const TABS: readonly { readonly view: ReturnView; readonly label: string }[] = [
-  { view: "open", label: "Open" },
-  { view: "closed", label: "Closed" },
-  { view: "all", label: "All" },
-];
+const TABS: readonly { readonly view: ReturnView; readonly label: string }[] = (
+  ["open", "closed", "all"] as const
+).map((view) => ({ view, label: t.returns.views[view].label }));
 
 const VIEWS: readonly ReturnView[] = TABS.map((tab) => tab.view);
-
-const EMPTY: Readonly<Record<ReturnView, string>> = {
-  open: "No open returns. A return you start at a shop shows up here once its account or a return email reports it.",
-  closed: "No refunded, rejected, cancelled or expired returns.",
-  all: "No returns yet.",
-};
 
 /** Linkable: `?view=open|closed|all`. */
 export function ReturnsPage(): ReactNode {
@@ -31,11 +24,11 @@ export function ReturnsPage(): ReactNode {
       <div className="page-header glass-panel">
         <div className="page-title-row">
           <Undo2 size={22} className="page-icon" aria-hidden="true" />
-          <h1 id="returns-title">Returns</h1>
+          <h1 id="returns-title">{t.returns.title}</h1>
           <span className="page-count">{returns.data?.length ?? 0}</span>
         </div>
         <fieldset className="segmented">
-          <legend className="visually-hidden">Show</legend>
+          <legend className="visually-hidden">{t.returns.show}</legend>
           {TABS.map((tab) => (
             <label key={tab.view} className={view === tab.view ? "selected" : undefined}>
               <input
@@ -60,7 +53,7 @@ export function ReturnsPage(): ReactNode {
       ) : returns.data.length === 0 ? (
         <div className="glass-panel empty-state">
           <Undo2 size={32} aria-hidden="true" />
-          <p>{EMPTY[view]}</p>
+          <p>{t.returns.views[view].empty}</p>
         </div>
       ) : (
         <div className="order-grid">

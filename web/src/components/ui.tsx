@@ -1,12 +1,13 @@
 /** Small shared building blocks: buttons, fields, notices, dialogs. */
 import { useEffect, useId, useRef, type ReactNode } from "react";
 import { ApiError } from "../api/fetcher";
+import { t } from "../i18n";
 
 export function errorMessage(error: unknown): string {
   if (error instanceof ApiError || error instanceof Error) {
     return error.message;
   }
-  return "Something went wrong.";
+  return t.common.somethingWentWrong;
 }
 
 export function ErrorNotice({ error }: { readonly error: unknown }): ReactNode {
@@ -42,14 +43,10 @@ export function Field(props: {
 
 /** Shown where editing controls are hidden because the caller may only read. */
 export function ReadOnlyHint({ children }: { readonly children?: ReactNode }): ReactNode {
-  return (
-    <p className="muted read-only-hint">
-      {children ?? "Read only. Log in as admin to change this."}
-    </p>
-  );
+  return <p className="muted read-only-hint">{children ?? t.common.readOnly}</p>;
 }
 
-export function Spinner({ label = "Loading…" }: { readonly label?: string }): ReactNode {
+export function Spinner({ label = t.common.loading }: { readonly label?: string }): ReactNode {
   return (
     <p className="muted" role="status">
       {label}
@@ -111,7 +108,12 @@ export function Dialog(props: {
     >
       <header className="dialog-header">
         <h2 id={titleId}>{props.title}</h2>
-        <button type="button" className="icon-button" aria-label="Close" onClick={props.onClose}>
+        <button
+          type="button"
+          className="icon-button"
+          aria-label={t.common.close}
+          onClick={props.onClose}
+        >
           ×
         </button>
       </header>

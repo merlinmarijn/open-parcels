@@ -5,14 +5,15 @@ import { Dialog, ErrorNotice, Field } from "../components/ui";
 import { INBOX_CONFIG_SCHEMA, INBOX_PROVIDER } from "./inbox";
 import { SchemaFields } from "./SchemaForm";
 import { asSchema, cleanValues, initialValues, type FormValues, type JsonSchema } from "./schema";
+import { t } from "../i18n";
 
 type Kind = Connection["kind"];
 
 const KIND_LABELS: Readonly<Record<Kind, string>> = {
-  account: "Account (your parcels from the carrier)",
-  tracking: "Tracking (look up tracking numbers)",
-  shop: "Shop (orders)",
-  mail: "Inbox",
+  account: t.connections.kindAccount,
+  tracking: t.connections.kindTracking,
+  shop: t.connections.kindShop,
+  mail: t.connections.kindMail,
 };
 
 function configSchema(provider: string, carriers: readonly Carrier[]): JsonSchema {
@@ -57,7 +58,8 @@ export function ConnectionDialog(props: {
     setProvider(next);
     setKind("");
     setValues(initialValues(configSchema(next, list), undefined));
-    const name = next === INBOX_PROVIDER ? "Inbox" : list.find((c) => c.id === next)?.name;
+    const name =
+      next === INBOX_PROVIDER ? t.connections.inboxName : list.find((c) => c.id === next)?.name;
     if (label === "" && name !== undefined) {
       setLabel(name);
     }
@@ -78,7 +80,7 @@ export function ConnectionDialog(props: {
 
   return (
     <Dialog
-      title={editing === null ? "Add a connection" : `Edit ${editing.label}`}
+      title={editing === null ? t.connections.add : t.connections.editTitle(editing.label)}
       open={props.open}
       onClose={props.onClose}
       wide
@@ -86,7 +88,7 @@ export function ConnectionDialog(props: {
       <form onSubmit={submit} className="stack">
         {editing === null ? (
           <>
-            <Field label="Carrier, shop or inbox">
+            <Field label={t.connections.providerField}>
               {(id) => (
                 <select
                   id={id}
@@ -97,9 +99,9 @@ export function ConnectionDialog(props: {
                   }}
                 >
                   <option value="" disabled>
-                    Choose…
+                    {t.connections.choose}
                   </option>
-                  <option value={INBOX_PROVIDER}>Inbox (IMAP)</option>
+                  <option value={INBOX_PROVIDER}>{t.connections.inboxOption}</option>
                   {list.map((carrier) => (
                     <option key={carrier.id} value={carrier.id}>
                       {carrier.name}
@@ -110,7 +112,7 @@ export function ConnectionDialog(props: {
               )}
             </Field>
             {kinds.length > 1 ? (
-              <Field label="Kind">
+              <Field label={t.connections.kind}>
                 {(id) => (
                   <select
                     id={id}
@@ -130,7 +132,7 @@ export function ConnectionDialog(props: {
             ) : null}
           </>
         ) : null}
-        <Field label="Name">
+        <Field label={t.connections.name}>
           {(id) => (
             <input
               id={id}
@@ -147,19 +149,19 @@ export function ConnectionDialog(props: {
           <SchemaFields schema={schema} values={values} onChange={setValues} />
         )}
         {editing === null && provider !== "" ? (
-          <p className="muted">After adding it, sign in from the connection list if it needs it.</p>
+          <p className="muted">{t.connections.afterAdding}</p>
         ) : null}
         <ErrorNotice error={mutation.error} />
         <div className="actions">
           <button type="button" className="button" onClick={props.onClose}>
-            Cancel
+            {t.connections.cancel}
           </button>
           <button
             type="submit"
             className="button primary"
             disabled={mutation.isPending || provider === ""}
           >
-            {editing === null ? "Add connection" : "Save"}
+            {editing === null ? t.connections.addConnection : t.connections.save}
           </button>
         </div>
       </form>

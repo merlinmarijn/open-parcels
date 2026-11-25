@@ -6,6 +6,7 @@ import { pickOne, useUrlParam } from "../lib/urlState";
 import { useOrders } from "../api/queries";
 import type { Order, OrderView } from "../api/types";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import {
   OrderBadges,
   OrderParcels,
@@ -42,13 +43,6 @@ function OrderCard({ order }: { readonly order: Order }): ReactNode {
   );
 }
 
-const EMPTY: Readonly<Record<OrderView, string>> = {
-  open: "No open orders. Orders found through a shop connection or an order email show up here.",
-  delivered: "No delivered orders that are not archived yet.",
-  archived: "Nothing archived yet.",
-  all: "No orders yet.",
-};
-
 const VIEWS: readonly OrderView[] = ["open", "delivered", "archived", "all"];
 
 /** Linkable: `?view=open|delivered|archived|all`. */
@@ -66,11 +60,11 @@ export function OrdersPage(): ReactNode {
       <div className="page-header glass-panel">
         <div className="page-title-row">
           <ShoppingBag size={22} className="page-icon" aria-hidden="true" />
-          <h1 id="orders-title">Orders</h1>
+          <h1 id="orders-title">{t.orders.title}</h1>
           <span className="page-count">{orders.data?.length ?? 0}</span>
         </div>
         <fieldset className="segmented">
-          <legend className="visually-hidden">Show</legend>
+          <legend className="visually-hidden">{t.orders.show}</legend>
           {ORDER_VIEW_TABS.map((entry) => (
             <label key={entry.view} className={view === entry.view ? "selected" : undefined}>
               <input
@@ -96,7 +90,7 @@ export function OrdersPage(): ReactNode {
       ) : orders.data.length === 0 ? (
         <div className="glass-panel empty-state">
           <ShoppingBag size={32} aria-hidden="true" />
-          <p>{EMPTY[view]}</p>
+          <p>{t.orders.views[view].empty}</p>
         </div>
       ) : (
         <div className="order-grid">

@@ -1,6 +1,7 @@
 import { useQuery } from "@tanstack/react-query";
 import { useCallback, useState } from "react";
 import { getApiV1MapLayers, type GetApiV1MapLayers200LayersItem } from "../api/generated";
+import { t } from "../i18n";
 
 export type MapLayer = GetApiV1MapLayers200LayersItem;
 
@@ -10,7 +11,7 @@ const STORAGE_KEY = "open-parcels.map-style";
 /** Used while the list loads or when it cannot be read: plain OpenStreetMap, as before. */
 export const FALLBACK_LAYER: MapLayer = {
   id: "osm",
-  label: "Map",
+  label: t.map.fallbackLayer,
   kind: "base",
   max_zoom: 19,
   attribution:

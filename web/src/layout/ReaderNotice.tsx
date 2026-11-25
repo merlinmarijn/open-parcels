@@ -2,6 +2,10 @@ import { Link } from "@tanstack/react-router";
 import type { ReactNode } from "react";
 import { useDismissReaderNotice, useSession } from "../auth/session";
 import { ErrorNotice } from "../components/ui";
+import { t } from "../i18n";
+
+/** The environment variable that sets the reader password (a name, not text to translate). */
+const PASSWORD_VARIABLE = "OPENPARCELS_PASSWORD";
 
 /**
  * Tells the admin, once, that reading is open because OPENPARCELS_PASSWORD is not set. That is a
@@ -16,9 +20,11 @@ export function ReaderNotice(): ReactNode {
   return (
     <div className="notice notice-warning reader-notice" role="status">
       <p>
-        No reader password is set (<code>OPENPARCELS_PASSWORD</code>): anyone who can reach this
-        server can read your parcels and orders, without changing anything. Set one under{" "}
-        <Link to="/settings">Settings → Security</Link> to keep reading private.
+        {t.shell.readerNoticeBefore}
+        <code>{PASSWORD_VARIABLE}</code>
+        {t.shell.readerNoticeMiddle}
+        <Link to="/settings">{t.shell.readerNoticeLink}</Link>
+        {t.shell.readerNoticeAfter}
       </p>
       <button
         type="button"
@@ -28,7 +34,7 @@ export function ReaderNotice(): ReactNode {
           dismiss.mutate();
         }}
       >
-        Dismiss
+        {t.shell.dismiss}
       </button>
       {dismiss.isError ? <ErrorNotice error={dismiss.error} /> : null}
     </div>

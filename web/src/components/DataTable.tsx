@@ -11,6 +11,7 @@ import {
 import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
 import { useId, type ReactNode } from "react";
 import { useUrlParam } from "../lib/urlState";
+import { t } from "../i18n";
 
 export interface DataTableProps<TData> {
   /** Column definitions; build them with `createColumnHelper<TData>()`. */
@@ -88,14 +89,14 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
     <div className="data-table">
       <div className="table-toolbar glass-panel">
         <label htmlFor={searchId} className="visually-hidden">
-          {props.searchLabel ?? "Search"}
+          {props.searchLabel ?? t.common.search}
         </label>
         <div className="search-wrap">
           <Search size={14} aria-hidden="true" />
           <input
             id={searchId}
             type="search"
-            placeholder={`${props.searchLabel ?? "Search"}…`}
+            placeholder={`${props.searchLabel ?? t.common.search}…`}
             value={filter}
             onChange={(e) => {
               setFilter(e.target.value);
@@ -104,7 +105,7 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
         </div>
         {props.extraControls}
         <span className="count" aria-live="polite">
-          {rows.length} of {props.data.length}
+          {t.common.countOf(rows.length, props.data.length)}
         </span>
       </div>
       <div className="table-scroll glass-panel">
@@ -141,7 +142,9 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
             {rows.length === 0 ? (
               <tr>
                 <td colSpan={props.columns.length} className="muted empty">
-                  {filter === "" ? (props.emptyText ?? "Nothing here yet.") : "Nothing matches."}
+                  {filter === ""
+                    ? (props.emptyText ?? t.common.nothingYet)
+                    : t.common.nothingMatches}
                 </td>
               </tr>
             ) : (

@@ -2,6 +2,7 @@ import { useNavigate } from "@tanstack/react-router";
 import { useState, type SyntheticEvent, type ReactNode } from "react";
 import { useAddParcel, useCarriers } from "../api/queries";
 import { Dialog, ErrorNotice, Field } from "../components/ui";
+import { t } from "../i18n";
 
 const AUTO = "";
 
@@ -44,9 +45,9 @@ export function AddParcelDialog(props: {
   const trackable = (carriers.data ?? []).filter((c) => c.connection_kinds.includes("tracking"));
 
   return (
-    <Dialog title="Track a parcel" open={props.open} onClose={close}>
+    <Dialog title={t.parcels.track} open={props.open} onClose={close}>
       <form onSubmit={submit} className="stack">
-        <Field label="Tracking number">
+        <Field label={t.parcels.trackingNumber}>
           {(id) => (
             <input
               id={id}
@@ -62,10 +63,7 @@ export function AddParcelDialog(props: {
             />
           )}
         </Field>
-        <Field
-          label="Carrier"
-          hint="Leave on “Detect” to recognise the carrier from the tracking number."
-        >
+        <Field label={t.parcels.carrier} hint={t.parcels.carrierHint}>
           {(id, hint) => (
             <select
               id={id}
@@ -75,7 +73,7 @@ export function AddParcelDialog(props: {
                 setCarrier(e.target.value);
               }}
             >
-              <option value={AUTO}>Detect from the tracking number</option>
+              <option value={AUTO}>{t.parcels.detectCarrier}</option>
               {trackable.map((c) => (
                 <option key={c.id} value={c.id}>
                   {c.name}
@@ -84,7 +82,7 @@ export function AddParcelDialog(props: {
             </select>
           )}
         </Field>
-        <Field label="Label (optional)">
+        <Field label={t.parcels.labelOptional}>
           {(id) => (
             <input
               id={id}
@@ -99,10 +97,10 @@ export function AddParcelDialog(props: {
         <ErrorNotice error={add.error} />
         <div className="actions">
           <button type="button" className="button" onClick={close}>
-            Cancel
+            {t.common.cancel}
           </button>
           <button type="submit" className="button primary" disabled={add.isPending}>
-            {add.isPending ? "Adding…" : "Track"}
+            {add.isPending ? t.parcels.adding : t.parcels.trackButton}
           </button>
         </div>
       </form>

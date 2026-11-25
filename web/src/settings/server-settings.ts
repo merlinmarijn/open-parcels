@@ -5,6 +5,7 @@ import {
   patchApiV1SettingsConfig,
   type GetApiV1SettingsConfig200Item,
 } from "../api/generated";
+import { t } from "../i18n";
 import { mapLayersKey } from "../map/layers";
 
 export type ServerSetting = GetApiV1SettingsConfig200Item;
@@ -62,8 +63,8 @@ export function groupSettings(settings: readonly ServerSetting[]): [string, Serv
 export const shortKey = (key: string): string => key.replace(/^OPENPARCELS_/, "");
 
 export function formatValue(value: ServerSettingValue | null): string {
-  if (value === null) return "unset";
-  if (typeof value === "boolean") return value ? "on" : "off";
+  if (value === null) return t.settings.server.unset;
+  if (typeof value === "boolean") return value ? t.settings.server.on : t.settings.server.off;
   return String(value);
 }
 
@@ -80,15 +81,8 @@ export function fromText(setting: ServerSetting, text: string): ServerSettingVal
   return trimmed;
 }
 
-export const SOURCE_LABELS = {
-  env: "environment",
-  app: "Home Assistant app option",
-  default: "default",
-  override: "saved in UI",
-} as const;
+export const SOURCE_LABELS: Readonly<Record<ServerSetting["source"], string>> =
+  t.settings.server.sources;
 
-export const APPLY_LABELS = {
-  live: "live",
-  restart: "restart",
-  env: "environment only",
-} as const;
+export const APPLY_LABELS: Readonly<Record<ServerSetting["apply"], string>> =
+  t.settings.server.apply;

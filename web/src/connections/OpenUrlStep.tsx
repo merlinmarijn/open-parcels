@@ -2,6 +2,7 @@ import { useEffect, useRef, useState, type ReactNode, type SyntheticEvent } from
 import type { SignInStep } from "../api/types";
 import { Field } from "../components/ui";
 import { safeHref } from "../lib/links";
+import { t } from "../i18n";
 import { captureSignIn, EXTENSION_URL, useCompanionExtension } from "./extension";
 
 type OpenUrl = Extract<SignInStep, { kind: "open_url" }>;
@@ -11,6 +12,10 @@ interface Props {
   readonly busy: boolean;
   readonly onSubmit: (input: Record<string, string>) => void;
 }
+
+/** Names in the browser's developer tools, the same in every language. */
+const AUTHORIZE_REQUEST = "authorize";
+const LOCATION_HEADER = "Location";
 
 /** One named window, so "Continue" reopens the sign-in where the user already is. */
 const POPUP = "open-parcels-sign-in";
@@ -37,17 +42,17 @@ function isFirefox(): boolean {
 }
 
 const CANCEL_REASONS: ReadonlyMap<string, string> = new Map([
-  ["closed", "The sign-in window was closed before it finished."],
-  ["denied", "The extension was not allowed to help this page."],
-  ["invalid", "The extension could not use this sign-in address."],
-  ["timeout", "The sign-in took too long."],
-  ["busy", "The extension is already running another sign-in. Finish or close that one first."],
-  ["error", "The extension ran into an error."],
+  ["closed", t.connections.cancelClosed],
+  ["denied", t.connections.cancelDenied],
+  ["invalid", t.connections.cancelInvalid],
+  ["timeout", t.connections.cancelTimeout],
+  ["busy", t.connections.cancelBusy],
+  ["error", t.connections.cancelError],
 ]);
 
 /** The text for a reason the extension gave; a Map, so a name like "constructor" is no reason. */
 export function cancelText(reason: string): string {
-  return CANCEL_REASONS.get(reason) ?? "The extension stopped.";
+  return CANCEL_REASONS.get(reason) ?? t.connections.cancelOther;
 }
 
 /** Sign-in through the companion extension: it opens the window and brings the address back. */
@@ -80,11 +85,10 @@ function ExtensionSignIn(
     <div className="stack">
       {waiting ? (
         <p className="muted" role="status" aria-live="polite">
-          <span className="pulse" aria-hidden="true" /> Sign in in the window that opened. It closes
-          by itself when you are done.
+          <span className="pulse" aria-hidden="true" /> {t.connections.extensionWaiting}
         </p>
       ) : (
-        <p>The extension opens the carrier&apos;s page; you sign in there as usual.</p>
+        <p>{t.connections.extensionIntro}</p>
       )}
       <div className="actions">
         <button
@@ -94,10 +98,10 @@ function ExtensionSignIn(
           onClick={start}
         >
           {props.busy
-            ? "Working…"
+            ? t.connections.working
             : waiting
-              ? "Waiting for sign-in…"
-              : "Sign in with the extension"}
+              ? t.connections.waitingSignIn
+              : t.connections.signInWithExtension}
         </button>
       </div>
     </div>
@@ -107,9 +111,7 @@ function ExtensionSignIn(
 function ManualGuide({ step }: { readonly step: OpenUrl }): ReactNode {
   const app = isAppAddress(step.redirect_prefix);
   const firefox = isFirefox();
-  const devtools = firefox
-    ? "In that window, press F12, open Network and tick “Persist Logs”."
-    : "In that window, press F12, open Network and tick “Preserve log”.";
+  const devtools = firefox ? t.connections.devtoolsFirefox : t.connections.devtoolsOther;
   return (
     <ol className="steps">
       <li>
@@ -120,15 +122,15 @@ function ManualGuide({ step }: { readonly step: OpenUrl }): ReactNode {
             openPopup(step.url);
           }}
         >
-          Open the sign-in page
+          {t.connections.openSignInPage}
         </button>{" "}
-        in a new window.
+        {t.connections.inNewWindow}
       </li>
       {app ? <li>{devtools}</li> : null}
-      <li>Sign in, including any code the carrier sends you.</li>
+      <li>{t.connections.signInWithCode}</li>
       {step.resume_url === null ? null : (
         <li>
-          Page stays white after signing in?{" "}
+          {t.connections.pageWhite}{" "}
           <button
             type="button"
             className="button"
@@ -136,24 +138,23 @@ function ManualGuide({ step }: { readonly step: OpenUrl }): ReactNode {
               if (step.resume_url !== null) openPopup(step.resume_url);
             }}
           >
-            Continue the sign-in
+            {t.connections.continueSignIn}
           </button>{" "}
-          (no new password needed).
+          {t.connections.noNewPasswordText}
         </li>
       )}
       {app ? (
         <li>
-          In the Network list, click the last row with status <strong>302</strong> (usually{" "}
-          <code>authorize</code>). Under Response Headers, copy the value of{" "}
-          <strong>Location</strong>; it starts with <code>{step.redirect_prefix}</code>.
-          {firefox ? " If an error page appears instead, its address works too." : ""}
+          {t.connections.networkRow} <strong>302</strong> {t.connections.networkUsually}{" "}
+          <code>{AUTHORIZE_REQUEST}</code>
+          {t.connections.networkCopy} <strong>{LOCATION_HEADER}</strong>
+          {t.connections.networkStarts} <code>{step.redirect_prefix}</code>.
+          {firefox ? t.connections.networkErrorPage : null}
         </li>
       ) : (
-        <li>
-          When the window lands on the final page, copy its full address from the address bar.
-        </li>
+        <li>{t.connections.copyFinal}</li>
       )}
-      <li>Paste it below. Extra text around it is fine.</li>
+      <li>{t.connections.pasteBelow}</li>
     </ol>
   );
 }
@@ -167,7 +168,7 @@ function PasteForm({ busy, onSubmit }: Pick<Props, "busy" | "onSubmit">): ReactN
   };
   return (
     <form onSubmit={submit} className="stack">
-      <Field label="Final address">
+      <Field label={t.connections.finalAddress}>
         {(id) => (
           <input
             id={id}
@@ -184,7 +185,7 @@ function PasteForm({ busy, onSubmit }: Pick<Props, "busy" | "onSubmit">): ReactN
       </Field>
       <div className="actions">
         <button type="submit" className="button primary" disabled={busy}>
-          {busy ? "Working…" : "Continue"}
+          {busy ? t.connections.working : t.connections.continue}
         </button>
       </div>
     </form>
@@ -214,12 +215,12 @@ export function OpenUrlStep(props: Props): ReactNode {
       {step.message === undefined ? null : <p className="step-message">{step.message}</p>}
       {notice === null ? null : (
         <p className="notice" role="status">
-          {notice} You can try again or do it step by step.
+          {notice} {t.connections.tryAgain}
         </p>
       )}
       {usable ? (
         <fieldset>
-          <legend>How do you want to sign in?</legend>
+          <legend>{t.connections.howToSignIn}</legend>
           <label className="checkbox">
             <input
               type="radio"
@@ -230,26 +231,25 @@ export function OpenUrlStep(props: Props): ReactNode {
                 setMode("extension");
               }}
             />
-            With the open-parcels extension (recommended)
+            {t.connections.withExtension}
             {extension.checked && extension.version === null ? (
               <span className="muted">
                 {" "}
-                — not installed.{" "}
+                {t.connections.notInstalled}{" "}
                 <a href={EXTENSION_URL} target="_blank" rel="noreferrer noopener">
-                  Get it
+                  {t.connections.getIt}
                 </a>{" "}
-                for Firefox, Chrome, Edge and Brave, then reload this page. Installed? Click the
-                extension&apos;s button and choose Enable on this site.
+                {t.connections.getItRest}
               </span>
             ) : null}
           </label>
           {framed ? (
             <p className="muted">
-              Inside Home Assistant the extension cannot help this page.{" "}
+              {t.connections.insideHa}{" "}
               <a href={window.location.href} target="_blank" rel="noreferrer noopener">
-                Open the web UI in its own tab
+                {t.connections.openOwnTab}
               </a>{" "}
-              to use it.
+              {t.connections.toUseIt}
             </p>
           ) : null}
           <label className="checkbox">
@@ -261,7 +261,7 @@ export function OpenUrlStep(props: Props): ReactNode {
                 setMode("manual");
               }}
             />
-            Step by step, by hand
+            {t.connections.byHand}
           </label>
         </fieldset>
       ) : null}

@@ -5,20 +5,21 @@ import type { Parcel } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { formatRelative, formatExpected } from "../lib/format";
 import { LookupBadge, StatusBadge } from "./badges";
+import { t } from "../i18n";
 
 /** "Expected Thu 20 Nov", "4 stops away", "Delivered 2 hours ago", or nothing. */
 function etaText(parcel: Parcel): string | null {
   if (parcel.delivered) {
-    return `Delivered ${formatRelative(parcel.delivered_at)}`;
+    return t.parcels.deliveredAgo(formatRelative(parcel.delivered_at));
   }
   const stops = parcel.live?.stops_away;
   if (typeof stops === "number") {
-    return stops === 0 ? "Next stop" : `${stops} stops away`;
+    return stops === 0 ? t.parcels.nextStop : t.parcels.stopsAway(stops);
   }
   if (parcel.expected_from === null && parcel.expected_to === null) {
     return null;
   }
-  return `Expected ${formatExpected(parcel)}`;
+  return t.parcels.expected(formatExpected(parcel));
 }
 
 export function ParcelCard({ parcel }: { readonly parcel: Parcel }): ReactNode {

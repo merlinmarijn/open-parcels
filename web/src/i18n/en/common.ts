@@ -1,0 +1,57 @@
+import { formatNumber } from "../../lib/locale";
+
+/** English texts: shared words. The German file must have the same keys (the type enforces it). */
+export const common = {
+  somethingWentWrong: "Something went wrong.",
+  readOnly: "Read only. Log in as admin to change this.",
+  loading: "Loading…",
+  close: "Close",
+  cancel: "Cancel",
+  save: "Save",
+  delete: "Delete",
+  rename: "Rename",
+  label: "Label",
+  search: "Search",
+  yes: "Yes",
+  countOf: (shown: number, total: number) => `${formatNumber(shown)} of ${formatNumber(total)}`,
+  nothingYet: "Nothing here yet.",
+  nothingMatches: "Nothing matches.",
+  resizePanels: "Resize panels",
+  parcelStatus: {
+    registered: "Registered",
+    in_transit: "In transit",
+    out_for_delivery: "Out for delivery",
+    at_pickup_point: "At pickup point",
+    delivered: "Delivered",
+    returning: "Returning",
+    problem: "Problem",
+    unknown: "Unknown",
+  },
+  lookupState: {
+    pending: "Waiting for carrier",
+    found: "Found",
+    not_found: "Not found by carrier",
+  },
+  lookupPhrase: {
+    pending: "Waiting for the carrier",
+    found: "Found by the carrier",
+    not_found: "Not found by the carrier",
+  },
+  notAskedYet: "not asked yet",
+  lastAsked: (relative: string) => `last asked ${relative}`,
+  connectionState: {
+    ok: "OK",
+    idle: "Idle",
+    needs_sign_in: "Needs sign-in",
+    error: "Error",
+    disabled: "Disabled",
+  },
+  connectionKind: {
+    account: "account",
+    tracking: "tracking",
+    shop: "shop",
+    mail: "inbox",
+  },
+  never: "never",
+  justNow: "just now",
+};

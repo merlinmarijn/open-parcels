@@ -57,6 +57,39 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | Theme | An installable, declarative look for the whole web UI (colours, fonts, spacing, map style, logo); may come with a light and a dark variant | skin, style, look, Design |
 | Mode | Light, dark or automatic (follow the device); chosen separately from the theme | colour scheme, appearance, dark mode, light mode |
 
+## German UI terms
+
+The web UI is in English and German (`web/src/i18n`). These are the official German words for the
+terms above; use exactly these in German texts. Terms without a row here keep a plain German word
+chosen once in `web/src/i18n/de/` and are added here when they matter.
+
+| Term | German UI term |
+| --- | --- |
+| Parcel | Paket |
+| Tracking number | Sendungsnummer |
+| Carrier | Paketdienst |
+| Courier | Zusteller |
+| Shop | Shop |
+| Pickup point | Abholstelle |
+| Expected delivery | Voraussichtliche Zustellung |
+| Connection | Verbindung |
+| Inbox | Postfach |
+| Email | E-Mail |
+| Order | Bestellung |
+| Return | Rücksendung |
+| Refund | Erstattung |
+| Item | Artikel |
+| Event | Ereignis |
+| Live event | Live-Ereignis |
+| Provider | Anbieter |
+| Sign in / sign-in | Anmelden / Anmeldung |
+| Log in / login | Einloggen / Login |
+| Archive | Archivieren / Archiv |
+| Delete | Löschen |
+| Receiving / Sending | Empfang / Versand |
+| Backup | Sicherung |
+| Theme / Mode | Design / Modus |
+
 ## Renames this implies
 
 The first pass over all code, docs and websites brings everything in line (`tasks/TODO.md` §3).

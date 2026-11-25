@@ -8,9 +8,16 @@ import { CarrierLogo } from "../components/CarrierLogo";
 import { DataTable } from "../components/DataTable";
 import { formatRelative, formatExpected } from "../lib/format";
 import { ArchivedBadge, LookupBadge, StatusBadge } from "./badges";
+import { t } from "../i18n";
 
 export const PARCEL_FILTERS = ["active", "delivered", "all"] as const;
 export type ParcelFilter = (typeof PARCEL_FILTERS)[number];
+
+const FILTER_LABELS: Readonly<Record<ParcelFilter, string>> = {
+  active: t.parcels.filterActive,
+  delivered: t.parcels.filterDelivered,
+  all: t.parcels.filterAll,
+};
 
 const column = createColumnHelper<Parcel>();
 
@@ -32,7 +39,7 @@ function ItemThumbs({ items }: { readonly items: Parcel["items"] }): ReactNode {
 const COLUMNS = [
   column.accessor((parcel) => parcel.display_name, {
     id: "label",
-    header: "Parcel",
+    header: t.parcels.columnParcel,
     cell: (info) => (
       <Link
         to="/parcels/$parcelId"
@@ -57,7 +64,7 @@ const COLUMNS = [
     ),
   }),
   column.accessor("status", {
-    header: "Status",
+    header: t.parcels.columnStatus,
     // `status` is already the effective one: a manual status wins on the server.
     cell: (info) => (
       <StatusBadge status={info.getValue()} manual={info.row.original.manual_status !== null} />
@@ -66,17 +73,17 @@ const COLUMNS = [
   }),
   column.accessor((parcel) => parcel.lookup.state, {
     id: "lookup",
-    header: "Carrier lookup",
+    header: t.parcels.columnLookup,
     cell: (info) => <LookupBadge state={info.getValue()} />,
   }),
-  column.accessor("carrier", { header: "Carrier" }),
+  column.accessor("carrier", { header: t.parcels.columnCarrier }),
   column.accessor((parcel) => parcel.expected_from ?? parcel.expected_to ?? "", {
     id: "eta",
-    header: "ETA",
+    header: t.parcels.columnEta,
     cell: (info) => formatExpected(info.row.original),
   }),
   column.accessor("updated_at", {
-    header: "Last update",
+    header: t.parcels.columnUpdated,
     cell: (info) => <time dateTime={info.getValue()}>{formatRelative(info.getValue())}</time>,
   }),
 ];
@@ -118,7 +125,7 @@ export function ParcelTable(props: {
   const controls = (
     <>
       <fieldset className="segmented">
-        <legend className="visually-hidden">Show</legend>
+        <legend className="visually-hidden">{t.parcels.show}</legend>
         {(["active", "delivered", "all"] as const).map((value) => (
           <label key={value} className={filter === value ? "selected" : undefined}>
             <input
@@ -130,19 +137,19 @@ export function ParcelTable(props: {
                 setFilter(value);
               }}
             />
-            {value === "active" ? "Active" : value === "delivered" ? "Delivered" : "All"}
+            {FILTER_LABELS[value]}
           </label>
         ))}
       </fieldset>
       <label>
-        <span className="visually-hidden">Carrier</span>
+        <span className="visually-hidden">{t.parcels.carrier}</span>
         <select
           value={carrier}
           onChange={(e) => {
             setCarrier(e.target.value);
           }}
         >
-          <option value="">All carriers</option>
+          <option value="">{t.parcels.allCarriers}</option>
           {carriers.map((id) => (
             <option key={id} value={id}>
               {id}
@@ -155,14 +162,14 @@ export function ParcelTable(props: {
 
   return (
     <DataTable
-      caption="Parcels"
+      caption={t.parcels.title}
       columns={COLUMNS}
       data={rows}
-      searchLabel="Search parcels"
+      searchLabel={t.parcels.searchParcels}
       extraControls={controls}
       defaultSort={[{ id: "updated_at", desc: true }]}
       urlKeys={{ search: "q", sort: "sort" }}
-      emptyText={filter === "active" ? "No parcels on the way." : "No parcels."}
+      emptyText={filter === "active" ? t.parcels.noneOnTheWay : t.parcels.none}
       rowClassName={(parcel) => (parcel.lookup.state === "not_found" ? "row-warning" : undefined)}
     />
   );

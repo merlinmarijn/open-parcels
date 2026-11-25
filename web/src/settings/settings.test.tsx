@@ -131,6 +131,47 @@ describe("settings page", () => {
     expect(calls.some((call) => call.path === "/api/v1/settings/config")).toBe(false);
   });
 
+  it("keeps the chosen language in this browser and reloads to apply it", async () => {
+    mockApi({
+      "GET /api/v1/session": () => ({
+        body: { ...SIGNED_IN, role: "reader", scopes: ["read"] },
+      }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+      "GET /api/v1/settings": () => ({ body: { home: null, parcel_label: "tracking_number" } }),
+    });
+    const reload = vi.fn();
+    const original = window.location;
+    Object.defineProperty(window, "location", {
+      configurable: true,
+      value: {
+        href: original.href,
+        origin: original.origin,
+        protocol: original.protocol,
+        host: original.host,
+        hostname: original.hostname,
+        port: original.port,
+        pathname: original.pathname,
+        search: original.search,
+        hash: original.hash,
+        assign: vi.fn(),
+        replace: vi.fn(),
+        reload,
+      },
+    });
+    try {
+      const user = userEvent.setup();
+      renderApp("/settings");
+      const select = await screen.findByRole("combobox", { name: "Language" });
+      expect(select).toHaveValue("automatic");
+      await user.selectOptions(select, "Deutsch");
+      expect(localStorage.getItem("open-parcels.language")).toBe("de");
+      expect(reload).toHaveBeenCalledOnce();
+    } finally {
+      Object.defineProperty(window, "location", { configurable: true, value: original });
+      localStorage.removeItem("open-parcels.language");
+    }
+  });
+
   it("changes the admin password on the Security card", async () => {
     const calls = mockApi({
       "GET /api/v1/session": () => ({ body: SIGNED_IN }),

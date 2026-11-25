@@ -1,5 +1,6 @@
 import { Layers } from "lucide-react";
 import { useEffect, useId, useRef, useState, type ReactNode } from "react";
+import { t } from "../i18n";
 import type { MapLayer, MapStyle } from "./layers";
 
 /** A compact button on the map that opens a menu of base styles and the overlay toggle. */
@@ -54,8 +55,8 @@ export function LayerControl(props: {
       <button
         type="button"
         className="map-layer-button"
-        aria-label="Map style"
-        title="Map style"
+        aria-label={t.map.mapStyle}
+        title={t.map.mapStyle}
         aria-expanded={open}
         aria-controls={menuId}
         onClick={() => {
@@ -66,7 +67,7 @@ export function LayerControl(props: {
       </button>
       {open ? (
         <fieldset id={menuId} className="map-layer-menu">
-          <legend>Map style</legend>
+          <legend>{t.map.mapStyle}</legend>
           {bases.map((layer) => (
             <label key={layer.id}>
               <input

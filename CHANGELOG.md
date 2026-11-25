@@ -32,6 +32,13 @@ Assistant app and the browser extension are released in lockstep with this serve
 older Home Assistant integration stops seeing connections and live events until it is updated.
 Scripts that call the API by hand must switch paths and fields; nothing else is needed.
 
+### Added: the web UI in English and German
+
+The web UI follows the browser's language (English or German) and can be set under
+**Settings → Language**; dates, times, numbers and amounts are formatted in the user's locale.
+German texts use the German terms in [`docs/glossary.md`](docs/glossary.md). Texts that come from
+the server (setting descriptions, error messages, sign-in steps, provider forms) stay English.
+
 ### Changed: backups are private, versions name their commit
 
 - Backups (and the unfinished `.partial`) are written with mode 0600 and the backup folder with

@@ -4,6 +4,28 @@ import reactHooks from "eslint-plugin-react-hooks";
 import globals from "globals";
 import tseslint from "typescript-eslint";
 
+/** JSX attributes that carry text a user reads (labels, hints, tooltips, alternative texts). */
+const UI_TEXT_ATTRIBUTES =
+  "/^(aria-label|aria-description|title|placeholder|alt|label|[a-z]+Label|description|hint|heading|empty|message|text|confirm)$/";
+
+/** A literal with words in `context`, directly or as either side of `?:` and `??`/`||`/`&&`. */
+function uiTextSelectors(context) {
+  const message = "UI text goes into the dictionaries (web/src/i18n), not into JSX.";
+  const words = "Literal[value=/[A-Za-z]/]";
+  const template = "TemplateLiteral > TemplateElement[value.raw=/[A-Za-z]/]";
+  const value = context.startsWith("JSXAttribute")
+    ? `${context} > JSXExpressionContainer`
+    : context;
+  return [
+    ...(context.startsWith("JSXAttribute") ? [{ selector: `${context} > ${words}`, message }] : []),
+    { selector: `${value} > ${words}`, message },
+    { selector: `${value} > ${template}`, message },
+    { selector: `${value} > ConditionalExpression > ${words}`, message },
+    { selector: `${value} > ConditionalExpression > ${template}`, message },
+    { selector: `${value} > LogicalExpression > ${words}`, message },
+  ];
+}
+
 export default tseslint.config(
   {
     ignores: [
@@ -100,6 +122,25 @@ export default tseslint.config(
       ...reactHooks.configs.recommended.rules,
       // Hooks and components return types TanStack and JSX infer exactly; spelling them out adds noise.
       "@typescript-eslint/explicit-module-boundary-types": "off",
+    },
+  },
+  {
+    // Every text the web UI shows comes from the dictionaries in web/src/i18n (English and
+    // German): no words written straight into JSX, its text attributes or its expressions.
+    files: ["web/src/**/*.tsx"],
+    ignores: ["web/src/**/*.test.tsx", "web/src/test/**"],
+    rules: {
+      "no-restricted-syntax": [
+        "error",
+        { selector: "TSEnumDeclaration", message: "Use an `as const` object and a literal union." },
+        {
+          selector: "JSXText[value=/[A-Za-zÄÖÜäöüß]/]",
+          message: "UI text goes into the dictionaries (web/src/i18n), not into JSX.",
+        },
+        ...uiTextSelectors(`JSXAttribute[name.name=${UI_TEXT_ATTRIBUTES}]`),
+        ...uiTextSelectors("JSXElement > JSXExpressionContainer"),
+        ...uiTextSelectors("JSXFragment > JSXExpressionContainer"),
+      ],
     },
   },
   {

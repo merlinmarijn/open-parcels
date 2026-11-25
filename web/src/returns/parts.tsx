@@ -3,18 +3,10 @@ import { Link } from "@tanstack/react-router";
 import { Undo2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ParcelStatus, Return, ReturnStatus } from "../api/types";
+import { t } from "../i18n";
+import { UI_LOCALE } from "../lib/locale";
 
-export const RETURN_STATUS_LABELS: Readonly<Record<ReturnStatus, string>> = {
-  requested: "Return requested",
-  label_created: "Label ready",
-  dropped_off: "Handed in",
-  in_transit: "On its way back",
-  received: "Received by the shop",
-  refunded: "Refunded",
-  rejected: "Rejected",
-  cancelled: "Cancelled",
-  expired: "Deadline passed",
-};
+export const RETURN_STATUS_LABELS: Readonly<Record<ReturnStatus, string>> = t.returns.status;
 
 /** The parcel status whose colour a return status borrows. */
 const STATUS_COLOUR: Readonly<Record<ReturnStatus, ParcelStatus>> = {
@@ -29,18 +21,12 @@ const STATUS_COLOUR: Readonly<Record<ReturnStatus, ParcelStatus>> = {
   expired: "problem",
 };
 
-const KIND_LABELS: Readonly<Record<Return["drop_off"][number]["kind"], string>> = {
-  shop: "Shop",
-  parcel_locker: "Parcel locker",
-  post_office: "Post office",
-  pickup: "Pickup",
-  any: "Any drop-off point",
-};
+const KIND_LABELS: Readonly<Record<Return["drop_off"][number]["kind"], string>> = t.returns.kinds;
 
 /** A `YYYY-MM-DD` day in words, read as that local day (never shifted by the time zone). */
 export function formatDay(day: string): string {
   const [year = 1970, month = 1, date = 1] = day.split("-").map(Number);
-  return new Intl.DateTimeFormat(undefined, {
+  return new Intl.DateTimeFormat(UI_LOCALE, {
     weekday: "short",
     day: "numeric",
     month: "short",
@@ -51,7 +37,7 @@ export function formatDay(day: string): string {
 export function formatMoney(amount: number, currency: string | null): string {
   if (currency === null) return amount.toFixed(2);
   try {
-    return new Intl.NumberFormat(undefined, { style: "currency", currency }).format(amount);
+    return new Intl.NumberFormat(UI_LOCALE, { style: "currency", currency }).format(amount);
   } catch {
     return `${amount.toFixed(2)} ${currency}`;
   }
@@ -60,16 +46,16 @@ export function formatMoney(amount: number, currency: string | null): string {
 /** "Free return", "Return costs 4,99 €", or null when not known. */
 export function costLabel(cost: Return["cost"]): string | null {
   if (cost === null) return null;
-  if (cost.free) return "Free return";
+  if (cost.free) return t.returns.free;
   return cost.amount === null
-    ? "Return costs money"
-    : `Return costs ${formatMoney(cost.amount, cost.currency)}`;
+    ? t.returns.costsMoney
+    : t.returns.costs(formatMoney(cost.amount, cost.currency));
 }
 
 export function refundLabel(refund: Return["refund"]): string | null {
   if (refund === null) return null;
-  const amount = refund.amount === null ? "" : ` ${formatMoney(refund.amount, refund.currency)}`;
-  return refund.status === "issued" ? `Refunded${amount}` : `Refund expected${amount}`;
+  const amount = refund.amount === null ? null : formatMoney(refund.amount, refund.currency);
+  return refund.status === "issued" ? t.returns.refunded(amount) : t.returns.refundExpected(amount);
 }
 
 export function dropOffLabel(option: Return["drop_off"][number]): string {
@@ -102,7 +88,7 @@ export function ReturnCard({
       <div className="order-head">
         <Undo2 size={20} className="page-icon" aria-hidden="true" />
         <div className="order-head-text">
-          <h3 id={titleId}>{title === "" ? "Return" : title}</h3>
+          <h3 id={titleId}>{title === "" ? t.returns.untitled : title}</h3>
           {showOrder ? (
             <Link to="/orders/$orderId" params={{ orderId: entry.order_id }} className="mono muted">
               {entry.shop} {entry.order_number}
@@ -114,13 +100,13 @@ export function ReturnCard({
       <dl className="return-facts">
         {entry.return_by === null ? null : (
           <>
-            <dt>Return by</dt>
+            <dt>{t.returns.returnBy}</dt>
             <dd>{formatDay(entry.return_by)}</dd>
           </>
         )}
         {entry.drop_off.length === 0 ? null : (
           <>
-            <dt>Drop off</dt>
+            <dt>{t.returns.dropOff}</dt>
             <dd>
               <ul className="return-drop-off">
                 {entry.drop_off.map((option) => (
@@ -132,25 +118,25 @@ export function ReturnCard({
         )}
         {cost === null ? null : (
           <>
-            <dt>Cost</dt>
+            <dt>{t.returns.cost}</dt>
             <dd>{cost}</dd>
           </>
         )}
         {refund === null ? null : (
           <>
-            <dt>Refund</dt>
+            <dt>{t.returns.refund}</dt>
             <dd>{refund}</dd>
           </>
         )}
         {entry.reason === null ? null : (
           <>
-            <dt>Reason</dt>
+            <dt>{t.returns.reason}</dt>
             <dd>{entry.reason}</dd>
           </>
         )}
         {entry.tracking_number === null ? null : (
           <>
-            <dt>Tracking</dt>
+            <dt>{t.returns.tracking}</dt>
             <dd>
               {entry.parcel_id === null ? (
                 <span className="mono">{entry.tracking_number}</span>
@@ -170,7 +156,7 @@ export function ReturnCard({
           rel="noreferrer noopener"
           className="button small"
         >
-          Label or QR code
+          {t.returns.label}
         </a>
       )}
     </section>

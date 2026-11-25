@@ -14,6 +14,7 @@ import { useIsAdmin } from "../auth/session";
 import { ErrorNotice } from "../components/ui";
 import { STATUS_LABELS } from "../lib/format";
 import { StatusBadge } from "./badges";
+import { t } from "../i18n";
 
 function PencilButton(props: { readonly label: string; readonly onClick: () => void }): ReactNode {
   return (
@@ -75,7 +76,7 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
       <div className="inline-edit">
         <input
           className="inline-title-input"
-          aria-label="Label"
+          aria-label={t.common.label}
           autoFocus
           maxLength={120}
           value={draft}
@@ -93,7 +94,7 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
         <button
           type="button"
           className="icon-button"
-          aria-label="Save label"
+          aria-label={t.parcels.saveLabel}
           onMouseDown={keepFocus}
           onClick={() => {
             finish(true);
@@ -104,7 +105,7 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
         <button
           type="button"
           className="icon-button"
-          aria-label="Cancel"
+          aria-label={t.common.cancel}
           onMouseDown={keepFocus}
           onClick={() => {
             finish(false);
@@ -120,7 +121,7 @@ export function InlineTitle(props: InlineTitleProps): ReactNode {
       <h1 id={props.titleId}>{props.shown}</h1>
       {canEdit ? (
         <PencilButton
-          label="Rename"
+          label={t.common.rename}
           onClick={() => {
             setDraft(props.label ?? "");
           }}
@@ -171,7 +172,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
       <span className="inline-edit">
         <select
           className="inline-status-select"
-          aria-label="Status"
+          aria-label={t.parcels.status}
           autoFocus
           value={choice}
           onChange={(e) => {
@@ -183,7 +184,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
           }}
         >
           <option value={FROM_CARRIER}>
-            From the carrier ({STATUS_LABELS[parcel.carrier_status]})
+            {t.parcels.fromCarrier(STATUS_LABELS[parcel.carrier_status])}
           </option>
           {PARCEL_STATUSES.map((status) => (
             <option key={status} value={status}>
@@ -194,7 +195,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
         <button
           type="button"
           className="icon-button"
-          aria-label="Save status"
+          aria-label={t.parcels.saveStatus}
           onMouseDown={keepFocus}
           onClick={() => {
             close(true);
@@ -205,7 +206,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
         <button
           type="button"
           className="icon-button"
-          aria-label="Cancel"
+          aria-label={t.common.cancel}
           onMouseDown={keepFocus}
           onClick={() => {
             close(false);
@@ -221,7 +222,7 @@ export function EditableStatus({ parcel }: { readonly parcel: ParcelDetail }): R
       <StatusBadge status={parcel.status} manual={parcel.manual_status !== null} />
       {canEdit ? (
         <PencilButton
-          label="Change status"
+          label={t.parcels.changeStatus}
           onClick={() => {
             setChoice(parcel.manual_status ?? FROM_CARRIER);
           }}
@@ -248,7 +249,7 @@ export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): Re
         className="button small"
         aria-pressed={archived}
         disabled={update.isPending}
-        title={archived ? "Show it in the list again" : "Hide it from the list"}
+        title={archived ? t.parcels.showAgain : t.parcels.hideFromList}
         onClick={() => {
           update.mutate({ archived: !archived });
         }}
@@ -258,13 +259,13 @@ export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): Re
         ) : (
           <Archive size={14} aria-hidden="true" />
         )}{" "}
-        {archived ? "Unarchive" : "Archive"}
+        {archived ? t.parcels.unarchive : t.parcels.archive}
       </button>
       <button
         type="button"
         className="button small danger"
         onClick={() => {
-          if (!window.confirm("Stop tracking and delete this parcel? This cannot be undone.")) {
+          if (!window.confirm(t.parcels.confirmDelete)) {
             return;
           }
           remove.mutate(parcel.id, {
@@ -277,13 +278,11 @@ export function ParcelActions({ parcel }: { readonly parcel: ParcelDetail }): Re
           });
         }}
       >
-        <Trash2 size={14} aria-hidden="true" /> Delete
+        <Trash2 size={14} aria-hidden="true" /> {t.common.delete}
       </button>
       {update.isSuccess && update.variables.archived !== undefined ? (
         <p className="notice" role="status">
-          {update.variables.archived
-            ? "Archived. It is hidden from the list unless “Include archived” is on."
-            : "Restored from the archive."}
+          {update.variables.archived ? t.parcels.archivedNotice : t.parcels.restoredNotice}
         </p>
       ) : null}
       <ErrorNotice error={update.error ?? remove.error} />

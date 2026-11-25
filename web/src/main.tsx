@@ -3,7 +3,10 @@ import { StrictMode } from "react";
 import { createRoot } from "react-dom/client";
 import { createQueryClient } from "./api/client";
 import { App } from "./App";
+import { LANGUAGE } from "./i18n";
 import "./styles.css";
+
+document.documentElement.lang = LANGUAGE;
 
 const queryClient = createQueryClient();
 

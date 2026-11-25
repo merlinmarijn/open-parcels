@@ -1,5 +1,6 @@
 import { useSyncExternalStore, type ReactNode } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
+import { t } from "../i18n";
 
 const NARROW = "(max-width: 900px)";
 
@@ -44,7 +45,7 @@ export function SplitContainer(props: {
       <Panel defaultSize={props.leftDefaultSize ?? 40} minSize={props.leftMinSize ?? 20}>
         {props.leftPanel}
       </Panel>
-      <Separator className="split-handle" aria-label="Resize panels" />
+      <Separator className="split-handle" aria-label={t.common.resizePanels} />
       <Panel defaultSize={props.rightDefaultSize ?? 60} minSize={props.rightMinSize ?? 30}>
         {props.rightPanel}
       </Panel>

@@ -1,6 +1,7 @@
 import { Link } from "@tanstack/react-router";
 import { PackageX } from "lucide-react";
 import type { ReactNode } from "react";
+import { t } from "../i18n";
 
 /** Shown for any address the app does not know, inside the usual frame, with a way back. */
 export function NotFoundPage(): ReactNode {
@@ -9,12 +10,10 @@ export function NotFoundPage(): ReactNode {
       <div className="glass-panel panel not-found">
         <div className="empty-state">
           <PackageX size={48} aria-hidden="true" />
-          <h1 id="not-found-title">Page not found</h1>
-          <p className="muted">
-            There is nothing at this address. It may have moved or been removed.
-          </p>
+          <h1 id="not-found-title">{t.shell.notFoundTitle}</h1>
+          <p className="muted">{t.shell.notFoundText}</p>
           <Link to="/" className="button primary">
-            Back to the parcels
+            {t.shell.notFoundBack}
           </Link>
         </div>
       </div>

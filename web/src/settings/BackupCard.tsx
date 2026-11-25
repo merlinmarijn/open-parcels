@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import { useBackupNow, useBackups } from "../api/queries";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { formatBytes, formatDateTime, formatRelative } from "../lib/format";
 
 /** How many kept backups the card lists; the rest are only counted. */
@@ -18,7 +19,7 @@ export function BackupCard(): ReactNode {
 
   return (
     <section className="card stack" aria-labelledby="settings-backups">
-      <h2 id="settings-backups">Backups</h2>
+      <h2 id="settings-backups">{t.settings.backups.title}</h2>
       <ErrorNotice error={backups.error ?? backUp.error} />
       {data === undefined ? (
         <Spinner />
@@ -26,17 +27,17 @@ export function BackupCard(): ReactNode {
         <>
           <p className="muted">
             {data.interval_hours === 0
-              ? "Automatic backups are off."
-              : `A backup every ${String(data.interval_hours)} hours, next ${formatRelative(data.next_at)}.`}{" "}
-            The newest {String(data.keep)} are kept in <code>{data.directory}</code>. The encryption
-            key is not part of a backup; keep a copy of it as well.
+              ? t.settings.backups.off
+              : t.settings.backups.schedule(data.interval_hours, formatRelative(data.next_at))}{" "}
+            {t.settings.backups.keptIn(data.keep)} <code>{data.directory}</code>
+            {t.settings.backups.keyNote}
           </p>
           {last === null ? (
-            <p>No backup yet.</p>
+            <p>{t.settings.backups.none}</p>
           ) : (
             <div role="status">
               <span className={`badge ${last.ok ? "check-ok" : "check-unavailable"}`}>
-                {last.ok ? "Last backup succeeded" : "Last backup failed"}
+                {last.ok ? t.settings.backups.lastOk : t.settings.backups.lastFailed}
               </span>{" "}
               <span className="muted">
                 {formatDateTime(last.at)}
@@ -61,7 +62,7 @@ export function BackupCard(): ReactNode {
             </table>
           )}
           {data.files.length > LISTED ? (
-            <p className="muted">and {String(data.files.length - LISTED)} older.</p>
+            <p className="muted">{t.settings.backups.older(data.files.length - LISTED)}</p>
           ) : null}
         </>
       )}
@@ -74,7 +75,7 @@ export function BackupCard(): ReactNode {
             backUp.mutate();
           }}
         >
-          {backUp.isPending ? "Backing up…" : "Back up now"}
+          {backUp.isPending ? t.settings.backups.backingUp : t.settings.backups.backUpNow}
         </button>
       </div>
     </section>

@@ -1,5 +1,6 @@
 import { useState, type SyntheticEvent, type ReactNode } from "react";
 import { ErrorNotice, Field } from "../components/ui";
+import { BRAND, t } from "../i18n";
 import { MIN_PASSWORD } from "./password";
 import { useSetup, useSignIn } from "./session";
 
@@ -16,13 +17,13 @@ function AuthCard(
       <section className="card auth-card" aria-labelledby="auth-title">
         <p className="brand">
           <img className="brand-logo" src="favicon.svg" alt="" />
-          Open Parcels
+          {BRAND}
         </p>
         <h1 id="auth-title">{props.title}</h1>
         {props.children}
         {props.onCancel === undefined ? null : (
           <button type="button" className="link-button" onClick={props.onCancel}>
-            Back to the app (read only)
+            {t.shell.backToApp}
           </button>
         )}
       </section>
@@ -41,11 +42,11 @@ export function SetupPage(props: AuthPageProps): ReactNode {
   const submit = (event: SyntheticEvent): void => {
     event.preventDefault();
     if (password.length < MIN_PASSWORD) {
-      setProblem(`Use at least ${MIN_PASSWORD} characters.`);
+      setProblem(t.shell.useMinLength(MIN_PASSWORD));
       return;
     }
     if (password !== repeat) {
-      setProblem("The passwords do not match.");
+      setProblem(t.shell.mismatch);
       return;
     }
     setProblem(null);
@@ -53,13 +54,10 @@ export function SetupPage(props: AuthPageProps): ReactNode {
   };
 
   return (
-    <AuthCard title="Set up open-parcels" {...props}>
-      <p className="muted">
-        This is the first start. Enter the setup code printed in the container log, then choose the
-        admin password.
-      </p>
+    <AuthCard title={t.shell.setupTitle} {...props}>
+      <p className="muted">{t.shell.setupIntro}</p>
       <form onSubmit={submit} className="stack">
-        <Field label="Setup code" hint="Look for “enter the setup code” in the container log.">
+        <Field label={t.shell.setupCode} hint={t.shell.setupCodeHint}>
           {(id, hint) => (
             <input
               id={id}
@@ -73,7 +71,7 @@ export function SetupPage(props: AuthPageProps): ReactNode {
             />
           )}
         </Field>
-        <Field label="Admin password" hint={`At least ${MIN_PASSWORD} characters.`}>
+        <Field label={t.shell.adminPasswordText} hint={t.shell.minLength(MIN_PASSWORD)}>
           {(id, hint) => (
             <input
               id={id}
@@ -88,7 +86,7 @@ export function SetupPage(props: AuthPageProps): ReactNode {
             />
           )}
         </Field>
-        <Field label="Repeat the password">
+        <Field label={t.shell.repeatPasswordText}>
           {(id) => (
             <input
               id={id}
@@ -109,7 +107,7 @@ export function SetupPage(props: AuthPageProps): ReactNode {
         )}
         <ErrorNotice error={setup.error} />
         <button type="submit" className="button primary" disabled={setup.isPending}>
-          {setup.isPending ? "Saving…" : "Set password and continue"}
+          {setup.isPending ? t.shell.saving : t.shell.setPasswordText}
         </button>
       </form>
     </AuthCard>
@@ -131,12 +129,9 @@ export function SignInPage(props: AuthPageProps): ReactNode {
   };
 
   return (
-    <AuthCard title="Log in" {...props}>
+    <AuthCard title={t.shell.logIn} {...props}>
       <form onSubmit={submit} className="stack">
-        <Field
-          label="Password"
-          hint="The admin password to change things, or the reader password to read."
-        >
+        <Field label={t.shell.passwordText} hint={t.shell.passwordHint}>
           {(id, hint) => (
             <input
               id={id}
@@ -154,7 +149,7 @@ export function SignInPage(props: AuthPageProps): ReactNode {
         </Field>
         <ErrorNotice error={signIn.error} />
         <button type="submit" className="button primary" disabled={signIn.isPending}>
-          {signIn.isPending ? "Logging in…" : "Log in"}
+          {signIn.isPending ? t.shell.loggingIn : t.shell.logIn}
         </button>
       </form>
     </AuthCard>

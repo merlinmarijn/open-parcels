@@ -6,6 +6,7 @@ import { useParcels } from "../api/queries";
 import type { Parcel } from "../api/types";
 import { SplitContainer } from "../components/SplitContainer";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { boundsAround } from "../lib/geo";
 import { formatRelative, STATUS_LABELS } from "../lib/format";
 import { useHome } from "../settings/home";
@@ -36,7 +37,7 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
       {route === null || pin.from === null ? null : (
         <>
           <AnimatedRoute positions={route} color="#a78bfa" />
-          <Marker position={pin.from} icon={iconSource} title="Last carrier event" />
+          <Marker position={pin.from} icon={iconSource} title={t.map.lastCarrierEvent} />
         </>
       )}
       <Marker position={pin.point} icon={icon} title={pin.parcel.display_name} zIndexOffset={1000}>
@@ -49,13 +50,11 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
             <span>
               {pin.parcel.raw_status ?? STATUS_LABELS[pin.parcel.status]}
               {typeof pin.parcel.live?.stops_away === "number"
-                ? `, ${pin.parcel.live.stops_away} stops away`
+                ? t.map.stopsAway(pin.parcel.live.stops_away)
                 : null}
             </span>
             <PopupMeta when={formatRelative(pin.at)} point={pin.point} />
-            {pin.approximate ? (
-              <span className="muted">Approximate: the event named only the town</span>
-            ) : null}
+            {pin.approximate ? <span className="muted">{t.map.approximateTown}</span> : null}
           </div>
         </Popup>
       </Marker>
@@ -66,11 +65,11 @@ function PinMarker({ pin }: { readonly pin: Pin }): ReactNode {
 function TransitList({ parcels }: { readonly parcels: readonly Parcel[] }): ReactNode {
   return (
     <section className="glass-panel panel" aria-labelledby="transit-title">
-      <h2 id="transit-title">Parcels in transit</h2>
+      <h2 id="transit-title">{t.map.inTransit}</h2>
       {parcels.length === 0 ? (
         <div className="empty-state">
           <PackageOpen size={32} aria-hidden="true" />
-          <p>No active parcels in transit.</p>
+          <p>{t.map.noneInTransit}</p>
         </div>
       ) : (
         <ul className="parcel-list">
@@ -104,10 +103,10 @@ export default function MapPage(): ReactNode {
   return (
     <section aria-labelledby="map-title" className="stack">
       <h1 id="map-title" className="visually-hidden">
-        Live map
+        {t.map.title}
       </h1>
       <p className="visually-hidden" role="status">
-        {pins.length} parcels with a place, {couriers} live couriers
+        {t.map.summary(pins.length, couriers)}
       </p>
       <ErrorNotice error={parcels.error} />
       {parcels.isPending ? (
@@ -122,14 +121,19 @@ export default function MapPage(): ReactNode {
             leftPanel={
               <div className="glass-panel map-panel">
                 <SharedMap
-                  label="Parcels on the map"
+                  label={t.map.parcelsOnMap}
                   bounds={bounds}
                   {...(homePoint === undefined ? {} : { center: homePoint, zoom: 12 })}
                 >
                   {homePoint === undefined ? null : (
-                    <Marker position={homePoint} icon={iconHome} title="Home" zIndexOffset={-100}>
+                    <Marker
+                      position={homePoint}
+                      icon={iconHome}
+                      title={t.map.home}
+                      zIndexOffset={-100}
+                    >
                       <Popup>
-                        <strong>Home</strong>
+                        <strong>{t.map.home}</strong>
                         {home?.label === null || home?.label === undefined ? null : (
                           <div className="muted">{home.label}</div>
                         )}

@@ -21,18 +21,19 @@ import { useSession, useSignOut } from "../auth/session";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { useTheme, type ThemeChoice } from "../lib/theme";
 import { AddParcelDialog } from "../parcels/AddParcelDialog";
+import { BRAND, t } from "../i18n";
 import { ReaderNotice } from "./ReaderNotice";
 
 const NAV = [
-  { to: "/", label: "Parcels", icon: Package },
-  { to: "/map", label: "Live Map", icon: Map },
-  { to: "/orders", label: "Orders", icon: ShoppingBag },
-  { to: "/returns", label: "Returns", icon: Undo2 },
-  { to: "/calendar", label: "Calendar", icon: CalendarDays },
-  { to: "/connections", label: "Connections", icon: Plug },
-  { to: "/tokens", label: "API tokens", icon: KeyRound, adminOnly: true },
-  { to: "/status", label: "Status", icon: Activity },
-  { to: "/settings", label: "Settings", icon: Settings },
+  { to: "/", label: t.shell.nav.parcels, icon: Package },
+  { to: "/map", label: t.shell.nav.map, icon: Map },
+  { to: "/orders", label: t.shell.nav.orders, icon: ShoppingBag },
+  { to: "/returns", label: t.shell.nav.returns, icon: Undo2 },
+  { to: "/calendar", label: t.shell.nav.calendar, icon: CalendarDays },
+  { to: "/connections", label: t.shell.nav.connections, icon: Plug },
+  { to: "/tokens", label: t.shell.nav.tokens, icon: KeyRound, adminOnly: true },
+  { to: "/status", label: t.shell.nav.status, icon: Activity },
+  { to: "/settings", label: t.shell.nav.settings, icon: Settings },
 ] as const satisfies readonly {
   to: string;
   label: string;
@@ -41,36 +42,28 @@ const NAV = [
   adminOnly?: true;
 }[];
 
-const LIVE_LABELS: Readonly<Record<LiveState, string>> = {
-  connecting: "Connecting…",
-  live: "Live",
-  offline: "Offline",
-};
+const LIVE_LABELS: Readonly<Record<LiveState, string>> = t.shell.live;
 
 function ThemePicker(): ReactNode {
   const [theme, setTheme] = useTheme();
   return (
     <label className="theme-picker">
-      <span className="visually-hidden">Theme</span>
+      <span className="visually-hidden">{t.shell.theme}</span>
       <select
         value={theme}
         onChange={(e) => {
           setTheme(e.target.value as ThemeChoice);
         }}
       >
-        <option value="system">System theme</option>
-        <option value="dark">Dark</option>
-        <option value="light">Light</option>
+        <option value="system">{t.shell.themes.system}</option>
+        <option value="dark">{t.shell.themes.dark}</option>
+        <option value="light">{t.shell.themes.light}</option>
       </select>
     </label>
   );
 }
 
-const ROLE_LABELS = {
-  admin: "Admin",
-  reader: "Reader",
-  anonymous: "Read only",
-} as const;
+const ROLE_LABELS = t.shell.roles;
 
 export function Shell(): ReactNode {
   const session = useSession();
@@ -107,14 +100,14 @@ export function Shell(): ReactNode {
   return (
     <div className="app">
       <a className="skip-link" href="#main">
-        Skip to content
+        {t.shell.skip}
       </a>
       <header className="topbar">
         <Link to="/" className="brand">
           <img className="brand-logo" src="favicon.svg" alt="" />
-          Open Parcels
+          {BRAND}
         </Link>
-        <nav aria-label="Main">
+        <nav aria-label={t.shell.mainNav}>
           <ul className="nav">
             {NAV.filter((item) => admin || !("adminOnly" in item)).map((item) => (
               <li key={item.to}>
@@ -141,16 +134,16 @@ export function Shell(): ReactNode {
               }}
             >
               <Plus size={16} aria-hidden="true" />
-              Add
+              {t.shell.add}
             </button>
           ) : null}
-          <span className={`live live-${live}`} role="status" title="Live updates">
+          <span className={`live live-${live}`} role="status" title={t.shell.liveUpdates}>
             {LIVE_LABELS[live]}
           </span>
           <ThemePicker />
           <span
             className={`badge role-badge role-${admin ? "admin" : "reader"}`}
-            title={admin ? "May change anything" : "May only read"}
+            title={admin ? t.shell.mayChange : t.shell.mayRead}
           >
             {roleLabel}
           </span>
@@ -163,7 +156,7 @@ export function Shell(): ReactNode {
               }}
             >
               <LogIn size={16} aria-hidden="true" />
-              Log in
+              {t.shell.logIn}
             </button>
           )}
           {method !== "session" ? null : (
@@ -176,7 +169,7 @@ export function Shell(): ReactNode {
               }}
             >
               <LogOut size={16} aria-hidden="true" />
-              Log out
+              {t.shell.logOut}
             </button>
           )}
         </div>

@@ -1,5 +1,7 @@
 /** Small geography helpers for the maps and distances. */
 
+import { UI_LOCALE } from "./locale";
+
 export type LatLngTuple = [number, number];
 
 /**
@@ -33,7 +35,7 @@ export function distanceKm(from: LatLngTuple, to: LatLngTuple): number {
 }
 
 /** "350 m", "4.2 km", "106 km", "1,234 km" in the browser's number format. */
-export function formatDistance(km: number, locale?: string): string {
+export function formatDistance(km: number, locale: string = UI_LOCALE): string {
   if (km < 1) {
     return `${new Intl.NumberFormat(locale, { maximumFractionDigits: 0 }).format(Math.round(km * 100) * 10)} m`;
   }

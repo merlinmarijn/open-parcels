@@ -22,26 +22,30 @@ import { kmToHome } from "./distance";
 import { useIsAdmin } from "../auth/session";
 import { EditableStatus, EditableTitle, ParcelActions } from "./InlineEdit";
 import { ItemList } from "./ItemList";
+import { t } from "../i18n";
 
 const LocationMap = lazy(() => import("../map/LocationMap"));
 
 function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const carrierPage = safeHref(parcel.url);
   const rows: [string, ReactNode][] = [
-    ["Tracking number", <span className="mono">{parcel.tracking_number}</span>],
-    ["Carrier says", parcel.raw_status ?? "—"],
+    [t.parcels.trackingNumber, <span className="mono">{parcel.tracking_number}</span>],
+    [t.parcels.carrierSays, parcel.raw_status ?? "—"],
     [
-      "Carrier lookup",
+      t.parcels.columnLookup,
       <>
         <LookupBadge state={parcel.lookup.state} />{" "}
         <span className="muted">{describeLookup(parcel.lookup)}</span>
       </>,
     ],
-    ["Pickup point", parcel.pickup_point ?? (parcel.pickup ? "Yes" : "—")],
-    ["Sender", parcel.sender ?? "—"],
-    ["Direction", parcel.direction === "receiving" ? "Receiving" : "Sending"],
+    [t.parcels.pickupPoint, parcel.pickup_point ?? (parcel.pickup ? t.common.yes : "—")],
+    [t.parcels.sender, parcel.sender ?? "—"],
     [
-      "Order",
+      t.parcels.direction,
+      parcel.direction === "receiving" ? t.parcels.receiving : t.parcels.sending,
+    ],
+    [
+      t.parcels.order,
       parcel.order === null ? (
         "—"
       ) : (
@@ -50,11 +54,11 @@ function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         </Link>
       ),
     ],
-    ["Last update", formatDateTime(parcel.updated_at)],
+    [t.parcels.columnUpdated, formatDateTime(parcel.updated_at)],
   ];
   return (
     <section className="detail-section" aria-labelledby="facts-title">
-      <h2 id="facts-title">Details</h2>
+      <h2 id="facts-title">{t.parcels.details}</h2>
       <dl className="facts">
         {rows.map(([term, value]) => (
           <div key={term}>
@@ -64,10 +68,10 @@ function Facts({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         ))}
         {carrierPage === null ? null : (
           <div>
-            <dt>Carrier page</dt>
+            <dt>{t.parcels.carrierPage}</dt>
             <dd>
               <a href={carrierPage} target="_blank" rel="noreferrer noopener">
-                Open on the carrier’s site <ExternalLink size={12} aria-hidden="true" />
+                {t.parcels.openOnCarrierSite} <ExternalLink size={12} aria-hidden="true" />
               </a>
             </dd>
           </div>
@@ -81,7 +85,7 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const { home } = useHome();
   const done = parcel.delivered;
   const km = kmToHome(parcel, home?.point ?? null);
-  const away = km === null ? null : `${formatDistance(km)} away`;
+  const away = km === null ? null : t.parcels.away(formatDistance(km));
   const planned = parcel.expected_from !== null || parcel.expected_to !== null;
   const when = done
     ? `${formatDateTime(parcel.delivered_at)} (${formatRelative(parcel.delivered_at)})`
@@ -91,8 +95,8 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
           ...(away === null ? [] : [away]),
         ].join("; ")})`
       : away === null
-        ? "Pending information"
-        : `Pending information (${away})`;
+        ? t.parcels.pending
+        : t.parcels.pendingAway(away);
   return (
     <div className={done ? "eta-card done" : "eta-card"}>
       {done ? (
@@ -101,7 +105,9 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         <Calendar size={20} aria-hidden="true" />
       )}
       <div>
-        <div className="eta-label">{done ? "Delivery date" : "Estimated delivery"}</div>
+        <div className="eta-label">
+          {done ? t.parcels.deliveryDate : t.parcels.estimatedDelivery}
+        </div>
         <div className="eta-value">{when}</div>
       </div>
     </div>
@@ -112,11 +118,11 @@ function History({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const events = [...parcel.history].sort((a, b) => b.timestamp.localeCompare(a.timestamp));
   return (
     <section className="detail-section" aria-labelledby="history-title">
-      <h2 id="history-title">Tracking history</h2>
+      <h2 id="history-title">{t.parcels.history}</h2>
       {events.length === 0 ? (
         <div className="empty-state">
           <PackageOpen size={32} aria-hidden="true" />
-          <p>No tracking updates yet.</p>
+          <p>{t.parcels.noHistory}</p>
         </div>
       ) : (
         <ol className="timeline">
@@ -164,19 +170,21 @@ function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const otherLines = otherOrderItems(parcel);
   return (
     <section className="detail-section" aria-labelledby="items-title">
-      <h2 id="items-title">Items</h2>
+      <h2 id="items-title">{t.parcels.items}</h2>
       {parcel.items.length === 0 ? (
-        <p className="muted">No items known.</p>
+        <p className="muted">{t.parcels.noItems}</p>
       ) : (
         <ItemList items={parcel.items} />
       )}
       {otherLines.length === 0 ? null : (
         <>
-          <h3 className="items-subtitle">Also in this order</h3>
+          <h3 className="items-subtitle">{t.parcels.alsoInOrder}</h3>
           <ItemList
             items={otherLines}
             note={(_item, index) =>
-              otherLines[index]?.parcel_id === null ? "Parcel not known yet" : "In another parcel"
+              otherLines[index]?.parcel_id === null
+                ? t.parcels.parcelNotKnown
+                : t.parcels.inAnotherParcel
             }
           />
         </>
@@ -189,9 +197,9 @@ function Items({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
 function Connections({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   return (
     <section className="detail-section" aria-labelledby="connections-title">
-      <h2 id="connections-title">Connections</h2>
+      <h2 id="connections-title">{t.parcels.connections}</h2>
       {parcel.connections.length === 0 ? (
-        <p className="muted">No connection follows this parcel.</p>
+        <p className="muted">{t.parcels.noConnections}</p>
       ) : (
         <ul>
           {parcel.connections.map((connection) => (
@@ -200,7 +208,7 @@ function Connections({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
               <span className="muted">
                 ({CONNECTION_KIND_LABELS[connection.kind]}, {connection.role})
               </span>
-              , seen {formatRelative(connection.last_seen_at)}
+              {t.parcels.seen(formatRelative(connection.last_seen_at))}
             </li>
           ))}
         </ul>
@@ -232,7 +240,7 @@ function Header({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
               update.mutate({ manual_status: markedDelivered ? null : "delivered" });
             }}
           >
-            {markedDelivered ? "Mark not delivered" : "Mark delivered"}
+            {markedDelivered ? t.parcels.markNotDelivered : t.parcels.markDelivered}
           </button>
         ) : null}
         {parcel.archived_at === null ? null : <ArchivedBadge />}
@@ -269,7 +277,7 @@ export function ParcelDetailPage({ parcelId }: { readonly parcelId: string }): R
     <section aria-labelledby="parcel-title" className="stack">
       <div className="detail-bar">
         <Link to="/" className="back-link">
-          <ArrowLeft size={20} aria-hidden="true" /> All parcels
+          <ArrowLeft size={20} aria-hidden="true" /> {t.parcels.allParcels}
         </Link>
       </div>
       <ErrorNotice error={query.error} />
@@ -283,7 +291,7 @@ export function ParcelDetailPage({ parcelId }: { readonly parcelId: string }): R
             leftPanel={<Overview parcel={parcel} />}
             rightPanel={
               <div className="glass-panel map-panel">
-                <Suspense fallback={<Spinner label="Loading map…" />}>
+                <Suspense fallback={<Spinner label={t.parcels.loadingMap} />}>
                   <LocationMap parcel={parcel} />
                 </Suspense>
               </div>

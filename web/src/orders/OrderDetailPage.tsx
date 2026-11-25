@@ -6,6 +6,7 @@ import type { ReactNode } from "react";
 import { keys, useDeleteOrder, useOrder, useUpdateOrder } from "../api/queries";
 import type { Order } from "../api/types";
 import { ErrorNotice, Spinner } from "../components/ui";
+import { t } from "../i18n";
 import { formatDateTime } from "../lib/format";
 import { useIsAdmin } from "../auth/session";
 import { InlineTitle } from "../parcels/InlineEdit";
@@ -17,18 +18,16 @@ import { noParcelText, OrderBadges, OrderParcels, OrderProgress, orderSummary } 
 export function archiveExplanation(order: Order): string {
   switch (order.archive_mode) {
     case "archived":
-      return "You archived this order. It stays archived until you restore it.";
+      return t.orders.archive.archived;
     case "kept":
-      return "You restored this order, so it stays out of the archive even once all its parcels are archived.";
+      return t.orders.archive.kept;
     case "automatic":
       if (order.status === "cancelled" || order.status === "refunded") {
         return order.archived
-          ? `Archived automatically: the order was ${order.status}.`
-          : `Archived automatically once ${order.status}.`;
+          ? t.orders.archive.endedArchived(order.status)
+          : t.orders.archive.endedPending(order.status);
       }
-      return order.archived
-        ? "Archived automatically: all its parcels are archived."
-        : "Archived automatically once all its parcels are archived. Delivered parcels are archived after the retention period.";
+      return order.archived ? t.orders.archive.parcelsArchived : t.orders.archive.parcelsPending;
   }
 }
 
@@ -55,29 +54,26 @@ function Actions({ order }: { readonly order: Order }): ReactNode {
         ) : (
           <Archive size={14} aria-hidden="true" />
         )}{" "}
-        {order.archived ? "Unarchive" : "Archive"}
+        {order.archived ? t.orders.unarchive : t.orders.archiveAction}
       </button>
       {order.archive_mode === "automatic" ? null : (
         <button
           type="button"
           className="button small"
           disabled={update.isPending}
-          title="Let the order follow its parcels again"
+          title={t.orders.archiveAutomaticallyHint}
           onClick={() => {
             update.mutate({ archived: null });
           }}
         >
-          <RotateCcw size={14} aria-hidden="true" /> Archive automatically
+          <RotateCcw size={14} aria-hidden="true" /> {t.orders.archiveAutomatically}
         </button>
       )}
       <button
         type="button"
         className="button small danger"
         onClick={() => {
-          const question =
-            "Delete this order? Its parcels stay tracked, without the order. A shop that " +
-            "lists the order again will not bring it back.";
-          if (!window.confirm(question)) return;
+          if (!window.confirm(t.orders.deleteQuestion)) return;
           remove.mutate(order.id, {
             onSuccess: () => {
               void navigate({ to: "/orders" }).then(() => {
@@ -87,7 +83,7 @@ function Actions({ order }: { readonly order: Order }): ReactNode {
           });
         }}
       >
-        <Trash2 size={14} aria-hidden="true" /> Delete
+        <Trash2 size={14} aria-hidden="true" /> {t.orders.delete}
       </button>
       <ErrorNotice error={update.error ?? remove.error} />
     </>
@@ -127,17 +123,17 @@ function Header({ order }: { readonly order: Order }): ReactNode {
 function Items({ order }: { readonly order: Order }): ReactNode {
   return (
     <section className="detail-section" aria-labelledby="order-items-title">
-      <h2 id="order-items-title">Items</h2>
+      <h2 id="order-items-title">{t.orders.items}</h2>
       {order.items.length === 0 ? (
-        <p className="muted">The shop did not list the items.</p>
+        <p className="muted">{t.orders.itemsMissing}</p>
       ) : (
         <ItemList
           items={order.items}
           note={(_item, index) => {
             const parcelId = order.items[index]?.parcel_id ?? null;
-            if (parcelId === null) return "Parcel not known yet";
+            if (parcelId === null) return t.orders.itemParcelUnknown;
             const carrying = order.parcels.find((parcel) => parcel.id === parcelId);
-            return carrying === undefined ? null : `In ${carrying.display_name}`;
+            return carrying === undefined ? null : t.orders.itemIn(carrying.display_name);
           }}
         />
       )}
@@ -150,9 +146,9 @@ function Returns({ order }: { readonly order: Order }): ReactNode {
   if (order.returns.length === 0 && order.return_until === null) return null;
   return (
     <section className="detail-section" aria-labelledby="order-returns-title">
-      <h2 id="order-returns-title">Returns</h2>
+      <h2 id="order-returns-title">{t.orders.returns}</h2>
       {order.return_until === null ? null : (
-        <p className="muted">Return window: until {formatDay(order.return_until)}.</p>
+        <p className="muted">{t.orders.returnWindow(formatDay(order.return_until))}</p>
       )}
       {order.returns.map((entry) => (
         <ReturnCard key={entry.id} entry={entry} />
@@ -169,7 +165,7 @@ export function OrderDetailPage({ orderId }: { readonly orderId: string }): Reac
     <section aria-labelledby="order-title" className="stack">
       <div className="detail-bar">
         <Link to="/orders" className="back-link">
-          <ArrowLeft size={20} aria-hidden="true" /> All orders
+          <ArrowLeft size={20} aria-hidden="true" /> {t.orders.allOrders}
         </Link>
       </div>
       <ErrorNotice error={query.error} />
@@ -184,14 +180,18 @@ export function OrderDetailPage({ orderId }: { readonly orderId: string }): Reac
           <OrderProgress order={order} />
           <p className="muted order-view-help">
             {archiveExplanation(order)}
-            {order.archived_at === null ? null : ` Archived ${formatDateTime(order.archived_at)}.`}
+            {order.archived_at === null
+              ? null
+              : t.orders.archive.archivedAt(formatDateTime(order.archived_at))}
           </p>
           <Items order={order} />
           <section className="detail-section" aria-labelledby="order-parcels-title">
-            <h2 id="order-parcels-title">Parcels</h2>
+            <h2 id="order-parcels-title">{t.orders.parcels}</h2>
             {order.parcels.length === 0 ? (
               <p className="muted">
-                {order.digital ? "Digital order, no parcel" : noParcelText(order.status)}.
+                {t.orders.sentence(
+                  order.digital ? t.orders.digitalNoParcel : noParcelText(order.status),
+                )}
               </p>
             ) : (
               <OrderParcels order={order} />

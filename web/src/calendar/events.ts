@@ -1,5 +1,6 @@
 import type { EventInput } from "@fullcalendar/core";
 import type { CalendarEntry } from "../api/types";
+import { t } from "../i18n";
 
 /**
  * One calendar entry as a FullCalendar event. All-day entries use the server's local days
@@ -15,7 +16,7 @@ export function toCalendarEvent(entry: CalendarEntry, carrierName: string): Even
   // deadline says so and lists where to hand it in and what it costs.
   const title =
     entry.kind === "return_by"
-      ? [`Return by: ${entry.title}`, ...entry.details].join(" · ")
+      ? [t.calendar.returnBy(entry.title), ...entry.details].join(" · ")
       : `${entry.title} · ${carrierName}`;
   return {
     id: entry.uid,

@@ -8,6 +8,7 @@ import {
   type FormValues,
   type JsonSchema,
 } from "./schema";
+import { t } from "../i18n";
 
 const MAX_DEPTH = 3;
 
@@ -85,7 +86,7 @@ function ScalarField(props: FieldProps): ReactNode {
               aria-describedby={hint}
               rows={3}
               required={props.required}
-              placeholder="One per line"
+              placeholder={t.connections.onePerLine}
               value={Array.isArray(props.value) ? props.value.join("\n") : ""}
               onChange={(e) => {
                 const lines = e.target.value.split("\n").map((line) => line.trim());

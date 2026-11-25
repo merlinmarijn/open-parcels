@@ -1,5 +1,6 @@
 import type { SignInFlow } from "../api/types";
 import type { JsonSchema } from "./schema";
+import { t } from "../i18n";
 
 /** Inboxes are not a carrier provider, so their forms mirror the server's mail schemas here. */
 export const INBOX_PROVIDER = "imap";
@@ -8,25 +9,33 @@ export const INBOX_CONFIG_SCHEMA: JsonSchema = {
   type: "object",
   required: ["host"],
   properties: {
-    host: { type: "string", title: "IMAP server", description: "For example imap.example.org." },
-    port: { type: "integer", minimum: 1, maximum: 65535, default: 993 },
+    host: {
+      type: "string",
+      title: t.connections.imapServer,
+      description: t.connections.imapServerHint,
+    },
+    port: { type: "integer", title: t.connections.port, minimum: 1, maximum: 65535, default: 993 },
     secure: {
       type: "boolean",
-      title: "Use TLS",
-      description: "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
+      title: t.connections.useTls,
+      description: t.connections.useTlsHint,
       default: true,
     },
     allowPlaintext: {
       type: "boolean",
-      title: "Allow an unencrypted connection",
-      description:
-        "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
+      title: t.connections.allowPlaintext,
+      description: t.connections.allowPlaintextHint,
       default: false,
     },
-    folders: { type: "array", items: { type: "string" }, default: ["INBOX"] },
+    folders: {
+      type: "array",
+      title: t.connections.folders,
+      items: { type: "string" },
+      default: ["INBOX"],
+    },
     initialDays: {
       type: "integer",
-      title: "Days to look back on the first sync",
+      title: t.connections.initialDays,
       minimum: 1,
       maximum: 365,
       default: 30,
@@ -38,15 +47,15 @@ export const INBOX_SECRET_SCHEMA: JsonSchema = {
   type: "object",
   required: ["username", "password"],
   properties: {
-    username: { type: "string", title: "User name" },
-    password: { type: "string", title: "Password" },
+    username: { type: "string", title: t.connections.userName },
+    password: { type: "string", title: t.connections.passwordText },
   },
 };
 
 export const INBOX_FLOWS: SignInFlow[] = [
   {
     id: "credentials",
-    label: "User name and password",
+    label: t.connections.userNameAndPasswordText,
     type: "credentials",
     kinds: [],
     secret_schema: null,

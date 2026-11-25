@@ -18,7 +18,8 @@ const STATUS = {
     backups: "degraded",
   },
   checked_at: "2026-11-25T10:00:00.000Z",
-  version: "2.0.0-dev.0",
+  version: "2.0.0-dev.20261125",
+  commit: "abc1234",
   started_at: "2026-11-25T08:00:00.000Z",
   database: { detail: null },
   connections: [
@@ -80,6 +81,9 @@ describe("status page", () => {
     renderApp("/status");
     const service = await screen.findByRole("region", { name: "Service" });
     expect(within(service).getByRole("status")).toHaveTextContent("Needs attention");
+    expect(within(service).getByRole("status")).toHaveTextContent(
+      "Version 2.0.0-dev.20261125 (abc1234)",
+    );
     expect(within(service).getByText("Backups")).toBeInTheDocument();
 
     const connections = screen.getByRole("region", { name: "Connections" });

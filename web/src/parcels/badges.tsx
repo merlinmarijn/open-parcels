@@ -1,6 +1,7 @@
 import type { ReactNode } from "react";
 import type { LookupState, ParcelStatus, ConnectionState } from "../api/types";
 import { LOOKUP_LABELS, CONNECTION_STATE_LABELS, STATUS_LABELS } from "../lib/format";
+import { t } from "../i18n";
 
 export function StatusBadge(props: {
   readonly status: ParcelStatus;
@@ -9,14 +10,14 @@ export function StatusBadge(props: {
   return (
     <span className={`badge status-${props.status}`}>
       {STATUS_LABELS[props.status]}
-      {props.manual === true ? <span title="Set by hand"> ✎</span> : null}
+      {props.manual === true ? <span title={t.parcels.setByHand}> ✎</span> : null}
     </span>
   );
 }
 
 /** Archived parcels are kept but hidden from the default list. */
 export function ArchivedBadge(): ReactNode {
-  return <span className="badge archived">Archived</span>;
+  return <span className="badge archived">{t.parcels.archived}</span>;
 }
 
 export function LookupBadge({ state }: { readonly state: LookupState }): ReactNode {
@@ -36,7 +37,7 @@ export function ConnectionStateBadge(props: {
     return <span className="badge connection-pending">{CONNECTION_STATE_LABELS.idle}</span>;
   }
   if (props.state === "ok" && props.lastOkAt === null) {
-    return <span className="badge connection-pending">Not run yet</span>;
+    return <span className="badge connection-pending">{t.parcels.notRunYet}</span>;
   }
   return (
     <span className={`badge connection-${props.state}`}>
