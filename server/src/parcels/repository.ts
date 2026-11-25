@@ -4,7 +4,8 @@ import { parcelVisible } from "../db/visibility.js";
 import {
   effectiveDelivered,
   effectiveStatus,
-  PARCEL_STATUSES,
+  parseStatus,
+  statusOrUnknown,
   type HistoryEntry,
   type Item,
   type OrderItem,
@@ -34,12 +35,6 @@ export interface OrderParcelState {
 
 /** Parcels per page when no limit is given. */
 export const PARCEL_PAGE_DEFAULT = 500;
-
-function asStatus(value: string | null): ParcelStatus | null {
-  return value !== null && PARCEL_STATUSES.includes(value as ParcelStatus)
-    ? (value as ParcelStatus)
-    : null;
-}
 
 export function groupBy<T>(rows: readonly T[], key: (row: T) => string): Map<string, T[]> {
   const groups = new Map<string, T[]>();
@@ -317,10 +312,10 @@ export class ParcelRepository {
     const byOrder = new Map<string, OrderParcelState[]>();
     for (const row of rows) {
       if (row.order_id === null) continue;
-      const manual = asStatus(row.manual_status);
+      const manual = parseStatus(row.manual_status);
       const state: OrderParcelState = {
         status: effectiveStatus({
-          status: asStatus(row.status) ?? "unknown",
+          status: statusOrUnknown(row.status),
           manual_status: manual,
         }),
         delivered: effectiveDelivered(row.delivered === 1, manual),
@@ -433,7 +428,7 @@ export class ParcelRepository {
         parcelId,
         list.map((event) => ({
           timestamp: event.at,
-          status: asStatus(event.status),
+          status: parseStatus(event.status),
           raw_status: event.raw_status,
           location: event.location_text,
           latitude: event.latitude,
@@ -538,8 +533,8 @@ export class ParcelRepository {
   #toParcel(row: ParcelRow, related: Related): Parcel {
     const order = row.order_id === null ? undefined : related.orders.get(row.order_id);
     const items = itemsOf(row.id, related.items.get(row.id) ?? [], order);
-    const carrierStatus = asStatus(row.status) ?? "unknown";
-    const manual = asStatus(row.manual_status);
+    const carrierStatus = statusOrUnknown(row.status);
+    const manual = parseStatus(row.manual_status);
     const carrierDelivered = row.delivered === 1;
     const listed = related.listedBy.get(row.id)?.has(row.carrier) === true;
     return {

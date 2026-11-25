@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import { inpost } from "../../src/carriers/inpost/index.js";
 import { register } from "../../src/engine/registry.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
-import type { FetchLike } from "../../src/provider/http.js";
+import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, json } from "./harness.js";
 import { pasted } from "./pasted.js";
 

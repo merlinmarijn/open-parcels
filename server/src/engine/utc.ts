@@ -35,7 +35,7 @@ export function utcSnapshot(snapshot: ParcelSnapshot): ParcelSnapshot {
 }
 
 /** Milliseconds since the epoch, or NaN for text that names no instant. */
-export function instant(value: string): number {
+function instant(value: string): number {
   return Date.parse(value);
 }
 

@@ -2,7 +2,7 @@ import type { Kysely } from "kysely";
 import type { Logger } from "pino";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
-import { PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
+import { statusOrUnknown } from "../domain/parcel.js";
 import {
   delayAfterFailure,
   nextRunAfterSuccess,
@@ -38,10 +38,6 @@ export interface SchedulerDeps {
   ) => void;
   /** A provider's fixed time between runs, if it has one. */
   readonly pollIntervalOf?: (provider: string) => number | null;
-}
-
-function asStatus(value: string): ParcelStatus {
-  return PARCEL_STATUSES.includes(value as ParcelStatus) ? (value as ParcelStatus) : "unknown";
 }
 
 /**
@@ -145,7 +141,9 @@ export class Scheduler {
     try {
       const outcome = await this.deps.runner.run(connection.id);
       await this.#record(connection, outcome);
-      await this.#announce(connection, outcome);
+      // After every run, so clients showing the connection (its last run, next run and counts)
+      // refresh even when its state did not change.
+      await this.deps.connections.announceRun(connection.id, outcome.ok);
     } finally {
       this.#running.delete(connection.id);
     }
@@ -205,14 +203,6 @@ export class Scheduler {
     );
   }
 
-  /**
-   * Fires `connection.run_finished` after every run, so clients showing the connection (its last run,
-   * next run and counts) refresh even when its state did not change.
-   */
-  async #announce(connection: ConnectionRow, outcome: RunOutcome): Promise<void> {
-    await this.deps.connections.announceRun(connection.id, outcome.ok);
-  }
-
   async #activeParcels(connectionId: string): Promise<ActiveParcel[]> {
     const rows = await this.deps.db
       .selectFrom("parcel_connections")
@@ -229,6 +219,9 @@ export class Scheduler {
       .where("parcels.archived_at", "is", null)
       .where("parcels.removed_at", "is", null)
       .execute();
-    return rows.map((row) => ({ status: asStatus(row.status), expectedFrom: row.expected_from }));
+    return rows.map((row) => ({
+      status: statusOrUnknown(row.status),
+      expectedFrom: row.expected_from,
+    }));
   }
 }

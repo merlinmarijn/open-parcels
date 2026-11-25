@@ -1,14 +1,15 @@
 import { z } from "zod";
 import type { ConnectionKind } from "../../engine/connections.js";
+import { text } from "../shared.js";
 
 /**
  * Turns the config entries of the Home Assistant parcel suite into open-parcels connection plans.
- * Pure: reads the parsed `core.config_entries` file, touches no database. `apply.ts` writes the
+ * Pure: reads the parsed `core.config_entries` file, touches no database. `import.ts` writes the
  * plans.
  */
 
 /** One config entry, as the importer needs it. */
-export interface HaEntry {
+interface HaEntry {
   readonly entryId: string;
   readonly domain: string;
   readonly title: string;
@@ -23,7 +24,7 @@ export interface ParcelPlan {
 }
 
 /** Where an entry's codes are tracked: by the entry's own connection, or by DHL's tracking connection. */
-export type ParcelTarget = "self" | "dhl_tracking";
+type ParcelTarget = "self" | "dhl_tracking";
 
 export interface ConnectionPlan {
   readonly entryId: string;
@@ -45,7 +46,7 @@ export interface ConnectionPlan {
   readonly notCarriedOver: readonly string[];
 }
 
-export type EntryPlan =
+type EntryPlan =
   | { readonly type: "connection"; readonly plan: ConnectionPlan }
   | { readonly type: "covered"; readonly entry: HaEntry; readonly reason: string }
   | { readonly type: "skipped"; readonly entry: HaEntry; readonly reason: string }
@@ -87,10 +88,6 @@ export function parseConfigEntries(raw: unknown): HaEntry[] {
     });
   }
   return entries;
-}
-
-function text(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
 
 /** Retention, history and polling settings the engine handles on its own terms. */

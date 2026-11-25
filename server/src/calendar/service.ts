@@ -2,7 +2,12 @@ import type { Kysely } from "kysely";
 import type { Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
 import { parcelVisible } from "../db/visibility.js";
-import { effectiveDelivered, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
+import {
+  effectiveDelivered,
+  parseStatus,
+  statusOrUnknown,
+  type ParcelStatus,
+} from "../domain/parcel.js";
 import { localParts, nextLocalMidnight, zonedTime } from "../engine/tz.js";
 import {
   awaitingDropOff,
@@ -103,16 +108,6 @@ export function allDayRange(
 function zonedDayStart(day: string, timeZone: string): Date {
   const [year = 1970, month = 1, date = 1] = day.split("-").map(Number);
   return zonedTime({ year, month, day: date, hour: 0, minute: 0 }, timeZone);
-}
-
-function asStatus(value: string | null): ParcelStatus {
-  return asManual(value) ?? "unknown";
-}
-
-function asManual(value: string | null): ParcelStatus | null {
-  return value !== null && PARCEL_STATUSES.includes(value as ParcelStatus)
-    ? (value as ParcelStatus)
-    : null;
 }
 
 export class CalendarService {
@@ -238,12 +233,12 @@ export class CalendarService {
           title: parcel?.display_name ?? row.label ?? row.tracking_number,
           carrier: row.carrier,
           trackingNumber: row.tracking_number,
-          status: asStatus(row.manual_status ?? row.status),
+          status: statusOrUnknown(row.manual_status ?? row.status),
           imageUrl: parcel?.items[0]?.image_url ?? null,
           url: row.url,
           pickupPoint: row.pickup_point,
         };
-        const delivered = effectiveDelivered(row.delivered === 1, asManual(row.manual_status));
+        const delivered = effectiveDelivered(row.delivered === 1, parseStatus(row.manual_status));
         if (delivered) {
           const at = row.delivered_at ?? row.manual_at;
           if (at === null || at < fromIso || at >= toIso) {

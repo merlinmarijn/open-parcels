@@ -152,34 +152,30 @@ describe("carriers and connections API", () => {
         })
       ).json<{ id: string }>().id;
 
-      const early = await shopApp.inject({
-        method: "POST",
-        url: `/api/v1/connections/${id}/sign-in/finish`,
-        headers: h,
-        payload: { pasted: "https://x.invalid/?code=1" },
-      });
-      expect(early.statusCode).toBe(400);
-
       const start = await shopApp.inject({
         method: "POST",
-        url: `/api/v1/connections/${id}/sign-in/start`,
+        url: `/api/v1/connections/${id}/sign-in/attempts`,
         headers: h,
+        payload: {},
       });
-      expect(start.json()).toEqual({ url: "https://shop.example.invalid/sign-in?state=s1" });
-      const bad = await shopApp.inject({
-        method: "POST",
-        url: `/api/v1/connections/${id}/sign-in/finish`,
-        headers: h,
-        payload: { pasted: "https://shop.example.invalid/done" },
+      const attempt = start.json<{ attempt_id: string; step: { kind: string; url: string } }>();
+      expect(attempt.step).toMatchObject({
+        kind: "open_url",
+        url: "https://shop.example.invalid/sign-in?state=s1",
       });
-      expect(bad.json()).toMatchObject({ error: "sign_in_failed" });
-      const good = await shopApp.inject({
-        method: "POST",
-        url: `/api/v1/connections/${id}/sign-in/finish`,
-        headers: h,
-        payload: { pasted: "https://shop.example.invalid/done?code=abc" },
+      const paste = (pasted: string) =>
+        shopApp.inject({
+          method: "POST",
+          url: `/api/v1/connections/${id}/sign-in/attempts/${attempt.attempt_id}/continue`,
+          headers: h,
+          payload: { input: { pasted } },
+        });
+      expect((await paste("https://shop.example.invalid/done")).json()).toMatchObject({
+        error: "sign_in_failed",
       });
-      expect(good.statusCode).toBe(204);
+      expect((await paste("https://shop.example.invalid/done?code=abc")).json()).toMatchObject({
+        status: "done",
+      });
       expect((await shopContext.services.connections.get(id))?.hasSecret).toBe(true);
       const row = await shopContext.services.db
         .selectFrom("connections")

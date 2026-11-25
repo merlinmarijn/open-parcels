@@ -3,7 +3,12 @@ import type { ExpressionBuilder, Kysely, Transaction } from "kysely";
 import type { Logger } from "pino";
 import { addMs, isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelRow, ConnectionRow } from "../db/schema.js";
-import { effectiveStatus, PARCEL_STATUSES, type ParcelStatus } from "../domain/parcel.js";
+import {
+  effectiveStatus,
+  parseStatus,
+  statusOrUnknown,
+  type ParcelStatus,
+} from "../domain/parcel.js";
 import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
@@ -45,16 +50,10 @@ export interface IngestSummary {
   readonly found: number;
 }
 
-function asStatus(value: string | null): ParcelStatus | null {
-  return value !== null && PARCEL_STATUSES.includes(value as ParcelStatus)
-    ? (value as ParcelStatus)
-    : null;
-}
-
 function rowToState(row: ParcelRow): ParcelState {
   return {
     direction: row.direction,
-    status: asStatus(row.status) ?? "unknown",
+    status: statusOrUnknown(row.status),
     rawStatus: row.raw_status,
     statusAt: row.status_at,
     delivered: row.delivered === 1,
@@ -162,7 +161,7 @@ async function storedHistory(trx: Trx, parcelId: string): Promise<SnapshotEvent[
     .execute();
   return rows.map((row) => ({
     at: row.at,
-    status: asStatus(row.status),
+    status: parseStatus(row.status),
     rawStatus: row.raw_status,
     location: row.location_text,
   }));
@@ -384,7 +383,7 @@ export class Reconciler {
       .set({ ...stateColumns(after), updated_at: isoNow(this.clock) })
       .where("id", "=", parcelId)
       .execute();
-    const manual = asStatus(row.manual_status);
+    const manual = parseStatus(row.manual_status);
     const derived = deriveEvents(eventView(before, manual), eventView(after, manual));
     const parcel =
       derived.length === 0
@@ -427,7 +426,7 @@ export class Reconciler {
       existing = await this.#foldShopDuplicate(trx, snapshot, existing);
     }
     const before = existing === undefined ? null : rowToState(existing);
-    const manual = existing === undefined ? null : asStatus(existing.manual_status);
+    const manual = existing === undefined ? null : parseStatus(existing.manual_status);
     const merged = mergeParcel(
       before,
       { ...snapshot, carrier: key.carrier, trackingNumber: key.trackingNumber },

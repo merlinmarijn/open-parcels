@@ -2,7 +2,7 @@ import type { Kysely } from "kysely";
 import { simpleParser, type AddressObject } from "mailparser";
 import type { Logger } from "pino";
 import { ZodError } from "zod";
-import { isoNow, type Clock } from "../clock.js";
+import { DAY_MS, isoNow, type Clock } from "../clock.js";
 import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
@@ -27,7 +27,6 @@ import {
   inboxLabel,
 } from "./types.js";
 
-const DAY = 24 * 60 * 60 * 1000;
 const RESYNC_MS = 15 * 60_000;
 const RECONNECT_BASE_MS = 30_000;
 const RECONNECT_MAX_MS = 15 * 60_000;
@@ -332,7 +331,7 @@ export class MailWatcher {
           ? connection.client.fetchAfter(lastUid)
           : connection.client.fetchUids(
               await connection.client.searchSince(
-                new Date(this.deps.clock.now().getTime() - connection.config.initialDays * DAY),
+                new Date(this.deps.clock.now().getTime() - connection.config.initialDays * DAY_MS),
               ),
             );
       for await (const message of messages) {

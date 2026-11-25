@@ -1,4 +1,3 @@
-import type { ParcelStatus } from "../../domain/parcel.js";
 import type { FetchResult, ProviderContext } from "../api.js";
 import { TransientError } from "../errors.js";
 import type { HttpResponse, ProviderHttp, RequestOptions } from "../http.js";
@@ -6,29 +5,6 @@ import type { ParcelSnapshot } from "../snapshot.js";
 import { readJson } from "./json.js";
 
 export type { ParcelStatus } from "../../domain/parcel.js";
-
-/** A carrier's own status vocabulary mapped onto the canonical list. */
-export type StatusTable = Readonly<Record<string, ParcelStatus>>;
-
-/**
- * Looks a raw value up in a local table. Empty values give null; an unmapped value gives null and
- * is passed to `report`, when one is given.
- */
-export function lookUpStatus(
-  table: StatusTable,
-  key: string | null,
-  report?: (key: string) => void,
-): ParcelStatus | null {
-  if (key === null) {
-    return null;
-  }
-  const mapped = Object.hasOwn(table, key) ? table[key] : undefined;
-  if (mapped === undefined) {
-    report?.(key);
-    return null;
-  }
-  return mapped;
-}
 
 export interface ReporterOptions {
   /** Report each key once per reporter (default) or every time it is seen. */

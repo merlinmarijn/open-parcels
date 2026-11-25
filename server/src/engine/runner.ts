@@ -15,13 +15,9 @@ import {
   type ProviderLogger,
   type SessionStore,
 } from "../provider/api.js";
-import {
-  ProviderHttp,
-  type FetchLike,
-  type HostLimiter,
-  type HttpPolicy,
-} from "../provider/http.js";
+import { ProviderHttp, type HostLimiter, type HttpPolicy } from "../provider/http.js";
 import { redactText } from "../log/redact.js";
+import type { FetchLike } from "../net/guarded-fetch.js";
 import { fallbackProviders, linkFallbacks } from "./fallback.js";
 import { KeyedMutex } from "./locks.js";
 import type { FailureKind } from "./policy.js";

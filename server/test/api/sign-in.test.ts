@@ -181,6 +181,20 @@ describe("interactive sign-in", () => {
     expect(left).toEqual([]);
   });
 
+  it("drops a stored step of a shape no provider returns (OP-048)", async () => {
+    const id = await newConnection();
+    const first = await start(id);
+    const aad = `sign-in:${first.attempt_id}:${id}`;
+    const stored = { state: {}, step: { kind: "form", fields: "not a list" } };
+    await context.services.db
+      .updateTable("sign_in_attempts")
+      .set({ blob: context.services.secrets.encryptJson(stored, aad) })
+      .execute();
+    const response = await answer(id, first.attempt_id, { username: USER, password: TYPED });
+    expect(response.json()).toMatchObject({ error: "sign_in_expired" });
+    expect(world.continues).toBe(0);
+  });
+
   it("expires an unanswered step", async () => {
     const id = await newConnection();
     const first = await start(id);

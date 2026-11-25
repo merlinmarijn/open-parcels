@@ -1,3 +1,4 @@
+import { userAgent } from "./version.js";
 import path from "node:path";
 import type { Kysely } from "kysely";
 import type { Logger } from "pino";
@@ -5,7 +6,7 @@ import { AccessControl } from "./auth/access.js";
 import { AuthStore } from "./auth/store.js";
 import { CalendarService } from "./calendar/service.js";
 import { BUILTIN_CARRIERS } from "./engine/builtin-carriers.js";
-import type { Clock } from "./clock.js";
+import { realSleep, type Clock, type Sleep } from "./clock.js";
 import type { AppConfig } from "./config.js";
 import type { SecretBox } from "./crypto/secrets.js";
 import type { Database } from "./db/schema.js";
@@ -35,7 +36,8 @@ import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
 import { ParcelService } from "./parcels/service.js";
 import { OrderService } from "./orders/service.js";
-import { HostLimiter, realSleep, type FetchLike, type Sleep } from "./provider/http.js";
+import { HostLimiter } from "./provider/http.js";
+import type { FetchLike } from "./net/guarded-fetch.js";
 import { availableLayers } from "./tiles/layers.js";
 import { TileProxy } from "./tiles/proxy.js";
 import { Geocoder } from "./geo/geocoder.js";
@@ -50,8 +52,10 @@ import { CollageMaker } from "./images/collage.js";
  * services can write to this install instead of blocking it.
  */
 export function serviceUserAgent(contactEmail: string | undefined): string {
-  const contact = contactEmail === undefined ? "" : `; ${contactEmail}`;
-  return `open-parcels/2.0 (self-hosted parcel tracker; +https://github.com/open-parcels/open-parcels${contact})`;
+  return userAgent({
+    about: "self-hosted parcel tracker",
+    ...(contactEmail === undefined ? {} : { contact: contactEmail }),
+  });
 }
 
 export interface Services {

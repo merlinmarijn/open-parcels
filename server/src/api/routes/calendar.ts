@@ -1,3 +1,4 @@
+import { DAY_MS } from "../../clock.js";
 import { z } from "zod";
 import { randomSecret, safeEqual, sha256Hex } from "../../auth/crypto.js";
 import { renderIcs } from "../../calendar/ics.js";
@@ -6,10 +7,9 @@ import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema } from "../errors.js";
 
-const DAY = 24 * 60 * 60 * 1000;
 /** The feed shows a month back and two months ahead. */
-const FEED_PAST_MS = 30 * DAY;
-const FEED_FUTURE_MS = 60 * DAY;
+const FEED_PAST_MS = 30 * DAY_MS;
+const FEED_FUTURE_MS = 60 * DAY_MS;
 
 const entrySchema = z.object({
   uid: z.string(),
@@ -61,7 +61,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
     async (request) => {
       const from = new Date(request.query.from);
       const to = new Date(request.query.to);
-      if (to <= from || to.getTime() - from.getTime() > 400 * DAY) {
+      if (to <= from || to.getTime() - from.getTime() > 400 * DAY_MS) {
         throw new ApiError(
           400,
           "invalid_range",
@@ -147,9 +147,7 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
     async (request, reply) => {
       const stored = services.settings.feedHash;
       if (stored === null || !safeEqual(stored, sha256Hex(request.params.token))) {
-        return reply
-          .code(404)
-          .send({ error: "not_found", message: "This calendar feed does not exist." });
+        throw new ApiError(404, "not_found", "This calendar feed does not exist.");
       }
       const now = services.clock.now();
       const entries = await services.calendar.entries(

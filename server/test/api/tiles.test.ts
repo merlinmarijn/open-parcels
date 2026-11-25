@@ -40,15 +40,13 @@ async function setUp(
 }
 
 describe("map tiles", () => {
-  it("serves listed layers with their content type, and the legacy path as OSM", async () => {
+  it("serves listed layers with their content type", async () => {
     const { app, headers } = await setUp();
     const satellite = await app.inject({ url: "/tiles/satellite/3/1/2", headers });
     expect(satellite.statusCode).toBe(200);
     expect(satellite.headers["content-type"]).toBe("image/jpeg");
-    const legacy = await app.inject({ url: "/tiles/3/1/2.png", headers });
-    expect(legacy.statusCode).toBe(200);
-    expect(legacy.headers["content-type"]).toBe("image/png");
-    expect(upstream[1]).toBe("https://tile.openstreetmap.org/3/1/2.png");
+    // The old OSM-only path is gone (OP-059).
+    expect((await app.inject({ url: "/tiles/3/1/2.png", headers })).statusCode).toBe(404);
   });
 
   it("answers 404 for a layer that is not listed, fetching nothing", async () => {

@@ -1,15 +1,10 @@
 import { createServer } from "node:http";
 import { describe, expect, it } from "vitest";
 import { RateLimitedError, TransientError } from "../../src/provider/errors.js";
-import {
-  DEFAULT_USER_AGENT,
-  HostLimiter,
-  parseRetryAfter,
-  ProviderHttp,
-  type FetchLike,
-} from "../../src/provider/http.js";
+import { HostLimiter, parseRetryAfter, ProviderHttp } from "../../src/provider/http.js";
 import { CookieJar, restoreJar, serializeJar } from "../../src/provider/cookies.js";
-import { guardedFetch, publicOnlyLookup } from "../../src/net/guarded-fetch.js";
+import { guardedFetch, publicOnlyLookup, type FetchLike } from "../../src/net/guarded-fetch.js";
+import { userAgent } from "../../src/version.js";
 import { FakeClock } from "../helpers.js";
 
 function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string }) {
@@ -53,7 +48,7 @@ describe("provider HTTP client", () => {
       value: "Browser/1",
       reason: "resets connections otherwise",
     }).http.request(new URL("https://a.example.invalid/"));
-    expect(seen).toEqual([DEFAULT_USER_AGENT, "Browser/1"]);
+    expect(seen).toEqual([userAgent(), "Browser/1"]);
   });
 
   it("turns 429 and 503 with Retry-After into RateLimitedError", async () => {

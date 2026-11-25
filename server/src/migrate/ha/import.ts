@@ -12,6 +12,7 @@ import { configKey } from "../../engine/connection-dedup.js";
 import { NOT_RUN_YET, secretAad, sessionAad } from "../../engine/connections.js";
 import { appendEvent } from "../../events/bus.js";
 import { parseConfigEntries, planEntry, type ConnectionPlan } from "./entries.js";
+import { inImportTransaction } from "../shared.js";
 
 /**
  * Imports the Home Assistant parcel suite's config entries as connections, signed in where the stored
@@ -60,10 +61,6 @@ export interface HaImportOptions {
   readonly secrets: SecretBox;
   readonly clock: Clock;
   readonly dryRun: boolean;
-}
-
-class DryRunRollback extends Error {
-  override readonly name = "DryRunRollback";
 }
 
 export const markerKey = (entryId: string): string => `ha_import:${entryId}`;
@@ -427,18 +424,9 @@ export async function importHaEntries(options: HaImportOptions): Promise<HaImpor
   }
   const counts: ParcelCounts = { created: 0, existing: 0 };
   let connections: HaConnectionReport[] = [];
-  try {
-    await options.db.transaction().execute(async (trx) => {
-      connections = await importPlans(trx, options, plans, counts);
-      if (options.dryRun) {
-        throw new DryRunRollback("Dry run: rolling back.");
-      }
-    });
-  } catch (error) {
-    if (!(error instanceof DryRunRollback)) {
-      throw error;
-    }
-  }
+  await inImportTransaction(options.db, options.dryRun, async (trx) => {
+    connections = await importPlans(trx, options, plans, counts);
+  });
   return {
     dryRun: options.dryRun,
     connections,

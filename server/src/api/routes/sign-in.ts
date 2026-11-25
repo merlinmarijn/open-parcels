@@ -6,8 +6,8 @@ import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema } from "../errors.js";
+import { idParams, providerKindSchema } from "../schemas.js";
 
-const idParams = z.object({ id: z.uuid() });
 const attemptParams = z.object({ id: z.uuid(), attempt: z.uuid() });
 
 const message = z.string().optional();
@@ -78,7 +78,7 @@ const flowSchema = z.object({
   id: z.string(),
   label: z.string(),
   type: z.enum(["none", "credentials", "api_key", "interactive"]),
-  kinds: z.array(z.enum(["account", "tracking", "shop"])),
+  kinds: z.array(providerKindSchema),
   conditional: z.boolean(),
   secret_schema: z
     .unknown()
@@ -268,93 +268,6 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
       if (!(await signIn.cancel(request.params.id, request.params.attempt))) {
         throw new ApiError(404, "not_found", "The sign-in attempt was not found.");
       }
-      return reply.code(204).send(null);
-    },
-  );
-
-  registerPastedRoutes(app, services);
-}
-
-/** The original two pasted-link routes, kept for existing clients. */
-function registerPastedRoutes(app: TypedApp, services: Services): void {
-  const admin = requireScope("admin");
-  const { signIn } = services;
-
-  app.post(
-    "/api/v1/connections/:id/sign-in/start",
-    {
-      preHandler: admin,
-      schema: {
-        tags: ["connections"],
-        summary: "Start a pasted-link sign-in: returns the address to open in your browser.",
-        params: idParams,
-        response: {
-          200: z.object({ url: z.string() }),
-          400: errorBodySchema,
-          404: errorBodySchema,
-          503: errorBodySchema,
-        },
-      },
-    },
-    async (request) => {
-      const view = await signIn.start(request.params.id).catch(failWith(null));
-      if (view.status === "step" && view.step.kind === "open_url") {
-        return { url: view.step.url };
-      }
-      if (view.status === "step") {
-        await signIn.cancel(request.params.id, view.attemptId);
-      }
-      throw new ApiError(
-        400,
-        "invalid_connection",
-        "This connection does not sign in with a pasted link; use the sign-in attempts.",
-      );
-    },
-  );
-
-  app.post(
-    "/api/v1/connections/:id/sign-in/finish",
-    {
-      preHandler: admin,
-      schema: {
-        tags: ["connections"],
-        summary: "Finish a pasted-link sign-in with the address the browser ended on.",
-        params: idParams,
-        body: z.object({ pasted: z.string().min(1).max(8192) }),
-        response: { 204: z.null(), 400: errorBodySchema, 404: errorBodySchema },
-      },
-    },
-    async (request, reply) => {
-      const attempt = await signIn.current(request.params.id);
-      const view =
-        attempt === undefined
-          ? null
-          : await signIn
-              .continue(request.params.id, attempt, { pasted: request.body.pasted })
-              .catch((error: unknown) => {
-                if (!(error instanceof SignInError)) {
-                  throw error;
-                }
-                if (error.code === "sign_in_expired") {
-                  return null;
-                }
-                throw new ApiError(
-                  400,
-                  "sign_in_failed",
-                  "The sign-in did not work. Start again and paste the full address from the browser's address bar.",
-                );
-              });
-      if (view === null) {
-        throw new ApiError(
-          400,
-          "sign_in_expired",
-          "Start the sign-in again; the previous attempt expired.",
-        );
-      }
-      if (view.status !== "done") {
-        throw new ApiError(400, "sign_in_failed", "This sign-in needs more steps.");
-      }
-      services.scheduler.wake();
       return reply.code(204).send(null);
     },
   );

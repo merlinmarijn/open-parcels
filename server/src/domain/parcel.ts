@@ -18,6 +18,18 @@ export const PARCEL_STATUSES = [
 export type ParcelStatus = (typeof PARCEL_STATUSES)[number];
 export const parcelStatusSchema = z.enum(PARCEL_STATUSES);
 
+/** A stored status, or null when the column is empty or holds a value this version does not know. */
+export function parseStatus(value: string | null): ParcelStatus | null {
+  return value !== null && PARCEL_STATUSES.includes(value as ParcelStatus)
+    ? (value as ParcelStatus)
+    : null;
+}
+
+/** A stored status, with "unknown" for an empty or unknown value. */
+export function statusOrUnknown(value: string | null): ParcelStatus {
+  return parseStatus(value) ?? "unknown";
+}
+
 export const DIRECTIONS = ["receiving", "sending"] as const;
 export type Direction = (typeof DIRECTIONS)[number];
 
@@ -94,11 +106,14 @@ export const locationSchema = z.object({
 });
 export type Location = z.infer<typeof locationSchema>;
 
+/** Every connection kind: the providers' and the inbox. */
+export const connectionKindSchema = z.enum(["account", "tracking", "shop", "mail"]);
+
 export const parcelConnectionRefSchema = z.object({
   connection_id: z.string(),
   provider: z.string(),
   label: z.string(),
-  kind: z.enum(["account", "tracking", "shop", "mail"]),
+  kind: connectionKindSchema,
   role: z.enum(["primary", "handoff", "mail"]),
   last_seen_at: isoDateTime,
 });

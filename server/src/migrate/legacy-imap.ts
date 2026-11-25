@@ -108,7 +108,7 @@ function bagsOf(record: Bag): Bag[] {
   return bags;
 }
 
-export type ImapParse =
+type ImapParse =
   | { readonly ok: true; readonly config: MailConfig; readonly secret: MailSecret }
   | { readonly ok: false; readonly reason: string };
 

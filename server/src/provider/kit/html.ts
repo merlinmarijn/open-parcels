@@ -66,7 +66,7 @@ export function textOf(fragment: string): string {
 }
 
 /** Attributes of one tag: lower-cased names, unescaped values; the first of a name wins. */
-export function attributes(source: string): Map<string, string> {
+function attributes(source: string): Map<string, string> {
   const result = new Map<string, string>();
   for (const match of source.matchAll(/([\w:-]+)\s*=\s*(?:"([^"]*)"|'([^']*)'|([^\s"'>]+))/g)) {
     const name = match[1]?.toLowerCase();

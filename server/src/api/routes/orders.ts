@@ -5,8 +5,7 @@ import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { errorBodySchema, notFound } from "../errors.js";
-
-const idParams = z.object({ id: z.uuid() });
+import { idParams, markNextPage, pageQuery } from "../schemas.js";
 
 const LIFECYCLE =
   "An order's `status` is derived from its parcels: `ordered` (nothing shipped yet), " +
@@ -38,8 +37,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
           "carries the `X-Next-Offset` header.",
         querystring: z.object({
           view: z.enum(ORDER_VIEWS).default("open"),
-          limit: z.coerce.number().int().min(1).max(500).optional(),
-          offset: z.coerce.number().int().min(0).optional(),
+          ...pageQuery(500),
         }),
         response: { 200: z.array(orderSchema) },
       },
@@ -48,9 +46,7 @@ export function registerOrderRoutes(app: TypedApp, services: Services): void {
       const limit = request.query.limit ?? ORDER_PAGE_DEFAULT;
       const offset = request.query.offset ?? 0;
       const page = await services.orders.list({ view: request.query.view, limit, offset });
-      if (page.more) {
-        void reply.header("x-next-offset", String(offset + limit));
-      }
+      markNextPage(reply, offset, limit, page.more);
       return page.orders;
     },
   );

@@ -7,7 +7,8 @@ const PARCEL_TIMES = ["status_at", "delivered_at", "expected_from", "expected_to
 
 /**
  * Rewrites times stored with an offset (`2026-11-18T14:30:00+01:00`) or in a shorter UTC form
- * (`…14:30:00Z`) as canonical UTC (`…13:30:00.000Z`), the one form text comparisons order right. History entries keep their identity: an entry deduplicated on its time
+ * (`…14:30:00Z`) as canonical UTC (`…13:30:00.000Z`), the one form text comparisons order right.
+ * History entries keep their identity: an entry deduplicated on its time
  * gets the fingerprint the UTC time gives, and an entry that then equals one already stored is
  * dropped. Idempotent; returns how many values were rewritten.
  */

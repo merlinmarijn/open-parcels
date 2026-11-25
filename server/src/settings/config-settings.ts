@@ -10,6 +10,7 @@ import {
   toConfig,
   type AppConfig,
   type ApplyMode,
+  type LiveAppConfig,
   type SettingKey,
   type SettingKind,
   type SettingValue,
@@ -63,7 +64,7 @@ export class ConfigSettings {
     private readonly clock: Clock,
     private readonly logger: Logger,
     /** The shared config object; changed in place. */
-    private readonly config: AppConfig,
+    private readonly config: LiveAppConfig,
     /** Called after a live setting changed, for what is not read from `config` on use. */
     private readonly onChange?: (key: SettingKey, config: AppConfig) => void,
   ) {

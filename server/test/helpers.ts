@@ -13,7 +13,7 @@ import { MIGRATIONS, migrateToLatest, openDatabase } from "../src/db/database.js
 import type { Database } from "../src/db/schema.js";
 import type { RegisteredProvider } from "../src/engine/registry.js";
 import type { MailboxClientFactory, MailInterpreter } from "../src/mail/types.js";
-import type { FetchLike } from "../src/provider/http.js";
+import type { FetchLike } from "../src/net/guarded-fetch.js";
 import { createServices, repairOnStart, type Services } from "../src/services.js";
 
 /**

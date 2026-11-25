@@ -79,7 +79,47 @@ export interface SignInDeps {
   readonly exclusive?: <T>(connectionId: string, work: () => Promise<T>) => Promise<T>;
 }
 
-const storedSchema = z.object({ state: z.unknown(), step: z.looseObject({ kind: z.string() }) });
+const message = z.string().exactOptional();
+/** A stored step, checked against the shape providers return before it is used again. */
+const stepSchema = z.discriminatedUnion("kind", [
+  z.object({
+    kind: z.literal("form"),
+    fields: z.array(
+      z.object({
+        name: z.string(),
+        label: z.string(),
+        type: z.enum(["text", "email", "password", "tel"]),
+      }),
+    ),
+    message,
+  }),
+  z.object({
+    kind: z.literal("open_url"),
+    url: z.string(),
+    message,
+    redirectPrefix: z.string().exactOptional(),
+    resumeUrl: z.string().exactOptional(),
+  }),
+  z.object({ kind: z.literal("email_link"), destination: z.string().nullable(), message }),
+  z.object({
+    kind: z.literal("otp_code"),
+    channel: z.enum(["sms", "email", "app", "other"]),
+    destination: z.string().nullable(),
+    message,
+  }),
+  z.object({
+    kind: z.literal("choose_method"),
+    options: z.array(z.object({ id: z.string(), label: z.string() })),
+    message,
+  }),
+  z.object({
+    kind: z.literal("await_approval"),
+    message: z.string(),
+    pollIntervalSeconds: z.number(),
+    timeoutSeconds: z.number(),
+  }),
+]) satisfies z.ZodType<SignInStep>;
+const storedSchema = z.object({ state: z.unknown(), step: stepSchema });
 
 const attemptAad = (attemptId: string, connectionId: string): string =>
   `sign-in:${attemptId}:${connectionId}`;
@@ -259,17 +299,6 @@ export class SignInService {
       .where("connection_id", "=", connectionId)
       .executeTakeFirst();
     return result.numDeletedRows > 0n;
-  }
-
-  /** The connection's current attempt, for the single-step compatibility routes. */
-  async current(connectionId: string): Promise<string | undefined> {
-    const row = await this.deps.db
-      .selectFrom("sign_in_attempts")
-      .select("id")
-      .where("connection_id", "=", connectionId)
-      .orderBy("created_at", "desc")
-      .executeTakeFirst();
-    return row?.id;
   }
 
   async #connection(
@@ -453,7 +482,7 @@ export class SignInService {
       await this.cancel(connectionId, attemptId);
       throw new SignInError("sign_in_expired", "Start the sign-in again; this attempt is gone.");
     }
-    const step = stored.step as SignInStep;
+    const { step } = stored;
     if (Date.parse(row.expires_at) <= this.deps.clock.now().getTime()) {
       await this.cancel(connectionId, attemptId);
       throw polling && step.kind === "await_approval"

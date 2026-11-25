@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { hermes } from "../../src/carriers/hermes/index.js";
 import { register } from "../../src/engine/registry.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
-import type { FetchLike } from "../../src/provider/http.js";
+import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, html, json } from "./harness.js";
 
 // Made-up codes and values only.

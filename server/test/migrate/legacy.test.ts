@@ -3,12 +3,8 @@ import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { secretAad } from "../../src/engine/connections.js";
-import {
-  carrierId,
-  importLegacy,
-  parseDecrypted,
-  resolveLegacyCarrier,
-} from "../../src/migrate/legacy.js";
+import { importLegacy, parseDecrypted } from "../../src/migrate/legacy.js";
+import { carrierId, resolveLegacyCarrier } from "../../src/migrate/legacy-carrier.js";
 import { parseLegacyImap } from "../../src/migrate/legacy-imap.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 

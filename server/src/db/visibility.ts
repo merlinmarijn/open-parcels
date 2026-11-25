@@ -1,5 +1,5 @@
 import type { ExpressionBuilder, SqlBool, Expression } from "kysely";
-import type { Database } from "./schema.js";
+import type { ConnectionTable, Database } from "./schema.js";
 
 /**
  * A parcel shows unless every connection it came from is disabled. One without any connection (an old
@@ -79,4 +79,19 @@ export function returnVisible(eb: ExpressionBuilder<Database, "returns">): Expre
       ),
     ]),
   ]);
+}
+
+/** The parcel is linked to a connection of one of these kinds. */
+export function linkedToKind(
+  eb: ExpressionBuilder<Database, "parcels">,
+  kinds: readonly ConnectionTable["kind"][],
+): Expression<SqlBool> {
+  return eb.exists(
+    eb
+      .selectFrom("parcel_connections as kind_pc")
+      .innerJoin("connections as kind_c", "kind_c.id", "kind_pc.connection_id")
+      .select("kind_pc.parcel_id")
+      .whereRef("kind_pc.parcel_id", "=", "parcels.id")
+      .where("kind_c.kind", "in", kinds),
+  );
 }

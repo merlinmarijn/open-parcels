@@ -1,6 +1,7 @@
 import { findCarrier, loadRules } from "open-parcels-rules";
 import { BUILTIN_CARRIERS } from "../engine/builtin-carriers.js";
 import { detectCarrier, isProvider, trackable } from "../engine/detect.js";
+import { text } from "./shared.js";
 
 /**
  * Old courier values that name no carrier: the old app's placeholders, aggregators it looked
@@ -26,12 +27,8 @@ const SHOP_CARRIER: Readonly<Record<string, string>> = {
 
 const UNKNOWN = "unknown";
 
-function text(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
-}
-
 /** Lower-case, accent-free, words joined by `_`: the shape of every provider id. */
-export function snakeCase(value: string): string {
+function snakeCase(value: string): string {
   return value
     .normalize("NFD")
     .replace(/\p{M}/gu, "")

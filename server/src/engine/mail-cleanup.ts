@@ -6,14 +6,15 @@ import {
   plausibleEmailTrackingNumber,
   type Rules,
 } from "open-parcels-rules";
-import type { Clock } from "../clock.js";
+import { isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
+import { linkedToKind } from "../db/visibility.js";
 import { appendParcelEvents } from "./repair-events.js";
 
 /** Settings key that marks the one-off cleanup as done. */
-export const MAIL_CLEANUP_KEY = "cleanup.mail-false-positives.v1";
+const MAIL_CLEANUP_KEY = "cleanup.mail-false-positives.v1";
 
-export type MailCleanupReason = "placeholder_or_pattern" | "ignored_mail";
+type MailCleanupReason = "placeholder_or_pattern" | "ignored_mail";
 
 export interface MailCleanupResult {
   /** False when an earlier start already ran it. */
@@ -37,7 +38,7 @@ function ignoredSubject(rules: Rules, candidate: Candidate): boolean {
   );
 }
 
-export function cleanupReason(rules: Rules, candidate: Candidate): MailCleanupReason | null {
+function cleanupReason(rules: Rules, candidate: Candidate): MailCleanupReason | null {
   if (!plausibleEmailTrackingNumber(rules, candidate.carrier, candidate.trackingNumber)) {
     return "placeholder_or_pattern";
   }
@@ -56,27 +57,7 @@ async function candidates(db: Kysely<Database>): Promise<Candidate[]> {
     // A mail made it; no account or shop lists it. The carrier's tracking connection, which startup
     // repair links to every parcel, counts only through lookup_state.
     .where((eb) =>
-      eb
-        .exists(
-          eb
-            .selectFrom("parcel_connections")
-            .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
-            .select("parcel_connections.parcel_id")
-            .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
-            .where("connections.kind", "=", "mail"),
-        )
-        .and(
-          eb.not(
-            eb.exists(
-              eb
-                .selectFrom("parcel_connections")
-                .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
-                .select("parcel_connections.parcel_id")
-                .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
-                .where("connections.kind", "in", ["account", "shop"]),
-            ),
-          ),
-        ),
+      eb.and([linkedToKind(eb, ["mail"]), eb.not(linkedToKind(eb, ["account", "shop"]))]),
     )
     .execute();
   if (rows.length === 0) return [];
@@ -123,7 +104,7 @@ export async function cleanupMailFalsePositives(
   if (done !== undefined) {
     return { ran: false, archived, boilerplateItemsRemoved: 0 };
   }
-  const now = clock.now().toISOString();
+  const now = isoNow(clock);
   const found = await candidates(db);
   const items = await db.selectFrom("items").select(["id", "title"]).execute();
   const boilerplate = items.filter((item) => isBoilerplateItemTitle(item.title)).map((i) => i.id);

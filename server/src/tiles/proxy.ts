@@ -1,6 +1,7 @@
 import { mkdir, readdir, readFile, rename, rm, stat, utimes, writeFile } from "node:fs/promises";
 import path from "node:path";
-import { readCapped } from "../images/proxy.js";
+import { pruneFiles, type CachedFile } from "../fs/cache.js";
+import { readCapped } from "../net/body.js";
 import { isNonPublicHostLiteral } from "../net/address.js";
 import { guardedFetch } from "../net/guarded-fetch.js";
 import { BUILTIN_LAYERS, tileUrl, type TileLayerDef } from "./layers.js";
@@ -222,18 +223,10 @@ export class TileProxy {
     const maxAge = this.#options.maxAgeMs ?? DEFAULT_MAX_AGE_MS;
     const budget = this.#options.maxCacheBytes ?? DEFAULT_CACHE_BYTES;
     const files = await listTiles(this.#options.cacheDir);
-    let total = files.reduce((sum, file) => sum + file.size, 0);
-    let removed = 0;
-    for (const file of files.sort((a, b) => a.mtimeMs - b.mtimeMs)) {
-      if (now - file.mtimeMs <= maxAge && total <= budget) {
-        break;
-      }
+    return pruneFiles(files, { maxAge: { ms: maxAge, now }, maxBytes: budget }, async (file) => {
       await rm(file.path, { force: true });
       await rm(metaFile(file.path), { force: true });
-      total -= file.size;
-      removed += 1;
-    }
-    return removed;
+    });
   }
 
   async #acquire(): Promise<void> {
@@ -343,7 +336,7 @@ async function readMeta(file: string): Promise<TileMeta | null> {
   }
 }
 
-async function listTiles(root: string): Promise<{ path: string; size: number; mtimeMs: number }[]> {
+async function listTiles(root: string): Promise<CachedFile[]> {
   let entries: string[];
   try {
     entries = await readdir(root, { recursive: true });

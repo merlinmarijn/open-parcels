@@ -1,3 +1,4 @@
+import { escapeHtml } from "../net/html.js";
 import { existsSync, readFileSync } from "node:fs";
 import path from "node:path";
 import fastifyStatic from "@fastify/static";
@@ -67,16 +68,12 @@ export function basePath(request: FastifyRequest, trustIngressPath: boolean): st
   return "/";
 }
 
-function escapeAttribute(value: string): string {
-  return value.replaceAll("&", "&amp;").replaceAll('"', "&quot;").replaceAll("<", "&lt;");
-}
-
 function sendIndex(reply: FastifyReply, template: string, base: string): FastifyReply {
   return reply
     .code(200)
     .type("text/html; charset=utf-8")
     .headers(PAGE_HEADERS)
-    .send(template.replaceAll(BASE_PLACEHOLDER, escapeAttribute(base)));
+    .send(template.replaceAll(BASE_PLACEHOLDER, escapeHtml(base)));
 }
 
 /**

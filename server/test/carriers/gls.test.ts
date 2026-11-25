@@ -2,7 +2,7 @@ import { describe, expect, it } from "vitest";
 import { gls } from "../../src/carriers/gls/index.js";
 import { register } from "../../src/engine/registry.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import type { FetchLike } from "../../src/provider/http.js";
+import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, raw } from "./harness.js";
 
 // Made-up codes, postcodes and names only.

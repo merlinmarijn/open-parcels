@@ -1,12 +1,10 @@
 import type { ExpressionBuilder, Kysely } from "kysely";
-import { isoNow, type Clock } from "../clock.js";
+import { DAY_MS, isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
 import { appendEvent } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { deleteParcels } from "../parcels/bulk-delete.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
-
-const DAY = 24 * 60 * 60 * 1000;
 
 export interface RetentionPolicy {
   /** Delivered parcels leave the default lists this many days after delivery. */
@@ -88,7 +86,7 @@ export async function applyRetention(
   presentation: Presentation = RAW_PRESENTATION,
 ): Promise<RetentionResult> {
   const now = clock.now().getTime();
-  const iso = (daysAgo: number): string => new Date(now - daysAgo * DAY).toISOString();
+  const iso = (daysAgo: number): string => new Date(now - daysAgo * DAY_MS).toISOString();
   return db.transaction().execute(async (trx) => {
     const delivered = await trx
       .selectFrom("parcels")

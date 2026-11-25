@@ -1,3 +1,4 @@
+import { escapeHtml } from "../net/html.js";
 import { createHash } from "node:crypto";
 import { isNonPublicHostLiteral } from "../net/address.js";
 
@@ -244,14 +245,6 @@ export function availableLayers(
     cartoKey === undefined ? [] : CARTO_LAYERS.map((layer) => ({ ...layer, apiKey: cartoKey }));
   const extra = custom === undefined ? null : customLayer(custom);
   return [...builtinLayers(urls), ...carto, ...(extra === null ? [] : [extra])];
-}
-
-function escapeHtml(text: string): string {
-  return text.replace(
-    /[&<>"']/g,
-    (char) =>
-      ({ "&": "&amp;", "<": "&lt;", ">": "&gt;", '"': "&quot;", "'": "&#39;" })[char] ?? char,
-  );
 }
 
 /** The upstream URL for one tile; the caller has checked the coordinates. */

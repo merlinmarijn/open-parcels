@@ -3,7 +3,7 @@ import { nzPost } from "../../src/carriers/nz_post/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { register } from "../../src/engine/registry.js";
 import type { CarrierProvider } from "../../src/provider/api.js";
-import type { FetchLike } from "../../src/provider/http.js";
+import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, inOrder, json, type Answer } from "./harness.js";
 
 /** Replies in order; once they run out, 500 with an empty JSON object. */

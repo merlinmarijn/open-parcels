@@ -5,8 +5,8 @@ import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
-
-const idParams = z.object({ id: z.uuid() });
+import { connectionKindSchema } from "../../domain/parcel.js";
+import { idParams, providerKindSchema } from "../schemas.js";
 
 /** "45 seconds", "12 minutes", "3 hours": rounded up, for a message a person reads. */
 export function waitText(seconds: number): string {
@@ -23,7 +23,7 @@ export function waitText(seconds: number): string {
 const connectionSchema = z.object({
   id: z.uuid(),
   provider: z.string(),
-  kind: z.enum(["account", "tracking", "shop", "mail"]),
+  kind: connectionKindSchema,
   label: z.string(),
   config: z.unknown(),
   has_secret: z
@@ -40,7 +40,7 @@ const carrierSchema = z.object({
   id: z.string(),
   name: z.string(),
   countries: z.array(z.string()),
-  connection_kinds: z.array(z.enum(["account", "tracking", "shop"])),
+  connection_kinds: z.array(providerKindSchema),
   fallback: z
     .boolean()
     .describe(
@@ -56,7 +56,7 @@ const carrierSchema = z.object({
         id: z.string(),
         label: z.string(),
         type: z.enum(["none", "credentials", "api_key", "interactive"]),
-        kinds: z.array(z.enum(["account", "tracking", "shop"])),
+        kinds: z.array(providerKindSchema),
         conditional: z
           .boolean()
           .describe("Applies only to some configurations; ask the connection's own flow list."),

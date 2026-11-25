@@ -447,6 +447,10 @@ function parseTrustProxy(value: string | undefined): TrustProxy {
 
 export type LogLevel = (typeof LOG_LEVELS)[number];
 
+/**
+ * The server's configuration. One object is shared by every service, and `ConfigSettings` rewrites
+ * its live settings in place when they are saved: read a field when it is needed, never copy it.
+ */
 export interface AppConfig {
   /** The environment as parsed at start-up; the base layer under settings saved in the UI. */
   readonly env: ParsedEnv;
@@ -490,6 +494,9 @@ export interface AppConfig {
     readonly builtinUrls: BuiltinUrls;
   };
 }
+
+/** `AppConfig` as its one writer, `ConfigSettings`, sees it. */
+export type LiveAppConfig = { -readonly [K in keyof AppConfig]: AppConfig[K] };
 
 export class ConfigError extends Error {
   override readonly name = "ConfigError";

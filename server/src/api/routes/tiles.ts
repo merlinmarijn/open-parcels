@@ -1,9 +1,10 @@
 import type { FastifyReply } from "fastify";
 import { z } from "zod";
 import type { Services } from "../../services.js";
-import { TILE_MAX_ZOOM, TILE_MAX_ZOOM_ANY, TileError } from "../../tiles/proxy.js";
+import { TILE_MAX_ZOOM_ANY, TileError } from "../../tiles/proxy.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
+import { ApiError } from "../errors.js";
 
 /** At the deepest zoom a column or row is below 2^zoom; anything larger is refused up front. */
 const coordinate = (maxZoom: number) =>
@@ -43,7 +44,7 @@ async function sendTile(
       .send(tile.body);
   } catch (error) {
     if (error instanceof TileError) {
-      return reply.code(error.statusCode).send({ error: "tile", message: error.message });
+      throw new ApiError(error.statusCode, "tile", error.message);
     }
     throw error;
   }
@@ -98,25 +99,6 @@ export function registerTileRoutes(app: TypedApp, services: Services): void {
     },
     async (request, reply) => {
       return sendTile(services, reply, request.params);
-    },
-  );
-
-  app.get(
-    "/tiles/:z/:x/:y.png",
-    {
-      preHandler: requireScope("read"),
-      schema: {
-        tags: ["map"],
-        summary: "An OpenStreetMap tile (older clients; same as layer osm).",
-        params: z.object({
-          z: z.coerce.number().int().min(0).max(TILE_MAX_ZOOM),
-          x: coordinate(TILE_MAX_ZOOM),
-          y: coordinate(TILE_MAX_ZOOM),
-        }),
-      },
-    },
-    async (request, reply) => {
-      return sendTile(services, reply, { layer: "osm", ...request.params });
     },
   );
 }

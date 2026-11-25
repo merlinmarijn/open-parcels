@@ -1,11 +1,11 @@
 import { isIP } from "node:net";
 import { getPublicSuffix, type CookieJar } from "tough-cookie";
-import type { Clock } from "../clock.js";
+import type { Clock, Sleep } from "../clock.js";
 import { isNonPublicHostLiteral } from "../net/address.js";
-import { guardedFetch } from "../net/guarded-fetch.js";
+import { guardedFetch, type FetchLike } from "../net/guarded-fetch.js";
+import { userAgent } from "../version.js";
 import { RateLimitedError, TransientError } from "./errors.js";
 
-export const DEFAULT_USER_AGENT = "open-parcels/2 (+https://github.com/open-parcels/open-parcels)";
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
 
@@ -14,15 +14,6 @@ export interface HostLimit {
   readonly intervalMs: number;
   readonly burst: number;
 }
-
-export type FetchLike = (input: URL, init: RequestInit) => Promise<Response>;
-
-/** Sleep that tests can replace; the scheduler's fake clock does not advance real timers. */
-export type Sleep = (ms: number) => Promise<void>;
-export const realSleep: Sleep = (ms) =>
-  new Promise((resolve) => {
-    setTimeout(resolve, ms);
-  });
 
 /** Token bucket per host, shared by every connection of the same carrier. */
 export class HostLimiter {
@@ -250,7 +241,7 @@ export class ProviderHttp {
     await this.limiter.acquire(url.hostname, limit);
     const headers = new Headers(hop.headers);
     if (!headers.has("user-agent")) {
-      headers.set("user-agent", this.policy.userAgent?.value ?? DEFAULT_USER_AGENT);
+      headers.set("user-agent", this.policy.userAgent?.value ?? userAgent());
     }
     let response: Response;
     try {

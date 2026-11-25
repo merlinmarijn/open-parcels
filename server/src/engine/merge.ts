@@ -26,12 +26,6 @@ export interface ParcelState {
  */
 export type Authority = "carrier" | "secondary";
 
-export interface ResolvedStatus {
-  readonly status: ParcelStatus;
-  /** Raw value that did not map, so the caller can warn once; null when the latest value mapped. */
-  readonly unmapped: string | null;
-}
-
 function newest(events: readonly SnapshotEvent[]): SnapshotEvent | undefined {
   let best: SnapshotEvent | undefined;
   for (const event of events) {
@@ -63,18 +57,7 @@ function ownSignal(snapshot: ParcelSnapshot): ParcelStatus | null {
   return newestMapped(snapshot.history)?.status ?? null;
 }
 
-/**
- * The suite's rule for unknown statuses: use the mapped latest value; otherwise the newest
- * history entry that maps; only then `unknown`.
- */
-export function resolveSnapshotStatus(snapshot: ParcelSnapshot): ResolvedStatus {
-  return {
-    status: ownSignal(snapshot) ?? "unknown",
-    unmapped: snapshot.status === null ? snapshot.rawStatus : null,
-  };
-}
-
-export function newestEventAt(snapshot: ParcelSnapshot): string | null {
+function newestEventAt(snapshot: ParcelSnapshot): string | null {
   return newest(snapshot.history)?.at ?? null;
 }
 

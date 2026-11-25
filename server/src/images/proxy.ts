@@ -7,6 +7,8 @@ import path from "node:path";
 import type { Logger } from "pino";
 import { fetch as undiciFetch } from "undici";
 import { hostAllowed, isPrivateAddress } from "../net/address.js";
+import { pruneFiles } from "../fs/cache.js";
+import { readCapped, type MinimalResponse } from "../net/body.js";
 import { guardedAgent } from "../net/guarded-fetch.js";
 
 const MAX_IMAGE_BYTES = 5 * 1024 * 1024;
@@ -26,21 +28,11 @@ export class ImageProxyError extends Error {
   }
 }
 
-export { isPrivateAddress };
-
 export type Resolver = (host: string) => Promise<string[]>;
 const dnsResolver: Resolver = async (host) =>
   (await lookup(host, { all: true })).map((entry) => entry.address);
 
 /** The parts of a fetch response the proxy uses; lets tests supply a fake. */
-export interface MinimalResponse {
-  readonly status: number;
-  readonly ok: boolean;
-  readonly headers: { get(name: string): string | null };
-  /** Read as a stream when present, so an oversized body is cut off instead of buffered. */
-  readonly body?: ReadableStream<Uint8Array> | null;
-  arrayBuffer(): Promise<ArrayBuffer>;
-}
 export type ImageFetch = (
   url: URL,
   init: { headers: Record<string, string> },
@@ -66,42 +58,6 @@ export interface ImageProxyOptions {
    * included, must match. Unset allows any public host (tests only).
    */
   readonly allowedHosts?: () => Iterable<string>;
-}
-
-/**
- * Reads at most `cap` bytes: a declared Content-Length over the cap is refused before reading,
- * and a stream is cancelled as soon as it passes the cap, so nothing large is ever buffered.
- * `tooLarge` makes the error thrown past the cap (the tile proxy has its own).
- */
-export async function readCapped(
-  response: MinimalResponse,
-  cap: number,
-  tooLarge: () => Error = () => new ImageProxyError(502, "The image is too large."),
-): Promise<Buffer> {
-  const declared = Number(response.headers.get("content-length") ?? Number.NaN);
-  if (Number.isFinite(declared) && declared > cap) {
-    await response.body?.cancel();
-    throw tooLarge();
-  }
-  if (response.body === undefined || response.body === null) {
-    const body = Buffer.from(await response.arrayBuffer());
-    if (body.length > cap) {
-      throw tooLarge();
-    }
-    return body;
-  }
-  const reader = response.body.getReader();
-  const chunks: Uint8Array[] = [];
-  let total = 0;
-  for (let part = await reader.read(); !part.done; part = await reader.read()) {
-    total += part.value.byteLength;
-    if (total > cap) {
-      await reader.cancel();
-      throw tooLarge();
-    }
-    chunks.push(part.value);
-  }
-  return Buffer.concat(chunks);
 }
 
 /**
@@ -221,7 +177,11 @@ export class ImageProxy {
       if (!ALLOWED_TYPES.has(type)) {
         throw new ImageProxyError(502, "The remote file is not a supported image.");
       }
-      const body = await readCapped(response, MAX_IMAGE_BYTES);
+      const body = await readCapped(
+        response,
+        MAX_IMAGE_BYTES,
+        () => new ImageProxyError(502, "The image is too large."),
+      );
       await this.#store(name, body, type);
       return { body, type };
     }
@@ -242,24 +202,16 @@ export class ImageProxy {
       entries
         .filter((entry) => entry.endsWith(".bin"))
         .map(async (entry) => {
-          const info = await stat(path.join(this.#cacheDir, entry));
-          return { entry, size: info.size, mtime: info.mtimeMs };
+          const file = path.join(this.#cacheDir, entry);
+          const info = await stat(file);
+          return { path: file, size: info.size, mtimeMs: info.mtimeMs };
         }),
     );
-    let total = files.reduce((sum, file) => sum + file.size, 0);
-    let removed = 0;
-    for (const file of files.sort((a, b) => a.mtime - b.mtime)) {
-      if (total <= this.#maxCacheBytes) {
-        break;
-      }
-      const base = file.entry.slice(0, -4);
-      await unlink(path.join(this.#cacheDir, file.entry));
-      await unlink(path.join(this.#cacheDir, `${base}.type`)).catch((error: unknown) => {
+    return pruneFiles(files, { maxBytes: this.#maxCacheBytes }, async (file) => {
+      await unlink(file.path);
+      await unlink(`${file.path.slice(0, -4)}.type`).catch((error: unknown) => {
         this.options.logger.debug({ err: error }, "Image type file was already gone.");
       });
-      total -= file.size;
-      removed += 1;
-    }
-    return removed;
+    });
   }
 }

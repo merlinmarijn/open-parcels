@@ -15,8 +15,7 @@ import { appendEvent } from "../events/bus.js";
 import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema, inboxLabel } from "../mail/types.js";
 import { fixesCarrier, resolveLegacyCarrier } from "./legacy-carrier.js";
 import { DELIBERATELY_SKIPPED, isMailService, parseLegacyImap, serviceKey } from "./legacy-imap.js";
-
-export { carrierId, resolveLegacyCarrier } from "./legacy-carrier.js";
+import { inImportTransaction, text } from "./shared.js";
 
 /** Statuses of the pre-rewrite app, mapped to the canonical list. */
 const STATUS_MAP: Readonly<Record<string, ParcelStatus>> = {
@@ -78,10 +77,6 @@ export interface LegacyImportOptions {
   readonly dryRun: boolean;
 }
 
-class DryRunRollback extends Error {
-  override readonly name = "DryRunRollback";
-}
-
 type Row = Record<string, unknown>;
 
 /** Old timestamps are Unix seconds (milliseconds in a few rows); returns ISO or null. */
@@ -99,10 +94,6 @@ function parseJson(value: string): unknown {
     // Unreadable stored JSON counts as nothing; the caller's schema check then fails.
     return undefined;
   }
-}
-
-function text(value: unknown): string | null {
-  return typeof value === "string" && value.trim() !== "" ? value.trim() : null;
 }
 
 function decryptLegacy(encrypted: string, key: Buffer): string {
@@ -340,19 +331,27 @@ interface ImportCredentials {
   readonly settings: Readonly<Record<string, unknown>>;
 }
 
-/** Why a credential row is not imported before decrypting it, or null to go on. */
-function skipReason(service: string, key: Buffer | undefined, encrypted: string | null) {
+/** Why a credential row is not imported, checked before decrypting it; or what to decrypt it with. */
+function decryptable(
+  service: string,
+  key: Buffer | undefined,
+  encrypted: string | null,
+): { readonly skip: string } | { readonly key: Buffer; readonly encrypted: string } {
   const deliberate = DELIBERATELY_SKIPPED[serviceKey(service)];
   if (deliberate !== undefined) {
-    return deliberate;
+    return { skip: deliberate };
   }
   if (!isMailService(service)) {
-    return "No connection type takes this service's stored credentials; add it again by hand.";
+    return {
+      skip: "No connection type takes this service's stored credentials; add it again by hand.",
+    };
   }
   if (encrypted === null) {
-    return "The credential row is empty.";
+    return { skip: "The credential row is empty." };
   }
-  return key === undefined ? "No old key given (OPENPARCELS_LEGACY_KEY)." : null;
+  return key === undefined
+    ? { skip: "No old key given (OPENPARCELS_LEGACY_KEY)." }
+    : { key, encrypted };
 }
 
 /**
@@ -389,14 +388,14 @@ async function importCredentials(
   for (const row of input.rows) {
     const service = text(row["service"] ?? row["type"] ?? row["name"]) ?? "unknown";
     const encrypted = text(row["encrypted_data"] ?? row["data"] ?? row["value"]);
-    const reason = skipReason(service, input.key, encrypted);
-    if (reason !== null || input.key === undefined || encrypted === null) {
-      skipped.push({ service, reason: reason ?? "No credential." });
+    const credential = decryptable(service, input.key, encrypted);
+    if ("skip" in credential) {
+      skipped.push({ service, reason: credential.skip });
       continue;
     }
     let plain: string;
     try {
-      plain = decryptLegacy(encrypted, input.key);
+      plain = decryptLegacy(credential.encrypted, credential.key);
     } catch {
       // Wrong key or damaged data: counted and named in the report; it can be added by hand.
       counters.undecryptableCredentials += 1;
@@ -545,11 +544,11 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
     carriers: {},
   };
   const skipped: SkippedCredential[] = [];
-  let settingKeys: string[] = [];
+  let settingKeys: string[];
   try {
     const settingRows = readAll(legacy, "settings");
     settingKeys = settingRows.map((row) => String(row["key"]));
-    await options.db.transaction().execute(async (trx) => {
+    await inImportTransaction(options.db, options.dryRun, async (trx) => {
       const now = isoNow(options.clock);
       const legacyParcels = readAll(legacy, "parcels");
       const orders = await importOrders(
@@ -581,14 +580,7 @@ export async function importLegacy(options: LegacyImportOptions): Promise<Legacy
         trackingConnectionIn(trx, new ProviderRegistry(BUILTIN_CARRIERS), options.clock),
       );
       counters.linkedParcels = linked.parcels;
-      if (options.dryRun) {
-        throw new DryRunRollback("Dry run: rolling back.");
-      }
     });
-  } catch (error) {
-    if (!(error instanceof DryRunRollback)) {
-      throw error;
-    }
   } finally {
     legacy.close();
   }

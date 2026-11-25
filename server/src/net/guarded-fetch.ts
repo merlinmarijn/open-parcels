@@ -41,6 +41,9 @@ const NULL_BODY = new Set([101, 103, 204, 205, 304]);
  * follow, hop by hop, so each hop is checked again. The answer is handed back as a standard
  * Response, its body still streaming.
  */
+/** `fetch` as the outbound clients call it; tests pass their own. */
+export type FetchLike = (input: URL, init: RequestInit) => Promise<Response>;
+
 export async function guardedFetch(input: URL, init: RequestInit): Promise<Response> {
   const body = init.body ?? undefined;
   if (body !== undefined && typeof body !== "string" && !(body instanceof URLSearchParams)) {

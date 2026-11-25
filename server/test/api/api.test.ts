@@ -389,6 +389,10 @@ describe("parcels", () => {
     }
     expect(seen).toHaveLength(5);
     expect(new Set(seen).size).toBe(5);
+    // A full last page says no more follows, instead of sending the client to an empty one (OP-053).
+    const last = await pageAt("3");
+    expect(last.json<unknown[]>()).toHaveLength(2);
+    expect(last.headers["x-next-offset"]).toBeUndefined();
   });
 
   it("validates input", async () => {

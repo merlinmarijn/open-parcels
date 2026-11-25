@@ -1,6 +1,7 @@
 import type { Kysely } from "kysely";
 import { isoNow, type Clock } from "../clock.js";
 import type { Database } from "../db/schema.js";
+import { linkedToKind } from "../db/visibility.js";
 import { appendParcelEvents } from "./repair-events.js";
 
 /**
@@ -29,18 +30,7 @@ export async function reviveTrackingRemovals(db: Kysely<Database>, clock: Clock)
             .where("parcel_connections.missing_since", "is not", null),
         ),
       )
-      .where((eb) =>
-        eb.not(
-          eb.exists(
-            eb
-              .selectFrom("parcel_connections")
-              .innerJoin("connections", "connections.id", "parcel_connections.connection_id")
-              .select("parcel_connections.parcel_id")
-              .whereRef("parcel_connections.parcel_id", "=", "parcels.id")
-              .where("connections.kind", "!=", "tracking"),
-          ),
-        ),
-      )
+      .where((eb) => eb.not(linkedToKind(eb, ["account", "shop", "mail"])))
       .execute();
     if (revivable.length > 0) {
       await trx

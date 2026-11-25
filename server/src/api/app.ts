@@ -1,3 +1,4 @@
+import { VERSION } from "../version.js";
 import cookie from "@fastify/cookie";
 import swagger from "@fastify/swagger";
 import Fastify, {
@@ -159,7 +160,7 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
       info: {
         title: "open-parcels",
         description: "Self-hosted parcel and order tracking.",
-        version: "2.0.0",
+        version: VERSION,
       },
       components: {
         securitySchemes: {

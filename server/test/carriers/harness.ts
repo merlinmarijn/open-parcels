@@ -6,12 +6,8 @@
 import { register, type BaseContext, type RegisteredProvider } from "../../src/engine/registry.js";
 import { NOT_FILED_AS_TRACKED } from "../../src/engine/tracked.js";
 import type { CarrierProvider, FetchResult, ProviderContext } from "../../src/provider/api.js";
-import {
-  HostLimiter,
-  ProviderHttp,
-  type FetchLike,
-  type HttpPolicy,
-} from "../../src/provider/http.js";
+import { HostLimiter, ProviderHttp, type HttpPolicy } from "../../src/provider/http.js";
+import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { FakeClock } from "../helpers.js";
 
 /** One recorded request. `key` is `METHOD host/path` (hostname, no port, no query). */

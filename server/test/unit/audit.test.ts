@@ -5,7 +5,7 @@ import { describe, expect, it } from "vitest";
 import { waitText } from "../../src/api/routes/connections.js";
 import { ConfigError, loadConfig } from "../../src/config.js";
 import { KeyedMutex } from "../../src/engine/locks.js";
-import { readCapped, type MinimalResponse } from "../../src/images/proxy.js";
+import { readCapped, type MinimalResponse } from "../../src/net/body.js";
 import { hostAllowed, isNonPublicHostLiteral, isPrivateAddress } from "../../src/net/address.js";
 import { networkCause, sameSite } from "../../src/provider/http.js";
 import { TileProxy } from "../../src/tiles/proxy.js";
@@ -84,14 +84,16 @@ function fakeResponse(
   return result;
 }
 
+const tooLarge = (): Error => new Error("too large");
+
 describe("image size cap", () => {
   it("refuses a declared length over the cap without reading, and cuts a stream at the cap", async () => {
-    await expect(readCapped(fakeResponse([], 11), 10)).rejects.toThrow("too large");
+    await expect(readCapped(fakeResponse([], 11), 10, tooLarge)).rejects.toThrow("too large");
     const endless = fakeResponse([new Uint8Array(6), new Uint8Array(6), new Uint8Array(6)]);
-    await expect(readCapped(endless, 10)).rejects.toThrow("too large");
+    await expect(readCapped(endless, 10, tooLarge)).rejects.toThrow("too large");
     expect(endless.cancelled).toBe(true);
     expect(
-      (await readCapped(fakeResponse([new Uint8Array(4), new Uint8Array(4)]), 10)).length,
+      (await readCapped(fakeResponse([new Uint8Array(4), new Uint8Array(4)]), 10, tooLarge)).length,
     ).toBe(8);
   });
 });

@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { realSleep } from "../clock.js";
+import type { FetchLike } from "../net/guarded-fetch.js";
 
 /** One place a search found. */
 export interface Place {
@@ -32,8 +34,6 @@ export function isStopPrecise(place: Place): boolean {
 export class GeocodeError extends Error {
   override readonly name = "GeocodeError";
 }
-
-type FetchLike = (input: URL, init: RequestInit) => Promise<Response>;
 
 export interface GeocoderOptions {
   /** Read per request, so a contact address saved in the UI applies at once. */
@@ -107,8 +107,7 @@ export class Geocoder {
     language: string | undefined,
   ): Promise<readonly Place[]> {
     const now = this.options.now ?? Date.now;
-    const sleep =
-      this.options.sleep ?? ((ms: number) => new Promise<void>((r) => setTimeout(r, ms)));
+    const sleep = this.options.sleep ?? realSleep;
     const wait = this.#last + MIN_INTERVAL_MS - now();
     if (wait > 0) await sleep(wait);
     this.#last = now();

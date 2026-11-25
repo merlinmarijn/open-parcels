@@ -1,3 +1,4 @@
+import { VERSION } from "../../version.js";
 import { z } from "zod";
 import { redactValue } from "../../log/redact.js";
 import type { Services } from "../../services.js";
@@ -62,7 +63,7 @@ export function registerDiagnosticsRoutes(app: TypedApp, services: Services): vo
           .executeTakeFirst(),
       ]);
       return redactValue({
-        version: "2.0.0-dev",
+        version: VERSION,
         started_at: startedAt.toISOString(),
         uptime_seconds: Math.round((services.clock.now().getTime() - startedAt.getTime()) / 1000),
         time_zone: services.config.timeZone,

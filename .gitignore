@@ -12,7 +12,6 @@ secret.key
 imap-config.json
 parsed_mails.json
 *.eml
-!tests/fixtures/**/*.eml
 *.har
 
 # Local research material and scratch space
@@ -21,29 +20,13 @@ parsed_mails.json
 .playwright-mcp/
 /packages/
 
-# --- Python ----------------------------------------------------------------------
-__pycache__/
-*.py[cod]
-.venv/
-.mypy_cache/
-.ruff_cache/
-.pytest_cache/
-.coverage
-.coverage.*
-htmlcov/
-coverage.xml
-*.egg-info/
-build/
-dist/
-
-# --- Web UI ----------------------------------------------------------------------
+# --- Build ------------------------------------------------------------------------
 node_modules/
+dist/
 *.tsbuildinfo
 .eslintcache
 .vite/
 vite.config.*.timestamp-*
-web/dist/
-src/openparcels/static/
 
 # --- Editors and OS --------------------------------------------------------------
 .vscode/

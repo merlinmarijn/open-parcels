@@ -13,7 +13,7 @@ import { forbidden, unauthorized, ApiError } from "./errors.js";
 import { isServerPath } from "./web-ui.js";
 
 export const SESSION_COOKIE = "op_session";
-export const CSRF_HEADER = "x-csrf-token";
+const CSRF_HEADER = "x-csrf-token";
 
 /** Address the Home Assistant Supervisor uses for ingress requests. */
 export const HA_INGRESS_ADDRESS = "172.30.32.2";

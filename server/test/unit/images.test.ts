@@ -4,12 +4,9 @@ import path from "node:path";
 import { randomBytes } from "node:crypto";
 import { pino } from "pino";
 import { afterEach, describe, expect, it } from "vitest";
-import {
-  ImageProxy,
-  isPrivateAddress,
-  type ImageFetch,
-  type MinimalResponse,
-} from "../../src/images/proxy.js";
+import { ImageProxy, type ImageFetch } from "../../src/images/proxy.js";
+import { isPrivateAddress } from "../../src/net/address.js";
+import type { MinimalResponse } from "../../src/net/body.js";
 
 const dirs: string[] = [];
 afterEach(() => {

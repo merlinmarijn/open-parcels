@@ -8,8 +8,7 @@ import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { fallbackCarrier } from "../../engine/fallback.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
-
-const idParams = z.object({ id: z.uuid() });
+import { idParams, markNextPage, pageQuery } from "../schemas.js";
 
 const trackingNumberField = z.string().trim().min(4).max(64);
 
@@ -35,8 +34,7 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
           carrier: z.string().max(64).optional(),
           include_archived: booleanQuery.optional(),
           include_history: booleanQuery.optional(),
-          limit: z.coerce.number().int().min(1).max(1000).optional(),
-          offset: z.coerce.number().int().min(0).optional(),
+          ...pageQuery(1000),
         }),
         response: { 200: z.array(parcelSchema) },
       },
@@ -53,15 +51,14 @@ export function registerParcelRoutes(app: TypedApp, services: Services): void {
           ...(query.include_archived === undefined
             ? {}
             : { includeArchived: query.include_archived }),
-          limit,
+          // One more than asked tells whether another page follows.
+          limit: limit + 1,
           offset,
         },
         query.include_history === true,
       );
-      if (parcels.length === limit) {
-        void reply.header("x-next-offset", String(offset + limit));
-      }
-      return parcels;
+      markNextPage(reply, offset, limit, parcels.length > limit);
+      return parcels.slice(0, limit);
     },
   );
 

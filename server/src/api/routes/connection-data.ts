@@ -3,8 +3,7 @@ import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
 import { errorBodySchema, notFound } from "../errors.js";
-
-const idParams = z.object({ id: z.uuid() });
+import { idParams } from "../schemas.js";
 
 /** Counting and clearing what a connection imported ("Clear data" on its card). */
 export function registerConnectionDataRoutes(app: TypedApp, services: Services): void {
