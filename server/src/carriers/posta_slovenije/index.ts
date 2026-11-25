@@ -19,7 +19,10 @@ const BARCODE = carrierPattern("posta_slovenije");
 const configSchema = z.object({});
 /** Tracking connections need nothing; account connections store the MojaPošta username and password. */
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;

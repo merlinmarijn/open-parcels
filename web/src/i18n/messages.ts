@@ -7,6 +7,7 @@ import { map } from "./en/map";
 import { orders } from "./en/orders";
 import { parcels } from "./en/parcels";
 import { returns } from "./en/returns";
+import { serverSettings } from "./en/server-settings";
 import { settings } from "./en/settings";
 import { shell } from "./en/shell";
 
@@ -20,6 +21,7 @@ export const en = {
   parcels,
   connections,
   settings,
+  serverSettings,
   admin,
   orders,
   returns,

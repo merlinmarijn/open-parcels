@@ -43,8 +43,20 @@ export type ApplyMode = "env" | "restart" | "live";
 export type SettingValue = string | number | boolean;
 export type SettingKind = "string" | "number" | "boolean";
 
+/** Setting groups, by id: each is a card on the Settings page, its name a web UI text. */
+export const SETTING_GROUPS = [
+  "storage",
+  "server",
+  "security",
+  "tracking",
+  "retention",
+  "backups",
+  "map",
+] as const;
+export type SettingGroup = (typeof SETTING_GROUPS)[number];
+
 interface SettingDef<S extends z.ZodType<SettingValue | undefined>> {
-  readonly group: string;
+  readonly group: SettingGroup;
   readonly description: string;
   /** Parses the text form of the value, as it comes from the environment. */
   readonly schema: S;
@@ -77,7 +89,7 @@ function setting<S extends z.ZodType<SettingValue | undefined>>(def: SettingDef<
  */
 export const SETTINGS = {
   OPENPARCELS_DATA_DIR: setting({
-    group: "Storage",
+    group: "storage",
     description: "Folder for the database, encryption key and caches.",
     schema: z.string().min(1),
     default: "/data",
@@ -85,7 +97,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_SECRET_KEY: setting({
-    group: "Storage",
+    group: "storage",
     description:
       "Base64 of 32 random bytes that encrypts stored credentials. Unset uses a key file in the data folder.",
     schema: z.string().min(1).optional(),
@@ -95,7 +107,7 @@ export const SETTINGS = {
     secret: true,
   }),
   OPENPARCELS_WEB_DIR: setting({
-    group: "Server",
+    group: "server",
     description:
       "Folder with the built web UI. Unset uses web/dist next to the server; missing means API only.",
     schema: z.string().min(1).optional(),
@@ -104,7 +116,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_HOST: setting({
-    group: "Server",
+    group: "server",
     description: "Address the server listens on.",
     schema: z.string().min(1),
     default: "0.0.0.0",
@@ -112,7 +124,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_PORT: setting({
-    group: "Server",
+    group: "server",
     description: "Port of the web UI and API.",
     schema: port,
     default: 3000,
@@ -120,7 +132,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_INGRESS_PORT: setting({
-    group: "Server",
+    group: "server",
     description: "Port of the separate Home Assistant ingress listener. Unset disables it.",
     schema: port.optional(),
     default: undefined,
@@ -128,7 +140,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_TRUST_PROXY: setting({
-    group: "Server",
+    group: "server",
     description:
       "Reverse proxies whose X-Forwarded-For is believed, so the sign-in throttle sees real client addresses: comma-separated addresses or CIDR ranges. Unset trusts nobody; never list addresses clients could connect from directly.",
     schema: z
@@ -145,7 +157,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_SECURE_COOKIES: setting({
-    group: "Server",
+    group: "server",
     description:
       "Mark session cookies Secure. Turn on when served over HTTPS only. Environment only: " +
       "turned on over plain HTTP it would block the sign-in needed to turn it off again.",
@@ -155,7 +167,7 @@ export const SETTINGS = {
     kind: "boolean",
   }),
   OPENPARCELS_ADMIN_PASSWORD: setting({
-    group: "Security",
+    group: "security",
     description:
       "Password to change anything: connections, parcels, orders, settings, tokens. A password changed on the Settings page replaces it until reset. Unset and never changed there: the first start asks for a setup code from the log.",
     schema: z.string().min(MIN_ADMIN_PASSWORD).max(MAX_PASSWORD).optional(),
@@ -166,7 +178,7 @@ export const SETTINGS = {
     ownForm: true,
   }),
   OPENPARCELS_PASSWORD: setting({
-    group: "Security",
+    group: "security",
     description:
       "Password to read: the web UI, the API, live updates, maps and images. Empty lets anyone who can reach the server read everything; changes always need the admin password.",
     schema: z.string().max(MAX_PASSWORD),
@@ -176,7 +188,7 @@ export const SETTINGS = {
     secret: true,
   }),
   OPENPARCELS_PUBLIC_URL: setting({
-    group: "Server",
+    group: "server",
     description: "Public base URL, used for links in calendar feeds.",
     schema: z.url().optional(),
     default: undefined,
@@ -184,7 +196,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_LOG_LEVEL: setting({
-    group: "Server",
+    group: "server",
     description: "How much the server logs.",
     schema: z.enum(LOG_LEVELS),
     default: "info",
@@ -193,7 +205,7 @@ export const SETTINGS = {
     choices: LOG_LEVELS,
   }),
   OPENPARCELS_TIMEZONE: setting({
-    group: "Tracking",
+    group: "tracking",
     description:
       "IANA time zone (e.g. Europe/Berlin) for the night-time quiet window, mail dates and calendar days. Unset uses TZ / the system zone.",
     schema: z
@@ -206,7 +218,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_QUIET_WINDOW: setting({
-    group: "Tracking",
+    group: "tracking",
     description: "Pause carrier polling 00:00–06:00 local time. Turn off to poll all night.",
     schema: booleanFlag,
     default: true,
@@ -214,7 +226,7 @@ export const SETTINGS = {
     kind: "boolean",
   }),
   OPENPARCELS_ARCHIVE_DAYS: setting({
-    group: "Retention",
+    group: "retention",
     description:
       "Days after delivery before a parcel is archived and its raw carrier data dropped.",
     schema: z.coerce.number().int().min(1).max(3650),
@@ -223,7 +235,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_DELETE_DAYS: setting({
-    group: "Retention",
+    group: "retention",
     description:
       "Days after archiving before a parcel, its history and raw carrier data are deleted; 0 never (the default). Deleting by hand is always possible on the Data page.",
     schema: z.coerce.number().int().min(0).max(36500),
@@ -232,7 +244,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS: setting({
-    group: "Retention",
+    group: "retention",
     description:
       "Days a carrier may answer “not found” for an undelivered parcel before it is archived; 0 never.",
     schema: z.coerce.number().int().min(0).max(3650),
@@ -241,7 +253,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_BACKUP_HOURS: setting({
-    group: "Backups",
+    group: "backups",
     description:
       "Hours between automatic database backups, taken while the server runs; 0 turns them off. Back up now on the Settings page works either way.",
     schema: z.coerce.number().int().min(0).max(8760),
@@ -250,7 +262,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_BACKUP_KEEP: setting({
-    group: "Backups",
+    group: "backups",
     description:
       "How many database backups to keep; the oldest are deleted after each new one. Counts every backup in the folder, also those taken by hand or before deleting everything.",
     schema: z.coerce.number().int().min(1).max(1000),
@@ -259,7 +271,7 @@ export const SETTINGS = {
     kind: "number",
   }),
   OPENPARCELS_BACKUP_DIR: setting({
-    group: "Backups",
+    group: "backups",
     description:
       "Folder for database backups. Unset uses backups/ in the data folder; point it at another volume to keep backups off the disk the database is on. The encryption key is not part of a backup: keep a copy of it (secret.key in the data folder, or OPENPARCELS_SECRET_KEY) as well.",
     schema: z.string().trim().min(1).max(1000).optional(),
@@ -268,7 +280,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_BASE_LAYER: setting({
-    group: "Map",
+    group: "map",
     description:
       "Map style shown until a user picks another on the map: map, topographic, satellite, borders only, a CARTO style (needs the CARTO key), or the custom provider.",
     schema: z.enum(BASE_LAYER_CHOICES),
@@ -278,7 +290,7 @@ export const SETTINGS = {
     choices: BASE_LAYER_CHOICES,
   }),
   OPENPARCELS_MAP_OVERLAY: setting({
-    group: "Map",
+    group: "map",
     description: "Overlay drawn over the map style by default; labels suit satellite imagery.",
     schema: z.enum(OVERLAY_CHOICES),
     default: "none",
@@ -287,7 +299,7 @@ export const SETTINGS = {
     choices: OVERLAY_CHOICES,
   }),
   OPENPARCELS_GEOCODING: setting({
-    group: "Map",
+    group: "map",
     description:
       "Background place lookup: look up the places named in carrier scans with the place search service below (OpenStreetMap Nominatim unless changed), so scans without coordinates still show on the map. This sends those place names (never codes or addresses of yours) to that service, one a second at most. Off by default; the address search on the Settings page works either way.",
     schema: booleanFlag,
@@ -296,7 +308,7 @@ export const SETTINGS = {
     kind: "boolean",
   }),
   OPENPARCELS_GEOCODING_URL: setting({
-    group: "Map",
+    group: "map",
     description:
       "Search endpoint of a Nominatim-compatible place search service (`/search?q=…&format=jsonv2`), e.g. your own Nominatim. Used by the address search and the background place lookup. The public OpenStreetMap server allows at most one request a second and no heavy use.",
     schema: z.url({ protocol: /^https?$/, error: "Use an http or https address." }),
@@ -305,7 +317,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_CONTACT_EMAIL: setting({
-    group: "Map",
+    group: "map",
     description:
       "Optional contact address added to the User-Agent sent to the place search and tile servers, so their operators can reach you instead of blocking this install.",
     schema: z.email().max(200).optional(),
@@ -314,7 +326,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_CARTO_KEY: setting({
-    group: "Map",
+    group: "map",
     description:
       "CARTO API key (free for non-commercial use at carto.com/basemaps/apikey). Unlocks the CARTO styles: Dark Matter (the pre-rewrite look), Positron and Voyager. Stays on the server.",
     schema: z.string().trim().min(1).max(500).optional(),
@@ -324,7 +336,7 @@ export const SETTINGS = {
     secret: true,
   }),
   OPENPARCELS_MAP_OSM_URL: setting({
-    group: "Map",
+    group: "map",
     description:
       "Tile address of the plain map layer, default https://tile.openstreetmap.org/{z}/{x}/{y}.png. Point it at a mirror or your own tile server if the public one is unsuitable.",
     schema: tileTemplate,
@@ -333,7 +345,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_TOPO_URL: setting({
-    group: "Map",
+    group: "map",
     description:
       "Tile address of the topographic layer, default https://{s}.tile.opentopomap.org/{z}/{x}/{y}.png.",
     schema: tileTemplate,
@@ -342,7 +354,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_EOX_URL: setting({
-    group: "Map",
+    group: "map",
     description:
       "WMTS base address of the EOX layers (satellite, borders, labels), default https://tiles.maps.eox.at/wmts/1.0.0.",
     schema: z
@@ -360,7 +372,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_CUSTOM_URL: setting({
-    group: "Map",
+    group: "map",
     description:
       "Custom tile provider, e.g. https://api.maptiler.com/maps/streets-v2/{z}/{x}/{y}.png?key={key}. Needs https and {z}, {x}, {y}; {s}, {r} and {key} are filled in by the server.",
     schema: tileTemplate,
@@ -369,7 +381,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_CUSTOM_KEY: setting({
-    group: "Map",
+    group: "map",
     description: "API key for the custom provider's {key}. Stays on the server.",
     schema: z.string().trim().min(1).max(500).optional(),
     default: undefined,
@@ -378,7 +390,7 @@ export const SETTINGS = {
     secret: true,
   }),
   OPENPARCELS_MAP_CUSTOM_ATTRIBUTION: setting({
-    group: "Map",
+    group: "map",
     description: "Credit shown on the map for the custom provider, as its terms require.",
     schema: z.string().trim().min(1).max(300).optional(),
     default: undefined,
@@ -386,7 +398,7 @@ export const SETTINGS = {
     kind: "string",
   }),
   OPENPARCELS_MAP_CUSTOM_MAX_ZOOM: setting({
-    group: "Map",
+    group: "map",
     description: "Deepest zoom the custom provider serves; the map scales up beyond it.",
     schema: z.coerce.number().int().min(0).max(TILE_MAX_ZOOM_ANY),
     default: 19,

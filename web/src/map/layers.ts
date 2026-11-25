@@ -14,8 +14,7 @@ export const FALLBACK_LAYER: MapLayer = {
   label: t.map.fallbackLayer,
   kind: "base",
   max_zoom: 19,
-  attribution:
-    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.openstreetmap.org/fixthemap">Report a map issue</a>',
+  attribution: t.map.fallbackAttribution,
   satellite: false,
   dark: false,
 };

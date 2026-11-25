@@ -28,7 +28,8 @@ const secretSchema = z.object({
   trackingLinks: z
     .array(z.url())
     .min(1)
-    .describe("The tracking links from bol.com's shipping e-mails, one per parcel."),
+    .describe("The tracking links from bol.com's shipping e-mails, one per parcel.")
+    .meta({ title: "Tracking links" }),
 });
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;

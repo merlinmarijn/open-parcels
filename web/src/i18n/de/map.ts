@@ -14,6 +14,8 @@ export const map: Messages["map"] = {
   noneInTransit: "Keine aktiven Pakete unterwegs.",
   mapStyle: "Kartenstil",
   fallbackLayer: "Karte",
+  fallbackAttribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a>-Mitwirkende | <a href="https://www.openstreetmap.org/fixthemap">Kartenfehler melden</a>',
   openMap: "Karte öffnen",
   away: (distance) => `${distance} entfernt`,
   unavailable: "Karte nicht verfügbar",

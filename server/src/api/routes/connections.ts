@@ -1,4 +1,6 @@
 import { z } from "zod";
+import { requestLanguage, type Language } from "../../i18n/language.js";
+import { localizeSchema, providerText } from "../../i18n/translate.js";
 import { InvalidConnectionConfigError, type SignInFlowInfo } from "../../engine/registry.js";
 import type { ConnectionView } from "../../engine/connections.js";
 import type { Services } from "../../services.js";
@@ -88,10 +90,13 @@ function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
 }
 
 /** A flow as the carrier list shows it; per-flow fields come from the connection's own flow list. */
-function flowSummary(flow: SignInFlowInfo): z.infer<typeof carrierSchema>["sign_in_flows"][number] {
+function flowSummary(
+  language: Language,
+  flow: SignInFlowInfo,
+): z.infer<typeof carrierSchema>["sign_in_flows"][number] {
   return {
     id: flow.id,
-    label: flow.label,
+    label: providerText(language, flow.label),
     type: flow.type,
     kinds: [...flow.kinds],
     conditional: flow.conditional,
@@ -121,18 +126,22 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         response: { 200: z.array(carrierSchema) },
       },
     },
-    () =>
-      services.registry.list().map((provider) => ({
+    (request) => {
+      const language = requestLanguage(request.headers["accept-language"]);
+      const schema = (zod: z.ZodType): unknown =>
+        localizeSchema(language, z.toJSONSchema(zod, { unrepresentable: "any" }));
+      return services.registry.list().map((provider) => ({
         id: provider.info.id,
         name: provider.info.name,
         countries: [...provider.info.countries],
         connection_kinds: [...provider.info.connectionKinds],
         fallback: provider.info.fallback,
         sign_in: provider.info.signIn,
-        sign_in_flows: provider.info.signInFlows.map(flowSummary),
-        config_schema: z.toJSONSchema(provider.info.configSchema, { unrepresentable: "any" }),
-        secret_schema: z.toJSONSchema(provider.info.secretSchema, { unrepresentable: "any" }),
-      })),
+        sign_in_flows: provider.info.signInFlows.map((flow) => flowSummary(language, flow)),
+        config_schema: schema(provider.info.configSchema),
+        secret_schema: schema(provider.info.secretSchema),
+      }));
+    },
   );
 }
 

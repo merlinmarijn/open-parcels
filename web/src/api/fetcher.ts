@@ -2,9 +2,12 @@
  * The one place the UI talks HTTP. Every generated call goes through `apiFetch`, which:
  * - resolves `/api/...` against the document base, so the UI works under an ingress prefix;
  * - sends the session cookie and, on state-changing requests, the CSRF header;
+ * - asks for the UI's language, for the texts the server translates;
  * - turns error bodies into `ApiError`.
  * Nothing here logs or stores request bodies: they can carry passwords and codes.
  */
+
+import { LANGUAGE } from "../i18n/language";
 
 const SAFE_METHODS = new Set(["GET", "HEAD", "OPTIONS"]);
 
@@ -102,6 +105,8 @@ export async function apiFetch<T>(path: string, init: RequestInit = {}): Promise
   const method = (init.method ?? "GET").toUpperCase();
   const headers = new Headers(init.headers);
   headers.set("accept", "application/json");
+  // Provider texts (sign-in steps, form titles) come back in the UI's language.
+  headers.set("accept-language", LANGUAGE);
   if (!SAFE_METHODS.has(method) && csrfToken !== null) {
     headers.set("x-csrf-token", csrfToken);
   }

@@ -24,9 +24,9 @@ const configSchema = z.object({});
 /** Tracking needs nothing; an OmaPosti account keeps its trusted device and the tokens it got. */
 const secretSchema = z
   .object({
-    device: deviceSchema,
-    idToken: z.string().min(1),
-    roleTokens: z.array(z.record(z.string(), z.unknown())),
+    device: deviceSchema.meta({ title: "Device" }),
+    idToken: z.string().min(1).meta({ title: "ID token" }),
+    roleTokens: z.array(z.record(z.string(), z.unknown())).meta({ title: "Role tokens" }),
   })
   .nullable();
 type Config = z.infer<typeof configSchema>;

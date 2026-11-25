@@ -40,8 +40,12 @@ export interface CalendarEntry {
   readonly status: ParcelStatus | ReturnStatus;
   /** `return_by`: the last day to hand a return in, all day. */
   readonly kind: "expected" | "delivered" | "return_by";
-  /** For a return: where to hand it in and what it costs, one line each. */
+  /** For a return: where to hand it in and what it costs, one English line each. */
   readonly details: readonly string[];
+  /** For a return: where it may be handed in; empty for a parcel. */
+  readonly dropOff: Return["drop_off"];
+  /** For a return: what sending it back costs, when known; null for a parcel. */
+  readonly cost: Return["cost"];
   readonly start: string;
   readonly end: string;
   readonly allDay: boolean;
@@ -162,6 +166,8 @@ export class CalendarService {
       status: entry.status,
       kind: "return_by",
       details: returnDetails(entry),
+      dropOff: entry.drop_off,
+      cost: entry.cost,
       late: entry.status === "expired",
       imageUrl: null,
       url: entry.label_url,
@@ -229,6 +235,8 @@ export class CalendarService {
           returnId: null,
           orderId: null,
           details: [],
+          dropOff: [],
+          cost: null,
           // The carrier is shown next to the title by each reader, so it is not repeated here.
           title: parcel?.display_name ?? row.label ?? row.tracking_number,
           carrier: row.carrier,

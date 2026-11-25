@@ -18,7 +18,7 @@ const AWB_PATTERN = carrierPattern("sameday");
 
 const configSchema = z.looseObject({
   /** Which national host to ask: Romania, Hungary or Bulgaria. Default Romania. */
-  country: z.enum(COUNTRIES).optional(),
+  country: z.enum(COUNTRIES).optional().meta({ title: "Country" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();

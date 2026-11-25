@@ -27,7 +27,8 @@ const configSchema = z.object({
   postalCode: z
     .string()
     .transform((value) => value.trim().toUpperCase().replace(/\s+/g, " "))
-    .pipe(z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/)),
+    .pipe(z.string().regex(/^[A-Z]{1,2}\d[A-Z\d]? ?\d[A-Z]{2}$/))
+    .meta({ title: "Postcode" }),
 });
 type Config = z.infer<typeof configSchema>;
 

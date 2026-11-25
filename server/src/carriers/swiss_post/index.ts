@@ -22,11 +22,14 @@ const TEXTS_TTL_MS = 24 * 60 * 60 * 1000;
 
 const configSchema = z.looseObject({
   /** Fetch each parcel's event timeline too, one extra request per parcel. Default on. */
-  eventHistory: z.boolean().optional(),
+  eventHistory: z.boolean().optional().meta({ title: "Event history" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z
-  .object({ refreshToken: z.string().min(1), deviceId: z.string().min(1) })
+  .object({
+    refreshToken: z.string().min(1).meta({ title: "Refresh token" }),
+    deviceId: z.string().min(1).meta({ title: "Device ID" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

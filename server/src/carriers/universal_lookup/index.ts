@@ -30,7 +30,8 @@ const PER_RUN = 20;
 const configSchema = z.object({
   url: z
     .url({ protocol: /^https?$/ })
-    .describe("Address of the universal-lookup service, for example https://lookup.example.com"),
+    .describe("Address of the universal-lookup service, for example https://lookup.example.com")
+    .meta({ title: "Address" }),
 });
 type Config = z.infer<typeof configSchema>;
 

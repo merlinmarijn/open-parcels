@@ -42,9 +42,11 @@ const BRANDS = {
 } as const;
 type Brand = keyof typeof BRANDS;
 
-const configSchema = z.looseObject({ brand: z.enum(["posten", "bring"]).default("bring") });
+const configSchema = z.looseObject({
+  brand: z.enum(["posten", "bring"]).default("bring").meta({ title: "Brand" }),
+});
 type Config = z.infer<typeof configSchema>;
-const secretSchema = z.object({ refreshToken: z.string().min(1) });
+const secretSchema = z.object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) });
 type Secret = z.infer<typeof secretSchema>;
 
 /** The app's client pair (in the shared rules) authenticates every token request. */

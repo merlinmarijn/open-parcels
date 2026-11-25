@@ -17,10 +17,22 @@ import { trackCodes } from "./tracking.js";
  */
 const secretSchema = z
   .object({
-    refreshToken: z.string().min(1).optional(),
-    apiKey: z.string().min(1).optional(),
-    nl: z.object({ email: z.string().min(1), password: z.string().min(1) }).optional(),
-    pl: z.object({ deviceId: z.string().min(1), jar: z.unknown() }).optional(),
+    refreshToken: z.string().min(1).optional().meta({ title: "Refresh token" }),
+    apiKey: z.string().min(1).optional().meta({ title: "API key" }),
+    nl: z
+      .object({
+        email: z.string().min(1).meta({ title: "Email" }),
+        password: z.string().min(1).meta({ title: "Password" }),
+      })
+      .optional()
+      .meta({ title: "DHL Netherlands account" }),
+    pl: z
+      .object({
+        deviceId: z.string().min(1).meta({ title: "Device ID" }),
+        jar: z.unknown().meta({ title: "Cookies" }),
+      })
+      .optional()
+      .meta({ title: "Mój DHL account" }),
   })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
@@ -32,9 +44,12 @@ const configSchema = z.looseObject({
    * proof-of-work challenge). Off by default, so codes are not
    * sent to back ends that cannot know them.
    */
-  regions: z.array(z.enum(["ES", "PT", "SE", "PL"])).optional(),
+  regions: z
+    .array(z.enum(["ES", "PT", "SE", "PL"]))
+    .optional()
+    .meta({ title: "Regions" }),
   /** Which DHL account an account connection reads: dhl.de (default), my.dhlecommerce.nl or mojdhl.pl. */
-  account: z.enum(["de", "nl", "pl"]).optional(),
+  account: z.enum(["de", "nl", "pl"]).optional().meta({ title: "Account" }),
 });
 type Config = z.infer<typeof configSchema>;
 
@@ -66,7 +81,9 @@ export const dhl = defineCarrier<Config, Secret>({
       id: "tracking_api_key",
       label: "DHL API key (optional)",
       kinds: ["tracking"],
-      fields: z.object({ apiKey: z.string().min(1).describe("DHL API key") }),
+      fields: z.object({
+        apiKey: z.string().min(1).meta({ title: "DHL API key" }).meta({ title: "API key" }),
+      }),
     },
   ],
   http: {

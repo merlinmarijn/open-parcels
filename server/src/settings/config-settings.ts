@@ -12,6 +12,7 @@ import {
   type ApplyMode,
   type LiveAppConfig,
   type SettingError,
+  type SettingGroup,
   type SettingKey,
   type SettingKind,
   type SettingProblem,
@@ -25,7 +26,7 @@ export type SettingSource = "env" | "default" | "app" | "override";
 
 export interface SettingInfo {
   readonly key: SettingKey;
-  readonly group: string;
+  readonly group: SettingGroup;
   readonly description: string;
   readonly kind: SettingKind;
   readonly choices: readonly string[] | null;

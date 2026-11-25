@@ -26,12 +26,16 @@ const configSchema = z.looseObject({
     .trim()
     .transform((value) => (value.startsWith("+") ? "+" : "") + value.replace(/\D/g, ""))
     .pipe(z.string().regex(/^\+?\d{9,15}$/))
-    .optional(),
+    .optional()
+    .meta({ title: "Phone number" }),
 });
 type Config = z.infer<typeof configSchema>;
 
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

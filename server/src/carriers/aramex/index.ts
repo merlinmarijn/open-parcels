@@ -135,7 +135,11 @@ export function aramexSnapshot(
 }
 
 const configSchema = z.looseObject({
-  country: z.enum(["AU", "NZ"]).default("AU").describe("Aramex Australia or Aramex New Zealand."),
+  country: z
+    .enum(["AU", "NZ"])
+    .default("AU")
+    .describe("Aramex Australia or Aramex New Zealand.")
+    .meta({ title: "Country" }),
 });
 const secretSchema = z.null();
 type Config = z.infer<typeof configSchema>;

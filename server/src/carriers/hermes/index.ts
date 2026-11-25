@@ -20,7 +20,7 @@ export const FORECAST_LIMIT = 20;
 
 const configSchema = z.looseObject({
   /** Look account parcels up on the public tracking too, for the delivery window. Default on. */
-  publicForecast: z.boolean().optional(),
+  publicForecast: z.boolean().optional().meta({ title: "Delivery window from public tracking" }),
 });
 type Config = z.infer<typeof configSchema>;
 
@@ -30,7 +30,10 @@ type Config = z.infer<typeof configSchema>;
  * store until Hermes refuses them, then needs a sign-in.
  */
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1).optional() })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).optional().meta({ title: "Password" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

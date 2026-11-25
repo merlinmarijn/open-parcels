@@ -198,12 +198,12 @@ describe("tile proxy", () => {
       layers: () => [
         {
           id: "custom",
-          label: "Internal",
+          label: { en: "Internal", de: "Intern" },
           kind: "base",
           url: "https://192.168.0.10/{z}/{x}/{y}.png",
           format: "png",
           maxZoom: 19,
-          attribution: "",
+          attribution: { en: "", de: "" },
           satellite: false,
           cacheKey: "custom-internal",
         },
@@ -318,7 +318,10 @@ describe("tile layers", () => {
     expect(layer).not.toBeNull();
     if (layer === null) return;
     expect(layer.format).toBe("jpg");
-    expect(layer.attribution).toBe("&lt;b&gt;Example&lt;/b&gt;");
+    expect(layer.attribution).toEqual({
+      en: "&lt;b&gt;Example&lt;/b&gt;",
+      de: "&lt;b&gt;Example&lt;/b&gt;",
+    });
     expect(tileUrl(layer, 3, 1, 2)).toBe("https://a.example.org/3/1/2.jpg?key=se%20cret");
   });
 
@@ -347,15 +350,19 @@ describe("tile layers", () => {
   });
   it("credits OpenStreetMap with a map issue link and names the served EOX imagery year", () => {
     const byId = new Map(BUILTIN_LAYERS.map((layer) => [layer.id, layer]));
-    expect(byId.get("osm")?.attribution).toContain("https://www.openstreetmap.org/fixthemap");
-    expect(byId.get("osm")?.attribution).toContain("OpenStreetMap</a> contributors");
+    const osm = byId.get("osm")?.attribution;
+    expect(osm?.en).toContain("https://www.openstreetmap.org/fixthemap");
+    expect(osm?.en).toContain("OpenStreetMap</a> contributors");
+    expect(osm?.de).toContain("https://www.openstreetmap.org/fixthemap");
     const satellite = byId.get("satellite");
-    expect(satellite?.label).toMatch(/non-commercial use only/);
+    expect(satellite?.label.en).toMatch(/non-commercial use only/);
+    expect(satellite?.label.de).toMatch(/nur nicht kommerzielle Nutzung/);
     expect(satellite?.url).toContain(`s2cloudless-${String(EOX_CLOUDLESS_YEAR)}_3857`);
-    expect(satellite?.attribution).toContain(
+    expect(satellite?.attribution.en).toContain(
       `Copernicus Sentinel data ${String(EOX_CLOUDLESS_YEAR)}`,
     );
-    expect(satellite?.attribution).toContain("CC BY-NC-SA 4.0");
+    expect(satellite?.attribution.de).toContain(`Sentinel-Daten ${String(EOX_CLOUDLESS_YEAR)}`);
+    expect(satellite?.attribution.de).toContain("CC BY-NC-SA 4.0");
   });
 
   it("moves built-in layers to configured addresses, each into its own cache folder", () => {

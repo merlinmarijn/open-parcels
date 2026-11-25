@@ -19,7 +19,7 @@ const CODE_PATTERN = carrierPattern("shopee_xpress");
 
 const configSchema = z.looseObject({
   /** The market the parcels were sent in; a code only resolves on its own market's host. */
-  market: z.enum(MARKET_IDS),
+  market: z.enum(MARKET_IDS).meta({ title: "Market" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();

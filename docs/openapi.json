@@ -2112,13 +2112,59 @@
                     "type": "object",
                     "properties": {
                       "key": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "OPENPARCELS_DATA_DIR",
+                          "OPENPARCELS_SECRET_KEY",
+                          "OPENPARCELS_WEB_DIR",
+                          "OPENPARCELS_HOST",
+                          "OPENPARCELS_PORT",
+                          "OPENPARCELS_INGRESS_PORT",
+                          "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_SECURE_COOKIES",
+                          "OPENPARCELS_ADMIN_PASSWORD",
+                          "OPENPARCELS_PASSWORD",
+                          "OPENPARCELS_PUBLIC_URL",
+                          "OPENPARCELS_LOG_LEVEL",
+                          "OPENPARCELS_TIMEZONE",
+                          "OPENPARCELS_QUIET_WINDOW",
+                          "OPENPARCELS_ARCHIVE_DAYS",
+                          "OPENPARCELS_DELETE_DAYS",
+                          "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS",
+                          "OPENPARCELS_BACKUP_HOURS",
+                          "OPENPARCELS_BACKUP_KEEP",
+                          "OPENPARCELS_BACKUP_DIR",
+                          "OPENPARCELS_MAP_BASE_LAYER",
+                          "OPENPARCELS_MAP_OVERLAY",
+                          "OPENPARCELS_GEOCODING",
+                          "OPENPARCELS_GEOCODING_URL",
+                          "OPENPARCELS_CONTACT_EMAIL",
+                          "OPENPARCELS_MAP_CARTO_KEY",
+                          "OPENPARCELS_MAP_OSM_URL",
+                          "OPENPARCELS_MAP_TOPO_URL",
+                          "OPENPARCELS_MAP_EOX_URL",
+                          "OPENPARCELS_MAP_CUSTOM_URL",
+                          "OPENPARCELS_MAP_CUSTOM_KEY",
+                          "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION",
+                          "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM"
+                        ]
                       },
                       "group": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "storage",
+                          "server",
+                          "security",
+                          "tracking",
+                          "retention",
+                          "backups",
+                          "map"
+                        ],
+                        "description": "The group's id; clients name it in their language."
                       },
                       "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "In English; the web UI has its own text per key."
                       },
                       "kind": {
                         "type": "string",
@@ -2256,13 +2302,59 @@
                     "type": "object",
                     "properties": {
                       "key": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "OPENPARCELS_DATA_DIR",
+                          "OPENPARCELS_SECRET_KEY",
+                          "OPENPARCELS_WEB_DIR",
+                          "OPENPARCELS_HOST",
+                          "OPENPARCELS_PORT",
+                          "OPENPARCELS_INGRESS_PORT",
+                          "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_SECURE_COOKIES",
+                          "OPENPARCELS_ADMIN_PASSWORD",
+                          "OPENPARCELS_PASSWORD",
+                          "OPENPARCELS_PUBLIC_URL",
+                          "OPENPARCELS_LOG_LEVEL",
+                          "OPENPARCELS_TIMEZONE",
+                          "OPENPARCELS_QUIET_WINDOW",
+                          "OPENPARCELS_ARCHIVE_DAYS",
+                          "OPENPARCELS_DELETE_DAYS",
+                          "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS",
+                          "OPENPARCELS_BACKUP_HOURS",
+                          "OPENPARCELS_BACKUP_KEEP",
+                          "OPENPARCELS_BACKUP_DIR",
+                          "OPENPARCELS_MAP_BASE_LAYER",
+                          "OPENPARCELS_MAP_OVERLAY",
+                          "OPENPARCELS_GEOCODING",
+                          "OPENPARCELS_GEOCODING_URL",
+                          "OPENPARCELS_CONTACT_EMAIL",
+                          "OPENPARCELS_MAP_CARTO_KEY",
+                          "OPENPARCELS_MAP_OSM_URL",
+                          "OPENPARCELS_MAP_TOPO_URL",
+                          "OPENPARCELS_MAP_EOX_URL",
+                          "OPENPARCELS_MAP_CUSTOM_URL",
+                          "OPENPARCELS_MAP_CUSTOM_KEY",
+                          "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION",
+                          "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM"
+                        ]
                       },
                       "group": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "storage",
+                          "server",
+                          "security",
+                          "tracking",
+                          "retention",
+                          "backups",
+                          "map"
+                        ],
+                        "description": "The group's id; clients name it in their language."
                       },
                       "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "In English; the web UI has its own text per key."
                       },
                       "kind": {
                         "type": "string",
@@ -2466,13 +2558,59 @@
                     "type": "object",
                     "properties": {
                       "key": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "OPENPARCELS_DATA_DIR",
+                          "OPENPARCELS_SECRET_KEY",
+                          "OPENPARCELS_WEB_DIR",
+                          "OPENPARCELS_HOST",
+                          "OPENPARCELS_PORT",
+                          "OPENPARCELS_INGRESS_PORT",
+                          "OPENPARCELS_TRUST_PROXY",
+                          "OPENPARCELS_SECURE_COOKIES",
+                          "OPENPARCELS_ADMIN_PASSWORD",
+                          "OPENPARCELS_PASSWORD",
+                          "OPENPARCELS_PUBLIC_URL",
+                          "OPENPARCELS_LOG_LEVEL",
+                          "OPENPARCELS_TIMEZONE",
+                          "OPENPARCELS_QUIET_WINDOW",
+                          "OPENPARCELS_ARCHIVE_DAYS",
+                          "OPENPARCELS_DELETE_DAYS",
+                          "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS",
+                          "OPENPARCELS_BACKUP_HOURS",
+                          "OPENPARCELS_BACKUP_KEEP",
+                          "OPENPARCELS_BACKUP_DIR",
+                          "OPENPARCELS_MAP_BASE_LAYER",
+                          "OPENPARCELS_MAP_OVERLAY",
+                          "OPENPARCELS_GEOCODING",
+                          "OPENPARCELS_GEOCODING_URL",
+                          "OPENPARCELS_CONTACT_EMAIL",
+                          "OPENPARCELS_MAP_CARTO_KEY",
+                          "OPENPARCELS_MAP_OSM_URL",
+                          "OPENPARCELS_MAP_TOPO_URL",
+                          "OPENPARCELS_MAP_EOX_URL",
+                          "OPENPARCELS_MAP_CUSTOM_URL",
+                          "OPENPARCELS_MAP_CUSTOM_KEY",
+                          "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION",
+                          "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM"
+                        ]
                       },
                       "group": {
-                        "type": "string"
+                        "type": "string",
+                        "enum": [
+                          "storage",
+                          "server",
+                          "security",
+                          "tracking",
+                          "retention",
+                          "backups",
+                          "map"
+                        ],
+                        "description": "The group's id; clients name it in their language."
                       },
                       "description": {
-                        "type": "string"
+                        "type": "string",
+                        "description": "In English; the web UI has its own text per key."
                       },
                       "kind": {
                         "type": "string",
@@ -13240,7 +13378,64 @@
                         "items": {
                           "type": "string"
                         },
-                        "description": "For a return: where it may be handed in and what sending it back costs."
+                        "description": "For a return: where it may be handed in and what sending it back costs, in English; `drop_off` and `cost` say the same for clients with their own texts."
+                      },
+                      "drop_off": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "carrier": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "shop",
+                                "parcel_locker",
+                                "post_office",
+                                "pickup",
+                                "any"
+                              ]
+                            },
+                            "description": {
+                              "nullable": true,
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "carrier",
+                            "kind",
+                            "description"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "For a return: where it may be handed in (as on the return); empty for a parcel."
+                      },
+                      "cost": {
+                        "nullable": true,
+                        "description": "For a return: what sending it back costs, null when not known; null for a parcel.",
+                        "type": "object",
+                        "properties": {
+                          "free": {
+                            "type": "boolean"
+                          },
+                          "amount": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "currency": {
+                            "nullable": true,
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "free",
+                          "amount",
+                          "currency"
+                        ],
+                        "additionalProperties": false
                       },
                       "start": {
                         "type": "string"
@@ -13292,6 +13487,8 @@
                       "status",
                       "kind",
                       "details",
+                      "drop_off",
+                      "cost",
                       "start",
                       "end",
                       "all_day",
@@ -13544,7 +13741,8 @@
                             "type": "string"
                           },
                           "label": {
-                            "type": "string"
+                            "type": "string",
+                            "description": "In the language of Accept-Language (English or German)."
                           },
                           "kind": {
                             "type": "string",
@@ -13560,7 +13758,7 @@
                           },
                           "attribution": {
                             "type": "string",
-                            "description": "HTML for the map's attribution control."
+                            "description": "HTML for the map's attribution control, in the language of Accept-Language."
                           },
                           "satellite": {
                             "type": "boolean",

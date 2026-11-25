@@ -37,7 +37,9 @@ const BARCODE_PATTERN = carrierPattern("vinted_go");
 const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
 /** An account connection keeps the refresh token from the emailed sign-in link; tracking needs nothing. */
-const secretSchema = z.object({ refreshToken: z.string().min(1) }).nullable();
+const secretSchema = z
+  .object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) })
+  .nullable();
 type Secret = z.infer<typeof secretSchema>;
 
 /** The timeline, oldest first; null when Vinted Go does not know the code yet. */

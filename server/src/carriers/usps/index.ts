@@ -39,7 +39,11 @@ const BARCODE_PATTERN = carrierPattern("usps");
 
 const configSchema = z.looseObject({
   /** Where the Informed Delivery addresses are; their package times carry no zone. */
-  timeZone: z.string().refine(isTimeZone, "Not a known time zone.").optional(),
+  timeZone: z
+    .string()
+    .refine(isTimeZone, "Not a known time zone.")
+    .optional()
+    .meta({ title: "Time zone" }),
 });
 type Config = z.infer<typeof configSchema>;
 /**
@@ -47,11 +51,15 @@ type Config = z.infer<typeof configSchema>;
  * API enabled; an Informed Delivery account the sign-in chain and its enrolled addresses.
  */
 const secretSchema = z.object({
-  consumerKey: z.string().min(1).optional(),
-  consumerSecret: z.string().min(1).optional(),
+  consumerKey: z.string().min(1).optional().meta({ title: "Consumer key" }),
+  consumerSecret: z.string().min(1).optional().meta({ title: "Consumer secret" }),
   informed: z
-    .object({ refreshToken: z.string().min(1), addresses: z.array(z.string().regex(/^\d{11}$/)) })
-    .optional(),
+    .object({
+      refreshToken: z.string().min(1).meta({ title: "Refresh token" }),
+      addresses: z.array(z.string().regex(/^\d{11}$/)).meta({ title: "Addresses" }),
+    })
+    .optional()
+    .meta({ title: "Informed Delivery" }),
 });
 type Secret = z.infer<typeof secretSchema>;
 

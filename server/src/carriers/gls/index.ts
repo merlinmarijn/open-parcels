@@ -27,11 +27,12 @@ export function isPlausibleBarcode(barcode: string): boolean {
  * a tracking connection covers parcels delivered to one address. Poland and the US never send it.
  */
 const configSchema = z.looseObject({
-  country: z.enum(COUNTRIES),
+  country: z.enum(COUNTRIES).meta({ title: "Country" }),
   postalCode: z
     .string()
     .trim()
-    .regex(/^[A-Za-z0-9 -]{3,10}$/),
+    .regex(/^[A-Za-z0-9 -]{3,10}$/)
+    .meta({ title: "Postcode" }),
 });
 type Config = z.infer<typeof configSchema>;
 

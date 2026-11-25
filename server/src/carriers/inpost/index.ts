@@ -21,17 +21,20 @@ import { BARCODE_PATTERN, lookUp, trackingSnapshot } from "./tracking.js";
 
 const configSchema = z.looseObject({
   /** Account connections: the market the account is registered in. Default Poland. */
-  market: z.enum(MARKETS).optional(),
+  market: z.enum(MARKETS).optional().meta({ title: "Market" }),
   /** Tracking connections: whose tracking page parcels link to. Default Poland. */
-  country: z.enum(TRACKING_COUNTRIES).optional(),
+  country: z.enum(TRACKING_COUNTRIES).optional().meta({ title: "Country" }),
   /** Sign-in page language, e.g. `pl` or `it`; English otherwise. */
-  language: z.string().optional(),
+  language: z.string().optional().meta({ title: "Language" }),
 });
 type Config = z.infer<typeof configSchema>;
 
 /** Tracking connections need nothing; account connections store the refresh token from the sign-in. */
 const secretSchema = z
-  .object({ refreshToken: z.string().min(1), market: z.enum(MARKETS) })
+  .object({
+    refreshToken: z.string().min(1).meta({ title: "Refresh token" }),
+    market: z.enum(MARKETS).meta({ title: "Market" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

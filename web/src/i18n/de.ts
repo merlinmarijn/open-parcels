@@ -7,6 +7,7 @@ import { map } from "./de/map";
 import { orders } from "./de/orders";
 import { parcels } from "./de/parcels";
 import { returns } from "./de/returns";
+import { serverSettings } from "./de/server-settings";
 import { settings } from "./de/settings";
 import { shell } from "./de/shell";
 import type { Messages } from "./messages";
@@ -18,6 +19,7 @@ export const de: Messages = {
   parcels,
   connections,
   settings,
+  serverSettings,
   admin,
   orders,
   returns,

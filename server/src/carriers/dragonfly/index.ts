@@ -55,7 +55,7 @@ type Country = (typeof COUNTRIES)[keyof typeof COUNTRIES];
 
 const configSchema = z.object({
   /** The country whose Dragonfly site the parcels are tracked on. */
-  country: z.enum(["NL", "AU", "CA"]).default("NL"),
+  country: z.enum(["NL", "AU", "CA"]).default("NL").meta({ title: "Country" }),
 });
 type Config = z.infer<typeof configSchema>;
 

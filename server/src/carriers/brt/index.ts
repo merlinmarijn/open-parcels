@@ -37,7 +37,10 @@ const DETAIL_LIMIT = 30;
 
 const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
-const secretSchema = z.object({ username: z.string().min(1), password: z.string().min(1) });
+const secretSchema = z.object({
+  username: z.string().min(1).meta({ title: "Username" }),
+  password: z.string().min(1).meta({ title: "Password" }),
+});
 type Secret = z.infer<typeof secretSchema>;
 
 const sessionSchema = z.object({ token: z.string().min(1) });

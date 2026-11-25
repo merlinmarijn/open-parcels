@@ -36,7 +36,7 @@ const RECHECK_MS = 6 * 60 * 60 * 1000;
 /** How long a quota answer is trusted, and how long registering pauses once it is used up. */
 const QUOTA_MS = 12 * 60 * 60 * 1000;
 
-const secretSchema = z.object({ apiKey: z.string().min(1) });
+const secretSchema = z.object({ apiKey: z.string().min(1).meta({ title: "API key" }) });
 
 /** 17TRACK's main statuses and event stages. */
 const STATUSES: Readonly<Record<string, ParcelStatus | null>> = {

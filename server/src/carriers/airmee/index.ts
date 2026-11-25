@@ -144,9 +144,9 @@ const configSchema = z.looseObject({});
  * token; an account connection the token pair from the phone sign-in.
  */
 const secretSchema = z.object({
-  phoneNumberHash: z.string().min(1).optional(),
-  accessToken: z.string().min(1).optional(),
-  refreshToken: z.string().min(1).optional(),
+  phoneNumberHash: z.string().min(1).optional().meta({ title: "Phone number (hashed)" }),
+  accessToken: z.string().min(1).optional().meta({ title: "Access token" }),
+  refreshToken: z.string().min(1).optional().meta({ title: "Refresh token" }),
 });
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;

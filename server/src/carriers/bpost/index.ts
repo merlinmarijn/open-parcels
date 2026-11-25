@@ -162,11 +162,19 @@ const configSchema = z.looseObject({
     .string()
     .regex(/^[A-Z0-9 -]{3,10}$/i)
     .optional()
-    .describe("The recipient's postcode; bpost's tracking needs it with every barcode."),
-  language: z.enum(LANGUAGES).default("en").describe("Language of bpost's event texts."),
+    .describe("The recipient's postcode; bpost's tracking needs it with every barcode.")
+    .meta({ title: "Postcode" }),
+  language: z
+    .enum(LANGUAGES)
+    .default("en")
+    .describe("Language of bpost's event texts.")
+    .meta({ title: "Language" }),
 });
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 type Config = z.infer<typeof configSchema>;
 type Secret = Credentials | null;

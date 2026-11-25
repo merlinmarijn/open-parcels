@@ -242,8 +242,8 @@ export function bankSignIn<Config>(): InteractiveSignIn<Config, PostiSecret> {
             kind: "open_url",
             url,
             message:
-              "Open the address, identify yourself, and paste the address your browser ends on " +
-              `(it starts with https://${POSTI_APP.uasHost}/uas/return/).`,
+              "Open the address, identify yourself, and paste the address your browser ends on.",
+            redirectPrefix: `https://${POSTI_APP.uasHost}/uas/return/`,
           },
           state: { verifier: state.verifier, jar: serializeJar(jar) },
         };

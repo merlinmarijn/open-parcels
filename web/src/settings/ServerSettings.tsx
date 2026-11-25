@@ -120,7 +120,7 @@ function SettingRow({ setting }: { readonly setting: ServerSetting }): ReactNode
           <span className="badge setting-pending">{t.settings.server.pendingRestart}</span>
         ) : null}
       </div>
-      <p className="muted setting-description">{setting.description}</p>
+      <p className="muted setting-description">{t.serverSettings.descriptions[setting.key]}</p>
       {setting.secret ? (
         <p className="setting-values muted">
           {setting.set ? t.settings.server.secretSet : t.settings.server.secretNotSet}
@@ -192,16 +192,16 @@ export function ServerSettingsCards(): ReactNode {
   if (query.isError) return <ErrorNotice error={query.error} />;
   return groupSettings(query.data).map(([group, settings]) => {
     if (group === SECURITY_GROUP) return <SecurityCard key={group} settings={settings} />;
-    const id = `settings-group-${group.toLowerCase().replace(/\W+/g, "-")}`;
+    const id = `settings-group-${group}`;
     return (
       <section key={group} className="card stack" aria-labelledby={id}>
-        <h2 id={id}>{group}</h2>
+        <h2 id={id}>{t.serverSettings.groups[group]}</h2>
         <ul className="setting-list">
           {settings.map((setting) => (
             <SettingRow key={setting.key} setting={setting} />
           ))}
         </ul>
-        {group === "Map" ? <MapPreview settings={settings} /> : null}
+        {group === "map" ? <MapPreview settings={settings} /> : null}
       </section>
     );
   });

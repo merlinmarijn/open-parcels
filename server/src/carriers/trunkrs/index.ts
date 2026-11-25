@@ -31,7 +31,7 @@ const BARCODE_PATTERN = carrierPattern("trunkrs");
 
 const configSchema = z.looseObject({
   /** The receiver's postcode. Trunkrs only answers for a parcel number together with it. */
-  postalCode: z.string().min(1),
+  postalCode: z.string().min(1).meta({ title: "Postcode" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();

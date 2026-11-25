@@ -152,7 +152,8 @@ const configSchema = z.looseObject({
     .string()
     .refine(isTimeZone, "Not a known time zone.")
     .optional()
-    .describe("Time zone of the delivery area; Apple Express times carry no offset."),
+    .describe("Time zone of the delivery area; Apple Express times carry no offset.")
+    .meta({ title: "Time zone" }),
 });
 const secretSchema = z.null();
 type Config = z.infer<typeof configSchema>;

@@ -25,7 +25,10 @@ const CARRIER_ID = "fedex";
 const POUND_KG = 0.45359237;
 
 /** The user's own FedEx developer API key (client id and secret), stored encrypted. */
-const secretSchema = z.object({ clientId: z.string().min(1), clientSecret: z.string().min(1) });
+const secretSchema = z.object({
+  clientId: z.string().min(1).meta({ title: "Client ID" }),
+  clientSecret: z.string().min(1).meta({ title: "Client secret" }),
+});
 type Secret = z.infer<typeof secretSchema>;
 
 const PLAUSIBLE = carrierPattern("fedex");

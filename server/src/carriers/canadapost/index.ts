@@ -22,13 +22,20 @@ import {
 
 const configSchema = z.looseObject({
   /** Zone for dates Canada Post gives without an offset (the delivery day). */
-  timeZone: z.string().refine(isTimeZone, "Not a known time zone.").optional(),
-  language: z.enum(["en", "fr"]).optional(),
+  timeZone: z
+    .string()
+    .refine(isTimeZone, "Not a known time zone.")
+    .optional()
+    .meta({ title: "Time zone" }),
+  language: z.enum(["en", "fr"]).optional().meta({ title: "Language" }),
 });
 type Config = z.infer<typeof configSchema>;
 
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

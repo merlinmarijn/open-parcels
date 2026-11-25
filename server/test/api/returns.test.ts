@@ -168,6 +168,8 @@ describe("returns in the calendar", () => {
         end_date: "2026-11-26",
         status: "requested",
         details: ["Drop off: Any DHL drop-off point", "Free return"],
+        drop_off: [expect.objectContaining({ description: "Any DHL drop-off point" })],
+        cost: expect.objectContaining({ free: true }) as unknown,
       }),
     ]);
     const created = await app.inject({ method: "POST", url: "/api/v1/calendar/feed", headers });

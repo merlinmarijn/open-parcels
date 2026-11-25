@@ -14,6 +14,8 @@ export const map = {
   noneInTransit: "No active parcels in transit.",
   mapStyle: "Map style",
   fallbackLayer: "Map",
+  fallbackAttribution:
+    '&copy; <a href="https://www.openstreetmap.org/copyright">OpenStreetMap</a> contributors | <a href="https://www.openstreetmap.org/fixthemap">Report a map issue</a>',
   openMap: "Open map",
   away: (distance: string) => `${distance} away`,
   unavailable: "Location map not available",

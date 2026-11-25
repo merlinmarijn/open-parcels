@@ -36,8 +36,8 @@ Scripts that call the API by hand must switch paths and fields; nothing else is 
 
 The web UI follows the browser's language (English or German) and can be set under
 **Settings → Language**; dates, times, numbers and amounts are formatted in the user's locale.
-German texts use the German terms in [`docs/glossary.md`](docs/glossary.md). Texts that come from
-the server (setting descriptions, error messages, sign-in steps, provider forms) stay English.
+German texts use the German terms in [`docs/glossary.md`](docs/glossary.md). Error texts written
+by individual providers or carriers stay as they are.
 
 ### Changed (breaking): error bodies carry `params`, the UI shows its own texts
 
@@ -51,6 +51,24 @@ web UI shows an English or German text per code instead of the server's message.
 - A failed backup before deleting everything is `delete_backup_failed` (was `backup_failed`).
 - `DELETE /api/v1/settings/config/{key}` for a key that is no setting stays 404 `not_found`; other
   refusals of that call are 400 `invalid_setting` with a `reason`.
+
+### Changed (breaking): server texts by language, setting groups as ids
+
+- `GET /api/v1/settings/config`: `group` is an id (`storage`, `server`, `security`, `tracking`,
+  `retention`, `backups`, `map`; was the English name, e.g. `Storage`) and `key` is a fixed list.
+  `description` stays English; the web UI has its own text per setting key.
+- The server reads `Accept-Language` (English or German, English otherwise) for the texts it
+  writes itself: sign-in flow labels, sign-in step texts and field labels, the `title` and
+  `description` of every field in `config_schema` and `secret_schema` (`GET /api/v1/carriers`,
+  `GET /api/v1/connections/{id}/sign-in/flows`), and map layer `label` and `attribution`
+  (`GET /api/v1/map/layers`). Every provider form field now has a `title`. A flow without its own
+  label is named `No sign-in`, `Username and password` or `API key` (was its type).
+- Calendar entries (`GET /api/v1/calendar`) add `drop_off` and `cost`, shaped as on the return
+  (parcels: `[]` and `null`), for clients with their own texts; `details` stays the English lines,
+  as in the ICS feed.
+
+**What clients must do:** read setting groups as ids. The Home Assistant integration does not use
+them.
 
 ### Changed: backups are private, versions name their commit
 

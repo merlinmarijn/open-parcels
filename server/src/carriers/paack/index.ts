@@ -12,9 +12,12 @@ import { isPlausible, lookUp, trackingSnapshot } from "./tracking.js";
 /** Paack only answers for a code together with its delivery postcode. */
 const configSchema = z.looseObject({
   /** Postcode used for every code that has no entry in `postalCodes`. */
-  postalCode: z.string().trim().min(1).optional(),
+  postalCode: z.string().trim().min(1).optional().meta({ title: "Postcode" }),
   /** Postcode per tracking code. */
-  postalCodes: z.record(z.string(), z.string().trim().min(1)).optional(),
+  postalCodes: z
+    .record(z.string(), z.string().trim().min(1))
+    .optional()
+    .meta({ title: "Postcode per tracking number" }),
 });
 type Config = z.infer<typeof configSchema>;
 

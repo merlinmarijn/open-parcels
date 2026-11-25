@@ -11,11 +11,14 @@ const configSchema = z.object({
    * page but its lookup request is still reset). Its robots.txt also asks crawlers to stay away.
    * Switch it on only if the endpoint answers again; the myDPD account works regardless.
    */
-  publicTracking: z.boolean().default(false),
+  publicTracking: z.boolean().default(false).meta({ title: "Public tracking" }),
 });
 
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 
 /** Every myDPD host gets the same slow pace: a poll chains many postbacks on one session. */

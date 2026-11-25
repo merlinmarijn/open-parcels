@@ -24,7 +24,10 @@ import { readLive } from "./live.js";
 import { STOREFRONT_COUNTRIES, STOREFRONT_IDS, STOREFRONTS } from "./storefronts.js";
 
 const configSchema = z.object({
-  storefront: z.enum(STOREFRONT_IDS).describe("The Amazon storefront the account orders from."),
+  storefront: z
+    .enum(STOREFRONT_IDS)
+    .describe("The Amazon storefront the account orders from.")
+    .meta({ title: "Storefront" }),
 });
 
 /**

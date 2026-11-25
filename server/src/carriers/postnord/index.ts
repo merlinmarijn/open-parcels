@@ -23,7 +23,9 @@ const API = `https://${HOST}/rest/shipment/v5/trackandtrace/recipientview`;
 const BARCODE = carrierPattern("postnord");
 
 const configSchema = z.looseObject({});
-const secretSchema = z.object({ refreshToken: z.string().min(1) }).nullable();
+const secretSchema = z
+  .object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) })
+  .nullable();
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 

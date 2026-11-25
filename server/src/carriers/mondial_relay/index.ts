@@ -23,13 +23,16 @@ import { isPlausibleBarcode, isPlausiblePostcode, TrackingRun } from "./tracking
  * connection signs in to the app's account in one market, which decides the sign-in page.
  */
 const configSchema = z.looseObject({
-  postcode: z.string().trim().min(3).max(10).optional(),
-  market: z.enum(["FR", "BE", "NL", "ES", "PT"]).optional(),
+  postcode: z.string().trim().min(3).max(10).optional().meta({ title: "Postcode" }),
+  market: z.enum(["FR", "BE", "NL", "ES", "PT"]).optional().meta({ title: "Market" }),
 });
 type Config = z.infer<typeof configSchema>;
 
 const secretSchema = z
-  .object({ refreshToken: z.string().min(1), deviceId: z.string().min(1) })
+  .object({
+    refreshToken: z.string().min(1).meta({ title: "Refresh token" }),
+    deviceId: z.string().min(1).meta({ title: "Device ID" }),
+  })
   .nullable();
 type Secret = AccountSecret | null;
 

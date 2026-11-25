@@ -127,8 +127,11 @@ async function lookUp(
 
 const configSchema = z.looseObject({
   /** The recipient's postal code; the page only answers for code plus postal code. */
-  postalCode: z.string().regex(/^[A-Z0-9 -]{3,10}$/i),
-  language: z.enum(["fr", "nl", "en"]).optional(),
+  postalCode: z
+    .string()
+    .regex(/^[A-Z0-9 -]{3,10}$/i)
+    .meta({ title: "Postcode" }),
+  language: z.enum(["fr", "nl", "en"]).optional().meta({ title: "Language" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();

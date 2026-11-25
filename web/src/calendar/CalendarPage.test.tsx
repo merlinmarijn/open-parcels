@@ -32,6 +32,8 @@ describe("calendar entries", () => {
       return_id: null,
       order_id: null,
       details: [],
+      drop_off: [],
+      cost: null,
       title: "Lamp",
       carrier: "dhl",
       tracking_number: "TEST0000000009",

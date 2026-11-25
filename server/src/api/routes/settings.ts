@@ -5,7 +5,7 @@ import type { Services } from "../../services.js";
 import { homeSchema } from "../../settings/store.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
-import type { SettingError } from "../../config.js";
+import { SETTING_GROUPS, SETTING_KEYS, type SettingError } from "../../config.js";
 import { ApiError, errorBodySchema, notFound } from "../errors.js";
 
 const settingsSchema = z.object({
@@ -24,9 +24,9 @@ function current(services: Services): z.infer<typeof settingsSchema> {
 const settingValueSchema = z.union([z.string(), z.number(), z.boolean()]);
 
 const settingInfoSchema = z.object({
-  key: z.string(),
-  group: z.string(),
-  description: z.string(),
+  key: z.enum(SETTING_KEYS),
+  group: z.enum(SETTING_GROUPS).describe("The group's id; clients name it in their language."),
+  description: z.string().describe("In English; the web UI has its own text per key."),
   kind: z.enum(["string", "number", "boolean"]),
   choices: z.array(z.string()).nullable(),
   apply: z

@@ -25,11 +25,11 @@ const EXTRA_LOOKUPS = 15;
 
 const configSchema = z.object({
   /** Language of DAO's status texts: Danish or English. */
-  language: z.enum(["da", "en"]).default("da"),
+  language: z.enum(["da", "en"]).default("da").meta({ title: "Language" }),
 });
 type Config = z.infer<typeof configSchema>;
 
-const secretSchema = z.object({ refreshToken: z.string().min(1) });
+const secretSchema = z.object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) });
 type Secret = z.infer<typeof secretSchema>;
 
 /** DAO wraps objects and lists inconsistently; both shapes are accepted, nothing else. */

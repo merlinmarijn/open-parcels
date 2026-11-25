@@ -142,13 +142,21 @@ function parseWith<T>(schema: z.ZodType<T>, raw: unknown, what: string, provider
   return parsed.data;
 }
 
+/** Labels of the flows a provider leaves unnamed (texts the server translates, `i18n/`). */
+const DEFAULT_FLOW_LABELS: Readonly<Record<SignInFlow<unknown, unknown>["type"], string>> = {
+  none: "No sign-in",
+  credentials: "Username and password",
+  api_key: "API key",
+  interactive: "Sign in",
+};
+
 function flowInfo<Config, Secret>(
   provider: CarrierProvider<Config, Secret>,
   flow: SignInFlow<Config, Secret>,
 ): SignInFlowInfo {
   return {
     id: flow.id ?? flow.type,
-    label: flow.label ?? flow.type,
+    label: flow.label ?? DEFAULT_FLOW_LABELS[flow.type],
     type: flow.type,
     kinds: flow.kinds ?? provider.connectionKinds,
     conditional: flow.when !== undefined,

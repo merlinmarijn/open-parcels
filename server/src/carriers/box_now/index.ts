@@ -137,7 +137,8 @@ const configSchema = z.looseObject({
   country: z
     .enum(["gr", "bg", "hr", "cy"])
     .default("gr")
-    .describe("The BOX NOW country the parcels are sent in."),
+    .describe("The BOX NOW country the parcels are sent in.")
+    .meta({ title: "Country" }),
 });
 const secretSchema = z.null();
 type Config = z.infer<typeof configSchema>;

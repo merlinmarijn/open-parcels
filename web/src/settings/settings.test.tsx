@@ -11,7 +11,7 @@ vi.mock("../map/SharedMap", () => ({ SharedMap: () => null }));
 function setting(overrides: Partial<ServerSetting> = {}): ServerSetting {
   return {
     key: "OPENPARCELS_ARCHIVE_DAYS",
-    group: "Retention",
+    group: "retention",
     description: "Days after delivery before a parcel is archived.",
     kind: "number",
     choices: null,
@@ -28,7 +28,7 @@ function setting(overrides: Partial<ServerSetting> = {}): ServerSetting {
 
 const SECRET = setting({
   key: "OPENPARCELS_SECRET_KEY",
-  group: "Storage",
+  group: "storage",
   description: "Encrypts stored credentials.",
   kind: "string",
   apply: "env",
@@ -99,7 +99,7 @@ describe("settings page", () => {
         body: [
           setting({
             key: "OPENPARCELS_TIMEZONE",
-            group: "Tracking",
+            group: "tracking",
             kind: "string",
             apply: "restart",
             source: "override",
@@ -181,7 +181,7 @@ describe("settings page", () => {
         body: [
           {
             key: "OPENPARCELS_ADMIN_PASSWORD",
-            group: "Security",
+            group: "security",
             description: "Password to change anything.",
             kind: "string",
             choices: null,

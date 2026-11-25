@@ -8,7 +8,10 @@ type Config = z.infer<typeof configSchema>;
 
 /** The miSEUR email and password, stored encrypted. */
 const secretSchema = z
-  .object({ username: z.string().min(1), password: z.string().min(1) })
+  .object({
+    username: z.string().min(1).meta({ title: "Username" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
   .nullable();
 type Secret = z.infer<typeof secretSchema>;
 

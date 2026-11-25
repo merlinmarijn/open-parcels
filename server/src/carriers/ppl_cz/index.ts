@@ -37,7 +37,12 @@ const SENDER_ADDRESS = 4;
 
 const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
-const secretSchema = z.object({ email: z.string().min(1), password: z.string().min(1) }).nullable();
+const secretSchema = z
+  .object({
+    email: z.string().min(1).meta({ title: "Email" }),
+    password: z.string().min(1).meta({ title: "Password" }),
+  })
+  .nullable();
 
 const when = (value: unknown): string | null =>
   isoTime(value, { naive: { zone: ZONE }, epoch: "ms" });

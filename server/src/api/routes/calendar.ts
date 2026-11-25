@@ -2,6 +2,7 @@ import { DAY_MS } from "../../clock.js";
 import { z } from "zod";
 import { randomSecret, safeEqual, sha256Hex } from "../../auth/crypto.js";
 import { renderIcs } from "../../calendar/ics.js";
+import { returnSchema } from "../../domain/return.js";
 import type { Services } from "../../services.js";
 import type { TypedApp } from "../app.js";
 import { requireScope } from "../auth-plugin.js";
@@ -27,7 +28,16 @@ const entrySchema = z.object({
     .describe("`return_by`: the last day to hand a return in (all day)."),
   details: z
     .array(z.string())
-    .describe("For a return: where it may be handed in and what sending it back costs."),
+    .describe(
+      "For a return: where it may be handed in and what sending it back costs, in English; " +
+        "`drop_off` and `cost` say the same for clients with their own texts.",
+    ),
+  drop_off: returnSchema.shape.drop_off.describe(
+    "For a return: where it may be handed in (as on the return); empty for a parcel.",
+  ),
+  cost: returnSchema.shape.cost.describe(
+    "For a return: what sending it back costs, null when not known; null for a parcel.",
+  ),
   start: z.string(),
   end: z.string(),
   all_day: z.boolean(),
@@ -80,6 +90,8 @@ export function registerCalendarRoutes(app: TypedApp, services: Services): void 
         status: entry.status,
         kind: entry.kind,
         details: [...entry.details],
+        drop_off: entry.dropOff.map((option) => ({ ...option })),
+        cost: entry.cost,
         start: entry.start,
         end: entry.end,
         all_day: entry.allDay,

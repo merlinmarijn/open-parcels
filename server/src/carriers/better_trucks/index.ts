@@ -92,7 +92,8 @@ const configSchema = z.looseObject({
     .string()
     .refine(isTimeZone, "Not a known time zone.")
     .optional()
-    .describe("Time zone Better Trucks' offset-less times are read in. Defaults to UTC."),
+    .describe("Time zone Better Trucks' offset-less times are read in. Defaults to UTC.")
+    .meta({ title: "Time zone" }),
 });
 const secretSchema = z.null();
 type Config = z.infer<typeof configSchema>;

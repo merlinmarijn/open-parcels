@@ -1,5 +1,6 @@
 import type { FastifyReply } from "fastify";
 import { z } from "zod";
+import { requestLanguage } from "../../i18n/language.js";
 import type { Services } from "../../services.js";
 import { TILE_MAX_ZOOM_ANY, TileError } from "../../tiles/proxy.js";
 import type { TypedApp } from "../app.js";
@@ -16,10 +17,12 @@ const coordinate = (maxZoom: number) =>
 
 const layerSchema = z.object({
   id: z.string(),
-  label: z.string(),
+  label: z.string().describe("In the language of Accept-Language (English or German)."),
   kind: z.enum(["base", "overlay"]),
   max_zoom: z.number().int(),
-  attribution: z.string().describe("HTML for the map's attribution control."),
+  attribution: z
+    .string()
+    .describe("HTML for the map's attribution control, in the language of Accept-Language."),
   satellite: z.boolean().describe("Photographic imagery: no dark-mode filter."),
   dark: z.boolean().describe("A dark style already: no dark-mode filter."),
 });
@@ -61,17 +64,18 @@ export function registerTileRoutes(app: TypedApp, services: Services): void {
         response: { 200: layersSchema },
       },
     },
-    () => {
+    (request) => {
+      const language = requestLanguage(request.headers["accept-language"]);
       const layers = services.tiles.layers();
       const { baseLayer, overlay } = services.config.map;
       const hasBase = layers.some((layer) => layer.id === baseLayer);
       return {
         layers: layers.map((layer) => ({
           id: layer.id,
-          label: layer.label,
+          label: layer.label[language],
           kind: layer.kind,
           max_zoom: layer.maxZoom,
-          attribution: layer.attribution,
+          attribution: layer.attribution[language],
           satellite: layer.satellite,
           dark: layer.dark ?? false,
         })),

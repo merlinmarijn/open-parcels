@@ -1,5 +1,7 @@
-import type { FastifyReply } from "fastify";
+import type { FastifyReply, FastifyRequest } from "fastify";
 import { z } from "zod";
+import { requestLanguage, type Language } from "../../i18n/language.js";
+import { localizeSchema, providerText } from "../../i18n/translate.js";
 import { SignInError, type AttemptView, type SignInErrorCode } from "../../engine/sign-in.js";
 import type { SignInStep } from "../../provider/api.js";
 import type { Services } from "../../services.js";
@@ -108,7 +110,10 @@ const errors = {
   503: errorBodySchema,
 };
 
-function toBody(view: AttemptView): z.infer<typeof attemptSchema> {
+const languageOf = (request: FastifyRequest): Language =>
+  requestLanguage(request.headers["accept-language"]);
+
+function toBody(view: AttemptView, language: Language): z.infer<typeof attemptSchema> {
   if (view.status === "done") {
     return { status: "done" };
   }
@@ -117,20 +122,30 @@ function toBody(view: AttemptView): z.infer<typeof attemptSchema> {
     attempt_id: view.attemptId,
     flow: view.flow,
     expires_at: view.expiresAt,
-    step: stepBody(view.step),
+    step: stepBody(view.step, (text) => providerText(language, text)),
   };
 }
 
-function stepBody(step: SignInStep): z.infer<typeof stepSchema> {
+/** The step as the API sends it, with the provider's texts in the request's language. */
+function stepBody(step: SignInStep, text: (english: string) => string): z.infer<typeof stepSchema> {
+  const message = step.message === undefined ? {} : { message: text(step.message) };
   switch (step.kind) {
     case "form":
-      return { ...step, fields: step.fields.map((field) => ({ ...field })) };
+      return {
+        kind: "form",
+        ...message,
+        fields: step.fields.map((field) => ({ ...field, label: text(field.label) })),
+      };
     case "choose_method":
-      return { ...step, options: step.options.map((option) => ({ ...option })) };
+      return {
+        kind: "choose_method",
+        ...message,
+        options: step.options.map((option) => ({ ...option, label: text(option.label) })),
+      };
     case "await_approval":
       return {
         kind: "await_approval",
-        message: step.message,
+        message: text(step.message),
         poll_interval_seconds: step.pollIntervalSeconds,
         timeout_seconds: step.timeoutSeconds,
       };
@@ -138,13 +153,13 @@ function stepBody(step: SignInStep): z.infer<typeof stepSchema> {
       return {
         kind: "open_url",
         url: step.url,
-        ...(step.message === undefined ? {} : { message: step.message }),
+        ...message,
         redirect_prefix: step.redirectPrefix ?? null,
         resume_url: step.resumeUrl ?? null,
       };
     case "email_link":
     case "otp_code":
-      return { ...step };
+      return { ...step, ...message };
   }
 }
 
@@ -182,11 +197,16 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
       },
     },
     async (request) => {
+      const language = languageOf(request);
       const flows = await signIn.flows(request.params.id).catch(failWith(null));
       return flows.map(({ fields, ...flow }) => ({
         ...flow,
+        label: providerText(language, flow.label),
         kinds: [...flow.kinds],
-        secret_schema: fields === null ? null : z.toJSONSchema(fields, { unrepresentable: "any" }),
+        secret_schema:
+          fields === null
+            ? null
+            : localizeSchema(language, z.toJSONSchema(fields, { unrepresentable: "any" })),
       }));
     },
   );
@@ -205,7 +225,10 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
       },
     },
     async (request, reply) =>
-      toBody(await signIn.start(request.params.id, request.body.flow).catch(failWith(reply))),
+      toBody(
+        await signIn.start(request.params.id, request.body.flow).catch(failWith(reply)),
+        languageOf(request),
+      ),
   );
 
   app.post(
@@ -226,7 +249,7 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
       if (view.status === "done") {
         services.scheduler.wake();
       }
-      return toBody(view);
+      return toBody(view, languageOf(request));
     },
   );
 
@@ -249,7 +272,7 @@ export function registerSignInRoutes(app: TypedApp, services: Services): void {
       if (view.status === "done") {
         services.scheduler.wake();
       }
-      return toBody(view);
+      return toBody(view, languageOf(request));
     },
   );
 

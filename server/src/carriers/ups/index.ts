@@ -16,8 +16,8 @@ import { trackCodes } from "./tracking.js";
  */
 const secretSchema = z
   .object({
-    clientId: z.string().min(1),
-    clientSecret: z.string().min(1),
+    clientId: z.string().min(1).meta({ title: "Client ID" }),
+    clientSecret: z.string().min(1).meta({ title: "Client secret" }),
   })
   .nullable();
 
@@ -33,7 +33,7 @@ export const ups = defineCarrier({
   connectionKinds: ["tracking"],
   configSchema: z.looseObject({
     /** The locale sent to UPS. It only changes display texts; the mapped keys do not depend on it. */
-    locale: z.enum(LOCALES).optional(),
+    locale: z.enum(LOCALES).optional().meta({ title: "Language" }),
   }),
   secretSchema,
   signIn: { type: "api_key" },

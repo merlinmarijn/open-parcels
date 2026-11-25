@@ -901,6 +901,45 @@ export type PutApiV1SettingsParcelLabel200 = {
   parcel_label: PutApiV1SettingsParcelLabel200ParcelLabel;
 };
 
+export type GetApiV1SettingsConfig200ItemKey =
+  | "OPENPARCELS_DATA_DIR"
+  | "OPENPARCELS_SECRET_KEY"
+  | "OPENPARCELS_WEB_DIR"
+  | "OPENPARCELS_HOST"
+  | "OPENPARCELS_PORT"
+  | "OPENPARCELS_INGRESS_PORT"
+  | "OPENPARCELS_TRUST_PROXY"
+  | "OPENPARCELS_SECURE_COOKIES"
+  | "OPENPARCELS_ADMIN_PASSWORD"
+  | "OPENPARCELS_PASSWORD"
+  | "OPENPARCELS_PUBLIC_URL"
+  | "OPENPARCELS_LOG_LEVEL"
+  | "OPENPARCELS_TIMEZONE"
+  | "OPENPARCELS_QUIET_WINDOW"
+  | "OPENPARCELS_ARCHIVE_DAYS"
+  | "OPENPARCELS_DELETE_DAYS"
+  | "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS"
+  | "OPENPARCELS_BACKUP_HOURS"
+  | "OPENPARCELS_BACKUP_KEEP"
+  | "OPENPARCELS_BACKUP_DIR"
+  | "OPENPARCELS_MAP_BASE_LAYER"
+  | "OPENPARCELS_MAP_OVERLAY"
+  | "OPENPARCELS_GEOCODING"
+  | "OPENPARCELS_GEOCODING_URL"
+  | "OPENPARCELS_CONTACT_EMAIL"
+  | "OPENPARCELS_MAP_CARTO_KEY"
+  | "OPENPARCELS_MAP_OSM_URL"
+  | "OPENPARCELS_MAP_TOPO_URL"
+  | "OPENPARCELS_MAP_EOX_URL"
+  | "OPENPARCELS_MAP_CUSTOM_URL"
+  | "OPENPARCELS_MAP_CUSTOM_KEY"
+  | "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION"
+  | "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM";
+/**
+ * The group's id; clients name it in their language.
+ */
+export type GetApiV1SettingsConfig200ItemGroup =
+  "storage" | "server" | "security" | "tracking" | "retention" | "backups" | "map";
 export type GetApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
@@ -911,8 +950,10 @@ export type GetApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
  */
 export type GetApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
 export type GetApiV1SettingsConfig200Item = {
-  key: string;
-  group: string;
+  key: GetApiV1SettingsConfig200ItemKey;
+  /** The group's id; clients name it in their language. */
+  group: GetApiV1SettingsConfig200ItemGroup;
+  /** In English; the web UI has its own text per key. */
   description: string;
   kind: GetApiV1SettingsConfig200ItemKind;
   /** @nullable */
@@ -933,6 +974,45 @@ export type GetApiV1SettingsConfig200Item = {
 
 export type PatchApiV1SettingsConfigBody = { [key: string]: string | number | boolean };
 
+export type PatchApiV1SettingsConfig200ItemKey =
+  | "OPENPARCELS_DATA_DIR"
+  | "OPENPARCELS_SECRET_KEY"
+  | "OPENPARCELS_WEB_DIR"
+  | "OPENPARCELS_HOST"
+  | "OPENPARCELS_PORT"
+  | "OPENPARCELS_INGRESS_PORT"
+  | "OPENPARCELS_TRUST_PROXY"
+  | "OPENPARCELS_SECURE_COOKIES"
+  | "OPENPARCELS_ADMIN_PASSWORD"
+  | "OPENPARCELS_PASSWORD"
+  | "OPENPARCELS_PUBLIC_URL"
+  | "OPENPARCELS_LOG_LEVEL"
+  | "OPENPARCELS_TIMEZONE"
+  | "OPENPARCELS_QUIET_WINDOW"
+  | "OPENPARCELS_ARCHIVE_DAYS"
+  | "OPENPARCELS_DELETE_DAYS"
+  | "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS"
+  | "OPENPARCELS_BACKUP_HOURS"
+  | "OPENPARCELS_BACKUP_KEEP"
+  | "OPENPARCELS_BACKUP_DIR"
+  | "OPENPARCELS_MAP_BASE_LAYER"
+  | "OPENPARCELS_MAP_OVERLAY"
+  | "OPENPARCELS_GEOCODING"
+  | "OPENPARCELS_GEOCODING_URL"
+  | "OPENPARCELS_CONTACT_EMAIL"
+  | "OPENPARCELS_MAP_CARTO_KEY"
+  | "OPENPARCELS_MAP_OSM_URL"
+  | "OPENPARCELS_MAP_TOPO_URL"
+  | "OPENPARCELS_MAP_EOX_URL"
+  | "OPENPARCELS_MAP_CUSTOM_URL"
+  | "OPENPARCELS_MAP_CUSTOM_KEY"
+  | "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION"
+  | "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM";
+/**
+ * The group's id; clients name it in their language.
+ */
+export type PatchApiV1SettingsConfig200ItemGroup =
+  "storage" | "server" | "security" | "tracking" | "retention" | "backups" | "map";
 export type PatchApiV1SettingsConfig200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
@@ -943,8 +1023,10 @@ export type PatchApiV1SettingsConfig200ItemApply = "env" | "restart" | "live";
  */
 export type PatchApiV1SettingsConfig200ItemSource = "env" | "default" | "app" | "override";
 export type PatchApiV1SettingsConfig200Item = {
-  key: string;
-  group: string;
+  key: PatchApiV1SettingsConfig200ItemKey;
+  /** The group's id; clients name it in their language. */
+  group: PatchApiV1SettingsConfig200ItemGroup;
+  /** In English; the web UI has its own text per key. */
   description: string;
   kind: PatchApiV1SettingsConfig200ItemKind;
   /** @nullable */
@@ -1016,6 +1098,45 @@ export type PatchApiV1SettingsConfig400 = {
   params: PatchApiV1SettingsConfig400Params;
 };
 
+export type DeleteApiV1SettingsConfigKey200ItemKey =
+  | "OPENPARCELS_DATA_DIR"
+  | "OPENPARCELS_SECRET_KEY"
+  | "OPENPARCELS_WEB_DIR"
+  | "OPENPARCELS_HOST"
+  | "OPENPARCELS_PORT"
+  | "OPENPARCELS_INGRESS_PORT"
+  | "OPENPARCELS_TRUST_PROXY"
+  | "OPENPARCELS_SECURE_COOKIES"
+  | "OPENPARCELS_ADMIN_PASSWORD"
+  | "OPENPARCELS_PASSWORD"
+  | "OPENPARCELS_PUBLIC_URL"
+  | "OPENPARCELS_LOG_LEVEL"
+  | "OPENPARCELS_TIMEZONE"
+  | "OPENPARCELS_QUIET_WINDOW"
+  | "OPENPARCELS_ARCHIVE_DAYS"
+  | "OPENPARCELS_DELETE_DAYS"
+  | "OPENPARCELS_NOT_FOUND_ARCHIVE_DAYS"
+  | "OPENPARCELS_BACKUP_HOURS"
+  | "OPENPARCELS_BACKUP_KEEP"
+  | "OPENPARCELS_BACKUP_DIR"
+  | "OPENPARCELS_MAP_BASE_LAYER"
+  | "OPENPARCELS_MAP_OVERLAY"
+  | "OPENPARCELS_GEOCODING"
+  | "OPENPARCELS_GEOCODING_URL"
+  | "OPENPARCELS_CONTACT_EMAIL"
+  | "OPENPARCELS_MAP_CARTO_KEY"
+  | "OPENPARCELS_MAP_OSM_URL"
+  | "OPENPARCELS_MAP_TOPO_URL"
+  | "OPENPARCELS_MAP_EOX_URL"
+  | "OPENPARCELS_MAP_CUSTOM_URL"
+  | "OPENPARCELS_MAP_CUSTOM_KEY"
+  | "OPENPARCELS_MAP_CUSTOM_ATTRIBUTION"
+  | "OPENPARCELS_MAP_CUSTOM_MAX_ZOOM";
+/**
+ * The group's id; clients name it in their language.
+ */
+export type DeleteApiV1SettingsConfigKey200ItemGroup =
+  "storage" | "server" | "security" | "tracking" | "retention" | "backups" | "map";
 export type DeleteApiV1SettingsConfigKey200ItemKind = "string" | "number" | "boolean";
 /**
  * env: only from the environment; restart: saved now, used after a restart; live: used at once.
@@ -1026,8 +1147,10 @@ export type DeleteApiV1SettingsConfigKey200ItemApply = "env" | "restart" | "live
  */
 export type DeleteApiV1SettingsConfigKey200ItemSource = "env" | "default" | "app" | "override";
 export type DeleteApiV1SettingsConfigKey200Item = {
-  key: string;
-  group: string;
+  key: DeleteApiV1SettingsConfigKey200ItemKey;
+  /** The group's id; clients name it in their language. */
+  group: DeleteApiV1SettingsConfigKey200ItemGroup;
+  /** In English; the web UI has its own text per key. */
   description: string;
   kind: DeleteApiV1SettingsConfigKey200ItemKind;
   /** @nullable */
@@ -6363,6 +6486,28 @@ export type GetApiV1CalendarParams = {
  * `return_by`: the last day to hand a return in (all day).
  */
 export type GetApiV1Calendar200ItemKind = "expected" | "delivered" | "return_by";
+export type GetApiV1Calendar200ItemDropOffItemKind =
+  "shop" | "parcel_locker" | "post_office" | "pickup" | "any";
+export type GetApiV1Calendar200ItemDropOffItem = {
+  /** @nullable */
+  carrier: string | null;
+  kind: GetApiV1Calendar200ItemDropOffItemKind;
+  /** @nullable */
+  description: string | null;
+};
+
+/**
+ * For a return: what sending it back costs, null when not known; null for a parcel.
+ * @nullable
+ */
+export type GetApiV1Calendar200ItemCost = {
+  free: boolean;
+  /** @nullable */
+  amount: number | null;
+  /** @nullable */
+  currency: string | null;
+} | null;
+
 export type GetApiV1Calendar200Item = {
   uid: string;
   /**
@@ -6389,8 +6534,15 @@ export type GetApiV1Calendar200Item = {
   status: string;
   /** `return_by`: the last day to hand a return in (all day). */
   kind: GetApiV1Calendar200ItemKind;
-  /** For a return: where it may be handed in and what sending it back costs. */
+  /** For a return: where it may be handed in and what sending it back costs, in English; `drop_off` and `cost` say the same for clients with their own texts. */
   details: string[];
+  /** For a return: where it may be handed in (as on the return); empty for a parcel. */
+  drop_off: GetApiV1Calendar200ItemDropOffItem[];
+  /**
+   * For a return: what sending it back costs, null when not known; null for a parcel.
+   * @nullable
+   */
+  cost: GetApiV1Calendar200ItemCost;
   start: string;
   end: string;
   all_day: boolean;
@@ -6477,6 +6629,7 @@ export type PostApiV1CalendarFeed201 = {
 export type GetApiV1MapLayers200LayersItemKind = "base" | "overlay";
 export type GetApiV1MapLayers200LayersItem = {
   id: string;
+  /** In the language of Accept-Language (English or German). */
   label: string;
   kind: GetApiV1MapLayers200LayersItemKind;
   /**
@@ -6484,7 +6637,7 @@ export type GetApiV1MapLayers200LayersItem = {
    * @maximum 9007199254740991
    */
   max_zoom: number;
-  /** HTML for the map's attribution control. */
+  /** HTML for the map's attribution control, in the language of Accept-Language. */
   attribution: string;
   /** Photographic imagery: no dark-mode filter. */
   satellite: boolean;

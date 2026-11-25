@@ -90,6 +90,24 @@ describe("map tiles", () => {
     expect(upstream).toEqual([`https://tiles.example.org/2/1/1.jpg?key=${KEY}`]);
   });
 
+  it("names the layers and credits them in the language asked for", async () => {
+    const { app, headers } = await setUp();
+    const layers = async (language: string) =>
+      (
+        await app.inject({
+          url: "/api/v1/map/layers",
+          headers: { ...headers, "accept-language": language },
+        })
+      ).json<{ layers: { id: string; label: string; attribution: string }[] }>().layers;
+    const osm = (list: { id: string; label: string; attribution: string }[]) =>
+      list.find((layer) => layer.id === "osm");
+    expect(osm(await layers("de-DE,de;q=0.9"))).toMatchObject({
+      label: "Karte",
+      attribution: expect.stringContaining("Kartenfehler melden") as unknown,
+    });
+    expect(osm(await layers("fr"))).toMatchObject({ label: "Map" });
+  });
+
   it("serves the CARTO styles once a CARTO key is set, with the key added on the server", async () => {
     const { app, headers } = await setUp({ env: { OPENPARCELS_MAP_CARTO_KEY: KEY } });
     const tile = await app.inject({ url: "/tiles/carto_dark/2/1/1", headers });

@@ -104,6 +104,29 @@ describe("interactive sign-in", () => {
     expect(wrong.json()).toMatchObject({ error: "no_sign_in" });
   });
 
+  it("sends the provider's texts it knows in the language asked for", async () => {
+    const id = await newConnection();
+    const german = { ...headers, "accept-language": "de" };
+    const flows = await app.inject({
+      url: `/api/v1/connections/${id}/sign-in/flows`,
+      headers: german,
+    });
+    expect(flows.json<{ label: string }[]>()[0]?.label).toBe("Sign in and verify");
+    const carriers = await app.inject({ url: "/api/v1/carriers", headers: german });
+    expect(
+      carriers.json<{ sign_in_flows: { id: string; label: string }[] }[]>()[0]?.sign_in_flows,
+    ).toContainEqual(expect.objectContaining({ id: "none", label: "Keine Anmeldung" }));
+    const started = await app.inject({
+      method: "POST",
+      url: `/api/v1/connections/${id}/sign-in/attempts`,
+      headers: german,
+      payload: {},
+    });
+    const { step } = started.json<{ step: { fields: { name: string; label: string }[] } }>();
+    // A label without a German text (the test provider's "User") stays as the provider wrote it.
+    expect(step.fields.map((field) => field.label)).toEqual(["User", "Passwort"]);
+  });
+
   it("walks form, method choice and a texted code; a network error keeps the step", async () => {
     const id = await newConnection();
     const otp = await upToMethod(id, "sms");

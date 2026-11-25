@@ -43,7 +43,7 @@ const CHALLENGE_MARKERS = ["<title>Just a moment", "cf-browser-verification", "c
 
 const configSchema = z.looseObject({
   /** The delivery postcode. TIPSA only shows a shipment together with it. */
-  postalCode: z.string().min(1),
+  postalCode: z.string().min(1).meta({ title: "Postcode" }),
 });
 type Config = z.infer<typeof configSchema>;
 const secretSchema = z.null();

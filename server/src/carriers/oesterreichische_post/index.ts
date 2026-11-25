@@ -5,7 +5,7 @@ import { isPlausibleBarcode, lookUp, trackingSnapshot } from "./tracking.js";
 
 const configSchema = z.looseObject({
   /** Language of event texts and place names; the carrier knows only German and English. */
-  language: z.enum(["de", "en"]).optional(),
+  language: z.enum(["de", "en"]).optional().meta({ title: "Language" }),
 });
 type Config = z.infer<typeof configSchema>;
 

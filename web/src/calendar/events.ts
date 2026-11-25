@@ -1,6 +1,16 @@
 import type { EventInput } from "@fullcalendar/core";
 import type { CalendarEntry } from "../api/types";
 import { t } from "../i18n";
+import { costLabel, dropOffLabel } from "../returns/parts";
+
+/** A return's deadline says where to hand it in and what it costs. */
+function returnDetails(entry: CalendarEntry): string[] {
+  const cost = costLabel(entry.cost);
+  return [
+    ...entry.drop_off.map((option) => `${t.returns.dropOff}: ${dropOffLabel(option)}`),
+    ...(cost === null ? [] : [cost]),
+  ];
+}
 
 /**
  * One calendar entry as a FullCalendar event. All-day entries use the server's local days
@@ -16,7 +26,7 @@ export function toCalendarEvent(entry: CalendarEntry, carrierName: string): Even
   // deadline says so and lists where to hand it in and what it costs.
   const title =
     entry.kind === "return_by"
-      ? [t.calendar.returnBy(entry.title), ...entry.details].join(" · ")
+      ? [t.calendar.returnBy(entry.title), ...returnDetails(entry)].join(" · ")
       : `${entry.title} · ${carrierName}`;
   return {
     id: entry.uid,

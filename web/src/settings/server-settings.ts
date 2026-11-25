@@ -4,6 +4,7 @@ import {
   getApiV1SettingsConfig,
   patchApiV1SettingsConfig,
   type GetApiV1SettingsConfig200Item,
+  type GetApiV1SettingsConfig200ItemGroup as ServerSettingGroup,
 } from "../api/generated";
 import { t } from "../i18n";
 import { mapLayersKey } from "../map/layers";
@@ -14,7 +15,7 @@ export type ServerSettingValue = string | number | boolean;
 export const serverSettingsKey = ["settings", "config"] as const;
 
 /** The passwords' group: edited on the Security card, not the generic editor. */
-export const SECURITY_GROUP = "Security";
+export const SECURITY_GROUP: ServerSettingGroup = "security";
 
 export function useServerSettings() {
   return useQuery({
@@ -49,8 +50,10 @@ export function useResetServerSetting() {
 }
 
 /** Settings by group, in the order the server lists them. */
-export function groupSettings(settings: readonly ServerSetting[]): [string, ServerSetting[]][] {
-  const groups = new Map<string, ServerSetting[]>();
+export function groupSettings(
+  settings: readonly ServerSetting[],
+): [ServerSettingGroup, ServerSetting[]][] {
+  const groups = new Map<ServerSettingGroup, ServerSetting[]>();
   for (const setting of settings) {
     const group = groups.get(setting.group) ?? [];
     group.push(setting);

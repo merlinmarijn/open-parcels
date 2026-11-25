@@ -30,13 +30,13 @@ import { DEVICE_MODEL, POSTI_APP } from "./keys.js";
  */
 
 export const deviceSchema = z.object({
-  deviceId: z.string().min(1),
+  deviceId: z.string().min(1).meta({ title: "Device ID" }),
   /** PKCS#8 PEM. Stored only inside the encrypted sign-in data. */
-  privateKey: z.string().min(1),
+  privateKey: z.string().min(1).meta({ title: "Private key" }),
   /** Base64; with no PIN, the salt alone gives the shared secret. */
-  salt: z.string().min(1),
+  salt: z.string().min(1).meta({ title: "Salt" }),
   /** The account the device belongs to (the ID token's `sub`). */
-  subject: z.string().min(1),
+  subject: z.string().min(1).meta({ title: "Subject" }),
 });
 export type Device = z.infer<typeof deviceSchema>;
 

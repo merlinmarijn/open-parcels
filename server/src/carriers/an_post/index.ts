@@ -59,7 +59,10 @@ export function anPostSnapshot(item: Json, report: (key: string) => void): Parce
 }
 
 const configSchema = z.looseObject({});
-const secretSchema = z.object({ username: z.string().min(1), password: z.string().min(1) });
+const secretSchema = z.object({
+  username: z.string().min(1).meta({ title: "Username" }),
+  password: z.string().min(1).meta({ title: "Password" }),
+});
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 

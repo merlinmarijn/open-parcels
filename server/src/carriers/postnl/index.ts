@@ -34,7 +34,9 @@ fragment shipment on TrackedShipmentResultType {
 }`;
 
 const configSchema = z.object({});
-const secretSchema = z.object({ refreshToken: z.string().min(1) }).nullable();
+const secretSchema = z
+  .object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) })
+  .nullable();
 type Config = z.infer<typeof configSchema>;
 type Secret = z.infer<typeof secretSchema>;
 

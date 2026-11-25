@@ -58,8 +58,11 @@ export const signInStateSchema = z.object({
 export type SignInState = z.infer<typeof signInStateSchema>;
 
 export const amazonSecretSchema = z.object({
-  refreshToken: z.string().min(1),
-  deviceSerial: z.string().regex(/^[0-9A-F]{32}$/),
+  refreshToken: z.string().min(1).meta({ title: "Refresh token" }),
+  deviceSerial: z
+    .string()
+    .regex(/^[0-9A-F]{32}$/)
+    .meta({ title: "Device serial number" }),
 });
 export type AmazonSecret = z.infer<typeof amazonSecretSchema>;
 
