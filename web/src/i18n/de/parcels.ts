@@ -62,7 +62,7 @@ export const parcels: Messages["parcels"] = {
   pending: "Noch keine Angaben",
   pendingAway: (away) => `Noch keine Angaben (${away})`,
   deliveryDate: "Zugestellt am",
-  estimatedDelivery: "Voraussichtliche Zustellung",
+  expectedDelivery: "Voraussichtliche Zustellung",
   history: "Sendungsverlauf",
   noHistory: "Noch keine Ereignisse.",
   items: "Artikel",

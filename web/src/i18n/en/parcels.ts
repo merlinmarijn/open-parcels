@@ -64,7 +64,7 @@ export const parcels = {
   pending: "Pending information",
   pendingAway: (away: string) => `Pending information (${away})`,
   deliveryDate: "Delivery date",
-  estimatedDelivery: "Estimated delivery",
+  expectedDelivery: "Expected delivery",
   history: "Tracking history",
   noHistory: "No tracking updates yet.",
   items: "Items",

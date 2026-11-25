@@ -4,6 +4,7 @@ import { Undo2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ParcelStatus, Return, ReturnStatus } from "../api/types";
 import { t } from "../i18n";
+import { formatMoney } from "../lib/format";
 import { UI_LOCALE } from "../lib/locale";
 
 export const RETURN_STATUS_LABELS: Readonly<Record<ReturnStatus, string>> = t.returns.status;
@@ -32,15 +33,6 @@ export function formatDay(day: string): string {
     month: "short",
     year: "numeric",
   }).format(new Date(year, month - 1, date));
-}
-
-export function formatMoney(amount: number, currency: string | null): string {
-  if (currency === null) return amount.toFixed(2);
-  try {
-    return new Intl.NumberFormat(UI_LOCALE, { style: "currency", currency }).format(amount);
-  } catch {
-    return `${amount.toFixed(2)} ${currency}`;
-  }
 }
 
 /** "Free return", "Return costs 4,99 €", or null when not known. */

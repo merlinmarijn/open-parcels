@@ -106,7 +106,7 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
       )}
       <div>
         <div className="eta-label">
-          {done ? t.parcels.deliveryDate : t.parcels.estimatedDelivery}
+          {done ? t.parcels.deliveryDate : t.parcels.expectedDelivery}
         </div>
         <div className="eta-value">{when}</div>
       </div>
