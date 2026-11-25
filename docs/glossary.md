@@ -16,6 +16,7 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | Term | Meaning | Alternatives (communication only, never in app/API/docs) |
 | --- | --- | --- |
 | Provider | Installable package that talks to one carrier, shop or other service (e.g. the Amazon provider, the DHL provider) | plugin, plug-in, integration, connector, carrier module |
+| Consumer | Installable package that takes open-parcels' events out to a service the user chose (ntfy, email, webhook, Apprise); providers bring information in, consumers send it out (decision record 0005) | notifier, output, sink, channel, notification provider, event provider |
 | Connection | One configured use of a provider: a signed-in account, a keyless tracking setup or a mailbox (e.g. "Amazon.de · Bluscream", "DHL tracking") | source, account, link, instance |
 | Fallback service | A provider that is not a carrier but asks many of them (universal lookup, 17TRACK); asked only about parcels no built-in carrier follows or finds | aggregator, meta tracker, universal tracker, fallback provider |
 | Parcel | One physical box or envelope travelling under one tracking number | shipment, package, consignment, Sendung, Paket |
