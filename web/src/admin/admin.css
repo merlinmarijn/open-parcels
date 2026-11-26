@@ -140,18 +140,29 @@
   color: var(--text-soft);
 }
 
-.guide h1,
 .guide h2,
-.guide h3 {
+.guide h3,
+.guide h4 {
   color: var(--text);
   line-height: 1.25;
   margin: var(--space-8) 0 var(--space-3);
 }
 
+/* Markdown "#" renders as h2 (the page owns h1); "##" sections get a quiet rule above. */
 .guide h2 {
+  font-size: var(--text-2xl);
+  letter-spacing: -0.02em;
+  margin-top: 0;
+}
+
+.guide h3 {
   font-size: var(--text-xl);
   padding-top: var(--space-6);
   border-top: 1px solid var(--panel-border);
+}
+
+.guide h4 {
+  font-size: var(--text-md);
 }
 
 .guide code {
