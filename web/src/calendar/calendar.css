@@ -1,0 +1,118 @@
+/* FullCalendar, themed to the page: hairline grid, soft toolbar, pill events. */
+.calendar {
+  --fc-border-color: var(--panel-border);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--tint);
+  --fc-list-event-hover-bg-color: var(--tint);
+  --fc-today-bg-color: var(--accent-soft);
+  --fc-event-bg-color: var(--accent);
+  --fc-event-border-color: var(--accent);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: var(--border-strong);
+  --fc-button-text-color: var(--text);
+  --fc-button-active-bg-color: var(--tint-strong);
+  --fc-button-active-border-color: var(--border-strong);
+  --fc-button-hover-bg-color: var(--tint-strong);
+  --fc-button-hover-border-color: var(--border-strong);
+  padding: var(--space-5) var(--space-6);
+}
+
+.calendar .fc .fc-toolbar-title {
+  font-size: var(--text-xl);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.calendar .fc .fc-button {
+  font-size: var(--text-sm);
+  font-weight: 550;
+  padding: 0.4em 0.8em;
+  border-radius: var(--radius-sm);
+  box-shadow: none;
+  text-transform: capitalize;
+}
+
+.calendar .fc .fc-button-primary:not(:disabled).fc-button-active {
+  color: var(--text);
+}
+
+.calendar .fc .fc-button:focus {
+  box-shadow: 0 0 0 2px var(--focus);
+}
+
+.calendar .fc .fc-col-header-cell-cushion {
+  font-size: var(--text-xs);
+  font-weight: 550;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--muted);
+  padding: 8px 4px;
+}
+
+.calendar .fc .fc-daygrid-day-number {
+  font-size: var(--text-sm);
+  color: var(--text-soft);
+  padding: 6px 8px;
+}
+
+.calendar .fc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.calendar .fc .fc-scrollgrid {
+  border-radius: var(--radius);
+  overflow: hidden;
+}
+
+.calendar .fc .fc-daygrid-event,
+.calendar .fc .fc-timegrid-event {
+  border-radius: var(--radius-sm);
+  padding: 1px 4px;
+  font-size: var(--text-xs);
+  font-weight: 500;
+}
+
+.cal-delivered {
+  --fc-event-bg-color: var(--ok);
+  background: color-mix(in srgb, var(--ok) 85%, #000);
+  border-color: transparent;
+}
+
+.cal-return_by {
+  background: var(--tint-strong);
+  border-color: var(--accent);
+  color: var(--text);
+}
+
+.cal-late {
+  background: var(--warn);
+  border-color: transparent;
+}
+
+@media (max-width: 600px) {
+  .calendar {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .calendar .fc .fc-toolbar.fc-header-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .calendar .fc .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .calendar .fc .fc-toolbar-title {
+    font-size: var(--text-lg);
+  }
+
+  .calendar .fc .fc-button {
+    padding: 0.35em 0.55em;
+  }
+}

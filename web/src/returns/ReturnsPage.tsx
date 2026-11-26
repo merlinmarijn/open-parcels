@@ -22,7 +22,7 @@ export function ReturnsPage(): ReactNode {
   const returns = useReturns(view);
   return (
     <section aria-labelledby="returns-title" className="stack">
-      <div className="page-header glass-panel">
+      <div className="page-header">
         <div className="page-title-row">
           <Undo2 size={22} className="page-icon" aria-hidden="true" />
           <h1 id="returns-title">{t.returns.title}</h1>

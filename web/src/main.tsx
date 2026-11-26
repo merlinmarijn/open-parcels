@@ -4,7 +4,8 @@ import { createRoot } from "react-dom/client";
 import { createQueryClient } from "./api/client";
 import { App } from "./App";
 import { LANGUAGE } from "./i18n";
-import "./styles.css";
+import "./styles/tokens.css";
+import "./styles/base.css";
 
 document.documentElement.lang = LANGUAGE;
 

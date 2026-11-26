@@ -1,12 +1,11 @@
 /** Pieces shared by the orders list and an order's page. */
-import { Link } from "@tanstack/react-router";
-import { MapPin } from "lucide-react";
 import type { ReactNode } from "react";
 import type { Order, OrderStatus, OrderView, ParcelStatus } from "../api/types";
-import { CarrierLogo } from "../components/CarrierLogo";
-import { deliveryLine, formatMoney, formatRelative } from "../lib/format";
+import { formatMoney, formatRelative } from "../lib/format";
 import { t } from "../i18n";
-import { ArchivedBadge, StatusBadge } from "../parcels/badges";
+import "./orders.css";
+import { ArchivedBadge } from "../parcels/badges";
+import { ParcelCard } from "../parcels/ParcelCard";
 
 /** The parcel status whose colour an order status borrows. */
 const STATUS_COLOUR: Readonly<Record<OrderStatus, ParcelStatus>> = {
@@ -96,30 +95,11 @@ export function OrderParcels({ order }: { readonly order: Order }): ReactNode {
   if (order.parcels.length === 0) return null;
   return (
     <ul className="parcel-list">
-      {order.parcels.map((parcel) => {
-        const line = deliveryLine(parcel);
-        const place = parcel.location?.name ?? null;
-        return (
-          <li key={parcel.id}>
-            <Link to="/parcels/$parcelId" params={{ parcelId: parcel.id }} className="parcel-card">
-              <CarrierLogo carrier={parcel.carrier} />
-              <div className="parcel-card-body">
-                <div className="parcel-card-title">{parcel.display_name}</div>
-                <div className="parcel-card-meta">
-                  {parcel.carrier} · {parcel.tracking_number}
-                </div>
-                {line === null ? null : <div className="parcel-card-eta">{line}</div>}
-                {place === null || parcel.delivered ? null : (
-                  <div className="parcel-card-meta">
-                    <MapPin size={12} aria-hidden="true" /> {place}
-                  </div>
-                )}
-              </div>
-              <StatusBadge status={parcel.status} />
-            </Link>
-          </li>
-        );
-      })}
+      {order.parcels.map((parcel) => (
+        <li key={parcel.id}>
+          <ParcelCard parcel={parcel} compact />
+        </li>
+      ))}
     </ul>
   );
 }

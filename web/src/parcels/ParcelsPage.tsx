@@ -26,7 +26,7 @@ export function ParcelsPage(): ReactNode {
 
   return (
     <section aria-labelledby="parcels-title" className="stack">
-      <div className="page-header glass-panel">
+      <div className="page-header">
         <div className="page-title-row">
           <Package size={22} className="page-icon" aria-hidden="true" />
           <h1 id="parcels-title">{t.parcels.title}</h1>
@@ -48,7 +48,7 @@ export function ParcelsPage(): ReactNode {
         {admin ? (
           <button
             type="button"
-            className="button primary"
+            className="button primary page-add"
             onClick={() => {
               setAdding(true);
             }}

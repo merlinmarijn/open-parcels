@@ -1,4 +1,4 @@
-import { Eraser, Mail, Pause, Pencil, Play, Trash2 } from "lucide-react";
+import { Eraser, Mail, Pause, Pencil, Play, Plug, Trash2 } from "lucide-react";
 import { useMemo, useState, type ReactNode } from "react";
 import {
   connectionDataCounts,
@@ -24,6 +24,7 @@ import { ConnectionDialog } from "./ConnectionDialog";
 import { ConnectionJobs } from "./ConnectionJobs";
 import { t } from "../i18n";
 import { formatNumber } from "../lib/locale";
+import "./connections.css";
 
 type Editing =
   { readonly mode: "add" } | { readonly mode: "edit"; readonly connection: Connection } | null;
@@ -315,7 +316,10 @@ export function ConnectionsPage(): ReactNode {
           <Spinner />
         ) : null
       ) : connections.data.length === 0 ? (
-        <p className="muted">{t.connections.empty}</p>
+        <div className="card empty-state">
+          <Plug size={28} aria-hidden="true" />
+          <p>{t.connections.empty}</p>
+        </div>
       ) : (
         <ul className="plain-list connection-grid">
           {connections.data.map((connection) => (

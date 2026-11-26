@@ -21,6 +21,7 @@ import { useIsAdmin } from "../auth/session";
 import { BackupCard } from "./BackupCard";
 import { DataCard } from "./DataCard";
 import { ServerSettingsCards } from "./ServerSettings";
+import "./settings.css";
 
 interface Place {
   readonly label: string;

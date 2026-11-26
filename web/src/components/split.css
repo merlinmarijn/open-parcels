@@ -1,0 +1,91 @@
+/* Split pages: a list or overview beside a map that fills the rest of the screen. */
+.split-page {
+  flex: none;
+  overflow: hidden;
+  min-height: 520px;
+  height: calc(100vh - 2 * var(--space-8));
+  height: calc(100dvh - 2 * var(--space-8));
+}
+
+.split-page.with-bar {
+  height: calc(100dvh - 2 * var(--space-8) - 40px);
+}
+
+.panel {
+  height: 100%;
+  display: flex;
+  flex-direction: column;
+  padding: var(--space-6);
+  overflow: hidden;
+}
+
+.panel > h2 {
+  font-size: var(--text-md);
+}
+
+.panel-scroll {
+  overflow-y: auto;
+  flex: 1;
+  min-height: 0;
+  margin-right: calc(-1 * var(--space-3));
+  padding-right: var(--space-3);
+  scrollbar-width: thin;
+}
+
+.panel .parcel-list {
+  flex: 1;
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--space-3));
+  scrollbar-width: thin;
+}
+
+.split-handle {
+  width: 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.split-handle::after {
+  content: "";
+  width: 3px;
+  height: 32px;
+  border-radius: 2px;
+  background: var(--border-strong);
+  transition: background-color var(--duration) var(--ease);
+}
+
+.split-handle:focus-visible::after,
+.split-handle:hover::after {
+  background: var(--accent);
+}
+
+/* Narrow screens: the panels stack, the map a fixed height. */
+.stacked {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+}
+
+.stacked .map-panel {
+  height: min(52vh, 420px);
+}
+
+.stacked .panel {
+  height: auto;
+}
+
+@media (max-width: 899px) {
+  .split-page,
+  .split-page.with-bar {
+    height: auto;
+    min-height: 0;
+    overflow: visible;
+  }
+}
+
+@media (max-width: 600px) {
+  .panel {
+    padding: var(--space-4);
+  }
+}

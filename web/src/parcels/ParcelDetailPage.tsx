@@ -10,7 +10,7 @@ import {
   describeLookup,
   formatDateTime,
   formatRelative,
-  formatExpected,
+  etaParts,
   CONNECTION_KIND_LABELS,
   STATUS_LABELS,
 } from "../lib/format";
@@ -23,6 +23,7 @@ import { useIsAdmin } from "../auth/session";
 import { EditableStatus, EditableTitle, ParcelActions } from "./InlineEdit";
 import { ItemList } from "./ItemList";
 import { t } from "../i18n";
+import "./parcels.css";
 
 const LocationMap = lazy(() => import("../map/LocationMap"));
 
@@ -86,17 +87,17 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   const done = parcel.delivered;
   const km = kmToHome(parcel, home?.point ?? null);
   const away = km === null ? null : t.parcels.away(formatDistance(km));
-  const planned = parcel.expected_from !== null || parcel.expected_to !== null;
-  const when = done
-    ? `${formatDateTime(parcel.delivered_at)} (${formatRelative(parcel.delivered_at)})`
-    : planned
-      ? `${formatExpected(parcel)} (${[
-          formatRelative(parcel.expected_from ?? parcel.expected_to),
-          ...(away === null ? [] : [away]),
-        ].join("; ")})`
-      : away === null
-        ? t.parcels.pending
-        : t.parcels.pendingAway(away);
+  const eta = etaParts(parcel);
+  const [main, detail] = done
+    ? [formatDateTime(parcel.delivered_at), formatRelative(parcel.delivered_at)]
+    : eta === null
+      ? [t.parcels.pending, away]
+      : [
+          eta.day,
+          [eta.time, formatRelative(parcel.expected_from ?? parcel.expected_to), away]
+            .filter((part) => part !== null)
+            .join(" · "),
+        ];
   return (
     <div className={done ? "eta-card done" : "eta-card"}>
       {done ? (
@@ -108,7 +109,8 @@ function EtaCard({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         <div className="eta-label">
           {done ? t.parcels.deliveryDate : t.parcels.expectedDelivery}
         </div>
-        <div className="eta-value">{when}</div>
+        <div className="eta-value">{main}</div>
+        {detail === null ? null : <div className="eta-detail">{detail}</div>}
       </div>
     </div>
   );
@@ -201,7 +203,7 @@ function Connections({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
       {parcel.connections.length === 0 ? (
         <p className="muted">{t.parcels.noConnections}</p>
       ) : (
-        <ul>
+        <ul className="plain-list detail-list">
           {parcel.connections.map((connection) => (
             <li key={`${connection.connection_id}-${connection.role}`}>
               {connection.label}{" "}
@@ -230,6 +232,10 @@ function Header({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
         <EditableTitle parcel={parcel} />
       </div>
       <div className="detail-head-tags">
+        {parcel.archived_at === null ? null : <ArchivedBadge />}
+        <EditableStatus parcel={parcel} />
+      </div>
+      <div className="detail-head-actions">
         {canEdit ? (
           <button
             type="button"
@@ -243,10 +249,6 @@ function Header({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
             {markedDelivered ? t.parcels.markNotDelivered : t.parcels.markDelivered}
           </button>
         ) : null}
-        {parcel.archived_at === null ? null : <ArchivedBadge />}
-        <EditableStatus parcel={parcel} />
-      </div>
-      <div className="detail-head-actions">
         <ParcelActions parcel={parcel} />
       </div>
       <ErrorNotice error={update.error} />
