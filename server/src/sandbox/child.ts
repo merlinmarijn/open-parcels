@@ -15,6 +15,29 @@ export interface WireError {
   readonly message: string;
   /** For a rate limit: the seconds the other side asked to wait. */
   readonly retryAfterSeconds?: number;
+  /**
+   * The class to rebuild when `name` is a subclass the other side does not know (a provider's own
+   * error class): its nearest known ancestor, set by the guest.
+   */
+  readonly kind?: string;
+  /** An error's own `reason` and `values` (the engine's settings errors), when it has them. */
+  readonly reason?: string;
+  readonly values?: Readonly<Record<string, string>>;
+}
+
+/** The fields of `error` a `WireError` keeps besides name and message, when they have the right shape. */
+export function wireExtras(error: object): Omit<WireError, "name" | "message"> {
+  const { retryAfterSeconds, kind, reason, values } = error as Record<string, unknown>;
+  const stringRecord =
+    values !== null &&
+    typeof values === "object" &&
+    Object.values(values).every((value) => typeof value === "string");
+  return {
+    ...(typeof retryAfterSeconds === "number" ? { retryAfterSeconds } : {}),
+    ...(typeof kind === "string" ? { kind } : {}),
+    ...(typeof reason === "string" ? { reason } : {}),
+    ...(stringRecord ? { values: values as Readonly<Record<string, string>> } : {}),
+  };
 }
 
 type Outcome =
@@ -49,17 +72,12 @@ export type GuestMethods = Readonly<
   Record<string, (args: unknown, broker: Broker) => Promise<unknown>>
 >;
 
-/** An error as `WireError`: its name, its message and a numeric `retryAfterSeconds`, nothing else. */
+/** An error as `WireError`: its name, its message and the extras above, nothing else. */
 function toWire(error: unknown): WireError {
   if (!(error instanceof Error)) {
     return { name: "Error", message: String(error) };
   }
-  const retry: unknown = (error as { retryAfterSeconds?: unknown }).retryAfterSeconds;
-  return {
-    name: error.name,
-    message: error.message,
-    ...(typeof retry === "number" ? { retryAfterSeconds: retry } : {}),
-  };
+  return { name: error.name, message: error.message, ...wireExtras(error) };
 }
 
 function send(message: ChildMessage): void {
@@ -114,7 +132,8 @@ async function main(guestPath: string): Promise<void> {
   send({ type: "ready" });
 }
 
+// Only as the process's entry point: the host imports this file for its types and `wireExtras`.
 const guestPath = process.argv[2];
-if (guestPath !== undefined && process.send !== undefined) {
+if (import.meta.main && guestPath !== undefined && process.send !== undefined) {
   void main(guestPath);
 }

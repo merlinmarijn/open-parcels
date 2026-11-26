@@ -12,6 +12,13 @@ import {
 import { NOMINATIM_SEARCH } from "./geo/geocoder.js";
 import { TILE_MAX_ZOOM_ANY } from "./tiles/proxy.js";
 
+/**
+ * Where the built-in providers run (`docs/provider-manifest-and-sandbox.md` §2): `off` in the
+ * server's own process, `pool` in one sandbox child shared by all of them.
+ */
+const PROVIDER_ISOLATION = ["off", "pool"] as const;
+type ProviderIsolation = (typeof PROVIDER_ISOLATION)[number];
+
 const LOG_LEVELS = ["fatal", "error", "warn", "info", "debug", "trace"] as const;
 
 const booleanFlag = z
@@ -241,6 +248,16 @@ export const SETTINGS = {
     default: true,
     apply: "live",
     kind: "boolean",
+  }),
+  OPENPARCELS_PROVIDER_ISOLATION: setting({
+    group: "tracking",
+    description:
+      "Where the built-in providers run: off runs them in the server's own process; pool runs them together in one separate process under Node's permission model, which reaches the network, the sign-in data and the sessions only through the server, one call at a time. Pool costs one more process (about 60 MB).",
+    schema: z.enum(PROVIDER_ISOLATION),
+    default: "off",
+    apply: "env",
+    kind: "string",
+    choices: PROVIDER_ISOLATION,
   }),
   OPENPARCELS_ARCHIVE_DAYS: setting({
     group: "retention",
@@ -551,6 +568,8 @@ export interface AppConfig {
   readonly readerPassword: string;
   readonly timeZone: string;
   readonly quietWindow: boolean;
+  /** Where the built-in providers run (OPENPARCELS_PROVIDER_ISOLATION). */
+  readonly providerIsolation: ProviderIsolation;
   /** Background lookup of scan place names (OPENPARCELS_GEOCODING). */
   readonly geocoding: boolean;
   /** Nominatim-compatible search endpoint (OPENPARCELS_GEOCODING_URL). */
@@ -614,6 +633,7 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
     readerPassword: values.OPENPARCELS_PASSWORD,
     timeZone: values.OPENPARCELS_TIMEZONE ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
     quietWindow: values.OPENPARCELS_QUIET_WINDOW,
+    providerIsolation: values.OPENPARCELS_PROVIDER_ISOLATION,
     geocoding: values.OPENPARCELS_GEOCODING,
     geocodingUrl: values.OPENPARCELS_GEOCODING_URL,
     contactEmail: values.OPENPARCELS_CONTACT_EMAIL,

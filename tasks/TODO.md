@@ -53,16 +53,6 @@ image are shipped (see `DONE.md`). Left:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
-- [ ] Glossary pass in the other repos: done on 2026-11-25 (HA integration `e14747d`, HA app
-      `cfdf033`, extension `b13f25d`, website `1b28cf3`, org profile `6274398`, all pushed) and
-      re-checked on 2026-11-26 against every tracked file. One leftover:
-  - open-parcels-ha `custom_components/open_parcels/parcels.py:59`: the docstring says "a mail
-    connection"; it means the `mail` role, so "an email connection (role `mail`)". The role value
-    itself is API and stays.
-  - Not leftovers (checked): `MIGRATION.md` and `migrate.py` name old terms on purpose;
-    "formerly an add-on" in the HA app README, website and org profile; Firefox's own "Add-on"
-    wording in the extension README; `ParcelPosition.source` (`courier`/`scan`) is a position
-    source, not a connection; the extension's `postMessage` `source` is DOM protocol.
 - [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
       Theme (default, installed themes) and Mode (Automatic from device / Light / Dark); a theme
       may ship a light and a dark variant (Automatic follows the device), or one variant that

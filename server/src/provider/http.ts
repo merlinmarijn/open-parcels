@@ -4,7 +4,7 @@ import type { Clock, Sleep } from "../clock.js";
 import { isNonPublicHostLiteral } from "../net/address.js";
 import { guardedFetch, type FetchLike } from "../net/guarded-fetch.js";
 import { userAgent } from "../version.js";
-import { RateLimitedError, TransientError } from "./errors.js";
+import { RateLimitedError, RequestTimeoutError, TransientError } from "./errors.js";
 import type { HostAllowList } from "./manifest.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
@@ -298,9 +298,11 @@ export function coreTransport(
         signal: AbortSignal.timeout(hop.timeoutMs ?? DEFAULT_TIMEOUT_MS),
       });
     } catch (error) {
-      throw new TransientError(`Request to ${url.hostname} failed (${networkCause(error)}).`, {
-        cause: error,
-      });
+      const cause = networkCause(error);
+      const message = `Request to ${url.hostname} failed (${cause}).`;
+      throw cause === "timeout"
+        ? new RequestTimeoutError(message, { cause: error })
+        : new TransientError(message, { cause: error });
     }
     const retryAfter = parseRetryAfter(response.headers.get("retry-after"), clock.now());
     if (response.status === 429 || (response.status === 503 && retryAfter !== undefined)) {
@@ -323,7 +325,8 @@ export function coreTransport(
 
 /** The only way providers reach the network: redirects, cookies and decoding over a transport. */
 export class ProviderHttp {
-  constructor(private readonly transport: HopTransport) {}
+  /** The transport every hop goes through; a sandboxed provider's hops are answered by it. */
+  constructor(readonly transport: HopTransport) {}
 
   /**
    * Sends a request. Redirects are followed here, hop by hop (never by the runtime), so every hop

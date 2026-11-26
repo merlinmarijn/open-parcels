@@ -4,6 +4,16 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-26
 
+- TODO §3: provider sandbox. The built-in providers can run in one sandbox child under the Node
+  permission model (`OPENPARCELS_PROVIDER_ISOLATION=pool`; default `off`, reasons in
+  `docs/provider-manifest-and-sandbox.md` §2): the provider guest, brokered HTTP, session, log and
+  unknown-value reports, error classes kept across, bundle entries for the child and the guest,
+  start-up check of the pool and a pool start in the image build, every carrier suite run in
+  both modes (commit: see the log, "sandbox")
+- TODO §3: glossary pass in the other repos: HA integration `e14747d`, HA app `cfdf033`,
+  extension `b13f25d`, website `1b28cf3`, org profile `6274398`; the last leftover, the
+  "mail connection" docstring in the HA integration, fixed in open-parcels-ha `476acb6` and
+  `63722d0`
 - TODO §3: provider manifest format 1 and capabilities model
   (`docs/provider-manifest-and-sandbox.md`); every built-in provider has
   `open-parcels-provider.json`, checked against its code at start-up; `ProviderHttp` refuses

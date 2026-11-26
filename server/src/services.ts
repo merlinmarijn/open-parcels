@@ -1,13 +1,13 @@
 import { userAgent } from "./version.js";
 import { announceUses } from "./auth/use-events.js";
 import path from "node:path";
+import { fileURLToPath } from "node:url";
 import type { Kysely } from "kysely";
 import type { Logger } from "pino";
 import { AccessControl } from "./auth/access.js";
 import { LoginStore } from "./auth/logins.js";
 import { AuthStore } from "./auth/store.js";
 import { CalendarService } from "./calendar/service.js";
-import { BUILTIN_CARRIERS } from "./engine/builtin-carriers.js";
 import { realSleep, type Clock, type Sleep } from "./clock.js";
 import type { AppConfig } from "./config.js";
 import type { SecretBox } from "./crypto/secrets.js";
@@ -19,6 +19,8 @@ import { trackingConnectionIn } from "./engine/linking.js";
 import { Reconciler } from "./engine/reconciler.js";
 import { ProviderRegistry, type RegisteredProvider } from "./engine/registry.js";
 import { ConnectionRunner } from "./engine/runner.js";
+import type { Sandbox } from "./sandbox/host.js";
+import { builtinProviders, sandboxFilesIn } from "./sandbox/providers.js";
 import { SignInService } from "./engine/sign-in.js";
 import { Scheduler } from "./engine/scheduler.js";
 import { repairOrderShops } from "./engine/order-repair.js";
@@ -95,6 +97,8 @@ export interface Services {
   readonly sync: SyncService;
   readonly access: AccessControl;
   readonly backups: BackupService;
+  /** The sandbox the built-in providers run in (`OPENPARCELS_PROVIDER_ISOLATION=pool`), else none. */
+  readonly providerPool: Sandbox | undefined;
 }
 
 export interface ServiceDeps {
@@ -210,7 +214,14 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   const settings = new SettingsStore(db, clock, bus);
   await settings.load();
   const installId = await settings.installId();
-  const registry = new ProviderRegistry(deps.providers ?? BUILTIN_CARRIERS);
+  const { providers: builtins, pool: providerPool } = await builtinProviders(
+    deps.config.providerIsolation,
+    // This module sits at the root of `dist/` both built and bundled (its chunks too).
+    sandboxFilesIn(path.dirname(fileURLToPath(import.meta.url))),
+    clock,
+    logger,
+  );
+  const registry = new ProviderRegistry(deps.providers ?? builtins);
   const connections = new ConnectionService(db, registry, deps.secrets, bus, clock);
   const images = new ImageProxy({
     secretKey: deps.secrets.derive("image proxy"),
@@ -332,6 +343,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
   const orders = new OrderService(db, bus, clock, presentation, returns);
   return {
     ...deps,
+    providerPool,
     installId,
     auth,
     logins,

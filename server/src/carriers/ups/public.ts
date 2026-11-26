@@ -2,6 +2,7 @@ import {
   asObject,
   isObject,
   parseJsonBody,
+  RequestTimeoutError,
   text,
   TransientError,
   UnexpectedResponseError,
@@ -52,17 +53,12 @@ const trackUrl = (locale: string): URL => {
 };
 
 /** Whether a failed request timed out, i.e. the guard never answered. */
-function timedOut(error: unknown): boolean {
-  const cause = error instanceof Error ? error.cause : undefined;
-  return cause instanceof Error && cause.name === "TimeoutError";
-}
-
 /** Runs one public request, turning a hang into a `BotGuardError`. */
 async function guarded<T>(what: string, send: () => Promise<T>): Promise<T> {
   try {
     return await send();
   } catch (error) {
-    if (timedOut(error)) {
+    if (error instanceof RequestTimeoutError) {
       throw new BotGuardError(`UPS's ${what} never answered (bot guard).`, true);
     }
     throw error;

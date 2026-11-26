@@ -2,7 +2,7 @@ import { fork, type ChildProcess } from "node:child_process";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import type { Clock } from "../clock.js";
-import type { ChildMessage, HostMessage, WireError } from "./child.js";
+import { wireExtras, type ChildMessage, type HostMessage, type WireError } from "./child.js";
 
 /**
  * The host side of the sandbox (`docs/provider-manifest-and-sandbox.md` §2): one child process
@@ -238,15 +238,10 @@ export class Sandbox {
   }
 }
 
-/** A host-side error for the child: name, message and a rate limit's wait, nothing else. */
+/** A host-side error for the child: name, message and the extras `WireError` keeps. */
 function wireOf(error: unknown): WireError {
   if (!(error instanceof Error)) {
     return { name: "Error", message: String(error) };
   }
-  const retry: unknown = (error as { retryAfterSeconds?: unknown }).retryAfterSeconds;
-  return {
-    name: error.name,
-    message: error.message,
-    ...(typeof retry === "number" ? { retryAfterSeconds: retry } : {}),
-  };
+  return { name: error.name, message: error.message, ...wireExtras(error) };
 }

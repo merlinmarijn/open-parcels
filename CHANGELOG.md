@@ -2,6 +2,15 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: `OPENPARCELS_PROVIDER_ISOLATION` runs the built-in providers in a sandbox
+
+`pool` runs every built-in provider in one separate Node process under the permission model: no
+files beyond its own code, no network, no child processes. It reaches the carriers only through
+the server, which checks every request against the provider's manifest, and gets a connection's
+settings, sign-in data and session only for the call that needs them. The default, `off`, keeps
+them in the server's process ([`docs/provider-manifest-and-sandbox.md`](docs/provider-manifest-and-sandbox.md)
+§2 says why). Environment only; nothing changes in the API apart from the new setting key.
+
 ### Added: provider manifests; providers reach only the hosts they declare
 
 Every built-in provider has a manifest (`server/src/carriers/<folder>/open-parcels-provider.json`,

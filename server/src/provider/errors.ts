@@ -44,6 +44,11 @@ export class TransientError extends ProviderError {
   override readonly name: string = "TransientError";
 }
 
+/** A request got no answer within its timeout. Transient; a provider may treat a hang specially. */
+export class RequestTimeoutError extends TransientError {
+  override readonly name = "RequestTimeoutError";
+}
+
 /** The response did not have the shape we expect. Logged with keys only, never values. */
 export class UnexpectedResponseError extends TransientError {
   override readonly name = "UnexpectedResponseError";

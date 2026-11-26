@@ -33,9 +33,12 @@ FROM build AS bundle-server
 RUN cd server && node dist/tools/bundle.js /out \
  && cp package.json /out/server/package.json
 # The bundled layout must start: a missing native module or a misplaced file fails the build here.
+# The second start runs the providers in the sandbox: the server refuses to start unless the
+# bundled child comes up under the permission model and its guest serves every built-in provider.
 RUN cd /out && node --input-type=module \
     -e "await import('sharp'); const { default: Db } = await import('better-sqlite3'); new Db(':memory:').close()" \
- && node /app/server/dist/tools/smoke.js /out/server/dist/main.js
+ && node /app/server/dist/tools/smoke.js /out/server/dist/main.js \
+ && OPENPARCELS_PROVIDER_ISOLATION=pool node /app/server/dist/tools/smoke.js /out/server/dist/main.js
 
 # The web UI: a static build the server serves at / (the API client is generated and committed).
 FROM bundle-server AS bundle

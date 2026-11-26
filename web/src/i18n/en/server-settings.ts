@@ -43,6 +43,8 @@ export const serverSettings: {
       "IANA time zone (e.g. Europe/Berlin) for the night-time quiet window, email dates and calendar days. Unset uses TZ / the system zone.",
     OPENPARCELS_QUIET_WINDOW:
       "Pause carrier polling 00:00–06:00 local time. Turn off to poll all night.",
+    OPENPARCELS_PROVIDER_ISOLATION:
+      "Where the built-in providers run: off runs them in the server's own process; pool runs them together in one separate process under Node's permission model, which reaches the network, the sign-in data and the sessions only through the server, one call at a time. Pool costs one more process (about 60 MB).",
     OPENPARCELS_ARCHIVE_DAYS:
       "Days after delivery before a parcel is archived and its raw carrier data dropped.",
     OPENPARCELS_DELETE_DAYS:

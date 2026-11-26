@@ -90,9 +90,32 @@ Providers are its first user; consumers its second.
   child never holds a socket.
 - **Limits:** a timeout per call (kill and restart the child, the call fails as transient), and
   three crashes in ten minutes disable the sandbox until it is started again.
-- **Providers in it:** a provider adapter serves `fetchAccount`, `track`, `readLive` and sign-in
-  turns from the child. `OPENPARCELS_PROVIDER_ISOLATION=off|pool` picks in-process or one pool
-  process for the built-ins; the default stays `off` until the fixture suites pass in both modes.
+- **Providers in it:** the provider guest (`sandbox/provider-guest.ts`) holds the built-in
+  providers and serves `fetchAccount`, `track`, `readLive` and sign-in turns; the core keeps a
+  `RegisteredProvider` per provider whose four calls go to the guest (`sandbox/providers.ts`),
+  while what a provider is (manifest, schemas, flows) is answered without a call. Each call
+  carries config, secret and the session as loaded, and is granted `http` (one hop, answered with
+  the core's time, which is the guest's clock until the next hop), `log`, `report-unknown` and,
+  only with `permissions.session`, `session.save`. Errors keep their class across: a provider's
+  own subclass (`BotGuardError extends TransientError`) travels with its nearest known class as
+  `kind` and is rebuilt as that class under its own name; request timeouts are their own class
+  (`RequestTimeoutError`), since an error's `cause` does not cross.
+- **The switch:** `OPENPARCELS_PROVIDER_ISOLATION=off|pool` (environment only) runs the built-ins
+  in-process or in one pool child for all of them. With `pool` the server starts the child at
+  start-up and refuses to start unless it comes up under the permission model and its guest
+  serves exactly the core's built-in providers; the image build starts the bundled server once
+  in each mode (`Dockerfile`, smoke test). The bundle builds `dist/sandbox/child.js` on its own
+  (in a shared chunk it would not be the entry module) and `dist/sandbox/provider-guest.js` with
+  the server's chunks; the child may read `dist/` and `package.json`, nothing else. `pool` needs
+  the built server; from the sources (`tsx`) the server refuses it.
+- **Default `off`, and why:** the fixture suites pass in both modes (vitest project
+  `providers-pool` runs every carrier suite through a sandbox child), so correctness no longer
+  holds it back. It stays `off` because built-in providers are reviewed code shipped in the same
+  image as the core, so isolating them guards against a bug, not against a stranger; `pool` costs
+  a second Node process (about 60 MB), which counts on the HA app's Raspberry Pi; and a 10-minute
+  run or 2-minute turn timeout now kills the one child for every provider at once. The sandbox's
+  real job is installed providers (P3): those always run in it, whatever the switch says. Owners
+  who want the defence in depth for the built-ins turn on `pool`.
 - **Consumers (0005) reuse it unchanged:** a consumer module exports `deliver`/`test`, its manifest
   lists `network` hosts like a provider's, and its calls are brokered with `http` (and nothing
   else): the same process, protocol, allow-list and limits.

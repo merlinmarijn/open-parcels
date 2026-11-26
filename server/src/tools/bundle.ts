@@ -35,8 +35,23 @@ function runtimeFile(dir: string, file: string): boolean {
 
 /** Needed only to compile a native module, never at run time. */
 const BUILD_ONLY = new Set(["node-addon-api"]);
-/** The server and the tools the README tells people to run inside the container. */
-const ENTRIES = ["main", "tools/restore-backup", "tools/import-legacy", "tools/import-ha"];
+/**
+ * The server, the tools the README tells people to run inside the container, and the provider
+ * guest of the sandbox (`OPENPARCELS_PROVIDER_ISOLATION=pool`), which the server finds at
+ * `dist/sandbox/`.
+ */
+const ENTRIES = [
+  "main",
+  "tools/restore-backup",
+  "tools/import-legacy",
+  "tools/import-ha",
+  "sandbox/provider-guest",
+];
+/**
+ * The sandbox's child runtime, built on its own: the host imports its types and helpers, and
+ * shared into a chunk it would no longer be the process's entry module (`import.meta.main`).
+ */
+const CHILD = "sandbox/child";
 
 interface Manifest {
   readonly dependencies?: Readonly<Record<string, string>>;
@@ -89,6 +104,16 @@ async function main(): Promise<void> {
   const serverDir = process.cwd();
   const root = path.dirname(serverDir);
   const outDir = path.join(out, "server", "dist");
+  await build({
+    entryPoints: [{ in: `src/${CHILD}.ts`, out: CHILD }],
+    outdir: outDir,
+    bundle: true,
+    platform: "node",
+    format: "esm",
+    target: "node26",
+    legalComments: "none",
+    logLevel: "warning",
+  });
   await build({
     entryPoints: ENTRIES.map((entry) => ({ in: `src/${entry}.ts`, out: entry })),
     outdir: outDir,

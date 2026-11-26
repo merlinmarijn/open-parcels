@@ -155,6 +155,7 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
       services.scheduler.stop();
       services.live.stop();
       services.places.stop();
+      services.providerPool?.stop();
       health.stop();
       await services.mail.stop();
       await Promise.all(servers.map((server) => server.close()));
