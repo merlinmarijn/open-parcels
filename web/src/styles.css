@@ -1703,6 +1703,19 @@ tbody tr:hover {
   margin: 0;
 }
 
+.inbox-sync summary {
+  cursor: pointer;
+}
+
+.inbox-sync-log {
+  max-height: 8rem;
+  overflow-y: auto;
+  margin: 0;
+  padding-left: 1.2rem;
+  color: var(--muted);
+  font-size: 12px;
+}
+
 .connection-icon-actions {
   display: flex;
   gap: 0.2rem;

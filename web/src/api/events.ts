@@ -3,7 +3,7 @@ import { useEffect, useRef, useState } from "react";
 import { SESSION_KEY } from "../auth/session";
 import { apiUrl } from "./fetcher";
 import type { GetApiV1Events200Event } from "./generated";
-import type { ParcelDetail } from "./types";
+import type { InboxSync, ParcelDetail } from "./types";
 import { settingsKey } from "../settings/home";
 import { keys } from "./queries";
 
@@ -22,7 +22,8 @@ type Reaction =
   | "health"
   | "token"
   | "resync"
-  | "position";
+  | "position"
+  | "inboxSync";
 
 /**
  * What each message of the stream refreshes. Typed against the server's list (generated from its
@@ -49,6 +50,8 @@ const REACTIONS = {
   "connection.state_changed": "connection",
   "connection.run_finished": "connection",
   "connection.removed": "connection",
+  // An inbox sync moved on: its card's progress panel, from the message itself.
+  "connection.sync_progress": "inboxSync",
   // A job queued, started, moved on, paused or finished: the connection cards' job panels.
   "job.queued": "job",
   "job.started": "job",
@@ -176,6 +179,18 @@ export function withLivePosition(parcel: ParcelDetail, message: LivePositionMess
   };
 }
 
+/** A `connection.sync_progress` message; the server's own body, checked for what keys it. */
+function parseInboxSync(data: string): InboxSync | null {
+  try {
+    const sync = JSON.parse(data) as Partial<Record<keyof InboxSync, unknown>> | null;
+    if (typeof sync !== "object" || sync === null) return null;
+    if (typeof sync.connection_id !== "string" || typeof sync.phase !== "string") return null;
+    return Array.isArray(sync.steps) ? (sync as InboxSync) : null;
+  } catch {
+    return null;
+  }
+}
+
 function subjectIdOf(data: string): string | undefined {
   try {
     const payload = JSON.parse(data) as EventPayload;
@@ -294,6 +309,16 @@ export function useLiveUpdates(enabled: boolean): LiveState {
         parcel === undefined ? undefined : withLivePosition(parcel, message),
       );
     };
+    const onInboxSync = (event: MessageEvent<string>): void => {
+      const sync = parseInboxSync(event.data);
+      if (sync === null) return;
+      client.setQueryData(keys.inboxSync(sync.connection_id), sync);
+      if (sync.phase === "done") {
+        // Its run times, and whatever it found.
+        void client.invalidateQueries({ queryKey: keys.connections });
+        refreshLists();
+      }
+    };
     const handlers: Record<Reaction, (event: MessageEvent<string>) => void> = {
       parcel: onParcel,
       connection: onConnection,
@@ -306,6 +331,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       token: onToken,
       resync: onResync,
       position: onPosition,
+      inboxSync: onInboxSync,
     };
     for (const [type, reaction] of Object.entries(REACTIONS)) {
       if (reaction !== null) stream.addEventListener(type, handlers[reaction]);

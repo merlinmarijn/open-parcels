@@ -438,6 +438,67 @@ describe("mail watcher", () => {
     }
   });
 
+  it("reports sync progress live, throttled, without any mail content", async () => {
+    const messages: { type: string; payload: unknown }[] = [];
+    context.services.bus.subscribeEphemeral((message) => messages.push(message));
+    mailbox.add(1, "2026-11-17T10:00:00Z", "First FP0001");
+    mailbox.add(2, "2026-11-17T11:00:00Z", "Newsletter");
+    mailbox.add(3, "2026-11-17T12:00:00Z", "Third FP0003");
+    const id = await addMailbox();
+    const progress = messages.filter((message) => message.type === "connection.sync_progress");
+    const phases = progress.map((message) => (message.payload as { phase: string }).phase);
+    // The clock stands still: the first mail goes out, the rest of the reading is throttled.
+    expect(phases).toEqual(["connecting", "searching", "reading", "saving", "done"]);
+    expect(progress.at(-1)?.payload).toMatchObject({
+      connection_id: id,
+      read: 3,
+      parcels: 2,
+      ignored: 1,
+      error: null,
+    });
+    const text = JSON.stringify(progress);
+    expect(text).not.toMatch(/FP000|Newsletter|example\.invalid/);
+    expect(context.services.mail.sync(id)?.steps.map((step) => step.count)).toEqual([
+      null,
+      null,
+      3,
+      2,
+      3,
+    ]);
+  });
+
+  it("syncs an inbox on Sync now and serves its last sync", async () => {
+    mailbox.add(1, "2026-11-17T10:00:00Z", "First FP0001");
+    const id = await addMailbox();
+    mailbox.fetched = [];
+    mailbox.add(2, "2026-11-18T10:00:00Z", "Second FP0002");
+    const sync = await app.inject({
+      method: "POST",
+      url: `/api/v1/connections/${id}/sync`,
+      headers,
+    });
+    expect(sync.statusCode).toBe(202);
+    await context.services.mail.settled(id);
+    expect(mailbox.fetched).toEqual([2]);
+    const state = await app.inject({
+      method: "GET",
+      url: `/api/v1/connections/${id}/sync`,
+      headers,
+    });
+    expect(state.statusCode).toBe(200);
+    expect(state.json()).toMatchObject({ phase: "done", read: 1, parcels: 1, total: null });
+    expect(state.body).not.toContain("FP0002");
+  });
+
+  it("names a failed sync's reason as a code", async () => {
+    const id = await addMailbox();
+    mailbox.open = () => Promise.reject(new Error("private server words"));
+    await context.services.mail.syncNow(id);
+    await context.services.mail.settled(id);
+    expect(context.services.mail.sync(id)).toMatchObject({ phase: "failed", error: "unreachable" });
+    expect(JSON.stringify(context.services.mail.sync(id))).not.toContain("private");
+  });
+
   it("rejects mailboxes without a host or sign-in", async () => {
     const response = await app.inject({
       method: "POST",

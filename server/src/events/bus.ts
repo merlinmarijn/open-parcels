@@ -27,11 +27,12 @@ const REPLAY_LIMIT = 1000;
 export type EventListener = (event: OutboxEvent) => void;
 
 /**
- * A message that is pushed to connected clients but never stored or replayed: courier positions.
- * Positions must not end up in history, so they bypass the outbox entirely.
+ * A message that is pushed to connected clients but never stored or replayed: courier positions
+ * and inbox sync progress. Positions must not end up in history, and progress is worthless once
+ * it moved on, so both bypass the outbox entirely.
  */
 export interface EphemeralMessage {
-  readonly type: "parcel.live_position";
+  readonly type: "parcel.live_position" | "connection.sync_progress";
   readonly payload: unknown;
 }
 export type EphemeralListener = (message: EphemeralMessage) => void;

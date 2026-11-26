@@ -195,11 +195,12 @@ async function mailServices(
     readonly registry: ProviderRegistry;
     readonly connections: ConnectionService;
     readonly reconciler: Reconciler;
+    readonly bus: EventBus;
     readonly followUp: (connectionId: string) => Promise<void>;
   },
 ): Promise<{ mail: MailWatcher; emailLab: EmailLab; customRules: CustomEmailRules }> {
   const { db, clock, logger } = deps;
-  const { registry, connections, reconciler, followUp } = engine;
+  const { registry, connections, reconciler, bus, followUp } = engine;
   const ruleReader = new EmailRuleReader(loadRules(), deps.config.timeZone);
   const router = emailRouter(registry, deps, ruleReader);
   const customRules = new CustomEmailRules(
@@ -225,6 +226,7 @@ async function mailServices(
     clientFactory,
     router,
     ...mailInterpreters(ruleReader, deps.mailInterpreter),
+    bus,
     followUp,
   });
   const emailLab = new EmailLab({
@@ -413,6 +415,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     registry,
     connections,
     reconciler,
+      bus,
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();

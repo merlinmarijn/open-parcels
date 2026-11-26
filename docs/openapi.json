@@ -10310,6 +10310,473 @@
         }
       }
     },
+    "/api/v1/connections/{id}/sync": {
+      "get": {
+        "summary": "An inbox's current or last sync: phase, counts and its last steps.",
+        "tags": [
+          "connections"
+        ],
+        "description": "Null when no sync ran since the server started. While one runs, the event stream sends the same body as `connection.sync_progress` messages (no `id`, never replayed), at most every half second while mails are read.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "nullable": true,
+                  "type": "object",
+                  "properties": {
+                    "connection_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "phase": {
+                      "type": "string",
+                      "enum": [
+                        "connecting",
+                        "searching",
+                        "reading",
+                        "saving",
+                        "done",
+                        "failed"
+                      ]
+                    },
+                    "folder": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "done": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Mails read in `folder` so far."
+                    },
+                    "total": {
+                      "nullable": true,
+                      "description": "Mails to read in `folder`; null when unknown (only new mails are fetched).",
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "read": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Mails read in this sync, every folder."
+                    },
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "returns": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "ignored": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "Mails read in which nothing was found."
+                    },
+                    "started_at": {
+                      "type": "string"
+                    },
+                    "finished_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "error": {
+                      "nullable": true,
+                      "type": "string",
+                      "enum": [
+                        "sign_in_rejected",
+                        "unreachable"
+                      ]
+                    },
+                    "steps": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "at": {
+                            "type": "string"
+                          },
+                          "phase": {
+                            "type": "string",
+                            "enum": [
+                              "connecting",
+                              "searching",
+                              "reading",
+                              "saving",
+                              "done",
+                              "failed"
+                            ]
+                          },
+                          "folder": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "count": {
+                            "nullable": true,
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991
+                          }
+                        },
+                        "required": [
+                          "at",
+                          "phase",
+                          "folder",
+                          "count"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "description": "The last 20 steps: folder names and counts, never mail content."
+                    }
+                  },
+                  "required": [
+                    "connection_id",
+                    "phase",
+                    "folder",
+                    "done",
+                    "total",
+                    "read",
+                    "parcels",
+                    "orders",
+                    "returns",
+                    "ignored",
+                    "started_at",
+                    "finished_at",
+                    "error",
+                    "steps"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "summary": "Run a connection now.",
+        "tags": [
+          "connections"
+        ],
+        "description": "While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connections": {
       "get": {
         "summary": "Carrier accounts, shops, tracking connections and inboxes.",
@@ -11241,219 +11708,6 @@
             }
           },
           "404": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "enum": [
-                        "unauthorized",
-                        "forbidden",
-                        "csrf",
-                        "admin_required",
-                        "not_found",
-                        "invalid_request",
-                        "internal",
-                        "invalid_range",
-                        "carrier_not_detected",
-                        "duplicate",
-                        "backup_failed",
-                        "delete_backup_failed",
-                        "confirmation_required",
-                        "invalid_setting",
-                        "geocode_failed",
-                        "tile",
-                        "image",
-                        "too_many_attempts",
-                        "current_required",
-                        "invalid_password",
-                        "no_environment_password",
-                        "already_set_up",
-                        "bad_setup_code",
-                        "wrong_password",
-                        "login_ended",
-                        "sync_expired",
-                        "invalid_connection",
-                        "folder_discovery_failed",
-                        "connection_backing_off",
-                        "sign_in_expired",
-                        "sign_in_timeout",
-                        "sign_in_refused",
-                        "sign_in_failed",
-                        "sign_in_wrong_step",
-                        "sign_in_poll_too_soon",
-                        "sign_in_unavailable",
-                        "sign_in_captcha",
-                        "no_sign_in",
-                        "no_such_action",
-                        "action_unavailable",
-                        "action_cooldown",
-                        "invalid_input",
-                        "job_running",
-                        "job_state",
-                        "mailbox_failed",
-                        "invalid_email_rule"
-                      ],
-                      "description": "Stable machine-readable error code."
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "English explanation, for logs and scripts."
-                    },
-                    "params": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message",
-                    "params"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          }
-        }
-      }
-    },
-    "/api/v1/connections/{id}/sync": {
-      "post": {
-        "summary": "Run a connection now.",
-        "tags": [
-          "connections"
-        ],
-        "description": "While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.",
-        "parameters": [
-          {
-            "schema": {
-              "type": "string",
-              "format": "uuid",
-              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
-            },
-            "in": "path",
-            "name": "id",
-            "required": true
-          }
-        ],
-        "responses": {
-          "202": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "string",
-                  "nullable": true,
-                  "enum": [
-                    null
-                  ]
-                }
-              }
-            }
-          },
-          "404": {
-            "description": "Default Response",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object",
-                  "properties": {
-                    "error": {
-                      "type": "string",
-                      "enum": [
-                        "unauthorized",
-                        "forbidden",
-                        "csrf",
-                        "admin_required",
-                        "not_found",
-                        "invalid_request",
-                        "internal",
-                        "invalid_range",
-                        "carrier_not_detected",
-                        "duplicate",
-                        "backup_failed",
-                        "delete_backup_failed",
-                        "confirmation_required",
-                        "invalid_setting",
-                        "geocode_failed",
-                        "tile",
-                        "image",
-                        "too_many_attempts",
-                        "current_required",
-                        "invalid_password",
-                        "no_environment_password",
-                        "already_set_up",
-                        "bad_setup_code",
-                        "wrong_password",
-                        "login_ended",
-                        "sync_expired",
-                        "invalid_connection",
-                        "folder_discovery_failed",
-                        "connection_backing_off",
-                        "sign_in_expired",
-                        "sign_in_timeout",
-                        "sign_in_refused",
-                        "sign_in_failed",
-                        "sign_in_wrong_step",
-                        "sign_in_poll_too_soon",
-                        "sign_in_unavailable",
-                        "sign_in_captcha",
-                        "no_sign_in",
-                        "no_such_action",
-                        "action_unavailable",
-                        "action_cooldown",
-                        "invalid_input",
-                        "job_running",
-                        "job_state",
-                        "mailbox_failed",
-                        "invalid_email_rule"
-                      ],
-                      "description": "Stable machine-readable error code."
-                    },
-                    "message": {
-                      "type": "string",
-                      "description": "English explanation, for logs and scripts."
-                    },
-                    "params": {
-                      "type": "object",
-                      "additionalProperties": {
-                        "anyOf": [
-                          {
-                            "type": "string"
-                          },
-                          {
-                            "type": "number"
-                          }
-                        ]
-                      },
-                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
-                    }
-                  },
-                  "required": [
-                    "error",
-                    "message",
-                    "params"
-                  ],
-                  "additionalProperties": false
-                }
-              }
-            }
-          },
-          "429": {
             "description": "Default Response",
             "content": {
               "application/json": {
@@ -20724,7 +20978,7 @@
         "tags": [
           "events"
         ],
-        "description": "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed.",
+        "description": "Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. `connection.sync_progress` messages carry an inbox sync's progress, the body of `GET /api/v1/connections/{id}/sync`; they have no `id` either and are never replayed.",
         "parameters": [
           {
             "schema": {
@@ -20790,6 +21044,7 @@
                         "token.used",
                         "vocab.unknown",
                         "parcel.live_position",
+                        "connection.sync_progress",
                         "ready",
                         "resync"
                       ]

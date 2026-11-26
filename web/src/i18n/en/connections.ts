@@ -1,4 +1,5 @@
-import type { StateReason } from "../../api/types";
+import type { InboxSync, StateReason } from "../../api/types";
+import { plural } from "../plural";
 
 /** English texts: connections. The German file must have the same keys (the type enforces it). */
 export const connections = {
@@ -143,4 +144,35 @@ export const connections = {
     inbox_unreachable: "The mail server could not be reached; retrying.",
   } satisfies Record<StateReason, string>,
   carrierMessage: (message: string) => `Details: ${message}`,
+  /** The live panel of an inbox's sync. Counts come formatted; `n` is the raw count for plurals. */
+  inboxSync: {
+    title: "Mail sync",
+    activity: "Activity",
+    phase: {
+      connecting: "Connecting to the mail server",
+      searching: "Looking for mail",
+      reading: "Reading mail",
+      saving: "Saving what was found",
+      done: "Done",
+      failed: "Failed",
+    } satisfies Record<InboxSync["phase"], string>,
+    searching: (folder: string) => `Looking for mail in ${folder}`,
+    reading: (done: string, total: string, folder: string) =>
+      `Reading ${done} of ${total} in ${folder}`,
+    readingNew: (done: string, folder: string) => `Reading new mail in ${folder}: ${done} so far`,
+    toRead: (n: number, count: string, folder: string) =>
+      `${count} ${plural(n, "mail", "mails")} to read in ${folder}`,
+    newIn: (folder: string) => `Reading new mail in ${folder}`,
+    saving: (n: number, count: string) => `Saving ${count} ${plural(n, "item", "items")}`,
+    done: (n: number, count: string) => `Done: ${count} ${plural(n, "mail", "mails")} read`,
+    found: (parcels: string, orders: string, returns: string, ignored: string) =>
+      `Found ${parcels} parcels, ${orders} orders, ${returns} returns · ${ignored} without anything`,
+    last: (when: string, n: number, mails: string, parcels: string) =>
+      `Last sync: ${when}, ${mails} ${plural(n, "mail", "mails")}, ${parcels} parcels`,
+    showDetails: "Details",
+    errors: {
+      sign_in_rejected: "The mail server rejected the sign-in.",
+      unreachable: "The mail server could not be reached or the connection broke off.",
+    } satisfies Record<NonNullable<InboxSync["error"]>, string>,
+  },
 };
