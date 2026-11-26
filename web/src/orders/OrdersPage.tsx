@@ -7,7 +7,6 @@ import type { ReactNode } from "react";
 import { pickOne, useUrlParam } from "../lib/urlState";
 import { useOrders } from "../api/queries";
 import type { Order, OrderView } from "../api/types";
-import { useShowMore } from "../components/ShowMore";
 import { ErrorNotice, Spinner } from "../components/ui";
 import { t } from "../i18n";
 import { OrderBadges, OrderParcels, OrderProgress, orderSummary, ORDER_VIEW_TABS } from "./parts";
@@ -50,7 +49,7 @@ export function OrdersPage(): ReactNode {
   };
   const orders = useOrders(view);
   const tab = ORDER_VIEW_TABS.find((entry) => entry.view === view);
-  const { visible, more } = useShowMore(orders.data ?? [], view);
+  const list = orders.data?.pages.flat();
 
   return (
     <section aria-labelledby="orders-title" className="stack">
@@ -58,7 +57,10 @@ export function OrdersPage(): ReactNode {
         <div className="page-title-row">
           <ShoppingBag size={22} className="page-icon" aria-hidden="true" />
           <h1 id="orders-title">{t.orders.title}</h1>
-          <span className="page-count">{orders.data?.length ?? 0}</span>
+          <span className="page-count">
+            {list?.length ?? 0}
+            {orders.hasNextPage ? "+" : ""}
+          </span>
         </div>
         <Segmented
           legend={t.orders.show}
@@ -70,11 +72,11 @@ export function OrdersPage(): ReactNode {
       </div>
       {tab === undefined ? null : <p className="muted order-view-help">{tab.help}</p>}
       <ErrorNotice error={orders.error} />
-      {orders.data === undefined ? (
+      {list === undefined ? (
         orders.isPending ? (
           <Spinner />
         ) : null
-      ) : orders.data.length === 0 ? (
+      ) : list.length === 0 ? (
         <div className="glass-panel empty-state">
           <ShoppingBag size={32} aria-hidden="true" />
           <p>{t.orders.views[view].empty}</p>
@@ -82,11 +84,22 @@ export function OrdersPage(): ReactNode {
       ) : (
         <>
           <div className="order-grid">
-            {visible.map((order) => (
+            {list.map((order) => (
               <OrderCard key={order.id} order={order} />
             ))}
           </div>
-          {more}
+          {orders.hasNextPage ? (
+            <button
+              type="button"
+              className="button show-more"
+              disabled={orders.isFetchingNextPage}
+              onClick={() => {
+                void orders.fetchNextPage();
+              }}
+            >
+              {t.common.loadMore}
+            </button>
+          ) : null}
         </>
       )}
     </section>

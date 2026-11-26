@@ -45,7 +45,7 @@ const NOT_SHIPPED: ReadonlySet<ParcelStatus> = new Set(["registered", "unknown"]
 const TROUBLE: ReadonlySet<ParcelStatus> = new Set(["problem", "returning"]);
 
 /** Days after it was placed before an order that never got a parcel is archived. */
-const PARCELLESS_ARCHIVE_DAYS = 30;
+export const PARCELLESS_ARCHIVE_DAYS = 30;
 
 export interface ParcelState {
   readonly status: ParcelStatus;

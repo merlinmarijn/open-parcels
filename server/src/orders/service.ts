@@ -3,7 +3,6 @@ import { isoNow, type Clock } from "../clock.js";
 import type { Database, OrderTable } from "../db/schema.js";
 import { orderVisible } from "../db/visibility.js";
 import {
-  inView,
   orderArchivedAt,
   orderStatus,
   orderTotal,
@@ -23,6 +22,7 @@ import {
 } from "../parcels/repository.js";
 import type { Return } from "../domain/return.js";
 import type { ReturnService } from "../returns/service.js";
+import { orderPage } from "./list-query.js";
 
 export interface OrderFilter {
   readonly view: OrderView;
@@ -126,31 +126,18 @@ export class OrderService {
   }
 
   /**
-   * Orders in the view, newest first; `more` says another page follows. The view is decided from
-   * the orders' rows and their parcels' states alone (the same functions a built order uses), so
-   * only the page's orders are built with their lines, parcels and returns.
+   * Orders in the view, newest first; `more` says another page follows. The page is chosen in SQL
+   * (`list-query.ts`); only its orders are built with their lines, parcels and returns.
    */
   async list(filter: OrderFilter): Promise<{ orders: Order[]; more: boolean }> {
-    const [rows, states] = await Promise.all([
-      this.db
-        .selectFrom("orders")
-        .selectAll()
-        .where("deleted_at", "is", null)
-        .where(orderVisible)
-        .execute(),
-      this.#parcels.statesByOrder(),
-    ]);
-    const now = this.clock.now();
-    const shown = rows
-      .filter((row) => {
-        const { status, archivedAt } = orderState(row, states.get(row.id) ?? [], now);
-        return inView(filter.view, status, archivedAt !== null);
-      })
-      // Plain code-unit order: ISO times and UUIDs need no locale rules, which cost ~10x per call.
-      .sort((a, b) => compare(newest(b), newest(a)) || compare(a.id, b.id));
+    const page = await orderPage(this.db, filter, this.clock.now());
+    const built = new Map((await this.byIds(page.ids)).map((order) => [order.id, order]));
     return {
-      orders: await this.#build(shown.slice(filter.offset, filter.offset + filter.limit)),
-      more: shown.length > filter.offset + filter.limit,
+      orders: page.ids.flatMap((id) => {
+        const order = built.get(id);
+        return order === undefined ? [] : [order];
+      }),
+      more: page.more,
     };
   }
 
@@ -278,13 +265,4 @@ export class OrderService {
       ),
     );
   }
-}
-
-function compare(a: string, b: string): number {
-  return a < b ? -1 : a > b ? 1 : 0;
-}
-
-/** Sorted by when the order was placed, else when it was first seen. */
-function newest(order: OrderRow): string {
-  return order.placed_at ?? order.created_at;
 }

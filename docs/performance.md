@@ -63,9 +63,11 @@ over the runs.
 
 ## Left as it is
 
-- The order list still derives each order's status from its parcels in JavaScript, so it reads all
-  orders and their parcels' states per request (two scans, ~30 ms of the time). A stored order
-  status would make it a plain indexed page; worth it only well beyond this scale.
+- The order list now picks its page in SQL (`orders/list-query.ts`): status and archiving are
+  derived from the visible parcels in one grouped query, filtered, sorted and paged by the
+  database; only the page is built. Not stored: a stored status would have to follow every parcel
+  write, connection toggle and the 30-day rule for orders without parcels. A test holds the SQL
+  and `order-lifecycle.ts` to the same answers on 300 generated orders. Not yet re-measured.
 - The web UI still loads every page of parcels and orders (search and counts run in the browser).
   With the default views (archived left out) that is a few hundred rows; "Include archived" loads
   all 10,000 parcels (~4 MB of JSON).

@@ -15,6 +15,7 @@ export const common = {
   yes: "Yes",
   countOf: (shown: number, total: number) => `${formatNumber(shown)} of ${formatNumber(total)}`,
   showMore: (count: number) => `Show ${formatNumber(count)} more`,
+  loadMore: "Show more",
   nothingYet: "Nothing here yet.",
   nothingMatches: "Nothing matches.",
   resizePanels: "Resize panels",

@@ -122,6 +122,36 @@ describe("orders page", () => {
     ).toEqual(["open", "archived", "all"]);
   });
 
+  it("loads further pages of orders from the server on request", async () => {
+    const page = (offset: number, count: number): Order[] =>
+      Array.from({ length: count }, (_, n) =>
+        order({
+          id: `00000000-0000-4000-8000-${String(offset + n).padStart(12, "0")}`,
+          shop: `shop_${String(offset + n)}`,
+          parcels: [],
+          items: [],
+        }),
+      );
+    const calls = mockApi({
+      "GET /api/v1/session": () => ({ body: SIGNED_IN }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+      "GET /api/v1/orders": (request) => {
+        const offset = Number(request.query.get("offset"));
+        return { body: page(offset, offset === 0 ? 200 : 3) };
+      },
+    });
+    const user = userEvent.setup();
+    renderApp("/orders");
+    expect(await screen.findByText("200+")).toBeInTheDocument();
+    await user.click(screen.getByRole("button", { name: "Show more" }));
+    expect(await screen.findByRole("region", { name: "shop_202" })).toBeInTheDocument();
+    expect(screen.getByText("203")).toBeInTheDocument();
+    expect(screen.queryByRole("button", { name: "Show more" })).not.toBeInTheDocument();
+    expect(
+      calls.filter((call) => call.path === "/api/v1/orders").map((c) => c.query.get("offset")),
+    ).toEqual(["0", "200"]);
+  });
+
   it("renames, archives and deletes an order on its page", async () => {
     let current = order();
     const calls = mockApi({

@@ -5,6 +5,7 @@
 import {
   hashKey,
   keepPreviousData,
+  useInfiniteQuery,
   useMutation,
   useQuery,
   useQueryClient,
@@ -76,8 +77,8 @@ export const keys = {
 
 /**
  * Every page of a paged list: the server says a full page may have more after it, so pages are
- * read until one comes back short. Lists are searched and counted in the browser, so a list cut
- * at one page would quietly miss parcels or orders.
+ * read until one comes back short. Parcels are searched and counted in the browser, so a list cut
+ * at one page would quietly miss parcels.
  */
 export async function allPages<T>(
   limit: number,
@@ -93,7 +94,8 @@ export async function allPages<T>(
 
 /** The server's largest pages for these lists. */
 const PARCEL_PAGE = 1000;
-const ORDER_PAGE = 500;
+/** Orders come one server page per "Show more": the order list is not searched in the browser. */
+const ORDER_PAGE = 200;
 
 export function useParcels(includeArchived: boolean) {
   return useQuery({
@@ -261,13 +263,16 @@ export function useDeleteParcel() {
   });
 }
 
+/** The orders of a view, one server page at a time: `fetchNextPage` loads the next one. */
 export function useOrders(view: OrderView) {
-  return useQuery({
+  return useInfiniteQuery({
     queryKey: keys.orderList(view),
-    queryFn: ({ signal }) =>
-      allPages(ORDER_PAGE, (offset) =>
-        getApiV1Orders({ view, limit: ORDER_PAGE, offset }, { signal }),
-      ),
+    queryFn: ({ signal, pageParam }) =>
+      getApiV1Orders({ view, limit: ORDER_PAGE, offset: pageParam }, { signal }),
+    initialPageParam: 0,
+    // A full page may have more after it; a short one is the last.
+    getNextPageParam: (last, _pages, offset) =>
+      last.length < ORDER_PAGE ? undefined : offset + ORDER_PAGE,
     placeholderData: keepPreviousData,
   });
 }
