@@ -41,8 +41,11 @@ parsed into the same schema then. The schema moves to the engine package with th
   `engine` and `entry` come with installs (P3), as additions to format 1.
 - **Capabilities** (`provides`): the connection kinds (`account`, `tracking`, `shop`), `live`
   (courier map) and `fallback` (a fallback service). Data capabilities (status tables, email
-  rules, tracking-number patterns) and `mail` are added to `provides` by the phases that build
-  them (P2b, P2c, P5); format 1 refuses unknown keys, so a manifest cannot claim them early.
+  rules, tracking-number patterns) are added to `provides` by the phases that build them (P2c,
+  P5); format 1 refuses unknown keys, so a manifest cannot claim them early.
+- **Email** (`email`, optional): `{ "from_domains": ["example-shop.de", ".example-shop.com"] }`,
+  the sender domains whose emails the provider reads (§3). Exact or a leading-dot suffix, as
+  `network` hosts; webmail domains (`gmail.com`, `web.de`, …) are refused.
 - **Actions** (`actions`, optional): buttons on the provider's connection cards, links and tasks
   that run as jobs ([`connection-actions-and-jobs.md`](connection-actions-and-jobs.md) §1).
   Registration checks that the manifest's tasks are exactly the code's `actions`.
@@ -61,7 +64,7 @@ parsed into the same schema then. The schema moves to the engine package with th
   manifest parses; its `id` equals the code's; `provides.connections` covers exactly the kinds the
   code implements (`account`/`shop` need `fetchAccount`, `tracking` needs `track`); `live` iff
   `readLive`; `secrets` equals what the sign-in flows produce; `user_agent` iff the code sets one;
-  every host in `http.limits` is covered by `network`; the logo exists.
+  every host in `http.limits` is covered by `network`; `email` iff `parseEmail`; the logo exists.
 - **Enforced at run time:** `ProviderHttp` refuses any request, and any redirect hop, to a host
   the manifest does not list (`HostNotAllowedError`: not a transient error, so the run is logged
   as a bug, and never a sign-in problem). A session store of a provider without `session` refuses
@@ -124,3 +127,35 @@ Providers are its first user; consumers its second.
 - **Consumers (0005) reuse it unchanged:** a consumer module exports `deliver`/`test`, its manifest
   lists `network` hosts like a provider's, and its calls are brokered with `http` (and nothing
   else): the same process, protocol, allow-list and limits.
+
+## 3. Email routing
+
+Narrows decision record 0002 §2.14 to what is built now.
+
+- **Match:** an inbox hands an email to every registered provider whose
+  `email.from_domains` covers the domain of its `From` address, if the receiving server
+  authenticated the sender: the topmost `Authentication-Results` header (the one the receiving
+  server added; any below it may be the sender's own) says `dkim=pass` for a signer aligned with
+  that domain (the same domain, a parent or a child of it), or `dmarc=pass` with
+  `header.from` equal to it. An email whose sender is not authenticated goes to no provider.
+- **What the provider gets:** `parseEmail(context, email)`. `email` holds an id (Message-ID, else
+  a digest; the id for the events it gives), Message-ID, date, sender address and name, subject,
+  text and HTML: no other headers, no attachments. `context` has the clock, the log and
+  `reportUnknown`, no network, sign-in data or session. In `pool` mode it is the guest's
+  `parseEmail` method, granted `log` and `report-unknown` only, with a 30-second timeout.
+- **No email read twice:** a result without `ignored` means the provider read the email in full;
+  the shared email rules (`open-parcels-rules`, which today read the email of most shops and
+  carriers) then never see it. An email every matching provider ignored or failed on, or one no
+  provider matches, goes to the rules as before. Several matching providers all read it; their
+  parcels merge in the reconciler like any two connections' views of one parcel. So a provider that
+  declares a shop's domain takes that shop's emails over from the rules completely: it must read
+  every kind of email the rules read from there (shipping, order, return), or ignore those it does
+  not.
+- **Filed under the inbox:** results are ingested under the inbox connection (role `mail`), as the
+  rules' results are.
+- **The switch:** `OPENPARCELS_EMAIL_ROUTING` (live, on by default). Off: the rules read every
+  email, as before routing existed.
+- **Not built yet (0002 §2.14):** subject, local-part, header and body filters, `priority`, a
+  per-inbox switch for servers that add no `Authentication-Results`, per-route switches on the
+  inbox card, attribution to the provider (`found in email by …`), backfill, and the consent
+  screen's list of sender domains for installed providers.

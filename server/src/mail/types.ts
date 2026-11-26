@@ -77,6 +77,11 @@ export interface MailInput {
   readonly text: string | null;
   readonly html: string | null;
   readonly date: Date | null;
+  /**
+   * The topmost `Authentication-Results` header: the one the receiving server added, which says
+   * whether the sender passed DKIM or DMARC. Null when there is none.
+   */
+  readonly authentication: string | null;
 }
 
 /**

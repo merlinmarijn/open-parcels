@@ -63,6 +63,7 @@ function mail(date: string): MailInput {
     subject: SUBJECT,
     text: `Ihre Sendung ${TRACKING_NUMBER} haben wir heute an Ihrer Haustür übergeben.`,
     html: null,
+    authentication: null,
     date: new Date(date),
   };
 }

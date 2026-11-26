@@ -4,11 +4,14 @@ import type {
   ActionResult,
   CarrierProvider,
   CheckpointStore,
+  EmailContext,
+  EmailResult,
   JobProgress,
   FetchResult,
   LiveReading,
   LiveTarget,
   ProviderContext,
+  ProviderEmail,
   ProviderConnectionKind,
   SignInFlow,
   SignInInput,
@@ -130,6 +133,10 @@ export interface RegisteredProvider {
   readonly canFetchAccount: boolean;
   readonly canTrack: boolean;
   readonly canReadLive: boolean;
+  /** Reads email (`parseEmail`); exactly the providers whose manifest has an `email` section. */
+  readonly canParseEmail: boolean;
+  /** Reads one email routed to it; a provider without `parseEmail` ignores every email. */
+  parseEmail(context: EmailContext, email: ProviderEmail): Promise<EmailResult>;
   /** Checks a configuration and returns it parsed, with the provider's defaults applied. */
   validateConfig(raw: unknown): unknown;
   /** Checks sign-in data against the provider's secret schema and returns it parsed. */
@@ -306,6 +313,9 @@ function disagreements<Config, Secret>(
   if (manifest.provides.live !== (provider.readLive !== undefined)) {
     problems.push("provides.live and readLive must come together");
   }
+  if ((manifest.email !== undefined) !== (provider.parseEmail !== undefined)) {
+    problems.push("email and parseEmail must come together");
+  }
   const secrets = flows.flatMap((flow) => FLOW_SECRET[flow.type] ?? []);
   if (!sameSet(secrets, manifest.permissions.secrets)) {
     problems.push(`permissions.secrets must be [${[...new Set(secrets)].join(", ")}]`);
@@ -390,6 +400,13 @@ export function register<Config, Secret>(
     canFetchAccount: provider.fetchAccount !== undefined,
     canTrack: provider.track !== undefined,
     canReadLive: provider.readLive !== undefined,
+    canParseEmail: provider.parseEmail !== undefined,
+    async parseEmail(emailContext, email) {
+      if (provider.parseEmail === undefined) {
+        return { snapshots: [], ignored: `${provider.name} reads no email.` };
+      }
+      return provider.parseEmail(emailContext, email);
+    },
     signInFlows(kind, rawConfig) {
       const config = parseWith(provider.configSchema, rawConfig, "configuration", provider.id);
       return flows

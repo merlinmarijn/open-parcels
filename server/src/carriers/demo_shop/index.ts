@@ -1,5 +1,11 @@
 import { z } from "zod";
-import { defineCarrier, type ParcelSnapshot, type SnapshotItem } from "../../provider/api.js";
+import {
+  defineCarrier,
+  type EmailResult,
+  type ParcelSnapshot,
+  type ProviderEmail,
+  type SnapshotItem,
+} from "../../provider/api.js";
 import {
   DEMO_CARRIER,
   DEMO_PARCELS,
@@ -64,6 +70,18 @@ function orderLines(orderNumber: string): SnapshotItem[] {
   return orderNumber === "DEMO-1001" ? [...lines, GIFT_VOUCHER] : lines;
 }
 
+/**
+ * The demo shop's shipping emails (from its sender domain in the manifest): every demo parcel whose
+ * tracking number the email names, as the shop knows it. Any other email is not the shop's.
+ */
+function readEmail(email: ProviderEmail, now: number): EmailResult {
+  const text = [email.subject, email.text ?? "", email.html ?? ""].join("\n");
+  const named = DEMO_PARCELS.filter((parcel) => text.includes(parcel.barcode));
+  return named.length === 0
+    ? { snapshots: [], ignored: "Names no demo parcel." }
+    : { snapshots: named.map((parcel) => fromShop(parcel, now)) };
+}
+
 export const demoShop = defineCarrier({
   id: DEMO_SHOP,
   pollIntervalMs: DEMO_POLL_MS,
@@ -78,4 +96,5 @@ export const demoShop = defineCarrier({
       complete: true,
     });
   },
+  parseEmail: (context, email) => Promise.resolve(readEmail(email, context.clock.now().getTime())),
 });

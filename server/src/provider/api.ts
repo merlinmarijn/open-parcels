@@ -83,6 +83,46 @@ export interface FetchResult {
   readonly asked?: readonly string[];
 }
 
+/**
+ * One email the core routed to the provider: its sender's domain is one the manifest's `email`
+ * section names, and the receiving server confirmed (DKIM or DMARC) that it really comes from
+ * there. Never logged: it is personal data.
+ */
+export interface ProviderEmail {
+  /** Stable per email (its Message-ID, else a digest); use it as the id of events it gives. */
+  readonly id: string;
+  readonly messageId: string | null;
+  /** ISO 8601; null when the email gives no plausible time. */
+  readonly date: string | null;
+  readonly from: { readonly address: string; readonly name: string | null };
+  readonly subject: string;
+  readonly text: string | null;
+  readonly html: string | null;
+}
+
+/**
+ * What parsing an email may use: no network, no sign-in data and no session, so an email parser
+ * is a pure function and an email cannot be sent anywhere.
+ */
+export interface EmailContext {
+  readonly clock: Clock;
+  readonly logger: ProviderLogger;
+  reportUnknown(kind: string, key: string): void;
+}
+
+/** What a provider found in an email. */
+export interface EmailResult {
+  readonly snapshots: readonly ParcelSnapshot[];
+  readonly orders?: readonly OrderSnapshot[];
+  readonly returns?: readonly ReturnSnapshot[];
+  /**
+   * Set when the email is not one the provider reads, saying why; the core then reads it as an
+   * email no provider claimed (the shared email rules). Without it the provider has read the email
+   * in full, and the shared rules never see it, so one email never gives a parcel twice.
+   */
+  readonly ignored?: string;
+}
+
 export { pastedRedirect } from "./sign-in.js";
 export type {
   InteractiveSignIn,
@@ -138,6 +178,11 @@ export interface CarrierProvider<Config = unknown, Secret = unknown> {
     context: ProviderContext<Config, Secret>,
     target: LiveTarget,
   ): Promise<LiveReading | null>;
+  /**
+   * Reads an email from a sender the manifest's `email` section names (`email.from_domains`);
+   * exactly the providers with that section implement it.
+   */
+  parseEmail?(context: EmailContext, email: ProviderEmail): Promise<EmailResult>;
   /**
    * The code of the manifest's task actions, by action id (`defineAction`); exactly the manifest's
    * tasks, no more and no fewer. Each runs as a job (`docs/connection-actions-and-jobs.md`).

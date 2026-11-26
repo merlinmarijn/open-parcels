@@ -249,6 +249,15 @@ export const SETTINGS = {
     apply: "live",
     kind: "boolean",
   }),
+  OPENPARCELS_EMAIL_ROUTING: setting({
+    group: "tracking",
+    description:
+      "Hand emails from a provider's own sender domains to that provider, once the receiving mail server confirmed the sender (DKIM or DMARC). Off: the shared email rules read every email.",
+    schema: booleanFlag,
+    default: true,
+    apply: "live",
+    kind: "boolean",
+  }),
   OPENPARCELS_PROVIDER_ISOLATION: setting({
     group: "tracking",
     description:
@@ -568,6 +577,8 @@ export interface AppConfig {
   readonly readerPassword: string;
   readonly timeZone: string;
   readonly quietWindow: boolean;
+  /** Inboxes hand providers the emails of their sender domains (OPENPARCELS_EMAIL_ROUTING). */
+  readonly emailRouting: boolean;
   /** Where the built-in providers run (OPENPARCELS_PROVIDER_ISOLATION). */
   readonly providerIsolation: ProviderIsolation;
   /** Background lookup of scan place names (OPENPARCELS_GEOCODING). */
@@ -633,6 +644,7 @@ export function toConfig(values: Readonly<SettingValues>, env: ParsedEnv): AppCo
     readerPassword: values.OPENPARCELS_PASSWORD,
     timeZone: values.OPENPARCELS_TIMEZONE ?? Intl.DateTimeFormat().resolvedOptions().timeZone,
     quietWindow: values.OPENPARCELS_QUIET_WINDOW,
+    emailRouting: values.OPENPARCELS_EMAIL_ROUTING,
     providerIsolation: values.OPENPARCELS_PROVIDER_ISOLATION,
     geocoding: values.OPENPARCELS_GEOCODING,
     geocodingUrl: values.OPENPARCELS_GEOCODING_URL,

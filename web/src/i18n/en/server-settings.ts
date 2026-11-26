@@ -43,6 +43,8 @@ export const serverSettings: {
       "IANA time zone (e.g. Europe/Berlin) for the night-time quiet window, email dates and calendar days. Unset uses TZ / the system zone.",
     OPENPARCELS_QUIET_WINDOW:
       "Pause carrier polling 00:00–06:00 local time. Turn off to poll all night.",
+    OPENPARCELS_EMAIL_ROUTING:
+      "Hand emails from a provider's own sender domains to that provider, once the receiving mail server confirmed the sender (DKIM or DMARC). Off: the shared email rules read every email.",
     OPENPARCELS_PROVIDER_ISOLATION:
       "Where the built-in providers run: off runs them in the server's own process; pool runs them together in one separate process under Node's permission model, which reaches the network, the sign-in data and the sessions only through the server, one call at a time. Pool costs one more process (about 60 MB).",
     OPENPARCELS_ARCHIVE_DAYS:

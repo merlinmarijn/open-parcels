@@ -15,6 +15,7 @@ describe("mail interpretation with the shared rules", () => {
   it("turns a German DHL shipping notice into a DHL parcel", () => {
     const snapshots = interpret({
       messageId: null,
+      authentication: null,
       from: "DHL Paket <noreply@dhl.de>",
       subject: "Ihr DHL Paket kommt heute",
       text: "Guten Tag, Ihre Sendung 00340434000000000017 wird heute zugestellt.",
@@ -30,6 +31,7 @@ describe("mail interpretation with the shared rules", () => {
     expect(
       interpret({
         messageId: null,
+        authentication: null,
         from: "news@shop.example.invalid",
         subject: "Sale!",
         text: "Everything 20% off.",
@@ -43,6 +45,7 @@ describe("mail interpretation with the shared rules", () => {
 describe("mail interpretation details (OP-142)", () => {
   const dhlMail = {
     messageId: null,
+    authentication: null,
     from: "DHL Paket <noreply@dhl.de>",
     subject: "Ihr DHL Paket kommt heute",
     html: null,

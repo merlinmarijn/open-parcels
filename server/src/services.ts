@@ -37,6 +37,7 @@ import { createMailInterpreter, createOrderInterpreter } from "./mail/interpret.
 import { createReturnInterpreter } from "./mail/returns.js";
 import { ReturnService } from "./returns/service.js";
 import type { MailboxClientFactory, MailInterpreter } from "./mail/types.js";
+import { EmailRouter } from "./mail/routing.js";
 import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
 import { ParcelService } from "./parcels/service.js";
@@ -147,6 +148,16 @@ async function followUntracked(
     );
   }
   return linked.parcels > 0 || handedOver > 0;
+}
+
+/** Hands emails to the providers of their sender domains; the switch is read on every email. */
+function emailRouter(registry: ProviderRegistry, deps: ServiceDeps): EmailRouter {
+  return new EmailRouter({
+    providers: () => registry.list(),
+    enabled: () => deps.config.emailRouting,
+    clock: deps.clock,
+    logger: deps.logger,
+  });
 }
 
 /** The inbox interpreters, all reading one copy of the rules. */
@@ -334,6 +345,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     clock,
     logger,
     clientFactory: deps.mailClientFactory ?? imapClientFactory,
+    router: emailRouter(registry, deps),
     ...mailInterpreters(deps.config.timeZone, deps.mailInterpreter),
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {

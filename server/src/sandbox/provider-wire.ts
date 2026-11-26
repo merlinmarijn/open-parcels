@@ -10,7 +10,12 @@ import {
   UnexpectedResponseError,
 } from "../provider/errors.js";
 import { HostNotAllowedError } from "../provider/http.js";
-import type { LiveTarget, ProviderConnectionKind, SignInInput } from "../provider/api.js";
+import type {
+  LiveTarget,
+  ProviderConnectionKind,
+  ProviderEmail,
+  SignInInput,
+} from "../provider/api.js";
 import type { WireError } from "./child.js";
 
 /**
@@ -49,6 +54,11 @@ export interface ActionWireCall extends ConnectionCall {
   readonly actionId: string;
   readonly input: unknown;
   readonly checkpoint: unknown;
+}
+
+/** One email to read: no config, secret or session travel with it, and no network is granted. */
+export interface EmailCall extends CallBase {
+  readonly email: ProviderEmail;
 }
 
 /** What every job capability answers: whether the job was cancelled meanwhile. */

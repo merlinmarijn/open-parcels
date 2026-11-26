@@ -62,8 +62,11 @@ image are shipped (see `DONE.md`). Left:
       repo (the repo manifest lists themes), installed from the providers page with the same tiers
       and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
       everywhere, no hard-coded colours.
-- [ ] Mail routing: mailboxes dispatch matching mails to providers' `parseMail` (sender domain +
-      DKIM check, global switch on by default)
+- [x] Email routing: inboxes dispatch matching emails to providers' `parseEmail` (sender domain +
+      DKIM/DMARC check, `OPENPARCELS_EMAIL_ROUTING` on by default); design note §3
+- [ ] Email routing follow-ups (0002 §2.14): subject/body filters and priority, per-inbox switch
+      for servers without `Authentication-Results`, per-route switches on the inbox card, "found in
+      email by" attribution, backfill job, consent screen's sender domains
 - [ ] Split `open-parcels-rules`: provider data into providers, slim shared core stays
 - [ ] One repo with a folder per provider for the official providers; repo manifest lists them
 - [ ] Registry repo (verified tier, signed index, blocklist), custom git URLs, community discovery

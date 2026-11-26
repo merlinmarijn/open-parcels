@@ -60,6 +60,37 @@ const actionSchema = z.discriminatedUnion("kind", [
 ]);
 export type ManifestAction = z.infer<typeof actionSchema>;
 
+/**
+ * Domains that send email for anyone: a provider naming one would read the user's private email.
+ * A provider must name the shop or carrier whose emails it reads.
+ */
+const WEBMAIL_DOMAINS: ReadonlySet<string> = new Set([
+  "aol.com",
+  "gmail.com",
+  "gmx.de",
+  "gmx.net",
+  "googlemail.com",
+  "hotmail.com",
+  "icloud.com",
+  "live.com",
+  "mail.com",
+  "me.com",
+  "outlook.com",
+  "proton.me",
+  "protonmail.com",
+  "t-online.de",
+  "web.de",
+  "yahoo.com",
+]);
+
+/** A sender domain: exact (`example.com`) or a leading-dot suffix (`.example.com`). */
+const senderDomain = z
+  .string()
+  .regex(HOST_PATTERN)
+  .refine((domain) => !WEBMAIL_DOMAINS.has(domain.replace(/^\./, "")), {
+    message: "a webmail domain sends for anyone, not for one shop or carrier",
+  });
+
 const providerManifestSchema = z.strictObject({
   schema: z.literal(1),
   id: z.string().regex(/^[a-z0-9_]{2,40}$/),
@@ -94,6 +125,11 @@ const providerManifestSchema = z.strictObject({
     /** Overrides the honest User-Agent (the value and its reason are in the code). */
     user_agent: z.boolean(),
   }),
+  /**
+   * The emails it reads (`parseEmail`): inboxes hand it the emails from these sender domains that
+   * the receiving server authenticated (DKIM or DMARC). Unset: it never receives email.
+   */
+  email: z.strictObject({ from_domains: z.array(senderDomain).min(1) }).optional(),
   /** Buttons on its connection cards: links, and tasks that run as jobs. */
   actions: z
     .array(actionSchema)

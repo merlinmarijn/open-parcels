@@ -9,6 +9,7 @@ import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
 import { cause, NO_CAUSE } from "../engine/state-reason.js";
 import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
+import type { EmailRouter } from "./routing.js";
 import {
   MAIL_PROVIDER,
   mailConfigSchema,
@@ -40,6 +41,9 @@ export interface MailWatcherDeps {
   readonly clock: Clock;
   readonly logger: Logger;
   readonly clientFactory: MailboxClientFactory;
+  /** Hands emails from providers' sender domains to those providers (`./routing.ts`). */
+  readonly router: EmailRouter;
+  /** The shared email rules, for every email no provider read. */
   readonly interpret: MailInterpreter;
   /** Return and refund mails; unset in tests that only look at parcels. */
   readonly interpretReturns?: MailReturnInterpreter;
@@ -126,6 +130,11 @@ export async function toMailInput(
     text: parsed.text ?? null,
     html: typeof parsed.html === "string" ? parsed.html : null,
     date: mailDate(parsed.date ?? null, receivedAt, now),
+    // Header lines come in the order of the message: the first was added last, on receipt.
+    authentication:
+      parsed.headerLines
+        .find((header) => header.key === "authentication-results")
+        ?.line.replace(/^[^:]*:\s*/, "") ?? null,
   };
 }
 
@@ -360,6 +369,14 @@ export class MailWatcher {
           message.receivedAt ?? null,
           this.deps.clock.now(),
         );
+        const routed = await this.deps.router.read(connectionId, mail);
+        if (routed !== null) {
+          // Read by its providers: the shared rules must not read it again (no parcel twice).
+          snapshots.push(...routed.snapshots);
+          returns.push(...routed.returns);
+          orders.push(...routed.orders);
+          continue;
+        }
         snapshots.push(...this.#interpret(connectionId, mail, this.deps.interpret));
         returns.push(...this.#interpret(connectionId, mail, this.deps.interpretReturns));
         orders.push(...this.#interpret(connectionId, mail, this.deps.interpretOrders));

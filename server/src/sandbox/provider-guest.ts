@@ -12,6 +12,7 @@ import {
   type ActionWireCall,
   type CallBase,
   type ConnectionCall,
+  type EmailCall,
   type JobAnswer,
   type LiveCall,
   type LogRequest,
@@ -71,19 +72,23 @@ function connect(call: CallBase, broker: Broker): { clock: Clock; http: Provider
   return { clock, http: new ProviderHttp(brokeredTransport(rebuilding)) };
 }
 
-function baseFor(call: ConnectionCall, broker: Broker): BaseContext {
-  const { clock, http } = connect(call, broker);
-  let session = call.session;
+function loggerFor(broker: Broker): ProviderLogger {
   const log =
     (level: LogRequest["level"]): ProviderLogger["warn"] =>
     (context, message) => {
       tell(broker, CAPABILITY.log, { level, context, message } satisfies LogRequest);
     };
+  return { debug: log("debug"), info: log("info"), warn: log("warn") };
+}
+
+function baseFor(call: ConnectionCall, broker: Broker): BaseContext {
+  const { clock, http } = connect(call, broker);
+  let session = call.session;
   return {
     connectionId: call.connectionId,
     http,
     clock,
-    logger: { debug: log("debug"), info: log("info"), warn: log("warn") },
+    logger: loggerFor(broker),
     session: {
       load: () => session,
       async save(value) {
@@ -130,6 +135,20 @@ const methods: GuestMethods = {
       call.rawConfig,
       call.rawSecret,
       call.target,
+    ),
+  ),
+
+  // No `http`: the clock stays at the core's time when the call started.
+  parseEmail: served((call: EmailCall, broker) =>
+    providerOf(call.provider).parseEmail(
+      {
+        clock: { now: () => new Date(call.now) },
+        logger: loggerFor(broker),
+        reportUnknown: (kind, key) => {
+          tell(broker, CAPABILITY.reportUnknown, { kind, key } satisfies UnknownRequest);
+        },
+      },
+      call.email,
     ),
   ),
 

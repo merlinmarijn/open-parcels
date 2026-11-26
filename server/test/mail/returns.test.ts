@@ -16,6 +16,7 @@ function mail(partial: Partial<MailInput> & Pick<MailInput, "subject" | "text">)
     messageId: null,
     from: '"rueckgabe@amazon.de" <rueckgabe@amazon.de>',
     html: null,
+    authentication: null,
     date: new Date("2026-11-18T09:00:00Z"),
     ...partial,
   };

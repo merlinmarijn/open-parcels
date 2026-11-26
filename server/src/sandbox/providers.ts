@@ -7,6 +7,8 @@ import type { Clock } from "../clock.js";
 import type {
   ActionBatch,
   ActionResult,
+  EmailContext,
+  EmailResult,
   FetchResult,
   JobProgress,
   LiveReading,
@@ -20,6 +22,7 @@ import {
   rebuildProviderError,
   type ActionWireCall,
   type ConnectionCall,
+  type EmailCall,
   type JobAnswer,
   type LiveCall,
   type LogRequest,
@@ -33,6 +36,8 @@ const RUN_TIMEOUT_MS = 10 * 60_000;
 /** A live read or one sign-in turn is a handful of requests. */
 const TURN_TIMEOUT_MS = 2 * 60_000;
 /** A job's leg ends at its 12 h ceiling (the job service aborts it); a minute more to return. */
+/** Reading one email is parsing, nothing more. */
+const EMAIL_TIMEOUT_MS = 30_000;
 const ACTION_TIMEOUT_MS = 12 * 60 * 60_000 + 60_000;
 /** Heap of the pool child: every built-in provider, a few connections' results at a time. */
 const POOL_MEMORY_MB = 256;
@@ -103,14 +108,11 @@ function hops(http: ProviderHttp, clock: Clock): Capability {
   };
 }
 
-/** What a connection call may use: the network, its session (if allowed), the log, reporting. */
-function connectionCapabilities(
-  provider: RegisteredProvider,
-  base: BaseContext,
-  timeoutMs: number,
-): CallOptions {
-  const capabilities: Record<string, Capability> = {
-    [CAPABILITY.http]: hops(base.http, base.clock),
+/** The log and unknown-value reporting, which every provider call may use. */
+function reporting(
+  base: Pick<EmailContext, "logger" | "reportUnknown">,
+): Record<string, Capability> {
+  return {
     [CAPABILITY.log]: (args) => {
       const { level, context, message } = args as LogRequest;
       base.logger[level](context, message);
@@ -121,6 +123,18 @@ function connectionCapabilities(
       base.reportUnknown(kind, key);
       return Promise.resolve(null);
     },
+  };
+}
+
+/** What a connection call may use: the network, its session (if allowed), the log, reporting. */
+function connectionCapabilities(
+  provider: RegisteredProvider,
+  base: BaseContext,
+  timeoutMs: number,
+): CallOptions {
+  const capabilities: Record<string, Capability> = {
+    [CAPABILITY.http]: hops(base.http, base.clock),
+    ...reporting(base),
   };
   if (provider.manifest.permissions.session) {
     capabilities[CAPABILITY.sessionSave] = async (value) => {
@@ -172,6 +186,19 @@ export function isolated(provider: RegisteredProvider, sandbox: Sandbox): Regist
       const call: LiveCall = { ...connectionCall(provider, base, rawConfig, rawSecret), target };
       const options = connectionCapabilities(provider, base, TURN_TIMEOUT_MS);
       return (await sandbox.call("readLive", call, options)) as LiveReading | null;
+    },
+    async parseEmail(context, email) {
+      const call: EmailCall = {
+        provider: provider.info.id,
+        connectionId: "",
+        now: context.clock.now().getTime(),
+        email,
+      };
+      const options: CallOptions = {
+        capabilities: reporting(context),
+        timeoutMs: EMAIL_TIMEOUT_MS,
+      };
+      return (await sandbox.call("parseEmail", call, options)) as EmailResult;
     },
     async runAction(base, rawConfig, rawSecret, job) {
       const call: ActionWireCall = {

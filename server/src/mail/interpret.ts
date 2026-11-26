@@ -121,7 +121,7 @@ function textStatus(rules: Rules, carrier: string, subject: string): ParcelStatu
  * One identity per mail: its Message-ID, else a digest of what it says. A mail seen twice (in two
  * folders, or again after the server reset its UIDs) then gives one history entry, not two.
  */
-function mailId(mail: MailInput): string {
+export function mailId(mail: MailInput): string {
   if (mail.messageId !== null && mail.messageId.trim() !== "") {
     return `mail:${mail.messageId.trim()}`;
   }

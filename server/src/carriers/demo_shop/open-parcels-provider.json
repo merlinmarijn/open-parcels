@@ -14,5 +14,8 @@
     "secrets": [],
     "session": false,
     "user_agent": false
+  },
+  "email": {
+    "from_domains": ["shop.open-parcels.example"]
   }
 }

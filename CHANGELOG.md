@@ -2,6 +2,18 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: email routing to providers
+
+Inboxes hand an email to the providers whose manifest names its sender's domain
+(`email.from_domains`, exact or `.suffix`; webmail domains are refused), once the receiving mail
+server's topmost `Authentication-Results` header says DKIM (aligned with the sender) or DMARC
+passed. The provider's `parseEmail` gets the email without network, sign-in data or session, in
+both isolation modes (sandbox method `parseEmail`). An email a provider read is not read by the
+shared email rules as well, so one email never gives a parcel twice; an email no provider read
+(ignored, failed, unauthenticated, unknown sender) goes to the rules as before. The new live
+setting `OPENPARCELS_EMAIL_ROUTING` (on by default) switches routing off. The demo shop is the
+first provider that reads email ([`docs/provider-manifest-and-sandbox.md`](docs/provider-manifest-and-sandbox.md) §3).
+
 ### Added: Amazon "Import history"; imported history is flagged, quiet and kept
 
 Amazon shop connections get the action "Import history": every year of the orders page, newest
