@@ -64,7 +64,8 @@ export function ConnectionDialog(props: {
   readonly onCreated: (connection: Connection) => void;
 }): ReactNode {
   const carriers = useCarriers();
-  const inbox = useInboxForm().data?.config_schema;
+  const inboxForm = useInboxForm();
+  const inbox = inboxForm.data?.config_schema;
   const add = useAddConnection();
   const update = useUpdateConnection();
   const list = useMemo(() => carriers.data ?? [], [carriers.data]);
@@ -76,6 +77,9 @@ export function ConnectionDialog(props: {
   const effectiveKind = kind !== "" && kinds.includes(kind) ? kind : (kinds[0] ?? "");
   const schema = configSchema(provider, list, inbox);
   const [label, setLabel] = useState(editing?.label ?? "");
+  const [secret, setSecret] = useState<FormValues>({});
+  const needsInboxSecret = editing === null && provider === INBOX_PROVIDER;
+  const secretSchema = asSchema(inboxForm.data?.secret_schema);
   const [values, setValues] = useState<FormValues>(() =>
     initialValues(
       configSchema(editing?.provider ?? "", carriers.data ?? [], inbox),
@@ -85,6 +89,7 @@ export function ConnectionDialog(props: {
   const mutation = editing === null ? add : update;
 
   const chooseProvider = (next: string): void => {
+    setSecret({});
     setProvider(next);
     setKind("");
     setValues(initialValues(configSchema(next, list, inbox), undefined));
@@ -106,7 +111,16 @@ export function ConnectionDialog(props: {
     if (effectiveKind === "") {
       return;
     }
-    add.mutate({ provider, kind: effectiveKind, label, config }, { onSuccess: props.onCreated });
+    add.mutate(
+      {
+        provider,
+        kind: effectiveKind,
+        label,
+        config,
+        ...(needsInboxSecret ? { secret: cleanValues(secretSchema, secret) } : {}),
+      },
+      { onSuccess: props.onCreated },
+    );
   };
 
   return (
@@ -128,6 +142,7 @@ export function ConnectionDialog(props: {
                   name={chosen.name}
                   logo={chosen.logo}
                   onChange={() => {
+                    setSecret({});
                     setProvider("");
                   }}
                 />
@@ -169,7 +184,10 @@ export function ConnectionDialog(props: {
           {provider === "" ? null : (
             <SchemaFields schema={schema} values={values} onChange={setValues} />
           )}
-          {editing === null && provider !== "" ? (
+          {needsInboxSecret ? (
+            <SchemaFields schema={secretSchema} values={secret} onChange={setSecret} />
+          ) : null}
+          {editing === null && provider !== "" && !needsInboxSecret ? (
             <p className="muted">{t.connections.afterAdding}</p>
           ) : null}
           <ErrorNotice error={mutation.error} />
@@ -180,7 +198,11 @@ export function ConnectionDialog(props: {
             <button
               type="submit"
               className="button primary"
-              disabled={mutation.isPending || provider === ""}
+              disabled={
+                mutation.isPending ||
+                provider === "" ||
+                (needsInboxSecret && inboxForm.data === undefined)
+              }
             >
               {editing === null ? t.connections.addConnection : t.connections.save}
             </button>
