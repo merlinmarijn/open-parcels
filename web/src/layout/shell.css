@@ -307,14 +307,18 @@
 .sidebar.collapsed .brand-name,
 .sidebar.collapsed .nav-label,
 .sidebar.collapsed .add-label,
-.sidebar.collapsed .live-label,
-.sidebar.collapsed .header-link span {
+.sidebar.collapsed .live-label {
   position: absolute;
   width: 1px;
   height: 1px;
   overflow: hidden;
   clip: rect(0 0 0 0);
   white-space: nowrap;
+}
+
+.sidebar.collapsed .header-link {
+  margin: 0;
+  padding: 8px;
 }
 
 .sidebar.collapsed .nav a,
@@ -453,6 +457,7 @@
   border: 0;
   border-radius: var(--radius-sm);
   font-family: inherit;
+  line-height: inherit;
   cursor: pointer;
 }
 

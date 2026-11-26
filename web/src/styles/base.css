@@ -938,3 +938,22 @@ tbody tr:last-child td {
   font-family: var(--mono);
   font-size: var(--text-xs);
 }
+
+/* Lists inside cards (status checks, logins): hairline rows instead of loose lines. */
+.card > .plain-list > li {
+  margin: 0;
+  padding: 10px 0;
+  border-bottom: 1px solid var(--panel-border);
+}
+
+.card > .plain-list > li:last-child {
+  border-bottom: 0;
+}
+
+.card > .plain-list > li > .badge:first-child {
+  margin-right: var(--space-2);
+}
+
+.card.stack > h2 {
+  margin-bottom: 0;
+}

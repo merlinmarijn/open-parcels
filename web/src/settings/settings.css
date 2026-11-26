@@ -11,7 +11,7 @@
   margin: 0 0 var(--space-4);
 }
 
-@media (min-width: 1200px) {
+@media (min-width: 1700px) {
   .settings-grid {
     column-count: 2;
   }
@@ -110,7 +110,7 @@
 .setting > .setting-edit {
   grid-column: 2;
   grid-row: 1 / span 3;
-  width: 17rem;
+  width: 15rem;
 }
 
 .setting:first-child {

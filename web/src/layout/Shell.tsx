@@ -174,13 +174,13 @@ function AccountRow(props: Account): ReactNode {
       {admin || method === "ingress" ? null : (
         <button type="button" className="header-link" onClick={props.onLogIn}>
           <LogIn size={16} aria-hidden="true" />
-          {t.shell.logIn}
+          <span className="nav-label">{t.shell.logIn}</span>
         </button>
       )}
       {method !== "session" ? null : (
         <button type="button" className="header-link" onClick={props.onLogOut}>
           <LogOut size={16} aria-hidden="true" />
-          {t.shell.logOut}
+          <span className="nav-label">{t.shell.logOut}</span>
         </button>
       )}
     </div>

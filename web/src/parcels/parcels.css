@@ -315,9 +315,6 @@
 }
 
 .detail-list > li {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0 6px;
   padding: var(--space-2) 0;
   margin: 0;
   border-bottom: 1px solid var(--panel-border);
