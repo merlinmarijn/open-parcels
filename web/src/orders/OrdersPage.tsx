@@ -17,7 +17,9 @@ function OrderCard({ order }: { readonly order: Order }): ReactNode {
   return (
     <section className="glass-panel order-card" aria-labelledby={titleId}>
       <div className="order-head">
-        <ShoppingBag size={20} className="page-icon" aria-hidden="true" />
+        <span className="order-icon" aria-hidden="true">
+          <ShoppingBag size={18} />
+        </span>
         <div className="order-head-text">
           <h2 id={titleId}>
             <Link to="/orders/$orderId" params={{ orderId: order.id }}>
@@ -53,7 +55,7 @@ export function OrdersPage(): ReactNode {
 
   return (
     <section aria-labelledby="orders-title" className="stack">
-      <div className="page-header glass-panel">
+      <div className="page-header">
         <div className="page-title-row">
           <ShoppingBag size={22} className="page-icon" aria-hidden="true" />
           <h1 id="orders-title">{t.orders.title}</h1>

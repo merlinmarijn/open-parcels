@@ -3,7 +3,9 @@ import { Segmented } from "../components/Segmented";
 import { Link } from "@tanstack/react-router";
 import { createColumnHelper } from "@tanstack/react-table";
 import { useMemo, type ReactNode } from "react";
-import { useUrlParam } from "../lib/urlState";
+import { pickOne, useUrlParam } from "../lib/urlState";
+import { ParcelCard } from "./ParcelCard";
+
 import type { Parcel } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { DataTable } from "../components/DataTable";
@@ -18,6 +20,14 @@ const FILTER_LABELS: Readonly<Record<ParcelFilter, string>> = {
   active: t.parcels.filterActive,
   delivered: t.parcels.filterDelivered,
   all: t.parcels.filterAll,
+};
+
+const VIEWS = ["list", "table"] as const;
+type ParcelView = (typeof VIEWS)[number];
+
+const VIEW_LABELS: Readonly<Record<ParcelView, string>> = {
+  list: t.parcels.viewList,
+  table: t.parcels.viewTable,
 };
 
 const column = createColumnHelper<Parcel>();
@@ -81,8 +91,12 @@ function matchesFilter(parcel: Parcel, filter: ParcelFilter): boolean {
   return filter === "delivered" ? parcel.delivered : !parcel.delivered;
 }
 
+function renderCard(parcel: Parcel): ReactNode {
+  return <ParcelCard parcel={parcel} />;
+}
+
 /**
- * The parcel list. The Show filter is owned by the page, so it survives the table being
+ * The parcel list, as rich rows or (`?view=table`) a sortable table. The Show filter is owned by the page, so it survives the table being
  * re-rendered with another data set (archived parcels included or not).
  */
 export function ParcelTable(props: {
@@ -93,6 +107,8 @@ export function ParcelTable(props: {
   const { filter, onFilterChange: setFilter } = props;
   const [carrierParam, setCarrierParam] = useUrlParam("carrier");
   const carrier = carrierParam?.toLowerCase() ?? "";
+  const [viewParam, setViewParam] = useUrlParam("view");
+  const view = pickOne(viewParam, VIEWS, "list");
   const setCarrier = (value: string): void => {
     setCarrierParam(value === "" ? null : value);
   };
@@ -136,6 +152,15 @@ export function ParcelTable(props: {
           ))}
         </select>
       </label>
+      <Segmented
+        legend={t.parcels.view}
+        name="parcel-view"
+        options={VIEWS.map((value) => ({ value, label: VIEW_LABELS[value] }))}
+        value={view}
+        onChange={(next) => {
+          setViewParam(next === "list" ? null : next);
+        }}
+      />
     </>
   );
 
@@ -150,6 +175,7 @@ export function ParcelTable(props: {
       urlKeys={{ search: "q", sort: "sort" }}
       emptyText={filter === "active" ? t.parcels.noneOnTheWay : t.parcels.none}
       rowClassName={(parcel) => (parcel.lookup.state === "not_found" ? "row-warning" : undefined)}
+      {...(view === "list" ? { renderItem: renderCard } : {})}
     />
   );
 }

@@ -3,6 +3,9 @@ export const settings = {
   title: "Settings",
   serverSettings: "Server settings",
   serverSettingsAdminOnly: "Server settings and passwords are for the admin only.",
+  groupYou: "General",
+  groupServer: "Server",
+  sections: "Sections",
   language: {
     title: "Language",
     intro: "The language of this web UI in this browser. Dates and numbers follow your region.",

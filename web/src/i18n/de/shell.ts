@@ -14,6 +14,10 @@ export const shell: Messages["shell"] = {
     agents: "Für KI-Agenten",
   },
   mainNav: "Hauptmenü",
+  manageNav: "Verwalten",
+  more: "Mehr",
+  collapse: "Seitenleiste einklappen",
+  expand: "Seitenleiste ausklappen",
   live: { connecting: "Verbinde…", live: "Live", offline: "Offline" },
   liveUpdates: "Live-Aktualisierung",
   theme: "Modus",
@@ -47,10 +51,8 @@ export const shell: Messages["shell"] = {
   notFoundText:
     "Unter dieser Adresse gibt es nichts. Sie wurde vielleicht verschoben oder entfernt.",
   notFoundBack: "Zurück zu den Paketen",
-  readerNoticeBefore: "Es ist kein Leser-Passwort gesetzt (",
-  readerNoticeMiddle:
-    "): Wer diesen Server erreicht, kann deine Pakete und Bestellungen lesen, ohne etwas zu ändern. Unter ",
-  readerNoticeLink: "Einstellungen → Sicherheit",
-  readerNoticeAfter: " eines setzen, um das Lesen privat zu halten.",
+  readerNotice:
+    "Es ist kein Leser-Passwort gesetzt: Wer diesen Server erreicht, kann deine Pakete lesen.",
+  readerNoticeLink: "Jetzt setzen",
   dismiss: "Ausblenden",
 };

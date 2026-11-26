@@ -1,4 +1,5 @@
 import { Link } from "@tanstack/react-router";
+import { ShieldAlert, X } from "lucide-react";
 import type { ReactNode } from "react";
 import { useDismissReaderNotice, useSession } from "../auth/session";
 import { ErrorNotice } from "../components/ui";
@@ -9,7 +10,8 @@ const PASSWORD_VARIABLE = "OPENPARCELS_PASSWORD";
 
 /**
  * Tells the admin, once, that reading is open because OPENPARCELS_PASSWORD is not set. That is a
- * supported read-only mode, so this only informs; "Dismiss" hides it for good in every browser.
+ * supported read-only mode, so this only informs, in one slim line; dismissing hides it for good
+ * in every browser.
  */
 export function ReaderNotice(): ReactNode {
   const session = useSession();
@@ -18,23 +20,25 @@ export function ReaderNotice(): ReactNode {
     return null;
   }
   return (
-    <div className="notice notice-warning reader-notice" role="status">
-      <p>
-        {t.shell.readerNoticeBefore}
-        <code>{PASSWORD_VARIABLE}</code>
-        {t.shell.readerNoticeMiddle}
-        <Link to="/settings">{t.shell.readerNoticeLink}</Link>
-        {t.shell.readerNoticeAfter}
+    <div className="reader-notice" role="status">
+      <ShieldAlert size={16} aria-hidden="true" />
+      <p title={PASSWORD_VARIABLE}>
+        {t.shell.readerNotice}{" "}
+        <Link to="/settings" hash="settings-security">
+          {t.shell.readerNoticeLink}
+        </Link>
       </p>
       <button
         type="button"
-        className="button"
+        className="icon-button"
+        aria-label={t.shell.dismiss}
+        title={t.shell.dismiss}
         disabled={dismiss.isPending}
         onClick={() => {
           dismiss.mutate();
         }}
       >
-        {t.shell.dismiss}
+        <X size={16} aria-hidden="true" />
       </button>
       {dismiss.isError ? <ErrorNotice error={dismiss.error} /> : null}
     </div>

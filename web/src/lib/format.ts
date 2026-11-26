@@ -44,13 +44,42 @@ function localDay(day: string): Date {
   return new Date(year ?? 1970, (month ?? 1) - 1, date ?? 1, 12);
 }
 
-/** "Delivered 2 hours ago", "Expected Thu 20 Nov", or null when neither is known. */
-export function deliveryLine(
-  parcel: ExpectedDelivery & { readonly delivered: boolean; readonly delivered_at: string | null },
-): string | null {
-  if (parcel.delivered) return t.parcels.deliveredAgo(formatRelative(parcel.delivered_at));
-  if (parcel.expected_from === null && parcel.expected_to === null) return null;
-  return t.parcels.expected(formatExpected(parcel));
+/** "Today", "Tomorrow", "Yesterday" in the UI language, else "Thu, Nov 20". */
+function dayName(date: Date, now = new Date()): string {
+  const midnight = (d: Date): number =>
+    new Date(d.getFullYear(), d.getMonth(), d.getDate()).getTime();
+  const days = Math.round((midnight(date) - midnight(now)) / 86_400_000);
+  if (Math.abs(days) > 1) return dateOnly.format(date);
+  const word = relative.format(days, "day");
+  return word.charAt(0).toLocaleUpperCase(locales) + word.slice(1);
+}
+
+/**
+ * The expected delivery in two short parts for a parcel row: the day in words ("Tomorrow") and
+ * the time window when there is one ("10:00–12:00"). Null when nothing is expected.
+ */
+export function etaParts(
+  parcel: ExpectedDelivery,
+  now = new Date(),
+): { readonly day: string; readonly time: string | null } | null {
+  const days = parcel.expected_days;
+  if (days !== null) {
+    const first = dayName(localDay(days.from), now);
+    return days.from === days.to
+      ? { day: first, time: null }
+      : { day: `${first} – ${dayName(localDay(days.to), now)}`, time: null };
+  }
+  const from = parcel.expected_from === null ? null : new Date(parcel.expected_from);
+  const to = parcel.expected_to === null ? null : new Date(parcel.expected_to);
+  const start = from ?? to;
+  if (start === null) return null;
+  if (from !== null && to !== null && from.toDateString() === to.toDateString()) {
+    return { day: dayName(from, now), time: `${timeOnly.format(from)}–${timeOnly.format(to)}` };
+  }
+  if (from !== null && to !== null) {
+    return { day: `${dayName(from, now)} – ${dayName(to, now)}`, time: null };
+  }
+  return { day: dayName(start, now), time: null };
 }
 
 /**

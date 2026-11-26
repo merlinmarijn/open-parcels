@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { describeLookup, formatExpected } from "./format";
+import { describeLookup, etaParts, formatExpected } from "./format";
 
 const day = new Intl.DateTimeFormat(undefined, {
   weekday: "short",
@@ -55,5 +55,25 @@ describe("carrier lookup wording", () => {
         now,
       ),
     ).toBe("Not found by the carrier 2 days ago, not asked yet");
+  });
+});
+
+describe("etaParts", () => {
+  const now = new Date(2026, 10, 18, 9);
+  const none = { expected_from: null, expected_to: null, expected_days: null };
+
+  it("names today and tomorrow and keeps a same-day window's times", () => {
+    const from = new Date(2026, 10, 19, 10).toISOString();
+    const to = new Date(2026, 10, 19, 12).toISOString();
+    const eta = etaParts({ ...none, expected_from: from, expected_to: to }, now);
+    expect(eta?.day).toBe("Tomorrow");
+    expect(eta?.time).not.toBeNull();
+    expect(
+      etaParts({ ...none, expected_days: { from: "2026-11-18", to: "2026-11-18" } }, now),
+    ).toEqual({ day: "Today", time: null });
+  });
+
+  it("is null when nothing is expected", () => {
+    expect(etaParts(none, now)).toBeNull();
   });
 });

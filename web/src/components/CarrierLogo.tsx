@@ -7,13 +7,14 @@ import { apiUrl } from "../api/fetcher";
 import { useCarriers } from "../api/queries";
 
 /** Brand colours for monograms of carriers without a bundled logo. */
-const BRAND: Readonly<Record<string, readonly [string, string]>> = {
-  gls: ["#061ab1", "#ffd100"],
-  amazon: ["#232f3e", "#ff9900"],
-  postnl: ["#ff6200", "#ffffff"],
+const BRAND: Readonly<Record<string, string>> = {
+  gls: "#061ab1",
+  amazon: "#ff9900",
+  postnl: "#ff6200",
 };
 
-function colours(id: string): readonly [string, string] {
+/** The monogram's hue: the brand's colour, or a stable one from the id. */
+function hue(id: string): string {
   const known = BRAND[id.toLowerCase()];
   if (known !== undefined) {
     return known;
@@ -22,7 +23,7 @@ function colours(id: string): readonly [string, string] {
   for (const char of id) {
     hash = (hash * 31 + char.charCodeAt(0)) % 360;
   }
-  return [`hsl(${hash} 55% 42%)`, "#ffffff"];
+  return `hsl(${String(hash)} 60% 50%)`;
 }
 
 function initials(name: string): string {
@@ -58,14 +59,13 @@ export function LogoTile(props: {
       />
     );
   }
-  const [background, color] = colours(props.carrier);
-  const style: CSSProperties = {
+  // The tile tints itself from this colour (styles/base.css), readable in both themes.
+  const style = {
     width: size,
     height: size,
-    background,
-    color,
+    "--tile": hue(props.carrier),
     fontSize: Math.round(size * 0.3),
-  };
+  } as CSSProperties;
   return (
     // The initials come from CSS (`attr(data-initials)`): the tile is decoration, and the carrier
     // name is always written out next to it.

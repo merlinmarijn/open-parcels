@@ -17,10 +17,8 @@ export const parcels = {
   archived: "Archived",
   notRunYet: "Not run yet",
   // Card
-  deliveredAgo: (relative: string) => `Delivered ${relative}`,
   nextStop: "Next stop",
   stopsAway: (stops: number) => `${formatNumber(stops)} ${plural(stops, "stop", "stops")} away`,
-  expected: (when: string) => `Expected ${when}`,
   // Table
   columnParcel: "Parcel",
   columnStatus: "Status",
@@ -28,6 +26,9 @@ export const parcels = {
   columnCarrier: "Carrier",
   columnEta: "ETA",
   columnUpdated: "Last update",
+  view: "View",
+  viewList: "List",
+  viewTable: "Table",
   show: "Show",
   filterActive: "Active",
   filterDelivered: "Delivered",

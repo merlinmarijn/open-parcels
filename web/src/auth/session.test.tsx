@@ -33,6 +33,6 @@ describe("session", () => {
 
     up = true;
     await user.click(again);
-    expect(await screen.findByRole("table")).toBeInTheDocument();
+    expect(await screen.findByText("No parcels on the way.")).toBeInTheDocument();
   });
 });

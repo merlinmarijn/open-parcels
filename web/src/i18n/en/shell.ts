@@ -13,6 +13,10 @@ export const shell = {
     agents: "For AI agents",
   },
   mainNav: "Main",
+  manageNav: "Manage",
+  more: "More",
+  collapse: "Collapse sidebar",
+  expand: "Expand sidebar",
   live: { connecting: "Connecting…", live: "Live", offline: "Offline" },
   liveUpdates: "Live updates",
   theme: "Theme",
@@ -45,10 +49,8 @@ export const shell = {
   notFoundTitle: "Page not found",
   notFoundText: "There is nothing at this address. It may have moved or been removed.",
   notFoundBack: "Back to the parcels",
-  readerNoticeBefore: "No reader password is set (",
-  readerNoticeMiddle:
-    "): anyone who can reach this server can read your parcels and orders, without changing anything. Set one under ",
-  readerNoticeLink: "Settings → Security",
-  readerNoticeAfter: " to keep reading private.",
+  readerNotice:
+    "No reader password is set, so anyone who can reach this server can read your parcels.",
+  readerNoticeLink: "Set one",
   dismiss: "Dismiss",
 };

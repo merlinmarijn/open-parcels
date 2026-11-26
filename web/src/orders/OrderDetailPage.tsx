@@ -165,7 +165,7 @@ export function OrderDetailPage({ orderId }: { readonly orderId: string }): Reac
           <Spinner />
         ) : null
       ) : (
-        <div className="glass-panel panel">
+        <div className="card order-detail">
           <Header order={order} />
           {summary === "" ? null : <p className="muted">{summary}</p>}
           <OrderProgress order={order} />

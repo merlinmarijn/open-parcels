@@ -38,7 +38,7 @@ describe("parcel list", () => {
   it("shows active parcels with status, carrier and lookup state", async () => {
     api();
     renderApp();
-    const table = await screen.findByRole("table", { name: "Parcels" });
+    const table = await screen.findByRole("list", { name: "Parcels" });
     expect(within(table).getByText("Book")).toBeInTheDocument();
     expect(within(table).getByText("Not found by carrier")).toBeInTheDocument();
     expect(within(table).getByText("dpd")).toBeInTheDocument();
@@ -49,7 +49,7 @@ describe("parcel list", () => {
   it("filters by delivered, carrier and search", async () => {
     api();
     const user = userEvent.setup();
-    renderApp();
+    renderApp("/?view=table");
     const table = await screen.findByRole("table", { name: "Parcels" });
 
     await user.click(screen.getByLabelText("Delivered"));
@@ -81,7 +81,7 @@ describe("parcel list", () => {
       "GET /api/v1/carriers": () => ({ body: [] }),
     });
     const user = userEvent.setup();
-    renderApp();
+    renderApp("/?view=table");
     const table = await screen.findByRole("table", { name: "Parcels" });
     // A header row and the first 200 parcels; the count still names all 450.
     expect(within(table).getAllByRole("row")).toHaveLength(201);
@@ -133,10 +133,10 @@ describe("parcel list with archived parcels", () => {
     });
     const user = userEvent.setup();
     renderApp();
-    await screen.findByRole("table", { name: "Parcels" });
+    await screen.findByRole("list", { name: "Parcels" });
     await user.click(screen.getByLabelText("All"));
     await user.click(screen.getByLabelText("Include archived"));
-    const table = await screen.findByRole("table", { name: "Parcels" });
+    const table = await screen.findByRole("list", { name: "Parcels" });
     expect(screen.getByLabelText("All")).toBeChecked();
     expect(within(table).getByText("Archived")).toBeInTheDocument();
   });
@@ -192,7 +192,7 @@ describe("an ended session and a deleted parcel", () => {
     renderApp(`/parcels/${ID}`);
     await user.click(await screen.findByRole("button", { name: "Delete" }));
     // Back on the list, whose read follows the invalidation a stale detail read would come with.
-    await screen.findByRole("table");
+    await screen.findByText("No parcels on the way.");
     await waitFor(() => {
       expect(deleted).toBe(true);
       expect(calls.some((call) => call.method === "GET" && call.path === "/api/v1/parcels")).toBe(

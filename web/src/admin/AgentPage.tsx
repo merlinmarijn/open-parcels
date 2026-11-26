@@ -1,3 +1,4 @@
+import "./admin.css";
 import { Link } from "@tanstack/react-router";
 import { useState, type ReactNode } from "react";
 // The one copy of the guide; the server serves the same file as /llms.txt.

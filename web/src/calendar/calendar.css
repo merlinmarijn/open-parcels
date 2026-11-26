@@ -1,0 +1,273 @@
+/*
+ * FullCalendar, made to look like the rest of the app: a quiet hairline grid, the toolbar as
+ * soft buttons and a segmented view switch, today's date in an accent circle, and events as
+ * tinted chips with a coloured edge instead of solid blocks.
+ */
+.calendar {
+  --fc-border-color: var(--panel-border);
+  --fc-page-bg-color: transparent;
+  --fc-neutral-bg-color: var(--tint);
+  --fc-list-event-hover-bg-color: var(--tint);
+  --fc-today-bg-color: transparent;
+  --fc-now-indicator-color: var(--danger);
+  --fc-event-bg-color: var(--accent-soft);
+  --fc-event-border-color: var(--accent);
+  --fc-event-text-color: var(--text);
+  --fc-button-bg-color: transparent;
+  --fc-button-border-color: transparent;
+  --fc-button-text-color: var(--text-soft);
+  --fc-button-hover-bg-color: var(--tint-strong);
+  --fc-button-hover-border-color: transparent;
+  --fc-button-active-bg-color: var(--panel-solid);
+  --fc-button-active-border-color: transparent;
+  --ev: var(--accent);
+  padding: var(--space-5) var(--space-6) var(--space-6);
+}
+
+/* Toolbar */
+.calendar .fc .fc-toolbar.fc-header-toolbar {
+  margin-bottom: var(--space-5);
+  gap: var(--space-3);
+}
+
+.calendar .fc .fc-toolbar-title {
+  font-size: var(--text-xl);
+  font-weight: 650;
+  letter-spacing: -0.015em;
+}
+
+.calendar .fc .fc-button {
+  font-size: var(--text-sm);
+  font-weight: 550;
+  padding: 5px 12px;
+  border-radius: var(--radius-sm);
+  box-shadow: none !important;
+  text-transform: capitalize;
+  transition: background-color var(--duration) var(--ease);
+}
+
+.calendar .fc .fc-button:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 1px;
+}
+
+.calendar .fc .fc-prev-button,
+.calendar .fc .fc-next-button {
+  padding: 5px 8px;
+}
+
+.calendar .fc .fc-today-button {
+  margin-left: var(--space-2) !important;
+  border: 1px solid var(--border-strong);
+  color: var(--text);
+}
+
+.calendar .fc .fc-today-button:disabled {
+  opacity: 0.45;
+}
+
+/* The view switch: a segmented track, the shown view raised. */
+.calendar .fc .fc-toolbar-chunk:last-child .fc-button-group {
+  padding: 3px;
+  gap: 2px;
+  border-radius: var(--radius);
+  background: var(--tint-strong);
+}
+
+.calendar .fc .fc-toolbar-chunk:last-child .fc-button {
+  border-radius: 7px !important;
+  margin: 0 !important;
+  color: var(--muted);
+  padding: 4px 12px;
+}
+
+.calendar .fc .fc-toolbar-chunk:last-child .fc-button:hover {
+  color: var(--text);
+  background: transparent;
+}
+
+.calendar .fc .fc-toolbar-chunk:last-child .fc-button-active {
+  color: var(--text);
+  background: var(--panel-solid);
+  box-shadow: var(--shadow-sm) !important;
+}
+
+/* Grid */
+.calendar .fc .fc-scrollgrid {
+  border: 0;
+}
+
+.calendar .fc .fc-scrollgrid td:last-of-type,
+.calendar .fc .fc-scrollgrid th:last-of-type {
+  border-right: 0;
+}
+
+.calendar .fc th {
+  border-left: 0;
+  border-right: 0;
+}
+
+.calendar .fc .fc-col-header-cell-cushion {
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+  padding: 6px 4px 10px;
+}
+
+.calendar .fc .fc-daygrid-day-top {
+  flex-direction: row;
+  padding: 6px 6px 0;
+}
+
+.calendar .fc .fc-daygrid-day-number {
+  display: grid;
+  place-items: center;
+  min-width: 26px;
+  height: 26px;
+  padding: 0 4px;
+  border-radius: var(--radius-full);
+  font-size: var(--text-sm);
+  font-weight: 500;
+  color: var(--text-soft);
+  font-variant-numeric: tabular-nums;
+}
+
+.calendar .fc .fc-day-other .fc-daygrid-day-number {
+  color: var(--muted);
+  opacity: 0.6;
+}
+
+.calendar .fc .fc-day-today .fc-daygrid-day-number {
+  background: var(--accent);
+  color: var(--accent-text);
+  font-weight: 650;
+}
+
+.calendar .fc .fc-day-today .fc-col-header-cell-cushion,
+.calendar .fc .fc-timegrid-col.fc-day-today {
+  color: var(--accent-hover);
+}
+
+.calendar .fc a {
+  color: inherit;
+  text-decoration: none;
+}
+
+.calendar .fc .fc-daygrid-day-frame {
+  min-height: 92px;
+}
+
+/* Events: a tinted chip with a coloured edge; the dot of FullCalendar's list rows keeps the hue. */
+.calendar .fc .fc-daygrid-event,
+.calendar .fc .fc-timegrid-event {
+  margin: 1px 4px 2px;
+  padding: 2px 6px;
+  border: 0;
+  border-left: 3px solid var(--ev);
+  border-radius: 5px;
+  background: color-mix(in srgb, var(--ev) 14%, var(--panel));
+  color: var(--text);
+  font-size: 11.5px;
+  font-weight: 500;
+  overflow: hidden;
+}
+
+.calendar .fc .fc-daygrid-event:hover,
+.calendar .fc .fc-timegrid-event:hover {
+  background: color-mix(in srgb, var(--ev) 22%, var(--panel));
+}
+
+.calendar .fc .fc-event-main,
+.calendar .fc .fc-daygrid-event .fc-event-time,
+.calendar .fc .fc-daygrid-event .fc-event-title {
+  color: var(--text);
+}
+
+.calendar .fc .fc-daygrid-event .fc-event-time {
+  font-weight: 600;
+  color: var(--text-soft);
+}
+
+.calendar .fc .fc-daygrid-event-dot {
+  display: none;
+}
+
+.calendar .fc .fc-list {
+  border: 0;
+}
+
+.calendar .fc .fc-list-day-cushion {
+  background: var(--tint);
+}
+
+.calendar .fc .fc-list-event-dot {
+  border-color: var(--ev);
+}
+
+.calendar .fc .fc-list-event td {
+  border-color: var(--panel-border);
+}
+
+.calendar .fc .fc-daygrid-more-link {
+  font-size: 11px;
+  color: var(--muted);
+  margin-left: 6px;
+}
+
+.calendar .fc .fc-multimonth {
+  border: 0;
+}
+
+.cal-delivered {
+  --ev: var(--ok);
+}
+
+.cal-return_by {
+  --ev: var(--rose);
+}
+
+.cal-late {
+  --ev: var(--warn);
+}
+
+@media (max-width: 600px) {
+  .calendar {
+    padding: var(--space-3) var(--space-2);
+  }
+
+  .calendar .fc .fc-toolbar.fc-header-toolbar {
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: var(--space-2);
+  }
+
+  .calendar .fc .fc-toolbar-chunk {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 4px;
+  }
+
+  .calendar .fc .fc-toolbar-chunk:first-child {
+    order: 2;
+  }
+
+  .calendar .fc .fc-toolbar-chunk:nth-child(2) {
+    order: 1;
+    width: 100%;
+  }
+
+  .calendar .fc .fc-toolbar-chunk:last-child {
+    order: 3;
+  }
+
+  .calendar .fc .fc-toolbar-title {
+    font-size: var(--text-lg);
+  }
+
+  .calendar .fc .fc-toolbar-chunk:last-child .fc-button {
+    padding: 4px 9px;
+  }
+}

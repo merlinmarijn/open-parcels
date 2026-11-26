@@ -4,8 +4,11 @@ import { readFileSync } from "node:fs";
 import path from "node:path";
 import { describe, expect, it } from "vitest";
 
-// Read from disk: with `css: false` the test run turns every CSS import into an empty module.
-const styles = readFileSync(path.join(import.meta.dirname, "../styles.css"), "utf8");
+// Read from disk: with `css: false` the test run turns every CSS import into an empty module,
+// so the glob only names the files.
+const styles = Object.keys(import.meta.glob("../**/*.css"))
+  .map((file) => readFileSync(path.join(import.meta.dirname, file), "utf8"))
+  .join("\n");
 
 const sources = import.meta.glob<string>(["../**/*.tsx", "!../**/*.test.tsx"], {
   query: "?raw",
@@ -18,7 +21,7 @@ function cssClasses(css: string): Set<string> {
   return new Set([...withoutComments.matchAll(/\.(-?[_a-zA-Z][\w-]*)/g)].map((m) => m[1] ?? ""));
 }
 
-describe("styles.css", () => {
+describe("the style sheets", () => {
   it("has a rule for every literal class name in the components", () => {
     const defined = cssClasses(styles);
     const missing = Object.entries(sources).flatMap(([file, source]) =>

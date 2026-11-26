@@ -3,6 +3,7 @@ import { ErrorNotice, Field } from "../components/ui";
 import { BRAND, t } from "../i18n";
 import { MIN_PASSWORD } from "./password";
 import { useSetup, useSignIn } from "./session";
+import "./auth.css";
 
 interface AuthPageProps {
   /** Set when reading is open and this page was opened from the web UI: a way back to it. */

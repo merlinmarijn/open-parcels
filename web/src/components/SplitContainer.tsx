@@ -1,27 +1,12 @@
-import { useSyncExternalStore, type ReactNode } from "react";
+import type { ReactNode } from "react";
 import { Group, Panel, Separator } from "react-resizable-panels";
 import { t } from "../i18n";
-
-const NARROW = "(max-width: 900px)";
-
-function subscribe(onChange: () => void): () => void {
-  if (typeof window.matchMedia !== "function") {
-    return () => undefined;
-  }
-  const query = window.matchMedia(NARROW);
-  query.addEventListener("change", onChange);
-  return () => {
-    query.removeEventListener("change", onChange);
-  };
-}
-
-function isNarrow(): boolean {
-  return typeof window.matchMedia === "function" && window.matchMedia(NARROW).matches;
-}
+import { NARROW, useMediaQuery } from "../lib/media";
+import "./split.css";
 
 /**
- * Two panels side by side with a draggable divider, as in the original UI. On narrow screens the
- * panels stack instead, first panel on top.
+ * Two panels side by side with a draggable divider. On narrow screens the panels stack instead,
+ * first panel on top.
  */
 export function SplitContainer(props: {
   readonly leftPanel: ReactNode;
@@ -31,7 +16,7 @@ export function SplitContainer(props: {
   readonly leftMinSize?: number;
   readonly rightMinSize?: number;
 }): ReactNode {
-  const narrow = useSyncExternalStore(subscribe, isNarrow, () => false);
+  const narrow = useMediaQuery(NARROW);
   if (narrow) {
     return (
       <div className="stacked">

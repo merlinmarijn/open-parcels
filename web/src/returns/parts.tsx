@@ -4,6 +4,7 @@ import { Undo2 } from "lucide-react";
 import type { ReactNode } from "react";
 import type { ParcelStatus, Return, ReturnStatus } from "../api/types";
 import { t } from "../i18n";
+import "../orders/orders.css";
 import { formatMoney } from "../lib/format";
 import { UI_LOCALE } from "../lib/locale";
 
@@ -78,7 +79,9 @@ export function ReturnCard({
   return (
     <section className="glass-panel return-card" aria-labelledby={titleId}>
       <div className="order-head">
-        <Undo2 size={20} className="page-icon" aria-hidden="true" />
+        <span className="order-icon return-icon" aria-hidden="true">
+          <Undo2 size={18} />
+        </span>
         <div className="order-head-text">
           <h3 id={titleId}>{title === "" ? t.returns.untitled : title}</h3>
           {showOrder ? (

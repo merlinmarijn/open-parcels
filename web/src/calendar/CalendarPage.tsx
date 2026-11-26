@@ -13,6 +13,7 @@ import { t } from "../i18n";
 import { pickOne, useUrlParam } from "../lib/urlState";
 import { UI_HOUR12, UI_LOCALE } from "../lib/locale";
 import { toCalendarEvent } from "./events";
+import "./calendar.css";
 
 /** FullCalendar matches "en-DE" to its "en" locale (12-hour); the hour cycle comes from Intl. */
 const TIME_FORMAT = {

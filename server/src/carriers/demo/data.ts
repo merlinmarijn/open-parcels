@@ -65,10 +65,20 @@ export interface DemoParcel {
   readonly pickup: { readonly name: string; readonly at: number; readonly nextDay: boolean } | null;
 }
 
+/** A soft background and a deeper ink per picture, so the made-up items look like a set. */
+const TINTS: Readonly<Record<string, readonly [string, string]>> = {
+  Book: ["e0e7ff", "4338ca"],
+  Mug: ["dbeafe", "1d4ed8"],
+  Towel: ["fce7f3", "be185d"],
+  Lamp: ["fef3c7", "b45309"],
+  Gift: ["dcfce7", "15803d"],
+};
+
 function item(title: string, quantity: number, price: number, text: string): SnapshotItem {
+  const [background, ink] = TINTS[text] ?? ["f4f4f5", "52525b"];
   return {
     title,
-    imageUrl: `https://${IMAGE_HOST}/160x160/png?text=${encodeURIComponent(text)}`,
+    imageUrl: `https://${IMAGE_HOST}/160x160/${background}/${ink}/png?text=${encodeURIComponent(text)}&font=montserrat`,
     url: null,
     externalId: `demo-${text.toLowerCase()}`,
     quantity,

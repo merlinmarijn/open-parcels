@@ -21,6 +21,8 @@ import { useIsAdmin } from "../auth/session";
 import { BackupCard } from "./BackupCard";
 import { DataCard } from "./DataCard";
 import { ServerSettingsCards } from "./ServerSettings";
+import { groupSettings, SECURITY_GROUP, useServerSettings } from "./server-settings";
+import "./settings.css";
 
 interface Place {
   readonly label: string;
@@ -278,6 +280,48 @@ function LanguageSection(): ReactNode {
   );
 }
 
+/** The page's cards in order, for the section list beside them. */
+function useSections(admin: boolean): readonly { readonly id: string; readonly label: string }[] {
+  const server = useServerSettings(admin);
+  const groups =
+    server.data === undefined
+      ? []
+      : groupSettings(server.data).map(([group]) => ({
+          id: group === SECURITY_GROUP ? "settings-security" : `settings-group-${group}`,
+          label: t.serverSettings.groups[group],
+        }));
+  return [
+    { id: "home-title", label: t.settings.home.title },
+    { id: "label-title", label: t.settings.label.title },
+    { id: "language-title", label: t.settings.language.title },
+    ...(admin
+      ? [
+          ...groups,
+          { id: "settings-data", label: t.settings.data.title },
+          ...(groups.some((group) => group.label === t.settings.backups.title)
+            ? []
+            : [{ id: "settings-backups", label: t.settings.backups.title }]),
+        ]
+      : []),
+  ];
+}
+
+/** Links to each card; it stays in view beside the cards on wide screens. */
+function SectionNav(props: { readonly admin: boolean }): ReactNode {
+  const sections = useSections(props.admin);
+  return (
+    <nav className="settings-nav" aria-label={t.settings.sections}>
+      <ul>
+        {sections.map((section) => (
+          <li key={section.id}>
+            <a href={`#${section.id}`}>{section.label}</a>
+          </li>
+        ))}
+      </ul>
+    </nav>
+  );
+}
+
 export function SettingsPage(): ReactNode {
   const admin = useIsAdmin();
   return (
@@ -285,22 +329,27 @@ export function SettingsPage(): ReactNode {
       <div className="page-header">
         <h1 id="settings-title">{t.settings.title}</h1>
       </div>
-      <div className="settings-grid">
-        <HomeSection />
-        <LabelSection />
-        <LanguageSection />
-        {admin ? (
-          <>
-            <ServerSettingsCards />
-            <DataCard />
-            <BackupCard />
-          </>
-        ) : (
-          <section className="card stack">
-            <h2>{t.settings.serverSettings}</h2>
-            <ReadOnlyHint>{t.settings.serverSettingsAdminOnly}</ReadOnlyHint>
-          </section>
-        )}
+      <div className="settings-layout">
+        <SectionNav admin={admin} />
+        <div className="settings-grid">
+          <h2 className="settings-group-title">{t.settings.groupYou}</h2>
+          <HomeSection />
+          <LabelSection />
+          <LanguageSection />
+          <h2 className="settings-group-title">{t.settings.groupServer}</h2>
+          {admin ? (
+            <>
+              <ServerSettingsCards />
+              <DataCard />
+              <BackupCard />
+            </>
+          ) : (
+            <section className="card stack">
+              <h2>{t.settings.serverSettings}</h2>
+              <ReadOnlyHint>{t.settings.serverSettingsAdminOnly}</ReadOnlyHint>
+            </section>
+          )}
+        </div>
       </div>
     </section>
   );

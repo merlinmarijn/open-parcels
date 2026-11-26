@@ -17,10 +17,12 @@ const serverSettingsKey = ["settings", "config"] as const;
 /** The passwords' group: edited on the Security card, not the generic editor. */
 export const SECURITY_GROUP: ServerSettingGroup = "security";
 
-export function useServerSettings() {
+/** The server's settings; `enabled` false for readers, who may not ask for them. */
+export function useServerSettings(enabled = true) {
   return useQuery({
     queryKey: serverSettingsKey,
     queryFn: ({ signal }) => getApiV1SettingsConfig({ signal }),
+    enabled,
   });
 }
 

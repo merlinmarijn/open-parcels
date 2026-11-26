@@ -1,0 +1,440 @@
+/* Connections: a quiet summary, then one card per connection; the picker and sign-in steps. */
+.connection-summary {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--space-1) var(--space-8);
+  order: 3;
+  width: 100%;
+}
+
+.connection-summary .connection-stat-value {
+  font-size: var(--text-xl);
+}
+
+.connection-grid {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  align-items: start;
+  gap: var(--space-4);
+}
+
+.connection-grid > li {
+  margin: 0;
+}
+
+.connection-card {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-4);
+  margin: 0;
+  padding: var(--space-5);
+  transition:
+    border-color var(--duration) var(--ease),
+    box-shadow var(--duration) var(--ease);
+}
+
+.connection-card:hover {
+  border-color: var(--border-strong);
+  box-shadow: var(--shadow-md);
+}
+
+.connection-head {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+}
+
+.connection-title {
+  display: flex;
+  flex-direction: column;
+  min-width: 0;
+  margin-right: auto;
+}
+
+.connection-title h2 {
+  margin: 0;
+  font-size: var(--text-md);
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.connection-title .muted {
+  font-size: var(--text-xs);
+}
+
+.connection-detail {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.connection-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1px;
+  border-radius: var(--radius);
+  overflow: hidden;
+  background: var(--panel-border);
+}
+
+.connection-stats .connection-stat {
+  padding: var(--space-2) var(--space-3);
+  background: color-mix(in srgb, var(--tint) 100%, var(--panel));
+}
+
+.connection-stat {
+  display: flex;
+  flex-direction: column;
+}
+
+.connection-stat-value {
+  font-size: var(--text-lg);
+  font-weight: 650;
+  line-height: 1.25;
+  letter-spacing: -0.01em;
+  font-variant-numeric: tabular-nums;
+}
+
+.connection-stat-label {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.connection-times {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  grid-auto-flow: column;
+  grid-template-rows: auto auto;
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.connection-times dt {
+  font-size: var(--text-xs);
+  color: var(--muted);
+}
+
+.connection-times dd {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+.connection-card .actions {
+  margin-top: auto;
+  justify-content: flex-start;
+  align-items: center;
+  gap: 6px;
+}
+
+.connection-card > .actions {
+  padding-top: var(--space-3);
+  border-top: 1px solid var(--panel-border);
+}
+
+.connection-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-2);
+}
+
+.connection-card .connection-jobs .actions {
+  margin-top: 0;
+}
+
+.connection-job {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  padding: var(--space-3);
+  border-radius: var(--radius);
+  background: var(--tint);
+  font-size: var(--text-sm);
+}
+
+.connection-job-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--space-2);
+}
+
+.connection-job progress {
+  width: 100%;
+  height: 4px;
+  appearance: none;
+  border: 0;
+  border-radius: 2px;
+  background: var(--tint-strong);
+  accent-color: var(--accent);
+  overflow: hidden;
+}
+
+.connection-job progress::-webkit-progress-bar {
+  background: var(--tint-strong);
+}
+
+.connection-job progress::-webkit-progress-value {
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.connection-job progress::-moz-progress-bar {
+  background: var(--accent);
+  border-radius: 2px;
+}
+
+.connection-job p {
+  margin: 0;
+}
+
+/* Indeterminate while the total is unknown: a sliding stripe instead of an empty bar. */
+.connection-job progress:indeterminate {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) 0 0 / 40% 100%
+    no-repeat var(--tint-strong);
+  animation: inbox-sync-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes inbox-sync-slide {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-job progress:indeterminate {
+    animation: none;
+  }
+}
+
+/* An inbox's live sync: accent wash, a phase pill, the count large, the steps as a small log. */
+.inbox-sync {
+  gap: var(--space-2);
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.inbox-sync .connection-job-head strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.inbox-sync .connection-job-head .badge {
+  color: var(--accent-hover);
+}
+
+.inbox-sync .connection-job-head .badge::before {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.inbox-sync progress {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.inbox-sync p[aria-live] {
+  font-size: var(--text-base);
+  font-weight: 550;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.inbox-sync > p.muted {
+  font-size: var(--text-xs);
+}
+
+.inbox-sync p[role="alert"] {
+  color: var(--danger);
+}
+
+details.inbox-sync {
+  background: var(--tint);
+  border-color: transparent;
+}
+
+.inbox-sync summary {
+  cursor: pointer;
+  color: var(--text-soft);
+  list-style-position: outside;
+  margin-left: var(--space-4);
+}
+
+.inbox-sync summary::marker {
+  color: var(--muted);
+}
+
+.inbox-sync-log {
+  max-height: 8rem;
+  overflow-y: auto;
+  margin: var(--space-1) 0 0;
+  padding: var(--space-2) 0 0;
+  border-top: 1px solid var(--panel-border);
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.7;
+  scrollbar-width: thin;
+}
+
+.inbox-sync-log li:last-child {
+  color: var(--text-soft);
+}
+
+.inbox-sync-log time {
+  display: inline-block;
+  min-width: 5.5em;
+  margin-right: var(--space-2);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+
+.connection-icon-actions {
+  display: flex;
+  gap: 2px;
+  margin-left: auto;
+}
+
+.connection-mail-icon {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: none;
+  width: 32px;
+  height: 32px;
+  border-radius: 28%;
+  color: var(--accent-hover);
+  background: var(--accent-soft);
+}
+
+.nested {
+  margin-top: var(--space-1);
+}
+
+.steps {
+  padding-left: 1.2rem;
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+}
+
+.step-message {
+  margin: 0;
+  color: var(--text-soft);
+}
+
+/* "Add a connection" picker */
+.picker {
+  display: flex;
+  flex-direction: column;
+  gap: var(--space-3);
+  min-height: 0;
+}
+
+.picker-search {
+  width: 100%;
+}
+
+.picker-status {
+  margin: 0;
+  font-size: var(--text-sm);
+}
+
+.picker-results {
+  max-height: min(60vh, 32rem);
+  overflow-y: auto;
+  margin: 0 calc(-1 * var(--space-2));
+}
+
+.picker-heading {
+  margin: var(--space-4) var(--space-2) var(--space-1);
+  font-size: 11px;
+  font-weight: 600;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--muted);
+}
+
+.picker-list {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+}
+
+.picker-row,
+.picker-chosen {
+  display: flex;
+  align-items: center;
+  gap: var(--space-3);
+  width: 100%;
+  padding: var(--space-2);
+  border: 0;
+  border-radius: var(--radius);
+  background: transparent;
+  color: var(--text);
+  font: inherit;
+  text-align: left;
+}
+
+.picker-chosen {
+  padding: var(--space-3);
+  background: var(--tint);
+}
+
+.picker-row {
+  cursor: pointer;
+  transition: background-color var(--duration) var(--ease);
+}
+
+.picker-row:hover,
+.picker-row:focus-visible {
+  background: var(--tint-strong);
+}
+
+.picker-name {
+  flex: 1;
+  min-width: 0;
+  font-weight: 500;
+}
+
+.picker-badges {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+  gap: 4px;
+}
+
+.picker-badge {
+  padding: 1px 6px;
+  border-radius: var(--radius-sm);
+  background: var(--tint-strong);
+  color: var(--text-soft);
+  font-size: 11px;
+  font-weight: 550;
+}
+
+.picker-chevron {
+  color: var(--muted);
+  font-size: 1.3rem;
+  line-height: 1;
+}
+
+@media (max-width: 600px) {
+  .connection-card {
+    padding: var(--space-4);
+  }
+
+  .connection-summary {
+    gap: var(--space-1) var(--space-5);
+  }
+
+  /* The picker fills the sheet; its list scrolls, the search stays on top. */
+  .dialog:has(.picker) {
+    height: calc(100dvh - 2.5rem);
+  }
+
+  .dialog:has(.picker) .picker-results {
+    max-height: calc(100dvh - 13rem);
+  }
+}

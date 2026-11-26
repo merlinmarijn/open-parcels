@@ -75,7 +75,7 @@ function TransitList({ parcels }: { readonly parcels: readonly Parcel[] }): Reac
         <ul className="parcel-list">
           {parcels.map((parcel) => (
             <li key={parcel.id}>
-              <ParcelCard parcel={parcel} />
+              <ParcelCard parcel={parcel} compact />
             </li>
           ))}
         </ul>
