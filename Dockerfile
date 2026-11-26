@@ -1,6 +1,8 @@
 # syntax=docker/dockerfile:1.10
 #
-# One image for amd64 and arm64 (the Home Assistant Pi is aarch64).
+# One image for amd64 and arm64 (the Home Assistant Pi is aarch64). Two targets:
+#   (default)          the server with the web UI at / (all-in-one)
+#   --target server    the server only, for a web UI hosted elsewhere (decision record 0004)
 # Debian slim rather than Alpine: native modules ship glibc builds.
 
 ARG NODE_VERSION=26
@@ -25,22 +27,24 @@ COPY server/vendor/ server/vendor/
 RUN npm ci --workspace server --workspace web --include-workspace-root
 COPY server/ server/
 RUN npm run build --workspace server
-# The web UI: a static build the server serves at / (the API client is generated and committed).
-COPY web/ web/
-RUN npm run build --workspace web
 
 # --- Bundle: the server and its tools as ESM bundles, plus only the native modules ---------------
-FROM build AS bundle
+FROM build AS bundle-server
 RUN cd server && node dist/tools/bundle.js /out \
- && cp package.json /out/server/package.json \
- && mkdir -p /out/web && cp -r /app/web/dist /out/web/dist
+ && cp package.json /out/server/package.json
 # The bundled layout must start: a missing native module or a misplaced file fails the build here.
 RUN cd /out && node --input-type=module \
     -e "await import('sharp'); const { default: Db } = await import('better-sqlite3'); new Db(':memory:').close()" \
  && node /app/server/dist/tools/smoke.js /out/server/dist/main.js
 
+# The web UI: a static build the server serves at / (the API client is generated and committed).
+FROM bundle-server AS bundle
+COPY web/ /app/web/
+RUN npm run build --workspace web \
+ && mkdir -p /out/web && cp -r /app/web/dist /out/web/dist
+
 # --- Runtime ------------------------------------------------------------------------------------
-FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS runtime
+FROM node:${NODE_VERSION}-slim@${NODE_DIGEST} AS runtime-base
 # The commit the image is built from (op-publish passes it); shown on the Status page next to the
 # version. Declared in the last stage only, so a new commit never invalidates the build cache.
 ARG OPENPARCELS_COMMIT=""
@@ -54,7 +58,6 @@ RUN apt-get update \
  && mkdir -p /data /var/lib/tailscale \
  && chown node:node /data /var/lib/tailscale
 WORKDIR /app
-COPY --from=bundle --chown=root:root /out/ ./
 COPY --chmod=755 docker/tailscale-entrypoint.sh /usr/local/bin/tailscale-entrypoint.sh
 
 ENV NODE_ENV=production \
@@ -81,3 +84,13 @@ CMD ["node", "server/dist/main.js"]
 LABEL org.opencontainers.image.title="open-parcels" \
       org.opencontainers.image.description="Self-hosted parcel and order tracking for every carrier, shop and mailbox." \
       org.opencontainers.image.source="https://github.com/open-parcels/open-parcels"
+
+# The server only: no web UI, unknown paths answer with the API's 404.
+FROM runtime-base AS server
+COPY --from=bundle-server --chown=root:root /out/ ./
+LABEL org.opencontainers.image.title="open-parcels-server" \
+      org.opencontainers.image.description="The open-parcels server without the web UI."
+
+# The default target, last: the server with the web UI.
+FROM runtime-base AS runtime
+COPY --from=bundle --chown=root:root /out/ ./

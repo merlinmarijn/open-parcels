@@ -2,6 +2,21 @@
 
 Shipped work, newest first, with the commit that shipped it.
 
+## 2026-11-26
+
+- TODO §1: OP-060 knip in the gate (`7d02e38`), OP-053 one camelCase → snake_case mapper
+  (`7125b00`), OP-138 one new-parcel row builder (`279556a`), OP-159 shared list and detail
+  components, inbox forms from the server (`be31304`), OP-161 `token.used` and `health.changed`
+  live events, tokens and status pages stop polling (`2dabcd3`); OP-067 twin folding moved out
+  of the reconciler into `engine/twins.ts` (commit: see the log, "OP-067")
+- TODO §2: the order list picks its page in SQL (`orders/list-query.ts`, status and archiving
+  derived from the visible parcels in one grouped query, held to `order-lifecycle.ts` by a test
+  over 300 generated orders; not stored, so it cannot drift); the web orders page loads one server
+  page per "Show more" (commit: see the log, "orders")
+- TODO §2b: `--target server` builds the server-only image without the web UI; `op-publish.sh
+  attach-openapi <tag>` attaches `openapi-<version>.json` to an existing GitHub release (script
+  outside the repository, `~/scripts/`)
+
 ## 2026-11-25
 
 - TODO §2: upgrade path from v1 checked on a copy of a real v1 database (409 orders, 69 parcels,

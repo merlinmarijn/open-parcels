@@ -7,22 +7,9 @@ Assistant integration, `AP-` Home Assistant app, `EX-` extension, `WS-` website,
 
 ## 1. Core hardening (server + web, audit "Now" items not yet shipped)
 
-Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, verified against
-`main` on 2026-11-25:
+Groups 1–24 are shipped (see `DONE.md`). Left, optional:
 
-- [ ] OP-060: a `knip` configuration and gate step (the listed unused exports are gone; about 270
-      plug-in internals remain exported, better handled with the provider rewrite)
-- [ ] OP-053: camelCase → snake_case mapping is still written by hand in the tokens, calendar,
-      connections and settings routes
-- [ ] OP-138: one new-parcel row builder for the four writers (legacy and HA import, parcel
-      service, reconciler); the `item as Record<string, unknown>` narrowing in `migrate/ha/entries.ts`
-- [ ] OP-159: `deliveryLine`, one `ItemPictures`, `Segmented`, an archive/delete actions
-      component, `HomeMarker`, query-key comparison without `JSON.stringify`, and inbox form
-      schemas served by the server (shipped: `formatMoney`, `keys.signInFlows`, one settings query)
-- [ ] OP-161: `token.used` and `health.changed` live events so the tokens and status pages stop
-      polling (the duplicate focus read is gone)
-- [ ] OP-067: optional splits (`reconciler.ts` order items and twin folding, `styles.css` per
-      feature); every file is inside the enforced limits (largest 933 of 1,000 lines)
+- [ ] `styles.css` per feature (2,343 lines; CSS is outside the line limits)
 
 ## 2. Production readiness
 
@@ -41,15 +28,16 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
       phone: the parcels table (scrolls, maybe cards), the split map/list pages and Leaflet's
       controls, FullCalendar's week/day views, the sign-in dialog's steps, the Settings place
       picker map, and Safari's dialog height (`100dvh`)
-- [ ] Performance follow-ups (`docs/performance.md`, "Left as it is"): a stored order status so
-      the order list pages in SQL; the web UI loads every page of parcels and orders (fine for the
-      default views, ~4 MB with "Include archived" at 10,000 parcels); measure on the Pi
+- [ ] Performance follow-ups (`docs/performance.md`, "Left as it is"): re-measure the order list
+      now paged in SQL; the web UI still loads every page of parcels, because the parcels table
+      searches, sorts and counts in the browser and the map and connections pages use every parcel
+      (~4 MB with "Include archived" at 10,000 parcels); paging them needs search and sort on the
+      server; measure on the Pi
 - [ ] Release 2.0.0: changelog, tags `2.0.0`, `2.0`, `latest` on Docker Hub and GHCR, website and
       Unraid template switched from `:dev` to `:latest`, HA app on the release
 - [ ] Make `ghcr.io/open-parcels/open-parcels` public (owner click) and switch docs to it
 - [ ] Backups: look at the Backups card and the Status page in a browser (built and tested, not
       yet seen); the HA app's `backup_exclude` may want `backups/` once backups are on by default
-- [ ] OP-161 follow-up: a `health.changed` live event, so the status page needs no 30 s refetch
 
 - [ ] Provider logos beyond the eight from simple-icons (`server/logos/manifest.json`): add
       carriers' official logos from their press/brand pages where the terms allow, recording the
@@ -61,9 +49,6 @@ Groups 1–24 are shipped (see `DONE.md`) except these remainders of group 24, v
 Token login, CORS, token on the live event stream, delta sync, API versioning and the slimmer
 image are shipped (see `DONE.md`). Left:
 
-- [ ] A server-only image without the web UI (same Dockerfile, a target without `web/dist`)
-- [ ] `op-publish.sh`: attach `docs/openapi.json` to the GitHub release as
-      `openapi-<version>.json` (step documented in `AGENT.md`, not yet scripted)
 - [ ] Measure the arm64 image on the Pi at the next publish (`op-image-housekeeping.sh`)
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)

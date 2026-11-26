@@ -56,8 +56,9 @@ Status page shows `2.0.0-dev.<date> (<commit>)`.
 - `docs/openapi.json` is the contract. Its `info.version` is the server version, so it changes
   with every version bump; the gate fails while the committed document differs from the server
   (`--api` regenerates it and the web UI's `generated.ts`).
-- **Per release:** bump the versions, run the gate with `--api`, commit, tag; attach
-  `docs/openapi.json` to the GitHub release as `openapi-<version>.json`. Client libraries
+- **Per release:** bump the versions, run the gate with `--api`, commit, tag; once the GitHub
+  release exists, `~/scripts/op-publish.sh attach-openapi <tag>` attaches `docs/openapi.json` as
+  of that tag as `openapi-<version>.json` (it never creates a release). Client libraries
   (decision record 0004 §4) are generated from that file, never from a running server.
 - **Tailscale pin:** `docker/tailscale-entrypoint.sh` pins the Tailscale version and one SHA-256
   per architecture. To bump, download `tailscale_<version>_{amd64,arm64}.tgz` from
