@@ -96,15 +96,30 @@ describe("email in provider manifests", () => {
     const passed = `mx.example.net; dkim=pass header.d=${DOMAIN}`;
     const from = `Shop <orders@news.${DOMAIN}>`;
 
-    expect(await router.read("inbox", mail(from, "Shipped", passed))).toEqual({
+    expect(await router.read("inbox", mail(from, "Shipped", passed), true)).toEqual({
       snapshots: [],
       orders: [],
       returns: [],
     });
-    expect(router.routes(mail(from))).toEqual([]);
-    expect(router.routes(mail("Shop <orders@other.example>", "Shipped", passed))).toEqual([]);
-    expect(await router.read("inbox", mail(from, "Ignore me", passed))).toBeNull();
+    expect(router.routes(mail(from), true)).toEqual([]);
+    expect(router.routes(mail("Shop <orders@other.example>", "Shipped", passed), true)).toEqual([]);
+    expect(await router.read("inbox", mail(from, "Ignore me", passed), true)).toBeNull();
     enabled = false;
-    expect(router.routes(mail(from, "Shipped", passed))).toEqual([]);
+    expect(router.routes(mail(from, "Shipped", passed), true)).toEqual([]);
+  });
+
+  it("routes by the domain alone for an inbox that does not check senders", () => {
+    const router = new EmailRouter({
+      providers: () => [register(reader, emailManifest([`.${DOMAIN}`]))],
+      enabled: () => true,
+      clock: systemClock,
+      logger: pino({ level: "silent" }),
+    });
+    const from = `Shop <orders@news.${DOMAIN}>`;
+    expect(router.routes(mail(from), true)).toEqual([]);
+    expect(router.routes(mail(from), false).map((provider) => provider.info.id)).toEqual([
+      "reader",
+    ]);
+    expect(router.routes(mail("Shop <orders@other.example>"), false)).toEqual([]);
   });
 });

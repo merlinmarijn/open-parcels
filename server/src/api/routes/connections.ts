@@ -220,7 +220,7 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
           kind: z
             .enum(["account", "tracking", "shop", "mail"])
             .describe(
-              'Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.',
+              'Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays, checkSenders}.',
             ),
           label: z.string().min(1).max(80),
           config: z.unknown().default({}),

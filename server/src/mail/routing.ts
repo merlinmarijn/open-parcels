@@ -111,8 +111,12 @@ interface RoutedEmail {
 export class EmailRouter {
   constructor(private readonly deps: EmailRouterDeps) {}
 
-  /** The providers an email goes to: its sender's domain is theirs, and the sender is real. */
-  routes(mail: MailInput): RegisteredProvider[] {
+  /**
+   * The providers an email goes to: its sender's domain is theirs, and the sender is real. An
+   * inbox whose server adds no `Authentication-Results` turns `checkSenders` off and is routed by
+   * the domain alone.
+   */
+  routes(mail: MailInput, checkSenders: boolean): RegisteredProvider[] {
     if (!this.deps.enabled()) return [];
     const domain = senderDomain(mail.from);
     if (domain === undefined) return [];
@@ -125,7 +129,7 @@ export class EmailRouter {
             true,
       );
     if (claiming.length === 0) return [];
-    if (!authenticatedSender(mail.authentication, domain)) {
+    if (checkSenders && !authenticatedSender(mail.authentication, domain)) {
       // Only the shop's or carrier's domain is logged, never the sender's address or the subject.
       this.deps.logger.info(
         { domain, providers: claiming.map((provider) => provider.info.id) },
@@ -140,8 +144,12 @@ export class EmailRouter {
    * Hands the email to every provider it goes to. Null when it goes to none, or when each of them
    * ignored it or failed on it: the shared email rules read it then.
    */
-  async read(connectionId: string, mail: MailInput): Promise<RoutedEmail | null> {
-    const routes = this.routes(mail);
+  async read(
+    connectionId: string,
+    mail: MailInput,
+    checkSenders: boolean,
+  ): Promise<RoutedEmail | null> {
+    const routes = this.routes(mail, checkSenders);
     if (routes.length === 0) return null;
     const email = providerEmail(mail);
     const read: EmailResult[] = [];

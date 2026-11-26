@@ -304,6 +304,7 @@ describe("mail watcher", () => {
       allowPlaintext: false,
       folders: ["INBOX"],
       initialDays: 30,
+      checkSenders: true,
     });
   });
 

@@ -2,6 +2,12 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: per-inbox sender check switch
+
+Inboxes get the setting "Check senders (DKIM/DMARC)" (`checkSenders`, on by default). Off, for a
+mail server that adds no `Authentication-Results` header, that inbox hands emails to the provider
+of their sender's domain without the DKIM/DMARC check. Stored inboxes keep the check on.
+
 ### Added: email routing to providers
 
 Inboxes hand an email to the providers whose manifest names its sender's domain

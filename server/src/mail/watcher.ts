@@ -369,7 +369,11 @@ export class MailWatcher {
           message.receivedAt ?? null,
           this.deps.clock.now(),
         );
-        const routed = await this.deps.router.read(connectionId, mail);
+        const routed = await this.deps.router.read(
+          connectionId,
+          mail,
+          connection.config.checkSenders,
+        );
         if (routed !== null) {
           // Read by its providers: the shared rules must not read it again (no parcel twice).
           snapshots.push(...routed.snapshots);

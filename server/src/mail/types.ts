@@ -40,6 +40,16 @@ export const mailConfigSchema = z.object({
     .max(365)
     .default(30)
     .meta({ title: "Days to look back on the first sync" }),
+  /**
+   * Hand an email to the provider of its sender's domain only when the receiving server
+   * confirmed the sender (DKIM or DMARC). Off for servers that add no `Authentication-Results`;
+   * a forged sender then reaches that provider too.
+   */
+  checkSenders: z.boolean().default(true).meta({
+    title: "Check senders (DKIM/DMARC)",
+    description:
+      "Off only if your mail server adds no Authentication-Results header: emails then reach a shop's or carrier's provider by the sender's domain alone, which a forged sender can fake.",
+  }),
 });
 export type MailConfig = z.infer<typeof mailConfigSchema>;
 

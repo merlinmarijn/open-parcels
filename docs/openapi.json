@@ -10158,7 +10158,7 @@
                       "shop",
                       "mail"
                     ],
-                    "description": "Inboxes use the provider \"imap\" with config {host, port, secure, allowPlaintext, folders, initialDays}."
+                    "description": "Inboxes use the provider \"imap\" with config {host, port, secure, allowPlaintext, folders, initialDays, checkSenders}."
                   },
                   "label": {
                     "type": "string",

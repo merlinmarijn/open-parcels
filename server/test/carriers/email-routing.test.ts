@@ -96,6 +96,7 @@ function rules(mail: MailInput) {
 async function readInbox(
   messages: readonly FetchedMessage[],
   env: Readonly<Record<string, string>> = {},
+  inbox: Readonly<Record<string, unknown>> = {},
 ) {
   ruled = [];
   const mailbox = new FakeMailbox(messages);
@@ -116,7 +117,7 @@ async function readInbox(
       provider: "imap",
       kind: "mail",
       label: "Inbox",
-      config: { host: "imap.example.invalid" },
+      config: { host: "imap.example.invalid", ...inbox },
       secret: { username: "someone@example.invalid", password: ["made", "up"].join("-") },
     },
   });
@@ -146,6 +147,14 @@ describe("email routing", () => {
       `<2@${SHOP_DOMAIN}>`,
     ]);
     expect(parcels.map((parcel) => parcel.carrier)).toEqual(["demo"]);
+  });
+
+  it("routes by the sender's domain alone in an inbox that does not check senders", async () => {
+    const parcels = await readInbox([shippingEmail(1, [])], {}, { checkSenders: false });
+
+    expect(ruled).toEqual([]);
+    expect(parcels).toHaveLength(1);
+    expect(parcels[0]).toMatchObject({ order: { order_number: "DEMO-1001" } });
   });
 
   it("leaves every email to the rules while the switch is off", async () => {

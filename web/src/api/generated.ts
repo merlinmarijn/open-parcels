@@ -4984,7 +4984,7 @@ export type GetApiV1Connections200Item = {
 };
 
 /**
- * Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}.
+ * Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays, checkSenders}.
  */
 export type PostApiV1ConnectionsBodyKind = "account" | "tracking" | "shop" | "mail";
 export type PostApiV1ConnectionsBody = {
@@ -4993,7 +4993,7 @@ export type PostApiV1ConnectionsBody = {
    * @maxLength 64
    */
   provider: string;
-  /** Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays}. */
+  /** Inboxes use the provider "imap" with config {host, port, secure, allowPlaintext, folders, initialDays, checkSenders}. */
   kind: PostApiV1ConnectionsBodyKind;
   /**
    * @minLength 1

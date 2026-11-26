@@ -64,6 +64,11 @@ export const PROVIDER_TEXTS_DE: Readonly<Record<string, string>> = Object.fromEn
   ],
   ["Folders", "Ordner"],
   ["Days to look back on the first sync", "Tage, die die erste Synchronisierung zurückblickt"],
+  ["Check senders (DKIM/DMARC)", "Absender prüfen (DKIM/DMARC)"],
+  [
+    "Off only if your mail server adds no Authentication-Results header: emails then reach a shop's or carrier's provider by the sender's domain alone, which a forged sender can fake.",
+    "Nur ausschalten, wenn dein Mailserver keinen Authentication-Results-Header einfügt: E-Mails erreichen den Anbieter eines Shops oder Paketdienstes dann allein über die Absenderdomain, die ein gefälschter Absender vortäuschen kann.",
+  ],
   ["Yes", "Ja"],
   ["No", "Nein"],
   ["Client ID", "Client-ID"],

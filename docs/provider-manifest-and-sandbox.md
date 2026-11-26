@@ -138,6 +138,8 @@ Narrows decision record 0002 §2.14 to what is built now.
   server added; any below it may be the sender's own) says `dkim=pass` for a signer aligned with
   that domain (the same domain, a parent or a child of it), or `dmarc=pass` with
   `header.from` equal to it. An email whose sender is not authenticated goes to no provider.
+  An inbox whose mail server adds no `Authentication-Results` turns the check off (inbox setting
+  "Check senders (DKIM/DMARC)", `checkSenders`, on by default); it then routes by the domain alone.
 - **What the provider gets:** `parseEmail(context, email)`. `email` holds an id (Message-ID, else
   a digest; the id for the events it gives), Message-ID, date, sender address and name, subject,
   text and HTML: no other headers, no attachments. `context` has the clock, the log and
@@ -155,7 +157,6 @@ Narrows decision record 0002 §2.14 to what is built now.
   rules' results are.
 - **The switch:** `OPENPARCELS_EMAIL_ROUTING` (live, on by default). Off: the rules read every
   email, as before routing existed.
-- **Not built yet (0002 §2.14):** subject, local-part, header and body filters, `priority`, a
-  per-inbox switch for servers that add no `Authentication-Results`, per-route switches on the
-  inbox card, attribution to the provider (`found in email by …`), backfill, and the consent
+- **Not built yet (0002 §2.14):** subject, local-part, header and body filters, `priority`,
+  per-route switches on the inbox card, attribution to the provider (`found in email by …`), backfill, and the consent
   screen's list of sender domains for installed providers.
