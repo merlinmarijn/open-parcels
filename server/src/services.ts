@@ -415,7 +415,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     registry,
     connections,
     reconciler,
-      bus,
+    bus,
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();
