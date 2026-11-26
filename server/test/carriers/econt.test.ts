@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { econt } from "../../src/carriers/econt/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
@@ -8,7 +8,7 @@ import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 const ACTIVE = "9900000000001";
 const MISSING = "9900000000002";
 const ROUTE = "POST ee.econt.com/services/Shipments/ShipmentService.getShipmentStatuses.json";
-const plugin = register(econt);
+const plugin = registerBuiltin(econt);
 
 function shipment(number: string, extra: Record<string, unknown> = {}) {
   return {
@@ -43,7 +43,7 @@ describe("Econt tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(econt.http, fetchImpl);
+    const { base, unknown } = fakeContext(econt, fetchImpl);
     const result = await plugin.track(base, {}, null, [ACTIVE, MISSING]);
     expect(calls).toHaveLength(1);
     expect(JSON.parse(calls[0]?.body ?? "{}")).toEqual({ shipmentNumbers: [ACTIVE, MISSING] });
@@ -76,7 +76,7 @@ describe("Econt tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(econt.http, fetchImpl);
+    const { base } = fakeContext(econt, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [ACTIVE])).snapshots;
     expect(found).toMatchObject({
       status: "delivered",
@@ -102,7 +102,7 @@ describe("Econt tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(econt.http, fetchImpl);
+    const { base, unknown } = fakeContext(econt, fetchImpl);
     expect((await plugin.track(base, {}, null, [ACTIVE])).snapshots[0]?.status).toBeNull();
     expect(unknown).toEqual(["status:Odd"]);
     await expect(plugin.track(base, {}, null, [ACTIVE])).rejects.toBeInstanceOf(

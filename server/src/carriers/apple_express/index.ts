@@ -160,9 +160,6 @@ type Config = z.infer<typeof configSchema>;
 
 export const appleExpress = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Apple Express",
-  countries: ["CA"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

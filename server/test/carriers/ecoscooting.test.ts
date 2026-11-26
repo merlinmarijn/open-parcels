@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { ecoscooting } from "../../src/carriers/ecoscooting/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up references and values only.
 const CODE = "ECTEST00000001";
 const ROUTE = "POST de-link.cainiao.com/gateway/link.do";
-const plugin = register(ecoscooting);
+const plugin = registerBuiltin(ecoscooting);
 
 const step = (actionCode: string, opTimestamp: string, statusName: string) => ({
   actionCode,
@@ -43,7 +43,7 @@ describe("Ecoscooting tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(ecoscooting.http, fetchImpl);
+    const { base, unknown } = fakeContext(ecoscooting, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(new URLSearchParams(calls[0]?.body ?? "").get("logistics_interface")).toContain(CODE);
     expect(found).toMatchObject({
@@ -71,7 +71,7 @@ describe("Ecoscooting tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(ecoscooting.http, fetchImpl);
+    const { base } = fakeContext(ecoscooting, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]?.status).toBe("returning");
     expect((await plugin.track(base, {}, null, [CODE])).snapshots).toEqual([]);
   });
@@ -93,7 +93,7 @@ describe("Ecoscooting tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(ecoscooting.http, fetchImpl);
+    const { base, unknown } = fakeContext(ecoscooting, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]?.status).toBe("in_transit");
     expect(unknown).toEqual(["status:NEW_CODE"]);
   });
@@ -101,7 +101,7 @@ describe("Ecoscooting tracking", () => {
   it("stops when the answer is for another reference", async () => {
     const other = { ...reply(), packageParam: { trackingNumber: "OTHER0000001" } };
     const { fetchImpl } = fakeNetwork([routeTable({ [ROUTE]: [json(other, 200)] }, "host")]);
-    const { base } = fakeContext(ecoscooting.http, fetchImpl);
+    const { base } = fakeContext(ecoscooting, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );

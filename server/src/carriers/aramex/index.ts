@@ -148,9 +148,6 @@ const LIMIT = { intervalMs: 5_000, burst: 2 } as const;
 
 export const aramex = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Aramex",
-  countries: ["AU", "NZ"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

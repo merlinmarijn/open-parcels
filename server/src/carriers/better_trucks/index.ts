@@ -100,9 +100,6 @@ type Config = z.infer<typeof configSchema>;
 
 export const betterTrucks = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Better Trucks",
-  countries: ["US"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

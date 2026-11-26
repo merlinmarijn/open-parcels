@@ -309,9 +309,6 @@ async function readDetail(account: BrtAccount, number: string, shipment: Json, d
 /** BRT (Italy): the MyBRT account, read through DPD's shared consumer backend. */
 export const brt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "BRT",
-  countries: ["IT"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "credentials" },

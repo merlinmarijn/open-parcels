@@ -1,11 +1,18 @@
 import { createServer } from "node:http";
 import { describe, expect, it } from "vitest";
 import { RateLimitedError, TransientError } from "../../src/provider/errors.js";
-import { HostLimiter, parseRetryAfter, ProviderHttp } from "../../src/provider/http.js";
+import {
+  HostLimiter,
+  HostNotAllowedError,
+  parseRetryAfter,
+  ProviderHttp,
+} from "../../src/provider/http.js";
+import { networkAllowList } from "../../src/provider/manifest.js";
 import { CookieJar, restoreJar, serializeJar } from "../../src/provider/cookies.js";
 import { guardedFetch, publicOnlyLookup, type FetchLike } from "../../src/net/guarded-fetch.js";
 import { userAgent } from "../../src/version.js";
 import { FakeClock } from "../helpers.js";
+import { ANY_HOST, testManifest } from "../manifests.js";
 
 function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string }) {
   const clock = new FakeClock();
@@ -19,12 +26,66 @@ function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string
     limits: { "*": { intervalMs: 1000, burst: 2 } },
     ...(userAgent === undefined ? {} : { userAgent }),
   };
-  return { http: new ProviderHttp(policy, limiter, clock, fetchImpl), waits, clock, limiter };
+  return {
+    http: new ProviderHttp(policy, ANY_HOST, limiter, clock, fetchImpl),
+    waits,
+    clock,
+    limiter,
+  };
 }
 
 const ok: FetchLike = () => Promise.resolve(new Response('{"a":1}', { status: 200 }));
 
 describe("provider HTTP client", () => {
+  it("reaches only the hosts the manifest allows, on every redirect hop too", async () => {
+    const manifest = testManifest("hosts", {
+      permissions: {
+        network: [
+          { host: ".carrier.example", reason: "Tracking data." },
+          { host: "api.partner.example", reason: "Tracking data." },
+          { config: "url", reason: "The user's own server." },
+        ],
+      },
+    });
+    const requested: string[] = [];
+    const answer: FetchLike = (url) => {
+      requested.push(url.hostname);
+      return Promise.resolve(
+        url.pathname === "/away"
+          ? new Response(null, { status: 302, headers: { location: "https://elsewhere.example/" } })
+          : new Response("{}", { status: 200 }),
+      );
+    };
+    const clock = new FakeClock();
+    const http = new ProviderHttp(
+      { limits: {} },
+      networkAllowList(manifest, { url: "https://lookup.home.example/api" }),
+      new HostLimiter(clock, () => Promise.resolve()),
+      clock,
+      answer,
+    );
+    for (const allowed of [
+      "https://carrier.example/",
+      "https://www.carrier.example/",
+      "https://api.partner.example/",
+      "https://lookup.home.example/api/parcel/1",
+    ]) {
+      await expect(http.request(new URL(allowed))).resolves.toMatchObject({ status: 200 });
+    }
+    for (const refused of [
+      "https://www.partner.example/",
+      "https://notcarrier.example/",
+      "https://carrier.example.evil.example/",
+    ]) {
+      await expect(http.request(new URL(refused))).rejects.toBeInstanceOf(HostNotAllowedError);
+    }
+    await expect(http.request(new URL("https://carrier.example/away"))).rejects.toBeInstanceOf(
+      HostNotAllowedError,
+    );
+    expect(requested).not.toContain("elsewhere.example");
+    expect(requested).not.toContain("www.partner.example");
+  });
+
   it("lets a burst through, then paces requests per host", async () => {
     const { http, waits } = setup(ok);
     const url = new URL("https://carrier.example.invalid/api");
@@ -83,6 +144,7 @@ describe("provider HTTP client", () => {
     // A second connection of the same carrier shares the limiter.
     const other = new ProviderHttp(
       { limits: { "*": { intervalMs: 1000, burst: 2 } } },
+      ANY_HOST,
       limiter,
       clock,
       answer,

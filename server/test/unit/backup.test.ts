@@ -3,9 +3,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, describe, expect, it } from "vitest";
-import { demoShop } from "../../src/carriers/demo/index.js";
+import { demoShop } from "../../src/carriers/demo_shop/index.js";
 import { listBackups, secureBackups } from "../../src/data/backup.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
 const HOUR = 60 * 60 * 1000;
@@ -19,7 +19,7 @@ afterEach(async () => {
 });
 
 async function start(env: Record<string, string> = {}): Promise<TestContext> {
-  context = await createTestContext({ providers: [register(demoShop)], env });
+  context = await createTestContext({ providers: [registerBuiltin(demoShop)], env });
   const connection = await context.services.connections.create({
     provider: "demo_shop",
     kind: "shop",

@@ -181,9 +181,6 @@ type Secret = Credentials | null;
 
 export const bpost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "bpost",
-  countries: ["BE"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

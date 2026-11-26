@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gobolt } from "../../src/carriers/gobolt/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -9,7 +9,7 @@ const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () =>
 
 // Made-up codes and values only.
 const CODE = "ZZTEST000001";
-const plugin = register(gobolt);
+const plugin = registerBuiltin(gobolt);
 
 function parcel(label_status: string, extra: Record<string, unknown> = {}): Answer {
   return json(
@@ -30,7 +30,7 @@ function parcel(label_status: string, extra: Record<string, unknown> = {}): Answ
 
 async function run(replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknownKeys: unknown } = fakeContext(gobolt.http, fetchImpl);
+  const { base, unknownKeys: unknown } = fakeContext(gobolt, fetchImpl);
   const result = await plugin.track(base, {}, null, [CODE]);
   return { result, calls, unknown };
 }

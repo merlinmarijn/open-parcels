@@ -107,9 +107,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const colisweb = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Colisweb",
-  countries: ["FR"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

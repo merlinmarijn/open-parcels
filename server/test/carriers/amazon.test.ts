@@ -33,6 +33,7 @@ import {
   type TileSpec,
 } from "./amazon-fixtures.js";
 import { pasted } from "./pasted.js";
+import { builtinManifest } from "../manifests.js";
 
 const rules = loadRules();
 const plugin = amazonCarrier(rules);
@@ -53,7 +54,7 @@ interface Harness {
 
 function harness(route: Route, stored: unknown = null): Harness {
   const network = fakeNetwork([(call) => route(call.url, call.init)]);
-  const fake = fakeContext(plugin.http, network.fetchImpl, { session: stored });
+  const fake = fakeContext(plugin, network.fetchImpl, { session: stored });
   const context: AmazonContext = {
     ...fake.base,
     config: { storefront: "amazon.de" },
@@ -294,7 +295,7 @@ describe("Amazon account", () => {
   });
 
   it("allows the Amazon image hosts in the image proxy", () => {
-    expect(plugin.imageHosts).toEqual(
+    expect(builtinManifest("amazon").permissions.image_hosts).toEqual(
       expect.arrayContaining(["m.media-amazon.com", ".ssl-images-amazon.com"]),
     );
   });

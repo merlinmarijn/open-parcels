@@ -1,7 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { demoLiveReading, LOOP_MS } from "../../src/carriers/demo/data.js";
-import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
-import { register } from "../../src/engine/registry.js";
+import { demoCarrier } from "../../src/carriers/demo/index.js";
+import { demoShop } from "../../src/carriers/demo_shop/index.js";
+import { registerBuiltin } from "../manifests.js";
 import { ParcelRepository } from "../../src/parcels/repository.js";
 import { createTestContext, type TestContext } from "../helpers.js";
 
@@ -10,7 +11,9 @@ import { createTestContext, type TestContext } from "../helpers.js";
 let context: TestContext;
 
 beforeEach(async () => {
-  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({
+    providers: [registerBuiltin(demoCarrier), registerBuiltin(demoShop)],
+  });
 });
 afterEach(async () => {
   await context.close();

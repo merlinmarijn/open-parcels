@@ -77,10 +77,6 @@ const PUBLIC: HostLimit = { intervalMs: 6_000, burst: 2 };
 
 export const shopeeXpress = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Shopee Xpress",
-  countries: ["BR", "ID", "MY", "PH", "TH", "VN"],
-  logo: "shopee_xpress.svg",
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { speeDee } from "../../src/carriers/speedee/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(speeDee);
+const plugin = registerBuiltin(speeDee);
 
 // Made-up codes, places and names only.
 const CODE = "SP00000000000001";
@@ -45,7 +45,7 @@ describe("Spee-Dee tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(speeDee.http, fetchImpl);
+    const { base } = fakeContext(speeDee, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "speedee",
@@ -74,7 +74,7 @@ describe("Spee-Dee tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(speeDee.http, fetchImpl);
+    const { base } = fakeContext(speeDee, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     // July is CDT, five hours behind UTC.
     expect(parcel).toMatchObject({ delivered: true, deliveredAt: "2026-07-01T19:00:00.000Z" });
@@ -82,7 +82,7 @@ describe("Spee-Dee tracking", () => {
 
   it("treats 404 as not found and skips implausible codes", async () => {
     const { fetchImpl, calls } = network({ [ROUTE]: [raw("", 404)] });
-    const { base } = fakeContext(speeDee.http, fetchImpl);
+    const { base } = fakeContext(speeDee, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "../x"])).snapshots).toEqual([]);
     expect(calls).toHaveLength(1);
   });
@@ -96,7 +96,7 @@ describe("Spee-Dee tracking", () => {
         ]),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(speeDee.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(speeDee, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBe("in_transit");
     expect(unknown).toEqual(["held at depot"]);
@@ -104,13 +104,13 @@ describe("Spee-Dee tracking", () => {
 
   it("fails closed on a changed page, a redirect or a server error", async () => {
     const changed = fakeContext(
-      speeDee.http,
+      speeDee,
       network({ [ROUTE]: [raw("<html>maintenance</html>", 200)] }).fetchImpl,
     );
     await expect(plugin.track(changed.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
-    const moved = fakeContext(speeDee.http, network({ [ROUTE]: [raw("", 302)] }).fetchImpl);
+    const moved = fakeContext(speeDee, network({ [ROUTE]: [raw("", 302)] }).fetchImpl);
     await expect(plugin.track(moved.base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
   });
 });

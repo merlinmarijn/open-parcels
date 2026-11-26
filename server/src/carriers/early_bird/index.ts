@@ -150,9 +150,6 @@ async function track(context: ProviderContext<unknown, unknown>, barcodes: reado
 /** Early Bird (Sweden): morning home and locker deliveries, public tracking by code. */
 export const earlyBird = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "Early Bird",
-  countries: ["SE"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

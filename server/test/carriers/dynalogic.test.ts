@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { dynalogic } from "../../src/carriers/dynalogic/index.js";
-import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up order numbers, postcodes and values only.
 const CODE = "990000001";
 const ROUTE = `GET api.dynagroup.nl/track-middleware/v1/transportorder/full/ordernumber/${CODE}/zipcode/9999zz`;
 const CONFIG = { postalCode: "9999 zz" };
-const plugin = register(dynalogic);
+const plugin = registerBuiltin(dynalogic);
 
 function order(scenario: string, step: number, code: number) {
   return {
@@ -36,7 +37,7 @@ describe("Dynalogic tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(dynalogic.http, fetchImpl);
+    const { base, unknown } = fakeContext(dynalogic, fetchImpl);
     const [found] = (await plugin.track(base, CONFIG, null, [CODE])).snapshots;
     expect(calls).toHaveLength(1);
     expect(found).toMatchObject({
@@ -71,7 +72,7 @@ describe("Dynalogic tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dynalogic.http, fetchImpl);
+    const { base } = fakeContext(dynalogic, fetchImpl);
     expect((await plugin.track(base, CONFIG, null, [CODE])).snapshots[0]?.status).toBe("problem");
     expect((await plugin.track(base, CONFIG, null, [CODE])).snapshots[0]?.status).toBe(
       "registered",
@@ -80,7 +81,7 @@ describe("Dynalogic tracking", () => {
 
   it("treats 404 as not found", async () => {
     const { fetchImpl } = fakeNetwork([routeTable({ [ROUTE]: [json({}, 404)] }, "host")]);
-    const { base } = fakeContext(dynalogic.http, fetchImpl);
+    const { base } = fakeContext(dynalogic, fetchImpl);
     expect((await plugin.track(base, CONFIG, null, [CODE])).snapshots).toEqual([]);
   });
 
@@ -88,7 +89,7 @@ describe("Dynalogic tracking", () => {
     const { fetchImpl } = fakeNetwork([
       routeTable({ [ROUTE]: [json(order("XX_NEW", 2, 999), 200)] }, "host"),
     ]);
-    const { base, unknown } = fakeContext(dynalogic.http, fetchImpl);
+    const { base, unknown } = fakeContext(dynalogic, fetchImpl);
     const [found] = (await plugin.track(base, CONFIG, null, [CODE])).snapshots;
     expect(found?.status).toBe("in_transit");
     expect(unknown).toEqual(["status:scenario:XX_NEW", "status:result:999"]);
@@ -96,7 +97,7 @@ describe("Dynalogic tracking", () => {
 
   it("refuses a source without a valid postcode", async () => {
     const { fetchImpl } = fakeNetwork([routeTable({}, "host")]);
-    const { base } = fakeContext(dynalogic.http, fetchImpl);
+    const { base } = fakeContext(dynalogic, fetchImpl);
     await expect(plugin.track(base, { postalCode: "x" }, null, [CODE])).rejects.toBeInstanceOf(
       InvalidConnectionConfigError,
     );

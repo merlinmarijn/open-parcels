@@ -144,9 +144,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>): Promise<F
 /** DAO (Denmark): the consumer account, signed in through DAO's own login page. */
 export const dao = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "DAO",
-  countries: ["DK"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

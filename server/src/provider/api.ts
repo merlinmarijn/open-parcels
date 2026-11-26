@@ -96,30 +96,14 @@ export type {
   StaticSignIn,
 } from "./sign-in.js";
 
+/**
+ * A carrier provider's code: its schemas, sign-in flows, pacing and behaviour. What it is (name,
+ * countries, connection kinds) and what it may reach is in its manifest (`manifest.ts`), which the
+ * core checks against this object when it registers the provider.
+ */
 export interface CarrierProvider<Config = unknown, Secret = unknown> {
+  /** Equals the manifest's `id`. */
   readonly id: string;
-  readonly name: string;
-  /** ISO 3166-1 alpha-2 codes, or `*` for worldwide. */
-  readonly countries: readonly string[];
-  readonly connectionKinds: readonly ProviderConnectionKind[];
-  /** Other names people search for (former names, sub-brands, local names): "Deutsche Post". */
-  readonly aliases?: readonly string[];
-  /**
-   * File name of the provider's logo in the server's `logos/` folder (SVG or PNG; its source is
-   * recorded in `logos/manifest.json`). Unset: the UI draws a monogram tile.
-   */
-  readonly logo?: string;
-  /**
-   * A fallback tracking service (universal lookup, 17TRACK) rather than a carrier: consulted only
-   * for parcels no built-in carrier can follow, or that their carrier has not found for a day.
-   * Its answers are filed under the parcel's own carrier. Never linked automatically to a carrier.
-   */
-  readonly fallback?: boolean;
-  /**
-   * Hosts the image proxy may fetch this carrier's item pictures and delivery photos from; a
-   * leading dot also allows subdomains (`.media-example.com`). Unset: the proxy fetches nothing.
-   */
-  readonly imageHosts?: readonly string[];
   /**
    * A fixed time between runs instead of the adaptive schedule (and its night-time pause). Only
    * for connections that cost nothing to ask, like the demo providers.

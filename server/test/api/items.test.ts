@@ -1,8 +1,9 @@
 import sharp from "sharp";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
-import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
-import { register } from "../../src/engine/registry.js";
+import { demoCarrier } from "../../src/carriers/demo/index.js";
+import { demoShop } from "../../src/carriers/demo_shop/index.js";
+import { registerBuiltin } from "../manifests.js";
 import { mkdtemp, readdir, rm, utimes } from "node:fs/promises";
 import { tmpdir } from "node:os";
 import path from "node:path";
@@ -27,7 +28,7 @@ async function png(): Promise<Buffer> {
 beforeEach(async () => {
   const picture = await png();
   context = await createTestContext({
-    providers: [register(demoCarrier), register(demoShop)],
+    providers: [registerBuiltin(demoCarrier), registerBuiltin(demoShop)],
     fetchImpl: () =>
       Promise.resolve(new Response(picture, { headers: { "content-type": "image/png" } })),
   });

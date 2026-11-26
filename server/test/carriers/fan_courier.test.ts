@@ -1,12 +1,12 @@
 import { describe, expect, it } from "vitest";
 import { fanCourier } from "../../src/carriers/fan_courier/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up AWBs and values only.
 const CODE = "9900000000001";
 const ROUTE = "POST www.fancourier.ro/limit-tracking.php";
-const plugin = register(fanCourier);
+const plugin = registerBuiltin(fanCourier);
 
 const event = (id: string, date: string, name: string, location = "Depozit A") => ({
   id,
@@ -37,7 +37,7 @@ describe("FAN Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(fanCourier.http, fetchImpl);
+    const { base, unknown } = fakeContext(fanCourier, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(new URLSearchParams(calls[0]?.body ?? "").get("awb")).toBe(CODE);
     expect(found).toMatchObject({
@@ -68,7 +68,7 @@ describe("FAN Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(fanCourier.http, fetchImpl);
+    const { base } = fakeContext(fanCourier, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]).toMatchObject({
       status: "at_pickup_point",
       pickupPoint: "Box 1",
@@ -83,7 +83,7 @@ describe("FAN Courier tracking", () => {
     const { fetchImpl } = fakeNetwork([
       routeTable({ [ROUTE]: [json({ error: "AWB invalid" }, 200)] }, "host"),
     ]);
-    const { base } = fakeContext(fanCourier.http, fetchImpl);
+    const { base } = fakeContext(fanCourier, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots).toEqual([]);
   });
 
@@ -96,7 +96,7 @@ describe("FAN Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(fanCourier.http, fetchImpl);
+    const { base, unknown } = fakeContext(fanCourier, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]?.status).toBeNull();
     expect(unknown).toEqual(["status_code:X9"]);
   });

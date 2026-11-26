@@ -75,10 +75,6 @@ async function track(context: ProviderContext<Config, null>, barcodes: readonly 
 
 export const slovenskaPosta = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Slovenská pošta",
-  countries: ["SK"],
-  aliases: ["Slovak Post"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

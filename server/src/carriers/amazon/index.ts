@@ -21,7 +21,7 @@ import {
 } from "./auth.js";
 import { AMAZON_ID } from "./build.js";
 import { readLive } from "./live.js";
-import { STOREFRONT_COUNTRIES, STOREFRONT_IDS, STOREFRONTS } from "./storefronts.js";
+import { STOREFRONT_IDS, STOREFRONTS } from "./storefronts.js";
 
 const configSchema = z.object({
   storefront: z
@@ -42,11 +42,6 @@ export function amazonCarrier(rules?: Rules): CarrierProvider<AmazonConfig, Amaz
   const getRules = (): Rules => (cached ??= loadRules());
   return defineCarrier<AmazonConfig, AmazonSecret | null>({
     id: AMAZON_ID,
-    name: "Amazon",
-    countries: STOREFRONT_COUNTRIES,
-    connectionKinds: ["shop"],
-    // Product thumbnails: the current CDN and the older image hosts still linked on some pages.
-    imageHosts: ["m.media-amazon.com", ".ssl-images-amazon.com", ".images-amazon.com"],
     configSchema,
     secretSchema: amazonSecretSchema.nullable(),
     signIn: pastedRedirect<AmazonConfig, AmazonSecret | null>({

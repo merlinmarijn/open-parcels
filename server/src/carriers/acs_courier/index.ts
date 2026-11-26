@@ -125,9 +125,6 @@ type Config = z.infer<typeof configSchema>;
 
 export const acsCourier = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "ACS Courier",
-  countries: ["GR", "CY"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

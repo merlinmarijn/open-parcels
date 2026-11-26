@@ -86,10 +86,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 /** Pošta Slovenije: the public lookup and the MojaPošta account. */
 export const postaSlovenije = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Pošta Slovenije",
-  countries: ["SI"],
-  aliases: ["Post of Slovenia"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

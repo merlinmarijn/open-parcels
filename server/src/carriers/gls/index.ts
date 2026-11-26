@@ -130,9 +130,6 @@ const paced = { intervalMs: 5_000, burst: 2 };
 
 export const gls = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "GLS",
-  countries: [...COUNTRIES],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

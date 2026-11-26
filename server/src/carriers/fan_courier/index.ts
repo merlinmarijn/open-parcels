@@ -142,9 +142,6 @@ async function track(context: ProviderContext<unknown, unknown>, barcodes: reado
 /** FAN Courier (Romania): the public AWB tracking. */
 export const fanCourier = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "FAN Courier",
-  countries: ["RO"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

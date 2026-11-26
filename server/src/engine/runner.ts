@@ -15,7 +15,7 @@ import {
   type ProviderLogger,
   type SessionStore,
 } from "../provider/api.js";
-import { ProviderHttp, type HostLimiter, type HttpPolicy } from "../provider/http.js";
+import { ProviderHttp, type HostLimiter } from "../provider/http.js";
 import { redactText } from "../log/redact.js";
 import type { FetchLike } from "../net/guarded-fetch.js";
 import { fallbackProviders, linkFallbacks } from "./fallback.js";
@@ -188,9 +188,18 @@ export class ConnectionRunner {
     }
   }
 
-  /** A rate-limited HTTP client for a provider, for work outside a connection run (sign-in). */
-  httpFor(policy: HttpPolicy): ProviderHttp {
-    return new ProviderHttp(policy, this.deps.limiter, this.deps.clock, this.deps.fetchImpl);
+  /**
+   * A rate-limited HTTP client for a provider, for work outside a connection run (sign-in), held
+   * to the hosts its manifest allows for this config.
+   */
+  httpFor(provider: RegisteredProvider, rawConfig: unknown): ProviderHttp {
+    return new ProviderHttp(
+      provider.http,
+      provider.hostsFor(rawConfig),
+      this.deps.limiter,
+      this.deps.clock,
+      this.deps.fetchImpl,
+    );
   }
 
   /**
@@ -284,12 +293,7 @@ export class ConnectionRunner {
     const config = JSON.parse(row.config) as unknown;
     const base: BaseContext = {
       connectionId: row.id,
-      http: new ProviderHttp(
-        provider.http,
-        this.deps.limiter,
-        this.deps.clock,
-        this.deps.fetchImpl,
-      ),
+      http: this.httpFor(provider, config),
       clock: this.deps.clock,
       logger: this.#providerLogger(log),
       session: this.#sessionStore(row),

@@ -121,9 +121,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** Quickpac (Switzerland): the public parcel search. */
 export const quickpac = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Quickpac",
-  countries: ["CH"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

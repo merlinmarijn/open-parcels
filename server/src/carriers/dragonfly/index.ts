@@ -197,9 +197,6 @@ const LIMIT = { intervalMs: 5_000, burst: 2 };
 /** Dragonfly Shipping and its Canadian sister brand Intelcom: public tracking by code. */
 export const dragonfly = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
-  name: "Dragonfly",
-  countries: ["NL", "AU", "CA"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

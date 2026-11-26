@@ -1,0 +1,18 @@
+{
+  "schema": 1,
+  "id": "demo_shop",
+  "name": "Demo shop",
+  "countries": ["*"],
+  "provides": {
+    "connections": ["shop"],
+    "live": false,
+    "fallback": false
+  },
+  "permissions": {
+    "network": [],
+    "image_hosts": ["placehold.co"],
+    "secrets": [],
+    "session": false,
+    "user_agent": false
+  }
+}

@@ -125,9 +125,6 @@ async function track(context: ProviderContext<unknown, unknown>, barcodes: reado
 /** ELTA Courier (Greece): the public tracking form. */
 export const eltaCourier = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "ELTA Courier",
-  countries: ["GR"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

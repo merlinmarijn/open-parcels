@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { delhivery } from "../../src/carriers/delhivery/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up waybills and values only.
 const CODE = "9900000000001";
 const ROUTE = "GET dlv-api.delhivery.com/v3/unified-tracking-new";
-const plugin = register(delhivery);
+const plugin = registerBuiltin(delhivery);
 
 function parcel(hqStatus: string | null, extra: Record<string, unknown> = {}) {
   return {
@@ -46,7 +46,7 @@ describe("Delhivery tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(delhivery.http, fetchImpl);
+    const { base, unknown } = fakeContext(delhivery, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(calls[0]?.headers.get("origin")).toBe("https://www.delhivery.com");
     expect(calls[0]?.url.searchParams.get("wbn")).toBe(CODE);
@@ -85,7 +85,7 @@ describe("Delhivery tracking", () => {
     const { fetchImpl } = fakeNetwork([
       routeTable({ [ROUTE]: [json({ data: [delivered] }, 200)] }, "host"),
     ]);
-    const { base } = fakeContext(delhivery.http, fetchImpl);
+    const { base } = fakeContext(delhivery, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found).toMatchObject({
       status: "delivered",
@@ -104,7 +104,7 @@ describe("Delhivery tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(delhivery.http, fetchImpl);
+    const { base } = fakeContext(delhivery, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE, "not a code"]);
     expect(result).toEqual({ snapshots: [], complete: false });
     expect(calls).toHaveLength(1);
@@ -119,7 +119,7 @@ describe("Delhivery tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(delhivery.http, fetchImpl);
+    const { base, unknown } = fakeContext(delhivery, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found).toMatchObject({ status: null, rawStatus: "Teleported" });
     expect(unknown).toEqual(["status:Teleported"]);
@@ -127,7 +127,7 @@ describe("Delhivery tracking", () => {
 
   it("fails transiently on a refused request instead of reporting the parcel gone", async () => {
     const { fetchImpl } = fakeNetwork([routeTable({ [ROUTE]: [json({}, 401)] }, "host")]);
-    const { base } = fakeContext(delhivery.http, fetchImpl);
+    const { base } = fakeContext(delhivery, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
   });
 });

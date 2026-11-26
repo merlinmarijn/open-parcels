@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { pdnExpress } from "../../src/carriers/pdn_express/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -12,7 +12,7 @@ const fakeCarrier = (routes: Record<string, Answer[]>) =>
 // Made-up codes and values only.
 const CODE = "PDN000000000001";
 const OTHER = "PDN000000000002";
-const plugin = register(pdnExpress);
+const plugin = registerBuiltin(pdnExpress);
 const ROUTE = "POST /api/track";
 
 function event(eventCode: string, eventTime: string, eventDesc: string) {
@@ -35,7 +35,7 @@ describe("PDN Express public tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base } = fakeContext(pdnExpress, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
@@ -62,7 +62,7 @@ describe("PDN Express public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [ROUTE]: [found(CODE, [event("D860", "2026-11-18 12:30:00", "Delivered")])],
     });
-    const { base } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base } = fakeContext(pdnExpress, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({ delivered: true, deliveredAt: "2026-11-18T10:30:00.000Z" });
   });
@@ -75,7 +75,7 @@ describe("PDN Express public tracking", () => {
         found(CODE, [event("D800", "2026-11-16 09:00:00", "Order created")]),
       ],
     });
-    const { base } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base } = fakeContext(pdnExpress, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE, OTHER, "../x"]);
     expect(result.snapshots).toEqual([]);
   });
@@ -84,7 +84,7 @@ describe("PDN Express public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [ROUTE]: [found(CODE, [event("D999", "2026-11-18 08:00:00", "Something new")])],
     });
-    const { base, unknownKeys: unknown } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(pdnExpress, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["D999"]);
@@ -94,7 +94,7 @@ describe("PDN Express public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [ROUTE]: [new Error("offline"), json({ ok: false, error: "upstream" }, 200)],
     });
-    const { base } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base } = fakeContext(pdnExpress, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
   });
@@ -103,7 +103,7 @@ describe("PDN Express public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [ROUTE]: [json({ ok: false, error: "changed" }, 200), json([], 200)],
     });
-    const { base } = fakeContext(pdnExpress.http, fetchImpl);
+    const { base } = fakeContext(pdnExpress, fetchImpl);
     for (let i = 0; i < 2; i += 1) {
       await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
         UnexpectedResponseError,

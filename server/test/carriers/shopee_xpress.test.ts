@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { shopeeXpress } from "../../src/carriers/shopee_xpress/index.js";
 import { TransientError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(shopeeXpress);
+const plugin = registerBuiltin(shopeeXpress);
 
 // Made-up codes and values only.
 const CODE = "SPXTEST00000001";
@@ -52,7 +52,7 @@ describe("Shopee Xpress tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(shopeeXpress.http, fetchImpl);
+    const { base } = fakeContext(shopeeXpress, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.complete).toBe(true);
     expect(result.snapshots[0]).toMatchObject({
@@ -80,7 +80,7 @@ describe("Shopee Xpress tracking", () => {
         }),
       ],
     });
-    const { base } = fakeContext(shopeeXpress.http, fetchImpl);
+    const { base } = fakeContext(shopeeXpress, fetchImpl);
     const [parcel] = (await plugin.track(base, config, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({ delivered: true, expectedFrom: null, expectedTo: null });
   });
@@ -89,7 +89,7 @@ describe("Shopee Xpress tracking", () => {
     const { fetchImpl, calls } = network({
       [ROUTE]: [json({ retcode: 2, message: "record not unique" }, 200)],
     });
-    const { base } = fakeContext(shopeeXpress.http, fetchImpl);
+    const { base } = fakeContext(shopeeXpress, fetchImpl);
     const result = await plugin.track(base, config, null, [OTHER, "../x"]);
     expect(result).toEqual({ snapshots: [], complete: false });
     expect(calls).toHaveLength(1);
@@ -97,18 +97,18 @@ describe("Shopee Xpress tracking", () => {
 
   it("reports an unknown milestone code", async () => {
     const { fetchImpl } = network({ [ROUTE]: [found([record(42, 1_795_000_000, "New")])] });
-    const { base, unknownKeys: unknown } = fakeContext(shopeeXpress.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(shopeeXpress, fetchImpl);
     const [parcel] = (await plugin.track(base, config, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["42"]);
   });
 
   it("stops on HTTP errors and answers without a result code", async () => {
-    const one = fakeContext(shopeeXpress.http, network({ [ROUTE]: [json({}, 502)] }).fetchImpl);
+    const one = fakeContext(shopeeXpress, network({ [ROUTE]: [json({}, 502)] }).fetchImpl);
     await expect(plugin.track(one.base, config, null, [CODE])).rejects.toBeInstanceOf(
       TransientError,
     );
-    const two = fakeContext(shopeeXpress.http, network({ [ROUTE]: [json({}, 200)] }).fetchImpl);
+    const two = fakeContext(shopeeXpress, network({ [ROUTE]: [json({}, 200)] }).fetchImpl);
     await expect(plugin.track(two.base, config, null, [CODE])).rejects.toThrow(/result code/);
   });
 });

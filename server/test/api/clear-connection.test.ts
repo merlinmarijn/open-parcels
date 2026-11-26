@@ -1,8 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
-import { demoCarrier, demoShop } from "../../src/carriers/demo/index.js";
+import { demoCarrier } from "../../src/carriers/demo/index.js";
+import { demoShop } from "../../src/carriers/demo_shop/index.js";
 import type { Order } from "../../src/domain/order-lifecycle.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { createTestContext, signIn, type TestContext } from "../helpers.js";
 
 let context: TestContext;
@@ -11,7 +12,9 @@ let headers: Record<string, string>;
 let shopConnection: string;
 
 beforeEach(async () => {
-  context = await createTestContext({ providers: [register(demoCarrier), register(demoShop)] });
+  context = await createTestContext({
+    providers: [registerBuiltin(demoCarrier), registerBuiltin(demoShop)],
+  });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };

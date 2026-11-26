@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { tipsa } from "../../src/carriers/tipsa/index.js";
-import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { CaptchaError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, raw, routeTable, type Answer } from "./harness.js";
 
@@ -16,7 +17,7 @@ const CODE = `${AGENCY}${ORIGIN}${WAYBILL}`;
 const SERVICE = "00000000-0000-4000-8000-000000000001";
 const LOOKUP = "GET aplicaciones.tip-sa.com/cliente/datos_prestashop.php";
 const DETAIL = "GET dinapaqweb.tipsa-dinapaq.com/dinapaqweb/detalle_envio.php";
-const plugin = register(tipsa);
+const plugin = registerBuiltin(tipsa);
 const config = { postalCode: "99 999" };
 
 function door(service: string, date: string): Answer {
@@ -60,7 +61,7 @@ describe("TIPSA tracking", () => {
       [LOOKUP]: [door(SERVICE, "17/11/26")],
       [DETAIL]: [page("EN REPARTO", ROWS)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(tipsa.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(tipsa, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
@@ -94,7 +95,7 @@ describe("TIPSA tracking", () => {
         page("ENTREGADO", [row("18/11/26 11:31", "ENTREGADO", "PUEBLO INVENTADO"), ...ROWS]),
       ],
     });
-    const { base } = fakeContext(tipsa.http, fetchImpl);
+    const { base } = fakeContext(tipsa, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       status: "delivered",
@@ -105,7 +106,7 @@ describe("TIPSA tracking", () => {
 
   it("treats an empty refresh target as not found", async () => {
     const { fetchImpl, calls } = network({ [LOOKUP]: [door("", "")] });
-    const { base } = fakeContext(tipsa.http, fetchImpl);
+    const { base } = fakeContext(tipsa, fetchImpl);
     expect(await plugin.track(base, config, null, [CODE])).toEqual({
       snapshots: [],
       complete: true,
@@ -118,7 +119,7 @@ describe("TIPSA tracking", () => {
       [LOOKUP]: [door(SERVICE, "17/11/26")],
       [DETAIL]: [page("ESTADO INVENTADO", ROWS)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(tipsa.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(tipsa, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       status: "out_for_delivery",
@@ -140,7 +141,7 @@ describe("TIPSA tracking", () => {
         raw("<title>Just a moment...</title>", 200),
       ],
     });
-    const { base } = fakeContext(tipsa.http, fetchImpl);
+    const { base } = fakeContext(tipsa, fetchImpl);
     // A refused postcode is a settings problem the user fixes, not a retry (OP-087).
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(
       InvalidConnectionConfigError,

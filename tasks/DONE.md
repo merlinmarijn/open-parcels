@@ -4,6 +4,11 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-26
 
+- TODO §3: provider manifest format 1 and capabilities model
+  (`docs/provider-manifest-and-sandbox.md`); every built-in provider has
+  `open-parcels-provider.json`, checked against its code at start-up; `ProviderHttp` refuses
+  requests and redirect hops to undeclared hosts; providers without `permissions.session` keep no
+  session; the demo shop moved to its own folder (commit: see the log, "manifest")
 - TODO §1: OP-060 knip in the gate (`7d02e38`), OP-053 one camelCase → snake_case mapper
   (`7125b00`), OP-138 one new-parcel row builder (`279556a`), OP-159 shared list and detail
   components, inbox forms from the server (`be31304`), OP-161 `token.used` and `health.changed`

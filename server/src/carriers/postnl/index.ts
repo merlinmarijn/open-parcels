@@ -147,9 +147,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 /** PostNL: the account's tracked shipments, signed in through PostNL's own login page. */
 export const postnl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "PostNL",
-  countries: ["NL", "BE"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

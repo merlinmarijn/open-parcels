@@ -1,0 +1,47 @@
+{
+  "schema": 1,
+  "id": "amazon",
+  "name": "Amazon",
+  "countries": ["DE", "AT", "GB", "US", "IE", "CA", "AU", "IN"],
+  "provides": {
+    "connections": ["shop"],
+    "live": true,
+    "fallback": false
+  },
+  "permissions": {
+    "network": [
+      {
+        "host": ".amazon.ca",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.co.uk",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.com",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.com.au",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.de",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.ie",
+        "reason": "Account data."
+      },
+      {
+        "host": ".amazon.in",
+        "reason": "Account data."
+      }
+    ],
+    "image_hosts": ["m.media-amazon.com", ".ssl-images-amazon.com", ".images-amazon.com"],
+    "secrets": ["token"],
+    "session": true,
+    "user_agent": true
+  }
+}

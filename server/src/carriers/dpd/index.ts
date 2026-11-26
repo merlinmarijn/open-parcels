@@ -27,10 +27,6 @@ const ACCOUNT_LIMIT = { intervalMs: 4_000, burst: 2 };
 /** DPD Germany: the public tracking page and the myDPD account. */
 export const dpd = defineCarrier({
   id: "dpd",
-  name: "DPD",
-  countries: ["DE"],
-  logo: "dpd.svg",
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

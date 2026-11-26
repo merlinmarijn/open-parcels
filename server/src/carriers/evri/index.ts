@@ -132,10 +132,6 @@ async function track(context: ProviderContext<Config, unknown>, barcodes: readon
 /** Evri (United Kingdom): the public tracking website's API, by tracking number and postcode. */
 export const evri = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
-  name: "Evri",
-  countries: ["GB"],
-  aliases: ["Hermes UK"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

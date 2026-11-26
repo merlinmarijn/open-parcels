@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { novaPost } from "../../src/carriers/nova_post/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, raw, type Answer } from "./harness.js";
@@ -8,7 +8,7 @@ import { fakeContext, fakeNetwork, raw, type Answer } from "./harness.js";
 // Made-up codes and values only.
 const ACTIVE = "20400000000001";
 const DELIVERED = "20400000000002";
-const plugin = register(novaPost);
+const plugin = registerBuiltin(novaPost);
 
 function hop(code: string, date: string, eventName: string, division = "Testviddilennia 1") {
   return { code, date, event_name: eventName, division_name: division };
@@ -48,7 +48,7 @@ function fakeApi(routes: Record<string, Answer[]>) {
 }
 
 function context(fetchImpl: FetchLike) {
-  const { base, unknownKeys } = fakeContext(novaPost.http, fetchImpl);
+  const { base, unknownKeys } = fakeContext(novaPost, fetchImpl);
   return { base, unknown: unknownKeys };
 }
 

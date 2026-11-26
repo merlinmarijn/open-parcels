@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { straightship } from "../../src/carriers/straightship/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(straightship);
+const plugin = registerBuiltin(straightship);
 
 // Made-up codes, places and addresses only.
 const CODE = "SSTEST0001";
@@ -39,7 +39,7 @@ describe("Straightship tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(straightship.http, fetchImpl);
+    const { base } = fakeContext(straightship, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "straightship",
@@ -62,7 +62,7 @@ describe("Straightship tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [page(attempt, [["2026-11-18 08:00:00", attempt]])],
     });
-    const { base } = fakeContext(straightship.http, fetchImpl);
+    const { base } = fakeContext(straightship, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBe("problem");
     expect(JSON.stringify(parcel?.history)).not.toContain("example.invalid");
@@ -72,7 +72,7 @@ describe("Straightship tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [raw("<p>No results found!</p>", 200)],
     });
-    const { base } = fakeContext(straightship.http, fetchImpl);
+    const { base } = fakeContext(straightship, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "../x"])).snapshots).toEqual([]);
   });
 
@@ -85,7 +85,7 @@ describe("Straightship tracking", () => {
         ]),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(straightship.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(straightship, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBe("in_transit");
     expect(unknown).toEqual(["Held for inspection"]);
@@ -93,18 +93,18 @@ describe("Straightship tracking", () => {
 
   it("stops on a changed page, a mismatched id or a server error", async () => {
     const changed = fakeContext(
-      straightship.http,
+      straightship,
       network({ [ROUTE]: [raw("<html>new</html>", 200)] }).fetchImpl,
     );
     await expect(plugin.track(changed.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
     const other = fakeContext(
-      straightship.http,
+      straightship,
       network({ [ROUTE]: [page("Delivered", [], "SSTEST9999")] }).fetchImpl,
     );
     await expect(plugin.track(other.base, {}, null, [CODE])).rejects.toThrow(/different/);
-    const failing = fakeContext(straightship.http, network({ [ROUTE]: [raw("", 503)] }).fetchImpl);
+    const failing = fakeContext(straightship, network({ [ROUTE]: [raw("", 503)] }).fetchImpl);
     await expect(plugin.track(failing.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       TransientError,
     );

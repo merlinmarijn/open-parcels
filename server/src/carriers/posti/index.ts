@@ -53,9 +53,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** Posti (Finland): public tracking on a throwaway anonymous token, and the OmaPosti account. */
 export const posti = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Posti",
-  countries: ["FI"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [bankSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

@@ -5,6 +5,7 @@ import { isNonPublicHostLiteral } from "../net/address.js";
 import { guardedFetch, type FetchLike } from "../net/guarded-fetch.js";
 import { userAgent } from "../version.js";
 import { RateLimitedError, TransientError } from "./errors.js";
+import type { HostAllowList } from "./manifest.js";
 
 const DEFAULT_TIMEOUT_MS = 30_000;
 const DEFAULT_MAX_BYTES = 8 * 1024 * 1024;
@@ -200,10 +201,21 @@ export interface HttpResponse {
 
 const DEFAULT_LIMIT: HostLimit = { intervalMs: 2_000, burst: 3 };
 
+/**
+ * A request to a host the provider's manifest does not list. Deliberately not a `ProviderError`:
+ * it is a bug in the provider (or a carrier moved), so the run is logged as unexpected, and it
+ * never counts as a sign-in problem.
+ */
+export class HostNotAllowedError extends Error {
+  override readonly name = "HostNotAllowedError";
+}
+
 /** The only way providers reach the network. */
 export class ProviderHttp {
   constructor(
     private readonly policy: HttpPolicy,
+    /** The hosts the provider's manifest allows; checked for every request and redirect hop. */
+    private readonly hosts: HostAllowList,
     private readonly limiter: HostLimiter,
     private readonly clock: Clock,
     private readonly fetchImpl: FetchLike = guardedFetch,
@@ -266,6 +278,9 @@ export class ProviderHttp {
   }
 
   async #send(url: URL, options: RequestOptions, hop: Hop): Promise<Response> {
+    if (!this.hosts.allows(url.hostname)) {
+      throw new HostNotAllowedError(`${url.hostname} is not in the provider's manifest.`);
+    }
     // Providers build some URLs from carrier data (links, redirects); none may point inward.
     if (isNonPublicHostLiteral(url.hostname)) {
       throw new TransientError("Refusing a request to a non-public address.");

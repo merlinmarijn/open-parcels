@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { genikiTaxydromiki } from "../../src/carriers/geniki_taxydromiki/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -9,7 +9,7 @@ const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () =>
 
 // Made-up codes and values only.
 const CODE = "ZZ00000001";
-const plugin = register(genikiTaxydromiki);
+const plugin = registerBuiltin(genikiTaxydromiki);
 
 function scan(StatusCode: string, StatusDate: string, Status = `Scan ${StatusCode}`) {
   return { Status, StatusCode, StatusDate, Shop: "TEST HUB" };
@@ -29,7 +29,7 @@ function found(scans: unknown[], extra: Record<string, unknown> = {}): Answer {
 
 async function run(replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknownKeys: unknown } = fakeContext(genikiTaxydromiki.http, fetchImpl);
+  const { base, unknownKeys: unknown } = fakeContext(genikiTaxydromiki, fetchImpl);
   const result = await plugin.track(base, {}, null, [CODE]);
   return { result, calls, unknown };
 }

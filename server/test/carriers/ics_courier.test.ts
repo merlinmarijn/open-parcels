@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { icsCourier } from "../../src/carriers/ics_courier/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const scripted = (replies: Answer[]) =>
 
 // Made-up codes and values only.
 const CODE = "ICS000000001";
-const plugin = register(icsCourier);
+const plugin = registerBuiltin(icsCourier);
 
 function record(sequence: number, code: string, status: string, date: string): string {
   return (
@@ -35,7 +35,7 @@ function soap(...records: string[]): Answer {
 
 async function run(replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknown } = fakeContext(icsCourier.http, fetchImpl);
+  const { base, unknown } = fakeContext(icsCourier, fetchImpl);
   const result = await plugin.track(base, {}, null, [CODE]);
   return { result, calls, unknown };
 }

@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { uniuni } from "../../src/carriers/uniuni/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const network = (table: Record<string, Answer[]>) =>
 // Made-up values only.
 const CODE = "UUS0000000000000001";
 const TRACK = "GET delivery-api.uniuni.ca/cargo/trackinguniuninew";
-const plugin = register(uniuni);
+const plugin = registerBuiltin(uniuni);
 
 const at = (iso: string) => Date.parse(iso) / 1000;
 
@@ -47,7 +47,7 @@ const answer = (records: unknown[]) =>
 describe("UniUni tracking", () => {
   it("reads the state, the history and anchors an event by its local time and zone", async () => {
     const { fetchImpl, calls } = network({ [TRACK]: [answer([record(202)])] });
-    const { base, unknownKeys: unknown } = fakeContext(uniuni.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(uniuni, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
@@ -70,7 +70,7 @@ describe("UniUni tracking", () => {
 
   it("takes the delivery time from the delivered event", async () => {
     const { fetchImpl } = network({ [TRACK]: [answer([record(203)])] });
-    const { base } = fakeContext(uniuni.http, fetchImpl);
+    const { base } = fakeContext(uniuni, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       delivered: true,
@@ -80,13 +80,13 @@ describe("UniUni tracking", () => {
 
   it("treats an empty record list as not found", async () => {
     const { fetchImpl } = network({ [TRACK]: [answer([])] });
-    const { base } = fakeContext(uniuni.http, fetchImpl);
+    const { base } = fakeContext(uniuni, fetchImpl);
     expect(await plugin.track(base, {}, null, [CODE])).toEqual({ snapshots: [], complete: true });
   });
 
   it("reports an unknown state", async () => {
     const { fetchImpl } = network({ [TRACK]: [answer([record(9999)])] });
-    const { base, unknownKeys: unknown } = fakeContext(uniuni.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(uniuni, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({ status: null, rawStatus: "9999" });
     expect(unknown).toEqual(["9999"]);
@@ -96,7 +96,7 @@ describe("UniUni tracking", () => {
     const { fetchImpl } = network({
       [TRACK]: [json({ msg: "invalid key" }, 400), json({ data: {} }, 200), new Error("offline")],
     });
-    const { base } = fakeContext(uniuni.http, fetchImpl);
+    const { base } = fakeContext(uniuni, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );

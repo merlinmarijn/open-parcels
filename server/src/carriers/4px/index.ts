@@ -110,9 +110,6 @@ type Config = z.infer<typeof configSchema>;
 
 export const fourPx = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "4PX",
-  countries: ["*"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

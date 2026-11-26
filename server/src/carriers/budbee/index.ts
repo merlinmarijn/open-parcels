@@ -210,9 +210,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const budbee = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Budbee",
-  countries: ["SE", "NL", "BE", "DK", "FI"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

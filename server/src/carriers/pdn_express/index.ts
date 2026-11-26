@@ -30,9 +30,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const pdnExpress = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "PDN Express",
-  countries: ["*"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

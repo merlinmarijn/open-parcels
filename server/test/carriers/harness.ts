@@ -3,10 +3,12 @@
  * fake clock and an in-memory session, and `World`, which wires both to a carrier. Fixtures used
  * with it are always made up.
  */
-import { register, type BaseContext, type RegisteredProvider } from "../../src/engine/registry.js";
+import type { BaseContext, RegisteredProvider } from "../../src/engine/registry.js";
 import { NOT_FILED_AS_TRACKED } from "../../src/engine/tracked.js";
 import type { CarrierProvider, FetchResult, ProviderContext } from "../../src/provider/api.js";
 import { HostLimiter, ProviderHttp, type HttpPolicy } from "../../src/provider/http.js";
+import { networkAllowList, type HostAllowList } from "../../src/provider/manifest.js";
+import { builtinManifest, registerBuiltin } from "../manifests.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { FakeClock } from "../helpers.js";
 
@@ -148,6 +150,8 @@ export interface ContextOptions {
   /** What the session store holds at the start. */
   readonly session?: unknown;
   readonly clock?: FakeClock;
+  /** The connection's config, for manifest hosts taken from it (a self-hosted server's URL). */
+  readonly config?: unknown;
 }
 
 export interface FakeContext {
@@ -166,14 +170,21 @@ export interface FakeContext {
   stored(): unknown;
   /** Replaces what the session store holds, as if saved earlier. */
   restore(value: unknown): void;
+  /** Holds the requests to the hosts the manifest allows with this config from now on. */
+  useConfig(config: unknown): void;
 }
 
-/** A provider context over a fake clock whose limiter waits by advancing the clock. */
+/**
+ * A provider context over a fake clock whose limiter waits by advancing the clock. Requests are
+ * held to the hosts the carrier's manifest allows, as in the server.
+ */
 export function fakeContext(
-  policy: HttpPolicy,
+  carrier: { readonly id: string; readonly http: HttpPolicy },
   fetchImpl: FetchLike,
   options: ContextOptions = {},
 ): FakeContext {
+  const manifest = builtinManifest(carrier.id);
+  let hosts: HostAllowList = networkAllowList(manifest, options.config);
   const clock = options.clock ?? new FakeClock();
   const limiter = new HostLimiter(clock, (ms) => {
     clock.advance(ms);
@@ -187,7 +198,13 @@ export function fakeContext(
   let current: unknown = options.session ?? null;
   const base: BaseContext = {
     connectionId: "connection-1",
-    http: new ProviderHttp(policy, limiter, clock, fetchImpl),
+    http: new ProviderHttp(
+      carrier.http,
+      { allows: (hostname) => hosts.allows(hostname) },
+      limiter,
+      clock,
+      fetchImpl,
+    ),
     clock,
     logger: {
       debug: () => undefined,
@@ -222,6 +239,9 @@ export function fakeContext(
     restore: (value) => {
       current = value;
     },
+    useConfig: (config) => {
+      hosts = networkAllowList(manifest, config);
+    },
   };
 }
 
@@ -243,10 +263,10 @@ export class World<Config = unknown, Secret = unknown> {
     options: ContextOptions = {},
   ) {
     this.carrier = carrier;
-    this.provider = register(carrier);
+    this.provider = registerBuiltin(carrier);
     this.routes = routes;
     this.#network = fakeNetwork(() => this.routes);
-    this.#context = fakeContext(carrier.http, this.#network.fetchImpl, options);
+    this.#context = fakeContext(carrier, this.#network.fetchImpl, options);
   }
 
   get calls(): Call[] {
@@ -288,6 +308,7 @@ export class World<Config = unknown, Secret = unknown> {
   }
 
   context(config: Config, secret: Secret): ProviderContext<Config, Secret> {
+    this.#context.useConfig(config);
     return { ...this.#context.base, config, secret };
   }
 
@@ -302,6 +323,7 @@ export class World<Config = unknown, Secret = unknown> {
     secret: unknown = null,
   ): Promise<FetchResult> {
     const before = this.warnings.length;
+    this.#context.useConfig(config);
     const result = await this.provider.track(this.base(), config, secret, codes);
     if (this.warnings.slice(before).includes(NOT_FILED_AS_TRACKED)) {
       throw new Error(
@@ -313,6 +335,7 @@ export class World<Config = unknown, Secret = unknown> {
   }
 
   fetchAccount(config: unknown = {}, secret: unknown = null): Promise<FetchResult> {
+    this.#context.useConfig(config);
     return this.provider.fetchAccount(this.base(), config, secret);
   }
 

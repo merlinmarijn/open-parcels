@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { earlyBird } from "../../src/carriers/early_bird/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { CaptchaError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
 const CODE = "EBTEST000001";
 const ROUTE = "POST earlybird.se/api/tracking";
-const plugin = register(earlyBird);
+const plugin = registerBuiltin(earlyBird);
 
 const event = (text: string, occurredAt: string) => ({ text, occurredAt });
 
@@ -37,7 +37,7 @@ describe("Early Bird tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(earlyBird.http, fetchImpl);
+    const { base, unknown } = fakeContext(earlyBird, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(JSON.parse(calls[0]?.body ?? "{}")).toEqual({ trackingNumber: CODE, locale: "en" });
     expect(found).toMatchObject({
@@ -66,7 +66,7 @@ describe("Early Bird tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(earlyBird.http, fetchImpl);
+    const { base } = fakeContext(earlyBird, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found).toMatchObject({ status: "delivered", deliveredAt: "2026-11-18T04:30:00.000Z" });
   });
@@ -80,7 +80,7 @@ describe("Early Bird tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(earlyBird.http, fetchImpl);
+    const { base } = fakeContext(earlyBird, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots).toEqual([]);
   });
 
@@ -93,7 +93,7 @@ describe("Early Bird tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(earlyBird.http, fetchImpl);
+    const { base, unknown } = fakeContext(earlyBird, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found?.status).toBeNull();
     expect(unknown).toEqual(["status_text:Something new happened."]);
@@ -113,7 +113,7 @@ describe("Early Bird tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(earlyBird.http, fetchImpl);
+    const { base } = fakeContext(earlyBird, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(CaptchaError);
   });
 });

@@ -126,9 +126,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 /** Cargus (Romania): the anonymous trace and the MyCargus account. */
 export const cargus = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Cargus",
-  countries: ["RO"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

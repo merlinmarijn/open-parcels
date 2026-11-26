@@ -56,9 +56,6 @@ async function track(context: ProviderContext<Config, null>, barcodes: readonly 
 
 export const sameday = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Sameday",
-  countries: ["RO", "HU", "BG"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

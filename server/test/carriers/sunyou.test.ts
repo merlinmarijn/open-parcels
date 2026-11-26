@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { sunyou } from "../../src/carriers/sunyou/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(sunyou);
+const plugin = registerBuiltin(sunyou);
 
 // Made-up codes only.
 const CODE = "SYTEST00000001";
@@ -44,7 +44,7 @@ describe("SunYou tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(sunyou.http, fetchImpl);
+    const { base } = fakeContext(sunyou, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "sunyou",
@@ -68,7 +68,7 @@ describe("SunYou tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [jsonp({ has: false, orderNo: CODE, displayStatus: "0" })],
     });
-    const { base } = fakeContext(sunyou.http, fetchImpl);
+    const { base } = fakeContext(sunyou, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "a,b"])).snapshots).toEqual([]);
   });
 
@@ -76,23 +76,23 @@ describe("SunYou tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [found([item("999", "Mystery", "2026-11-18 08:00:00")])],
     });
-    const { base, unknownKeys: unknown } = fakeContext(sunyou.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(sunyou, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["999"]);
   });
 
   it("stops on a missing wrapper, an empty data list or a server error", async () => {
-    const plain = fakeContext(sunyou.http, network({ [ROUTE]: [raw("oops", 200)] }).fetchImpl);
+    const plain = fakeContext(sunyou, network({ [ROUTE]: [raw("oops", 200)] }).fetchImpl);
     await expect(plugin.track(plain.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
     const empty = fakeContext(
-      sunyou.http,
+      sunyou,
       network({ [ROUTE]: [raw('searchCallback({"data":[]})', 200)] }).fetchImpl,
     );
     await expect(plugin.track(empty.base, {}, null, [CODE])).rejects.toThrow(/data entry/);
-    const failing = fakeContext(sunyou.http, network({ [ROUTE]: [raw("", 502)] }).fetchImpl);
+    const failing = fakeContext(sunyou, network({ [ROUTE]: [raw("", 502)] }).fetchImpl);
     await expect(plugin.track(failing.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       TransientError,
     );

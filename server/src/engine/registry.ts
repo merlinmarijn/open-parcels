@@ -13,6 +13,13 @@ import type {
 import type { Clock } from "../clock.js";
 import { InvalidConfigError } from "../provider/errors.js";
 import type { HttpPolicy, ProviderHttp } from "../provider/http.js";
+import {
+  hostMatches,
+  networkAllowList,
+  type HostAllowList,
+  type ProviderManifest,
+  type SecretKind,
+} from "../provider/manifest.js";
 import { fileUnderTracked } from "./tracked.js";
 
 export class InvalidConnectionConfigError extends Error {
@@ -96,7 +103,10 @@ interface ProviderInfo {
  */
 export interface RegisteredProvider {
   readonly info: ProviderInfo;
+  readonly manifest: ProviderManifest;
   readonly http: HttpPolicy;
+  /** The hosts a connection with this (stored, unvalidated) config may reach. */
+  hostsFor(rawConfig: unknown): HostAllowList;
   readonly canFetchAccount: boolean;
   readonly canTrack: boolean;
   readonly canReadLive: boolean;
@@ -155,14 +165,14 @@ const DEFAULT_FLOW_LABELS: Readonly<Record<SignInFlow<unknown, unknown>["type"],
 };
 
 function flowInfo<Config, Secret>(
-  provider: CarrierProvider<Config, Secret>,
+  manifest: ProviderManifest,
   flow: SignInFlow<Config, Secret>,
 ): SignInFlowInfo {
   return {
     id: flow.id ?? flow.type,
     label: flow.label ?? DEFAULT_FLOW_LABELS[flow.type],
     type: flow.type,
-    kinds: flow.kinds ?? provider.connectionKinds,
+    kinds: flow.kinds ?? manifest.provides.connections,
     conditional: flow.when !== undefined,
     fields: flow.type === "interactive" ? null : (flow.fields ?? null),
   };
@@ -195,7 +205,7 @@ function applies<Config, Secret>(
 
 /** The interactive half of `register`: picks the flow and validates what it finishes with. */
 async function runSignIn<Config, Secret>(
-  provider: CarrierProvider<Config, Secret>,
+  provider: CarrierProvider<Config, Secret> & { readonly name: string },
   flows: readonly SignInFlow<Config, Secret>[],
   call: SignInCall,
 ): Promise<SignInTurn<unknown>> {
@@ -230,36 +240,112 @@ async function runSignIn<Config, Secret>(
   return turn;
 }
 
-export function register<Config, Secret>(
+/** The secret kind each sign-in flow type stores. */
+const FLOW_SECRET: Readonly<Record<SignInFlow<unknown, unknown>["type"], SecretKind | null>> = {
+  none: null,
+  credentials: "credentials",
+  api_key: "api_key",
+  interactive: "token",
+};
+
+function sameSet(a: readonly string[], b: readonly string[]): boolean {
+  const left = new Set(a);
+  const right = new Set(b);
+  return left.size === right.size && [...left].every((value) => right.has(value));
+}
+
+/**
+ * Every way the code and its manifest can disagree, as one message each. Registration fails on
+ * any: a built-in provider whose manifest lies never starts.
+ */
+function disagreements<Config, Secret>(
   provider: CarrierProvider<Config, Secret>,
+  manifest: ProviderManifest,
+  flows: readonly SignInFlow<Config, Secret>[],
+): string[] {
+  const problems: string[] = [];
+  const kinds = manifest.provides.connections;
+  if (provider.id !== manifest.id) problems.push(`the code's id is ${provider.id}`);
+  if (kinds.some((kind) => kind !== "tracking") !== (provider.fetchAccount !== undefined)) {
+    problems.push("account/shop connections and fetchAccount must come together");
+  }
+  if (kinds.includes("tracking") !== (provider.track !== undefined)) {
+    problems.push("tracking connections and track must come together");
+  }
+  if (manifest.provides.live !== (provider.readLive !== undefined)) {
+    problems.push("provides.live and readLive must come together");
+  }
+  const secrets = flows.flatMap((flow) => FLOW_SECRET[flow.type] ?? []);
+  if (!sameSet(secrets, manifest.permissions.secrets)) {
+    problems.push(`permissions.secrets must be [${[...new Set(secrets)].join(", ")}]`);
+  }
+  if (manifest.permissions.user_agent !== (provider.http.userAgent !== undefined)) {
+    problems.push("permissions.user_agent and http.userAgent must come together");
+  }
+  const patterns = manifest.permissions.network.flatMap((entry) =>
+    "host" in entry ? [entry.host] : [],
+  );
+  for (const host of Object.keys(provider.http.limits)) {
+    if (host !== "*" && !patterns.some((pattern) => hostMatches(pattern, host))) {
+      problems.push(`http.limits names ${host}, which permissions.network does not allow`);
+    }
+  }
+  return problems;
+}
+
+/** Why a provider without `permissions.session` cannot save: its store holds nothing. */
+const NO_SESSION_MESSAGE = "This provider's manifest does not allow a session store.";
+
+/**
+ * Pairs a provider's code with its manifest. Throws when they disagree (see `disagreements`).
+ */
+export function register<Config, Secret>(
+  code: CarrierProvider<Config, Secret>,
+  manifest: ProviderManifest,
 ): RegisteredProvider {
+  const provider = { ...code, name: manifest.name };
   const flows = flowsOf(provider);
+  const problems = disagreements(code, manifest, flows);
+  if (problems.length > 0) {
+    throw new Error(
+      `The manifest of ${manifest.id} does not match its code: ${problems.join("; ")}.`,
+    );
+  }
+  const sessionAllowed = manifest.permissions.session;
   const context = (
     base: BaseContext,
     rawConfig: unknown,
     rawSecret: unknown,
   ): ProviderContext<Config, Secret> => ({
     ...base,
+    session: sessionAllowed
+      ? base.session
+      : {
+          load: () => null,
+          save: () => Promise.reject(new Error(NO_SESSION_MESSAGE)),
+        },
     config: parseWith(provider.configSchema, rawConfig, "configuration", provider.id),
     secret: parseWith(provider.secretSchema, rawSecret, "sign-in data", provider.id),
   });
   return {
     info: {
-      id: provider.id,
-      name: provider.name,
-      countries: provider.countries,
-      connectionKinds: provider.connectionKinds,
-      aliases: provider.aliases ?? [],
-      logo: provider.logo ?? null,
+      id: manifest.id,
+      name: manifest.name,
+      countries: manifest.countries,
+      connectionKinds: manifest.provides.connections,
+      aliases: manifest.aliases ?? [],
+      logo: manifest.logo ?? null,
       signIn: flows[0]?.type ?? "none",
-      signInFlows: flows.map((flow) => flowInfo(provider, flow)),
+      signInFlows: flows.map((flow) => flowInfo(manifest, flow)),
       configSchema: provider.configSchema,
       secretSchema: provider.secretSchema,
-      imageHosts: provider.imageHosts ?? [],
+      imageHosts: manifest.permissions.image_hosts,
       pollIntervalMs: provider.pollIntervalMs ?? null,
-      fallback: provider.fallback === true,
+      fallback: manifest.provides.fallback,
     },
+    manifest,
     http: provider.http,
+    hostsFor: (rawConfig) => networkAllowList(manifest, rawConfig),
     canFetchAccount: provider.fetchAccount !== undefined,
     canTrack: provider.track !== undefined,
     canReadLive: provider.readLive !== undefined,
@@ -267,7 +353,7 @@ export function register<Config, Secret>(
       const config = parseWith(provider.configSchema, rawConfig, "configuration", provider.id);
       return flows
         .filter((flow) => applies(flow, kind, config))
-        .map((flow) => flowInfo(provider, flow));
+        .map((flow) => flowInfo(manifest, flow));
     },
     signInTurn: (call) => runSignIn(provider, flows, call),
     async readLive(base, rawConfig, rawSecret, target) {

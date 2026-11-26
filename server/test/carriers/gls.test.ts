@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gls } from "../../src/carriers/gls/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, raw } from "./harness.js";
@@ -8,7 +8,7 @@ import { fakeContext, fakeNetwork, raw } from "./harness.js";
 // Made-up codes, postcodes and names only.
 const CODE = "99000000001";
 const OTHER = "99000000002";
-const plugin = register(gls);
+const plugin = registerBuiltin(gls);
 
 type Reply = { status: number; body: unknown; html?: boolean } | Error;
 
@@ -37,7 +37,7 @@ function fake(routes: Record<string, Reply[]>) {
 }
 
 function context(fetchImpl: FetchLike) {
-  const { base, unknownKeys } = fakeContext(gls.http, fetchImpl);
+  const { base, unknownKeys } = fakeContext(gls, fetchImpl);
   return { base, unknown: unknownKeys };
 }
 

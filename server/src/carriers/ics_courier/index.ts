@@ -27,9 +27,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const icsCourier = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "ICS Courier",
-  countries: ["CA"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

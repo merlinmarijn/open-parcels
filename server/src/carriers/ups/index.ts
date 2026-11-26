@@ -28,11 +28,6 @@ const secretSchema = z
  */
 export const ups = defineCarrier({
   id: "ups",
-  name: "UPS",
-  countries: ["*"],
-  aliases: ["United Parcel Service"],
-  logo: "ups.svg",
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({
     /** The locale sent to UPS. It only changes display texts; the mapped keys do not depend on it. */
     locale: z.enum(LOCALES).optional().meta({ title: "Language" }),

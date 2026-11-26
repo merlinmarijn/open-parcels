@@ -2,6 +2,15 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: provider manifests; providers reach only the hosts they declare
+
+Every built-in provider has a manifest (`server/src/carriers/<folder>/open-parcels-provider.json`,
+format in [`docs/provider-manifest-and-sandbox.md`](docs/provider-manifest-and-sandbox.md)): its
+name, countries, connection kinds, live and fallback capabilities, and its permissions (network
+hosts with a reason, image hosts, secret kinds, session store, User-Agent override). The server
+checks each manifest against its code at start-up and refuses every request, and every redirect
+hop, to a host the manifest does not list. Nothing changes in the API.
+
 ### Added: live events `token.used` and `health.changed`
 
 - `token.used` (`{kind: "token" | "login", id, last_used_at}`) when an API token or token login

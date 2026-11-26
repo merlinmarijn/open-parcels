@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { slovenskaPosta } from "../../src/carriers/slovenska_posta/index.js";
 import { TransientError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(slovenskaPosta);
+const plugin = registerBuiltin(slovenskaPosta);
 
 // Made-up codes and values only.
 const CODE = "RR000000001SK";
@@ -43,7 +43,7 @@ describe("Slovenská pošta tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(slovenskaPosta.http, fetchImpl);
+    const { base } = fakeContext(slovenskaPosta, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE, OTHER, BAD]);
     expect(calls).toHaveLength(1);
     expect(calls[0]?.url.searchParams.get("q")).toBe(`${CODE},${OTHER},${BAD}`);
@@ -67,7 +67,7 @@ describe("Slovenská pošta tracking", () => {
 
   it("treats a missing result as not found", async () => {
     const { fetchImpl } = network({ [ROUTE]: [results([])] });
-    const { base } = fakeContext(slovenskaPosta.http, fetchImpl);
+    const { base } = fakeContext(slovenskaPosta, fetchImpl);
     expect(await plugin.track(base, {}, null, [CODE, "../x"])).toEqual({
       snapshots: [],
       complete: true,
@@ -78,16 +78,16 @@ describe("Slovenská pošta tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [results([{ number: CODE, events: [event("lost", "2026-11-18T08:00:00", "?")] }])],
     });
-    const { base, unknownKeys: unknown } = fakeContext(slovenskaPosta.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(slovenskaPosta, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["lost"]);
   });
 
   it("stops on server errors and answers without a result list", async () => {
-    const one = fakeContext(slovenskaPosta.http, network({ [ROUTE]: [json({}, 500)] }).fetchImpl);
+    const one = fakeContext(slovenskaPosta, network({ [ROUTE]: [json({}, 500)] }).fetchImpl);
     await expect(plugin.track(one.base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
-    const two = fakeContext(slovenskaPosta.http, network({ [ROUTE]: [json({}, 200)] }).fetchImpl);
+    const two = fakeContext(slovenskaPosta, network({ [ROUTE]: [json({}, 200)] }).fetchImpl);
     await expect(plugin.track(two.base, {}, null, [CODE])).rejects.toThrow(/result list/);
   });
 });

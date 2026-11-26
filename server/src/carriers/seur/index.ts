@@ -34,9 +34,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 
 export const seur = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "SEUR",
-  countries: ["ES"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "credentials" },

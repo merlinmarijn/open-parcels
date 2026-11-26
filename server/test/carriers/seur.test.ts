@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { seur } from "../../src/carriers/seur/index.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(seur);
+const plugin = registerBuiltin(seur);
 
 // Made-up values only.
 const EMAIL = "tester@example.invalid";
@@ -52,7 +52,7 @@ describe("SEUR account", () => {
         ),
       ],
     });
-    const { base, saved } = fakeContext(seur.http, fetchImpl);
+    const { base, saved } = fakeContext(seur, fetchImpl);
     const result = await plugin.fetchAccount(base, {}, secret);
     expect(result.complete).toBe(true);
     expect(result.snapshots[0]).toMatchObject({
@@ -86,7 +86,7 @@ describe("SEUR account", () => {
       [PROFILE]: [profile()],
       [INBOX]: [lists([])],
     });
-    const { base } = fakeContext(seur.http, fetchImpl);
+    const { base } = fakeContext(seur, fetchImpl);
     expect((await plugin.fetchAccount(base, {}, secret)).snapshots).toEqual([]);
   });
 
@@ -96,7 +96,7 @@ describe("SEUR account", () => {
       [PROFILE]: [profile()],
       [INBOX]: [lists([shipment("TEST0003", [["ZZ999", "2026-11-18T08:00:00Z"]])])],
     });
-    const { base, unknownKeys: unknown } = fakeContext(seur.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(seur, fetchImpl);
     const [parcel] = (await plugin.fetchAccount(base, {}, secret)).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["ZZ999"]);
@@ -106,14 +106,14 @@ describe("SEUR account", () => {
     const { fetchImpl } = network({
       [TOKEN]: [json({ error: "invalid_grant" }, 401)],
     });
-    const { base } = fakeContext(seur.http, fetchImpl);
+    const { base } = fakeContext(seur, fetchImpl);
     await expect(plugin.fetchAccount(base, {}, secret)).rejects.toBeInstanceOf(SignInRejectedError);
   });
 
   it("never signs in again after a network error", async () => {
     const stored = { accessToken: "at-0", uuid: "u-1", username: EMAIL };
     const { fetchImpl, calls } = network({ [INBOX]: [new Error("socket hang up")] });
-    const { base } = fakeContext(seur.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(seur, fetchImpl, { session: stored });
     await expect(plugin.fetchAccount(base, {}, secret)).rejects.toBeInstanceOf(TransientError);
     expect(calls.map((c) => c.key)).toEqual([INBOX]);
   });
@@ -125,7 +125,7 @@ describe("SEUR account", () => {
       [TOKEN]: [token(2)],
       [PROFILE]: [profile()],
     });
-    const { base } = fakeContext(seur.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(seur, fetchImpl, { session: stored });
     await expect(plugin.fetchAccount(base, {}, secret)).rejects.toBeInstanceOf(SignInRejectedError);
     expect(calls.filter((c) => c.key === TOKEN)).toHaveLength(1);
   });
@@ -136,7 +136,7 @@ describe("SEUR account", () => {
       [PROFILE]: [profile()],
       [INBOX]: [json({ recibidos: "nope" }, 200)],
     });
-    const { base } = fakeContext(seur.http, fetchImpl);
+    const { base } = fakeContext(seur, fetchImpl);
     await expect(plugin.fetchAccount(base, {}, secret)).rejects.toThrow(/unexpected shape/);
   });
 });

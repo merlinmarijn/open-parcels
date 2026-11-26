@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { sameday } from "../../src/carriers/sameday/index.js";
 import { TransientError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(sameday);
+const plugin = registerBuiltin(sameday);
 
 // Made-up codes and values only.
 const AWB = "9XTEST000001";
@@ -40,7 +40,7 @@ describe("Sameday tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(sameday.http, fetchImpl);
+    const { base } = fakeContext(sameday, fetchImpl);
     const result = await plugin.track(base, {}, null, [AWB]);
     expect(result.complete).toBe(false);
     expect(result.snapshots[0]).toMatchObject({
@@ -67,7 +67,7 @@ describe("Sameday tracking", () => {
         json({ awbHistory: [event(18, "2026-11-18T08:00:00Z", "Easybox")] }, 200),
       ],
     });
-    const { base } = fakeContext(sameday.http, fetchImpl);
+    const { base } = fakeContext(sameday, fetchImpl);
     const [parcel] = (await plugin.track(base, { country: "hu" }, null, [AWB])).snapshots;
     expect(parcel).toMatchObject({
       status: "at_pickup_point",
@@ -81,7 +81,7 @@ describe("Sameday tracking", () => {
       [route(AWB)]: [json({ error: { code: 404 } }, 404)],
       [route(OTHER)]: [json({ awbHistory: [] }, 200)],
     });
-    const { base } = fakeContext(sameday.http, fetchImpl);
+    const { base } = fakeContext(sameday, fetchImpl);
     const result = await plugin.track(base, {}, null, [AWB, OTHER, "../x"]);
     expect(result.snapshots).toEqual([]);
     expect(calls).toHaveLength(2);
@@ -91,7 +91,7 @@ describe("Sameday tracking", () => {
     const { fetchImpl } = network({
       [route(AWB)]: [json({ awbHistory: [event(99, "2026-11-18T08:00:00Z", "Nou")] }, 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(sameday.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(sameday, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [AWB])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["99"]);
@@ -99,10 +99,10 @@ describe("Sameday tracking", () => {
 
   it("stops on server errors and on answers without a history", async () => {
     const failing = network({ [route(AWB)]: [json({}, 500)] });
-    const one = fakeContext(sameday.http, failing.fetchImpl);
+    const one = fakeContext(sameday, failing.fetchImpl);
     await expect(plugin.track(one.base, {}, null, [AWB])).rejects.toBeInstanceOf(TransientError);
     const odd = network({ [route(AWB)]: [json({ something: 1 }, 200)] });
-    const two = fakeContext(sameday.http, odd.fetchImpl);
+    const two = fakeContext(sameday, odd.fetchImpl);
     await expect(plugin.track(two.base, {}, null, [AWB])).rejects.toThrow(/AWB history/);
   });
 });

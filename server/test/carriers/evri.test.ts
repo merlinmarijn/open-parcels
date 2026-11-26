@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { evri } from "../../src/carriers/evri/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
@@ -10,7 +10,7 @@ const URN = "urn:test:parcel:1";
 const CONFIG = { postalCode: "zz9 9zz" };
 const REFERENCE = `GET tracking.platform-apis.evri.com/v1/parcels/reference/${CODE}`;
 const DETAIL = "GET tracking.platform-apis.evri.com/v1/parcels";
-const plugin = register(evri);
+const plugin = registerBuiltin(evri);
 
 const stage = (code: string, dateTime: string) => ({
   dateTime,
@@ -50,7 +50,7 @@ describe("Evri tracking", () => {
         "host",
       ),
     ]);
-    const { base, saved, unknown } = fakeContext(evri.http, fetchImpl);
+    const { base, saved, unknown } = fakeContext(evri, fetchImpl);
     const [found] = (await plugin.track(base, CONFIG, null, [CODE])).snapshots;
     expect(calls[1]?.url.searchParams.get("postcode")).toBe("ZZ9 9ZZ");
     expect(calls[1]?.url.searchParams.get("uniqueIds")).toBe(URN);
@@ -82,7 +82,7 @@ describe("Evri tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(evri.http, fetchImpl);
+    const { base } = fakeContext(evri, fetchImpl);
     await expect(plugin.track(base, CONFIG, null, [CODE])).rejects.toBeInstanceOf(TransientError);
   });
 
@@ -95,7 +95,7 @@ describe("Evri tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(evri.http, fetchImpl, { session: { [CODE]: URN } });
+    const { base } = fakeContext(evri, fetchImpl, { session: { [CODE]: URN } });
     const [found] = (await plugin.track(base, CONFIG, null, [CODE])).snapshots;
     expect(calls).toHaveLength(1);
     expect(found).toMatchObject({ status: "delivered", deliveredAt: "2026-11-18T12:00:00.000Z" });
@@ -110,7 +110,7 @@ describe("Evri tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(evri.http, fetchImpl);
+    const { base } = fakeContext(evri, fetchImpl);
     expect((await plugin.track(base, CONFIG, null, [CODE])).snapshots).toEqual([]);
   });
 
@@ -126,7 +126,7 @@ describe("Evri tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(evri.http, fetchImpl, { session: { [CODE]: URN } });
+    const { base, unknown } = fakeContext(evri, fetchImpl, { session: { [CODE]: URN } });
     expect((await plugin.track(base, CONFIG, null, [CODE])).snapshots[0]?.status).toBeNull();
     expect(unknown).toEqual(["status:9_NEW"]);
     await expect(plugin.track(base, CONFIG, null, [CODE])).rejects.toBeInstanceOf(TransientError);

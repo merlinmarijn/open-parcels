@@ -14,7 +14,7 @@ import {
   type SignInStep,
   type SignInTurn,
 } from "../provider/api.js";
-import type { HttpPolicy, ProviderHttp } from "../provider/http.js";
+import type { ProviderHttp } from "../provider/http.js";
 import {
   InvalidConnectionConfigError,
   type ProviderRegistry,
@@ -76,7 +76,7 @@ export interface SignInDeps {
   readonly secrets: SecretBox;
   readonly clock: Clock;
   readonly logger: Logger;
-  readonly httpFor: (policy: HttpPolicy) => ProviderHttp;
+  readonly httpFor: (provider: RegisteredProvider, rawConfig: unknown) => ProviderHttp;
   /** The per-connection lock shared with runs and live reads (`ConnectionRunner.exclusive`). */
   readonly exclusive?: <T>(connectionId: string, work: () => Promise<T>) => Promise<T>;
 }
@@ -329,7 +329,7 @@ export class SignInService {
         ...call,
         kind: connection.kind,
         rawConfig: connection.config,
-        http: this.deps.httpFor(provider.http),
+        http: this.deps.httpFor(provider, connection.config),
         clock: this.deps.clock,
       });
     } catch (error) {

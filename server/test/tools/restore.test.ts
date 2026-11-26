@@ -11,9 +11,9 @@ import { tmpdir } from "node:os";
 import path from "node:path";
 import SQLite from "better-sqlite3";
 import { afterEach, beforeEach, describe, expect, it, vi, type Mock } from "vitest";
-import { demoShop } from "../../src/carriers/demo/index.js";
+import { demoShop } from "../../src/carriers/demo_shop/index.js";
 import { migrateToLatest, openDatabase } from "../../src/db/database.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { main as restore } from "../../src/tools/restore-backup.js";
 import { createTestContext } from "../helpers.js";
 
@@ -24,7 +24,7 @@ let output: { out: Mock<(text: string) => void>; err: Mock<(text: string) => voi
 
 /** A backup of a database with parcels, taken by the server's own backup service. */
 async function makeBackup(): Promise<string> {
-  const context = await createTestContext({ providers: [register(demoShop)] });
+  const context = await createTestContext({ providers: [registerBuiltin(demoShop)] });
   try {
     const connection = await context.services.connections.create({
       provider: "demo_shop",

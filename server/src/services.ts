@@ -358,7 +358,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
       secrets: deps.secrets,
       clock,
       logger,
-      httpFor: (policy) => runner.httpFor(policy),
+      httpFor: (provider, rawConfig) => runner.httpFor(provider, rawConfig),
       exclusive: (connectionId, work) => runner.exclusive(connectionId, work),
     }),
     parcels,

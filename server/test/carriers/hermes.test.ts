@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hermes } from "../../src/carriers/hermes/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, html, json } from "./harness.js";
@@ -12,7 +12,7 @@ const SHOP = "99000000000003";
 const USERNAME = "test-user";
 const credentials = { username: USERNAME, password: ["made", "up"].join("-") };
 
-const plugin = register(hermes);
+const plugin = registerBuiltin(hermes);
 
 function event(parcelStatus: string, timestamp: string, historyText: string) {
   return { timestamp, status: "HAPPY", parcelStatus, historyText };
@@ -83,7 +83,7 @@ function fakeHermes(routes: Record<string, Reply[]>) {
 }
 
 function context(fetchImpl: FetchLike, session: unknown = null) {
-  const { base, saved, unknownKeys } = fakeContext(hermes.http, fetchImpl, { session });
+  const { base, saved, unknownKeys } = fakeContext(hermes, fetchImpl, { session });
   return { base, saved, unknown: unknownKeys };
 }
 

@@ -1,14 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { speedx } from "../../src/carriers/speedx/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(speedx);
+const plugin = registerBuiltin(speedx);
 
 // Made-up codes only.
 const CODE = "SPXTEST0000000001";
@@ -45,7 +45,7 @@ describe("SpeedX tracking", () => {
         ]),
       ],
     });
-    const { base } = fakeContext(speedx.http, fetchImpl);
+    const { base } = fakeContext(speedx, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "speedx",
@@ -69,14 +69,14 @@ describe("SpeedX tracking", () => {
       [PAGE]: [page([])],
       [API]: [json([event("57201", "LAST_MILE_DELIVERED", "2026-11-18T12:00:00")], 200)],
     });
-    const { base } = fakeContext(speedx.http, fetchImpl);
+    const { base } = fakeContext(speedx, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({ delivered: true, deliveredAt: "2026-11-18T17:00:00.000Z" });
   });
 
   it("treats no history and no current scan as not found", async () => {
     const { fetchImpl } = network({ [PAGE]: [page([])], [API]: [json([], 200)] });
-    const { base } = fakeContext(speedx.http, fetchImpl);
+    const { base } = fakeContext(speedx, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "../x"])).snapshots).toEqual([]);
   });
 
@@ -84,7 +84,7 @@ describe("SpeedX tracking", () => {
     const { fetchImpl } = network({
       [PAGE]: [page([event("99999", "SOMETHING_NEW", "2026-11-18T08:00:00")])],
     });
-    const { base, unknownKeys: unknown } = fakeContext(speedx.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(speedx, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual(["SOMETHING_NEW"]);
@@ -92,7 +92,7 @@ describe("SpeedX tracking", () => {
 
   it("stops when the page lost its data or the server fails", async () => {
     const changed = fakeContext(
-      speedx.http,
+      speedx,
       network({
         [PAGE]: [raw("<html>new site</html>", 200)],
         [API]: [json([], 200)],
@@ -101,7 +101,7 @@ describe("SpeedX tracking", () => {
     await expect(plugin.track(changed.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
-    const failing = fakeContext(speedx.http, network({ [PAGE]: [raw("", 500)] }).fetchImpl);
+    const failing = fakeContext(speedx, network({ [PAGE]: [raw("", 500)] }).fetchImpl);
     await expect(plugin.track(failing.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       TransientError,
     );

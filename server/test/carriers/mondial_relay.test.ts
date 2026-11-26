@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { mondialRelay } from "../../src/carriers/mondial_relay/index.js";
-import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, raw } from "./harness.js";
@@ -10,7 +11,7 @@ const CODE = "90000001";
 const OTHER = "90000002";
 const POSTCODE = "9999";
 const config = { postcode: POSTCODE };
-const plugin = register(mondialRelay);
+const plugin = registerBuiltin(mondialRelay);
 
 const PAGE = '<html><div id="tracking" class="x" token="made:up-value"></div></html>';
 
@@ -78,7 +79,7 @@ function fakeSite(lookups: (Reply | Error)[], page: Reply = { status: 200, body:
 }
 
 function context(fetchImpl: FetchLike) {
-  const { base, unknown } = fakeContext(mondialRelay.http, fetchImpl);
+  const { base, unknown } = fakeContext(mondialRelay, fetchImpl);
   return { base, unknown };
 }
 

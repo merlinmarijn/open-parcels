@@ -136,11 +136,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const usps = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "USPS",
-  countries: ["US"],
-  aliases: ["United States Postal Service"],
-  logo: "usps.svg",
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [informedSignIn<Config>(), { type: "api_key", kinds: ["tracking"] }],

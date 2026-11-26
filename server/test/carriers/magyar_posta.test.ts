@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { magyarPosta } from "../../src/carriers/magyar_posta/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const scripted = (replies: Answer[]) =>
 
 // Made-up codes and values only.
 const CODE = "ZZ000000001HU";
-const plugin = register(magyarPosta);
+const plugin = registerBuiltin(magyarPosta);
 
 function row(category: string, detail: string, description: string, epoch: number | null) {
   return {
@@ -28,7 +28,7 @@ function row(category: string, detail: string, description: string, epoch: numbe
 
 async function run(replies: Answer[], codes = [CODE]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknown } = fakeContext(magyarPosta.http, fetchImpl);
+  const { base, unknown } = fakeContext(magyarPosta, fetchImpl);
   const result = await plugin.track(base, {}, null, codes);
   return { result, calls, unknown };
 }

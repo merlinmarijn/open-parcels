@@ -138,9 +138,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const genikiTaxydromiki = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Geniki Taxydromiki",
-  countries: ["GR", "CY"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

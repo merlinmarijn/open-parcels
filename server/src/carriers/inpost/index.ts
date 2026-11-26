@@ -77,9 +77,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
  */
 export const inpost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "InPost",
-  countries: ["PL", "IT", "PT", "GB", "ES"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: pastedRedirect<Config, Secret>({

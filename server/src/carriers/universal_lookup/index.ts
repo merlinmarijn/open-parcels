@@ -150,10 +150,6 @@ async function track(
  */
 export const universalLookup = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Universal lookup",
-  countries: ["*"],
-  connectionKinds: ["tracking"],
-  fallback: true,
   configSchema,
   secretSchema: z.null(),
   signIn: { type: "none" },

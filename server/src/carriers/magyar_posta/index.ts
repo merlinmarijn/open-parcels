@@ -27,10 +27,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const magyarPosta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Magyar Posta",
-  countries: ["HU"],
-  aliases: ["Hungarian Post"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

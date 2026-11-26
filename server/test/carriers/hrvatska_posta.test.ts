@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { hrvatskaPosta } from "../../src/carriers/hrvatska_posta/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const scripted = (replies: Answer[]) =>
 
 // Made-up codes and values only.
 const CODE = "ZZ000000001HR";
-const plugin = register(hrvatskaPosta);
+const plugin = registerBuiltin(hrvatskaPosta);
 
 function row(date: string, wording: string, location: string): string {
   return (
@@ -43,7 +43,7 @@ function found(...rows: string[]): Answer {
 
 async function run(replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknown } = fakeContext(hrvatskaPosta.http, fetchImpl);
+  const { base, unknown } = fakeContext(hrvatskaPosta, fetchImpl);
   const result = await plugin.track(base, {}, null, [CODE]);
   return { result, calls, unknown };
 }

@@ -32,10 +32,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** Packeta, sold as Zásilkovna in Czechia; one keyless tracking endpoint serves both. */
 export const packeta = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Packeta (Zásilkovna)",
-  countries: ["CZ", "SK", "HU", "RO", "PL", "DE", "AT"],
-  aliases: ["Zásilkovna", "Zasilkovna"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

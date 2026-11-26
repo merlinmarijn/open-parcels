@@ -12,6 +12,7 @@ import {
   type ParcelSnapshot,
   type SnapshotEvent,
 } from "../../src/provider/api.js";
+import { testManifest } from "../manifests.js";
 
 /**
  * A scripted carrier world for tests. Each run returns what the test put in `listing`, or throws
@@ -55,9 +56,6 @@ export function fakePost(world: FakeWorld): RegisteredProvider {
   return register(
     defineCarrier({
       id: "fakepost",
-      name: "Fake Post",
-      countries: ["DE"],
-      connectionKinds: ["account", "tracking"],
       configSchema: z.looseObject({}),
       secretSchema,
       signIn: { type: "credentials" },
@@ -82,6 +80,12 @@ export function fakePost(world: FakeWorld): RegisteredProvider {
         });
       },
     }),
+    testManifest("fakepost", {
+      name: "Fake Post",
+      countries: ["DE"],
+      provides: { connections: ["account", "tracking"] },
+      permissions: { secrets: ["credentials"], session: true },
+    }),
   );
 }
 
@@ -90,9 +94,6 @@ export function fakeShop(world: FakeWorld): RegisteredProvider {
   return register(
     defineCarrier({
       id: "fakeshop",
-      name: "Fake Shop",
-      countries: ["*"],
-      connectionKinds: ["shop"],
       configSchema: z.looseObject({}),
       secretSchema: z.object({ refreshToken: z.string() }).nullable(),
       signIn: pastedRedirect<Record<string, unknown>, { refreshToken: string } | null>({
@@ -122,6 +123,11 @@ export function fakeShop(world: FakeWorld): RegisteredProvider {
         }
         return Promise.resolve(next);
       },
+    }),
+    testManifest("fakeshop", {
+      name: "Fake Shop",
+      provides: { connections: ["shop"], live: true },
+      permissions: { secrets: ["token"] },
     }),
   );
 }
@@ -162,9 +168,6 @@ export function fakeVerify(world: VerifyWorld): RegisteredProvider {
   return register(
     defineCarrier<z.infer<typeof configSchema>, { token: string } | null>({
       id: "fakeverify",
-      name: "Fake Verify",
-      countries: ["NL"],
-      connectionKinds: ["account", "tracking"],
       configSchema,
       secretSchema: z.object({ token: z.string() }).nullable(),
       signIn: [
@@ -258,6 +261,13 @@ export function fakeVerify(world: VerifyWorld): RegisteredProvider {
       ],
       http: { limits: {} },
       fetchAccount: () => Promise.resolve({ snapshots: [], complete: true }),
+      track: () => Promise.resolve({ snapshots: [], complete: true }),
+    }),
+    testManifest("fakeverify", {
+      name: "Fake Verify",
+      countries: ["NL"],
+      provides: { connections: ["account", "tracking"] },
+      permissions: { secrets: ["token"] },
     }),
   );
 }
@@ -294,10 +304,6 @@ export function fakeFallback(id: string, world: FakeWorld): RegisteredProvider {
   return register(
     defineCarrier({
       id,
-      name: `Fallback ${id}`,
-      countries: ["*"],
-      connectionKinds: ["tracking"],
-      fallback: true,
       configSchema: z.looseObject({}),
       secretSchema: z.null(),
       signIn: { type: "none" },
@@ -311,5 +317,6 @@ export function fakeFallback(id: string, world: FakeWorld): RegisteredProvider {
         });
       },
     }),
+    testManifest(id, { name: `Fallback ${id}`, provides: { fallback: true } }),
   );
 }

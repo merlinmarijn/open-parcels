@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { helthjem } from "../../src/carriers/helthjem/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -9,7 +9,7 @@ const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () =>
 
 // Made-up codes and values only.
 const CODE = "TEST00000001";
-const plugin = register(helthjem);
+const plugin = registerBuiltin(helthjem);
 
 function parcel(status: string, extra: Record<string, unknown> = {}): Answer {
   return json(
@@ -40,7 +40,7 @@ function parcel(status: string, extra: Record<string, unknown> = {}): Answer {
 
 async function run(replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknownKeys: unknown } = fakeContext(helthjem.http, fetchImpl);
+  const { base, unknownKeys: unknown } = fakeContext(helthjem, fetchImpl);
   const result = await plugin.track(base, {}, null, [CODE]);
   return { result, calls, unknown };
 }

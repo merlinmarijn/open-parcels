@@ -117,10 +117,6 @@ async function track(context: ProviderContext<unknown, Secret>, barcodes: readon
 /** FedEx: the official Track API, with the user's own developer API key. */
 export const fedex = defineCarrier<unknown, Secret>({
   id: CARRIER_ID,
-  name: "FedEx",
-  countries: ["*"],
-  logo: "fedex.svg",
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema,
   signIn: { type: "api_key" },

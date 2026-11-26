@@ -109,9 +109,6 @@ async function fetchAccount(context: Context): Promise<FetchResult> {
 
 export const ampere = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Ampère",
-  countries: ["NL"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "api_key" },

@@ -46,9 +46,6 @@ async function track(context: ProviderContext<Config, null>, barcodes: readonly 
 
 export const speeDee = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Spee-Dee Delivery",
-  countries: ["US"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

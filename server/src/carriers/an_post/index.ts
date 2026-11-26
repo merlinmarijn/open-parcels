@@ -99,10 +99,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>): Promise<F
 
 export const anPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "An Post",
-  countries: ["IE"],
-  aliases: ["Irish Post"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn: { type: "credentials" },

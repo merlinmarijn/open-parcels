@@ -27,9 +27,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const matkahuolto = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Matkahuolto",
-  countries: ["FI"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

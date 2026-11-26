@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { eltaCourier } from "../../src/carriers/elta_courier/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
 const CODE = "EL000000001GR";
 const ROUTE = "POST www.elta-courier.gr/track.php";
-const plugin = register(eltaCourier);
+const plugin = registerBuiltin(eltaCourier);
 
 const event = (date: string, time: string, status: string) => ({
   date,
@@ -40,7 +40,7 @@ describe("ELTA Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(eltaCourier.http, fetchImpl);
+    const { base, unknown } = fakeContext(eltaCourier, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(calls[0]?.body).toBe(`number=${CODE}`);
     expect(found).toMatchObject({
@@ -72,7 +72,7 @@ describe("ELTA Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(eltaCourier.http, fetchImpl);
+    const { base } = fakeContext(eltaCourier, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]).toMatchObject({
       status: "delivered",
       deliveredAt: "2026-11-18T10:00:00.000Z",
@@ -94,7 +94,7 @@ describe("ELTA Courier tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(eltaCourier.http, fetchImpl);
+    const { base, unknown } = fakeContext(eltaCourier, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots[0]?.status).toBeNull();
     expect(unknown).toEqual(["status:Κάτι νέο"]);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);

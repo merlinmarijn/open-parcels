@@ -182,10 +182,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** Poczta Polska: the public tracking behind the e-monitoring portal. */
 export const pocztaPolska = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Poczta Polska",
-  countries: ["PL"],
-  aliases: ["Polish Post"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

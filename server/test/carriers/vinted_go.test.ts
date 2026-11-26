@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { vintedGo } from "../../src/carriers/vinted_go/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const network = (table: Record<string, Answer[]>) =>
 // Made-up values only.
 const CODE = "VGO00000000001";
 const EVENTS = `GET carrier.vintedgo.com/members/public/v1/tracking_events/${CODE}`;
-const plugin = register(vintedGo);
+const plugin = registerBuiltin(vintedGo);
 
 const event = (group: string, timestamp: string, message: string) => ({
   group,
@@ -40,7 +40,7 @@ describe("Vinted Go tracking", () => {
         timeline(event("ready_for_pickup", "2026-11-18T09:00:00Z", "Ready at the locker")),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(vintedGo.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(vintedGo, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
@@ -65,7 +65,7 @@ describe("Vinted Go tracking", () => {
     const { fetchImpl } = network({
       [EVENTS]: [timeline(event("delivered", "2026-11-18T12:00:00Z", "Collected"))],
     });
-    const { base } = fakeContext(vintedGo.http, fetchImpl);
+    const { base } = fakeContext(vintedGo, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       delivered: true,
@@ -77,7 +77,7 @@ describe("Vinted Go tracking", () => {
     const { fetchImpl } = network({
       [EVENTS]: [json({ error_code: "not_found" }, 404)],
     });
-    const { base } = fakeContext(vintedGo.http, fetchImpl);
+    const { base } = fakeContext(vintedGo, fetchImpl);
     expect(await plugin.track(base, {}, null, [CODE])).toEqual({ snapshots: [], complete: true });
   });
 
@@ -85,7 +85,7 @@ describe("Vinted Go tracking", () => {
     const { fetchImpl } = network({
       [EVENTS]: [timeline(event("made_up_group", "2026-11-18T09:00:00Z", "Something new"))],
     });
-    const { base, unknownKeys: unknown } = fakeContext(vintedGo.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(vintedGo, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({ status: null, rawStatus: "Something new" });
     expect(unknown).toEqual(["made_up_group"]);
@@ -95,7 +95,7 @@ describe("Vinted Go tracking", () => {
     const { fetchImpl } = network({
       [EVENTS]: [json([], 200), raw("", 500), new Error("offline")],
     });
-    const { base } = fakeContext(vintedGo.http, fetchImpl);
+    const { base } = fakeContext(vintedGo, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );

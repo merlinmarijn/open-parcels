@@ -115,9 +115,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const gobolt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "GoBolt",
-  countries: ["CA"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

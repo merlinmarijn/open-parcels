@@ -1,6 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { canadapost } from "../../src/carriers/canadapost/index.js";
-import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import {
   SignInRejectedError,
   TransientError,
@@ -105,7 +106,7 @@ describe("Canada Post tracking", () => {
 
 describe("Canada Post settings", () => {
   it("reject a time zone that does not exist, so it fails when saved instead of every run", () => {
-    const plugin = register(canadapost);
+    const plugin = registerBuiltin(canadapost);
     expect(() => {
       plugin.validateConfig({ timeZone: "America/Nowhere" });
     }).toThrow(InvalidConnectionConfigError);

@@ -56,9 +56,6 @@ async function track(
 
 export const paack = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Paack",
-  countries: ["ES", "PT", "FR", "IT"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

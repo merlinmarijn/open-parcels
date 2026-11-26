@@ -1,14 +1,14 @@
 import { beforeEach, describe, expect, it } from "vitest";
 import { resetWordingCache, swissPost } from "../../src/carriers/swiss_post/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(swissPost);
+const plugin = registerBuiltin(swissPost);
 
 // Made-up codes, places and values only.
 const CODE = "99.00.000000.00000001";
@@ -83,7 +83,7 @@ describe("Swiss Post tracking", () => {
         json({ "shipment-text--": { "PARCEL.*.ALL_PROD.4000.*": "Out for delivery" } }, 200),
       ],
     });
-    const { base, saved } = fakeContext(swissPost.http, fetchImpl);
+    const { base, saved } = fakeContext(swissPost, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "swiss_post",
@@ -112,7 +112,7 @@ describe("Swiss Post tracking", () => {
       [REGISTER]: [registered()],
       [RESULT]: [json([], 200)],
     });
-    const { base } = fakeContext(swissPost.http, fetchImpl);
+    const { base } = fakeContext(swissPost, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "../x"])).snapshots).toEqual([]);
   });
 
@@ -127,7 +127,7 @@ describe("Swiss Post tracking", () => {
         ),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(swissPost.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(swissPost, fetchImpl);
     const [parcel] = (await plugin.track(base, { eventHistory: false }, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({ status: null, delivered: true, expectedFrom: null });
     expect(unknown).toEqual(["SOMETHING_NEW"]);
@@ -139,7 +139,7 @@ describe("Swiss Post tracking", () => {
       [REGISTER]: [json({}, 403), json({}, 403)],
       [USER]: [handshake(2)],
     });
-    const { base } = fakeContext(swissPost.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(swissPost, fetchImpl, { session: stored });
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
@@ -149,7 +149,7 @@ describe("Swiss Post tracking", () => {
   it("never renews the session after a network error", async () => {
     const stored = { jar: null, user: "<[anonymous]>old", csrf: "old" };
     const { fetchImpl, calls } = withCsrf({ [REGISTER]: [new Error("reset")] });
-    const { base } = fakeContext(swissPost.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(swissPost, fetchImpl, { session: stored });
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     expect(calls.map((c) => c.key)).toEqual([REGISTER]);
   });
@@ -161,7 +161,7 @@ describe("Swiss Post tracking", () => {
       [RESULT]: [json([shipment("TO_BE_DELIVERED")], 200)],
       [EVENTS]: [json({}, 500)],
     });
-    const { base } = fakeContext(swissPost.http, fetchImpl);
+    const { base } = fakeContext(swissPost, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({ status: "in_transit", history: [] });
   });

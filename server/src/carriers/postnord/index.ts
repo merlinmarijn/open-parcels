@@ -74,9 +74,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** PostNord (Denmark, Sweden, Norway, Finland): the public recipient view and the receiver app account. */
 export const postnord = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "PostNord",
-  countries: ["DK", "SE", "NO", "FI"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [accountSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

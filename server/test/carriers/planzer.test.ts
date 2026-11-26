@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { planzer } from "../../src/carriers/planzer/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const fakeCarrier = (routes: Record<string, Answer[]>) =>
 
 // Made-up codes and values only.
 const CODE = "90000000000001";
-const plugin = register(planzer);
+const plugin = registerBuiltin(planzer);
 const route = (code: string) => `GET /api/v1/shipments/${code}/Pak`;
 
 function texts(german: string, english: string) {
@@ -43,7 +43,7 @@ describe("Planzer public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [route(CODE)]: [json(shipment(null, EVENTS), 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(planzer.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(planzer, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       carrier: "planzer",
@@ -76,7 +76,7 @@ describe("Planzer public tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(planzer.http, fetchImpl);
+    const { base } = fakeContext(planzer, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       expectedFrom: "2026-07-01T08:00:00.000Z",
@@ -90,7 +90,7 @@ describe("Planzer public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [route(CODE)]: [json(shipment(overall, delivered), 200)],
     });
-    const { base } = fakeContext(planzer.http, fetchImpl);
+    const { base } = fakeContext(planzer, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel).toMatchObject({
       status: "delivered",
@@ -102,7 +102,7 @@ describe("Planzer public tracking", () => {
 
   it("treats a 404 as not found", async () => {
     const { fetchImpl, calls } = fakeCarrier({ [route(CODE)]: [raw("", 404, JSON_TYPE)] });
-    const { base } = fakeContext(planzer.http, fetchImpl);
+    const { base } = fakeContext(planzer, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE, "../x"]);
     expect(result.snapshots).toEqual([]);
     expect(calls).toHaveLength(1);
@@ -113,7 +113,7 @@ describe("Planzer public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [route(CODE)]: [json(shipment(overall, EVENTS), 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(planzer.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(planzer, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBe("out_for_delivery");
     expect(unknown).toEqual(["etwas neues"]);
@@ -124,7 +124,7 @@ describe("Planzer public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [route(CODE)]: [json(shipment(overall, EVENTS), 200)],
     });
-    const { base } = fakeContext(planzer.http, fetchImpl);
+    const { base } = fakeContext(planzer, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(parcel?.status).toBe("problem");
   });
@@ -133,7 +133,7 @@ describe("Planzer public tracking", () => {
     const { fetchImpl } = fakeCarrier({
       [route(CODE)]: [new Error("offline"), raw("", 401, JSON_TYPE), json([], 200)],
     });
-    const { base } = fakeContext(planzer.http, fetchImpl);
+    const { base } = fakeContext(planzer, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(

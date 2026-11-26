@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ukrposhta } from "../../src/carriers/ukrposhta/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const network = (table: Record<string, Answer[]>) =>
 // Made-up values only.
 const CODE = "0599999999901";
 const STATUSES = "GET www.ukrposhta.ua/status-tracking/0.0.1/statuses";
-const plugin = register(ukrposhta);
+const plugin = registerBuiltin(ukrposhta);
 
 const event = (code: string, date: string, eventName: string) => ({
   barcode: CODE,
@@ -34,7 +34,7 @@ describe("Ukrposhta tracking", () => {
         ),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(ukrposhta, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     const parcel = result.snapshots[0];
     expect(parcel).toMatchObject({
@@ -74,7 +74,7 @@ describe("Ukrposhta tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base } = fakeContext(ukrposhta, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({ status: "returning", delivered: false });
   });
@@ -83,7 +83,7 @@ describe("Ukrposhta tracking", () => {
     const { fetchImpl } = network({
       [STATUSES]: [json([event("41000", "2026-07-01T15:00:00", "Delivered")], 200)],
     });
-    const { base } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base } = fakeContext(ukrposhta, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       delivered: true,
@@ -93,7 +93,7 @@ describe("Ukrposhta tracking", () => {
 
   it("treats an empty list as not found", async () => {
     const { fetchImpl } = network({ [STATUSES]: [json([], 200)] });
-    const { base } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base } = fakeContext(ukrposhta, fetchImpl);
     expect(await plugin.track(base, {}, null, [CODE])).toEqual({ snapshots: [], complete: true });
   });
 
@@ -109,7 +109,7 @@ describe("Ukrposhta tracking", () => {
         ),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(ukrposhta, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       status: "in_transit",
@@ -122,7 +122,7 @@ describe("Ukrposhta tracking", () => {
     const { fetchImpl } = network({
       [STATUSES]: [raw("", 401), json({ error: "x" }, 200), new Error("offline")],
     });
-    const { base } = fakeContext(ukrposhta.http, fetchImpl);
+    const { base } = fakeContext(ukrposhta, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,

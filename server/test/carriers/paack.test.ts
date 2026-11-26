@@ -1,13 +1,14 @@
 import { describe, expect, it } from "vitest";
 import { paack } from "../../src/carriers/paack/index.js";
-import { InvalidConnectionConfigError, register } from "../../src/engine/registry.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, raw, type Answer } from "./harness.js";
 
 // Made-up codes and values only.
 const CODE = "TEST000000001";
 const POSTCODE = "00000";
-const plugin = register(paack);
+const plugin = registerBuiltin(paack);
 const config = { postalCode: POSTCODE };
 
 function page(label: string, extra: Record<string, unknown> = {}): string {
@@ -38,7 +39,7 @@ const scripted = (replies: Answer[]) =>
 describe("Paack public tracking", () => {
   it("reads status, window and history from the embedded route data", async () => {
     const { fetchImpl, calls } = scripted([html(page("inDelivery"))]);
-    const { base } = fakeContext(paack.http, fetchImpl);
+    const { base } = fakeContext(paack, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     const [parcel] = result.snapshots;
     expect(parcel).toMatchObject({
@@ -64,14 +65,14 @@ describe("Paack public tracking", () => {
       raw("", 404, JSON_TYPE),
       html("<html>Order not found</html>"),
     ]);
-    const { base } = fakeContext(paack.http, fetchImpl);
+    const { base } = fakeContext(paack, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE, CODE, CODE]);
     expect(result.snapshots).toEqual([]);
   });
 
   it("reports a source without any usable postcode as a settings problem (OP-087)", async () => {
     const { fetchImpl, calls } = scripted([]);
-    const { base } = fakeContext(paack.http, fetchImpl);
+    const { base } = fakeContext(paack, fetchImpl);
     await expect(plugin.track(base, {}, null, [CODE])).rejects.toBeInstanceOf(
       InvalidConnectionConfigError,
     );
@@ -80,7 +81,7 @@ describe("Paack public tracking", () => {
 
   it("asks only the codes it has a postcode for, so the others never read not found", async () => {
     const { fetchImpl, calls } = scripted([html(page("delivered"))]);
-    const { base } = fakeContext(paack.http, fetchImpl);
+    const { base } = fakeContext(paack, fetchImpl);
     const result = await plugin.track(base, { postalCodes: { [CODE]: config.postalCode } }, null, [
       CODE,
       "OTHERCODE0001",
@@ -91,7 +92,7 @@ describe("Paack public tracking", () => {
 
   it("reports an unknown label and leaves the status null", async () => {
     const { fetchImpl } = scripted([html(page("somethingNew"))]);
-    const { base, reports: unknown } = fakeContext(paack.http, fetchImpl);
+    const { base, reports: unknown } = fakeContext(paack, fetchImpl);
     const [parcel] = (await plugin.track(base, config, null, [CODE])).snapshots;
     expect(parcel?.status).toBeNull();
     expect(unknown).toEqual([{ kind: "status_code", key: "somethingNew" }]);
@@ -100,11 +101,11 @@ describe("Paack public tracking", () => {
   it("fails transiently on network errors and stops on a page without route data", async () => {
     const network = scripted([new Error("offline")]);
     await expect(
-      plugin.track(fakeContext(paack.http, network.fetchImpl).base, config, null, [CODE]),
+      plugin.track(fakeContext(paack, network.fetchImpl).base, config, null, [CODE]),
     ).rejects.toBeInstanceOf(TransientError);
     const odd = scripted([html("<html>maintenance</html>")]);
     await expect(
-      plugin.track(fakeContext(paack.http, odd.fetchImpl).base, config, null, [CODE]),
+      plugin.track(fakeContext(paack, odd.fetchImpl).base, config, null, [CODE]),
     ).rejects.toBeInstanceOf(UnexpectedResponseError);
   });
 });

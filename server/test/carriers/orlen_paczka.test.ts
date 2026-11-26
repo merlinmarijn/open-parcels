@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { orlenPaczka } from "../../src/carriers/orlen_paczka/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, raw, type Answer } from "./harness.js";
@@ -10,7 +10,7 @@ const ACTIVE = "9000000000000001";
 const PICKUP = "9000000000000002";
 const MISSING = "9000000000000003";
 
-const plugin = register(orlenPaczka);
+const plugin = registerBuiltin(orlenPaczka);
 
 const jsonp = (payload: unknown) => `callback(${JSON.stringify(payload)});`;
 
@@ -28,7 +28,7 @@ function fakeOrlen(routes: Record<string, Answer[]>) {
 }
 
 function context(fetchImpl: FetchLike) {
-  const { base, unknownKeys } = fakeContext(orlenPaczka.http, fetchImpl);
+  const { base, unknownKeys } = fakeContext(orlenPaczka, fetchImpl);
   return { base, unknown: unknownKeys };
 }
 

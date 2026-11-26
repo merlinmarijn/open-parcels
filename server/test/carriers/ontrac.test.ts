@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { ontrac } from "../../src/carriers/ontrac/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, json, type Answer } from "./harness.js";
@@ -10,7 +10,7 @@ const ACTIVE = "D10000000000001";
 const DELIVERED = "D10000000000002";
 const MISSING = "D10000000000003";
 
-const plugin = register(ontrac);
+const plugin = registerBuiltin(ontrac);
 
 /** Answers by the code at the end of the path; unscripted codes are not found. */
 function fakeOnTrac(routes: Record<string, Answer[]>) {
@@ -26,7 +26,7 @@ function fakeOnTrac(routes: Record<string, Answer[]>) {
 }
 
 function context(fetchImpl: FetchLike) {
-  const { base, unknownKeys } = fakeContext(ontrac.http, fetchImpl);
+  const { base, unknownKeys } = fakeContext(ontrac, fetchImpl);
   return { base, unknown: unknownKeys };
 }
 

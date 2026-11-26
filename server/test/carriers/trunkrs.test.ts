@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { trunkrs } from "../../src/carriers/trunkrs/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -12,7 +12,7 @@ const network = (table: Record<string, Answer[]>) =>
 const CODE = "TR0000000001";
 const POSTCODE = "9999 ZZ";
 const DETAILS = "GET api.trunkrs.app/v2/tracing/details";
-const plugin = register(trunkrs);
+const plugin = registerBuiltin(trunkrs);
 const config = { postalCode: POSTCODE };
 
 function payload(state: string, extra: Record<string, unknown> = {}) {
@@ -41,7 +41,7 @@ describe("Trunkrs tracking", () => {
     const { fetchImpl, calls } = network({
       [DETAILS]: [json(payload("SHIPMENT_ACCEPTED_BY_DRIVER"), 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(trunkrs.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(trunkrs, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "trunkrs",
@@ -76,7 +76,7 @@ describe("Trunkrs tracking", () => {
         json(payload("SHIPMENT_DELIVERED"), 200),
       ],
     });
-    const { base } = fakeContext(trunkrs.http, fetchImpl);
+    const { base } = fakeContext(trunkrs, fetchImpl);
     const first = await plugin.track(base, config, null, [CODE]);
     expect(first.snapshots[0]).toMatchObject({ expectedFrom: "2026-11-19T08:00:00.000Z" });
     const second = await plugin.track(base, config, null, [CODE]);
@@ -91,7 +91,7 @@ describe("Trunkrs tracking", () => {
 
   it("treats a refused number and postcode pair as not found", async () => {
     const { fetchImpl } = network({ [DETAILS]: [raw("", 401)] });
-    const { base } = fakeContext(trunkrs.http, fetchImpl);
+    const { base } = fakeContext(trunkrs, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result).toEqual({ snapshots: [], complete: true });
   });
@@ -100,7 +100,7 @@ describe("Trunkrs tracking", () => {
     const { fetchImpl } = network({
       [DETAILS]: [json(payload("SHIPMENT_MADE_UP"), 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(trunkrs.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(trunkrs, fetchImpl);
     const result = await plugin.track(base, config, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({ status: null, rawStatus: "SHIPMENT_MADE_UP" });
     expect(unknown).toContain("SHIPMENT_MADE_UP");
@@ -110,7 +110,7 @@ describe("Trunkrs tracking", () => {
     const { fetchImpl } = network({
       [DETAILS]: [raw("", 502), new Error("offline")],
     });
-    const { base } = fakeContext(trunkrs.http, fetchImpl);
+    const { base } = fakeContext(trunkrs, fetchImpl);
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(TransientError);
     await expect(plugin.track(base, config, null, [CODE])).rejects.toBeInstanceOf(TransientError);
   });

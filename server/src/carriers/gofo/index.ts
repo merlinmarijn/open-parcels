@@ -108,9 +108,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const gofo = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "GOFO Express",
-  countries: ["US", "CA", "IT", "FR", "ES", "NL"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

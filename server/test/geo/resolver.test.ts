@@ -1,7 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { LOOP_MS } from "../../src/carriers/demo/data.js";
 import { demoCarrier } from "../../src/carriers/demo/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { Geocoder, GeocodeError, isStopPrecise, type Place } from "../../src/geo/geocoder.js";
 import {
   KEYS_PER_QUERY,
@@ -81,7 +81,7 @@ let resolver: PlaceResolver;
 
 beforeEach(async () => {
   world = new FakeWorld();
-  context = await createTestContext({ providers: [fakePost(world), register(demoCarrier)] });
+  context = await createTestContext({ providers: [fakePost(world), registerBuiltin(demoCarrier)] });
   search = new FakeSearch();
   const { db, bus, clock, logger } = context.services;
   resolver = new PlaceResolver({

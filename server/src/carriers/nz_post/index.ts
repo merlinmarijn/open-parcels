@@ -30,9 +30,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const nzPost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "NZ Post",
-  countries: ["NZ"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -90,9 +90,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 
 export const canadapost = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Canada Post",
-  countries: ["CA"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [

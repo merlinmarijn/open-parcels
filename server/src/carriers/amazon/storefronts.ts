@@ -29,9 +29,6 @@ export const STOREFRONTS = {
 export type StorefrontId = keyof typeof STOREFRONTS;
 export const STOREFRONT_IDS = Object.keys(STOREFRONTS) as [StorefrontId, ...StorefrontId[]];
 
-/** Countries the listed storefronts deliver to as their home market (amazon.de also serves AT). */
-export const STOREFRONT_COUNTRIES = ["DE", "AT", "GB", "US", "IE", "CA", "AU", "IN"] as const;
-
 export function storefrontOrigin(storefront: Storefront): URL {
   return new URL(`https://www.${storefront.domain}/`);
 }

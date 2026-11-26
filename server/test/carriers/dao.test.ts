@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { dao } from "../../src/carriers/dao/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { FakeClock } from "../helpers.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
@@ -14,7 +14,7 @@ const TOKEN = "POST auth.dao.as/realms/consumers/protocol/openid-connect/token";
 const LIST = "GET apiv2.dao.as/consumer/shipment/tracking/v1/tracking";
 const DETAIL = `${LIST}/${ACTIVE}`;
 const POINT = `GET apiv2.dao.as/consumer/shipment/pickup-point/v1/pickup-points/${PICKUP_ID}`;
-const plugin = register(dao);
+const plugin = registerBuiltin(dao);
 
 const tokens = (n: number): Response =>
   json({ access_token: `at-${n}`, refresh_token: `rt-${n}`, expires_in: 300 }, 200);
@@ -59,7 +59,7 @@ describe("DAO account", () => {
         "host",
       ),
     ]);
-    const { base, saved, unknown } = fakeContext(dao.http, fetchImpl);
+    const { base, saved, unknown } = fakeContext(dao, fetchImpl);
     const result = await plugin.fetchAccount(base, {}, SECRET);
     expect(result.complete).toBe(true);
     expect(
@@ -98,7 +98,7 @@ describe("DAO account", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dao.http, fetchImpl);
+    const { base } = fakeContext(dao, fetchImpl);
     const { snapshots } = await plugin.fetchAccount(base, {}, SECRET);
     expect(snapshots.map((s) => [s.trackingNumber, s.status, s.direction])).toEqual([
       ["A1", "delivered", "receiving"],
@@ -117,7 +117,7 @@ describe("DAO account", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dao.http, fetchImpl);
+    const { base } = fakeContext(dao, fetchImpl);
     expect(await plugin.fetchAccount(base, {}, SECRET)).toEqual({ snapshots: [], complete: true });
   });
 
@@ -133,7 +133,7 @@ describe("DAO account", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(dao.http, fetchImpl);
+    const { base, unknown } = fakeContext(dao, fetchImpl);
     const [found] = (await plugin.fetchAccount(base, {}, SECRET)).snapshots;
     expect(found?.status).toBeNull();
     expect(unknown).toEqual(["status_type:STATUS_NEW", "status_code:77"]);
@@ -144,11 +144,11 @@ describe("DAO account", () => {
       routeTable({ [TOKEN]: [json({ error: "invalid_grant" }, 400)] }, "host"),
     ]);
     await expect(
-      plugin.fetchAccount(fakeContext(dao.http, refused.fetchImpl).base, {}, SECRET),
+      plugin.fetchAccount(fakeContext(dao, refused.fetchImpl).base, {}, SECRET),
     ).rejects.toBeInstanceOf(SignInRejectedError);
     const offline = fakeNetwork([routeTable({ [TOKEN]: [new Error("socket hang up")] }, "host")]);
     const error: unknown = await plugin
-      .fetchAccount(fakeContext(dao.http, offline.fetchImpl).base, {}, SECRET)
+      .fetchAccount(fakeContext(dao, offline.fetchImpl).base, {}, SECRET)
       .catch((e: unknown) => e);
     expect(error).toBeInstanceOf(TransientError);
     expect(offline.calls).toHaveLength(1);
@@ -170,7 +170,7 @@ describe("DAO account", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dao.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(dao, fetchImpl, { session: stored });
     await expect(plugin.fetchAccount(base, {}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
     expect(calls.filter((call) => call.key === TOKEN).length).toBeLessThanOrEqual(2);
   });
@@ -180,7 +180,7 @@ describe("DAO account", () => {
       routeTable({ [TOKEN]: [tokens(1), tokens(2)], [LIST]: [json({}, 401)] }, "host"),
     ]);
     // No stored bearer: the first request renews, so a refusal of that one is not renewed again.
-    const { base } = fakeContext(dao.http, fetchImpl);
+    const { base } = fakeContext(dao, fetchImpl);
     await expect(plugin.fetchAccount(base, {}, SECRET)).rejects.toBeInstanceOf(SignInRejectedError);
     expect(calls.filter((call) => call.key === TOKEN)).toHaveLength(1);
   });
@@ -192,7 +192,7 @@ describe("DAO account", () => {
     expect(address.searchParams.get("code_challenge_method")).toBe("S256");
     expect(address.searchParams.get("client_id")).toBe("dao-app");
     const { fetchImpl, calls } = fakeNetwork([routeTable({ [TOKEN]: [tokens(5)] }, "host")]);
-    const { base } = fakeContext(dao.http, fetchImpl);
+    const { base } = fakeContext(dao, fetchImpl);
     const expected = address.searchParams.get("state") ?? "";
     await expect(
       pasted(plugin).finish(base.http, clock, state, "daoapp://auth-callback?code=c&state=wrong"),

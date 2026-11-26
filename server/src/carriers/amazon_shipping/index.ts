@@ -95,9 +95,6 @@ const TRACKER_LIMIT = { intervalMs: 6_000, burst: 2 } as const;
 
 export const amazonShipping = defineCarrier<Config, null>({
   id: PLUGIN_ID,
-  name: "Amazon Shipping",
-  countries: ["GB", "FR", "IT", "ES", "US"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

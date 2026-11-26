@@ -249,9 +249,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret | null>) {
 /** PPL (Czechia): the website's tracking and the mojePPL app account. */
 export const pplCz = defineCarrier<Config, Secret | null>({
   id: CARRIER_ID,
-  name: "PPL CZ",
-  countries: ["CZ"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [pinSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

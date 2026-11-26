@@ -1,13 +1,13 @@
 import { describe, expect, it } from "vitest";
 import { dragonfly } from "../../src/carriers/dragonfly/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
 // Made-up codes and values only.
 const CODE = "DFTEST0000001";
 const NL = `GET dragonflyshipping.nl/cfworker/v3/tracking/${CODE}/`;
-const plugin = register(dragonfly);
+const plugin = registerBuiltin(dragonfly);
 
 function status(step: number, timestamp: string, nl: string) {
   return { step, timestamp, labels: { shortLabel: { nl, en: "English text" } } };
@@ -40,7 +40,7 @@ describe("Dragonfly tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(dragonfly.http, fetchImpl);
+    const { base, unknown } = fakeContext(dragonfly, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found).toMatchObject({
       carrier: "dragonfly",
@@ -69,7 +69,7 @@ describe("Dragonfly tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dragonfly.http, fetchImpl);
+    const { base } = fakeContext(dragonfly, fetchImpl);
     const [found] = (await plugin.track(base, { country: "CA" }, null, [CODE])).snapshots;
     expect(found).toMatchObject({ status: "delivered", delivered: true, expectedFrom: null });
   });
@@ -83,7 +83,7 @@ describe("Dragonfly tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(dragonfly.http, fetchImpl);
+    const { base } = fakeContext(dragonfly, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE])).snapshots).toEqual([]);
   });
 
@@ -99,7 +99,7 @@ describe("Dragonfly tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(dragonfly.http, fetchImpl);
+    const { base, unknown } = fakeContext(dragonfly, fetchImpl);
     const [found] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     expect(found?.status).toBeNull();
     expect(unknown).toEqual(["status:step:9"]);

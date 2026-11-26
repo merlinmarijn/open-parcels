@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { gofo } from "../../src/carriers/gofo/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -10,7 +10,7 @@ const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () =>
 // Made-up codes and values only.
 const US_CODE = "GFUS00000000000001";
 const IT_CODE = "GFIT00000000000002";
-const plugin = register(gofo);
+const plugin = registerBuiltin(gofo);
 
 function item(code: string, latest: string, dates: [string, string]) {
   return {
@@ -26,7 +26,7 @@ function item(code: string, latest: string, dates: [string, string]) {
 
 async function run(code: string, replies: Answer[]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknownKeys: unknown } = fakeContext(gofo.http, fetchImpl);
+  const { base, unknownKeys: unknown } = fakeContext(gofo, fetchImpl);
   const result = await plugin.track(base, {}, null, [code]);
   return { result, calls, unknown };
 }

@@ -3,7 +3,7 @@ import path from "node:path";
 import { afterEach, describe, expect, it } from "vitest";
 import type { App } from "../../src/api/app.js";
 import { demoCarrier } from "../../src/carriers/demo/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { READER_PASSWORD, createTestContext, type TestContext } from "../helpers.js";
 
 let context: TestContext;
@@ -15,7 +15,7 @@ afterEach(async () => {
 });
 
 async function start(env: Record<string, string> = {}): Promise<void> {
-  context = await createTestContext({ providers: [register(demoCarrier)], env });
+  context = await createTestContext({ providers: [registerBuiltin(demoCarrier)], env });
   app = await context.app();
 }
 

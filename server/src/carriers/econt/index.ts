@@ -159,9 +159,6 @@ async function track(
 /** Econt (Bulgaria): the public shipment status service, several codes per request. */
 export const econt = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "Econt",
-  countries: ["BG"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

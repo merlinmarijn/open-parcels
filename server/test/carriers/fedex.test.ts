@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { fedex } from "../../src/carriers/fedex/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, routeTable } from "./harness.js";
 
@@ -10,7 +10,7 @@ const CODE = "990000000001";
 const SECRET = { clientId: "test-client", clientSecret: ["made", "up"].join("-") };
 const TOKEN = "POST apis.fedex.com/oauth/token";
 const TRACK = "POST apis.fedex.com/track/v1/trackingnumbers";
-const plugin = register(fedex);
+const plugin = registerBuiltin(fedex);
 
 const token = (value: string) => json({ access_token: value, expires_in: 3600 }, 200);
 
@@ -56,7 +56,7 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base, saved, unknown } = fakeContext(fedex.http, fetchImpl);
+    const { base, saved, unknown } = fakeContext(fedex, fetchImpl);
     const [found] = (await plugin.track(base, {}, SECRET, [CODE])).snapshots;
     expect(calls[1]?.headers.get("authorization")).toBe("Bearer t1");
     expect(saved).toHaveLength(1);
@@ -89,7 +89,7 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(fedex.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(fedex, fetchImpl, { session: stored });
     const [found] = (await plugin.track(base, {}, SECRET, [CODE])).snapshots;
     expect(calls.map((call) => call.key)).toEqual([TRACK, TOKEN, TRACK]);
     expect(calls[0]?.headers.get("authorization")).toBe("Bearer old");
@@ -106,7 +106,7 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(fedex.http, fetchImpl);
+    const { base } = fakeContext(fedex, fetchImpl);
     await expect(plugin.track(base, {}, SECRET, [CODE, "990000000002"])).rejects.toBeInstanceOf(
       SignInRejectedError,
     );
@@ -124,7 +124,7 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(fedex.http, fetchImpl, { session: stored });
+    const { base } = fakeContext(fedex, fetchImpl, { session: stored });
     await plugin.track(base, {}, SECRET, [CODE]);
     expect(calls.map((call) => call.key)).toEqual([TOKEN, TRACK]);
   });
@@ -142,7 +142,7 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base } = fakeContext(fedex.http, fetchImpl);
+    const { base } = fakeContext(fedex, fetchImpl);
     expect((await plugin.track(base, {}, SECRET, [CODE])).snapshots).toEqual([]);
   });
 
@@ -156,19 +156,19 @@ describe("FedEx tracking", () => {
         "host",
       ),
     ]);
-    const { base, unknown } = fakeContext(fedex.http, fetchImpl);
+    const { base, unknown } = fakeContext(fedex, fetchImpl);
     expect((await plugin.track(base, {}, SECRET, [CODE])).snapshots[0]?.status).toBeNull();
     expect(unknown).toEqual(["status_code:ZZ"]);
   });
 
   it("asks for a new key only when FedEx refuses it, never on a network error", async () => {
     const refused = fakeNetwork([routeTable({ [TOKEN]: [json({ errors: [] }, 401)] }, "host")]);
-    const first = fakeContext(fedex.http, refused.fetchImpl);
+    const first = fakeContext(fedex, refused.fetchImpl);
     await expect(plugin.track(first.base, {}, SECRET, [CODE])).rejects.toBeInstanceOf(
       SignInRejectedError,
     );
     const offline = fakeNetwork([routeTable({ [TOKEN]: [new Error("socket hang up")] }, "host")]);
-    const second = fakeContext(fedex.http, offline.fetchImpl);
+    const second = fakeContext(fedex, offline.fetchImpl);
     const error: unknown = await plugin
       .track(second.base, {}, SECRET, [CODE])
       .catch((e: unknown) => e);

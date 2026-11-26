@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { matkahuolto } from "../../src/carriers/matkahuolto/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, inOrder, json, raw, type Answer } from "./harness.js";
 
@@ -11,7 +11,7 @@ const scripted = (replies: Answer[]) =>
 
 // Made-up codes and values only.
 const CODE = "MH0000000001";
-const plugin = register(matkahuolto);
+const plugin = registerBuiltin(matkahuolto);
 
 function event(date: string, time: string, description: string, place = "Esimerkki") {
   return { date, time, description, place };
@@ -19,7 +19,7 @@ function event(date: string, time: string, description: string, place = "Esimerk
 
 async function run(replies: Answer[], codes = [CODE]) {
   const { fetchImpl, calls } = scripted(replies);
-  const { base, unknown } = fakeContext(matkahuolto.http, fetchImpl);
+  const { base, unknown } = fakeContext(matkahuolto, fetchImpl);
   const result = await plugin.track(base, {}, null, codes);
   return { result, calls, unknown };
 }

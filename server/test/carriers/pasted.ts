@@ -2,11 +2,13 @@ import type { Clock } from "../../src/clock.js";
 import type { RegisteredProvider } from "../../src/engine/registry.js";
 import type { ProviderConnectionKind } from "../../src/provider/api.js";
 import { HostLimiter, ProviderHttp } from "../../src/provider/http.js";
+import { ANY_HOST } from "../manifests.js";
 
 /** A pasted-link sign-in never touches the network in its first step. */
 function noNetwork(clock: Clock): ProviderHttp {
   return new ProviderHttp(
     { limits: {} },
+    ANY_HOST,
     new HostLimiter(clock, () => Promise.resolve()),
     clock,
     () =>

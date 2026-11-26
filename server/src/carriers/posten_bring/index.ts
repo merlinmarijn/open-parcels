@@ -336,10 +336,6 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
 /** Posten and Bring (Norway): the app account's parcel inbox. */
 export const postenBring = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Posten / Bring",
-  countries: ["NO"],
-  aliases: ["Norway Post"],
-  connectionKinds: ["account"],
   configSchema,
   secretSchema,
   signIn,

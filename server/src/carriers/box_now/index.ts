@@ -147,9 +147,6 @@ const LIMIT = { intervalMs: 5_000, burst: 2 } as const;
 
 export const boxNow = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "BOX NOW",
-  countries: ["GR", "BG", "HR", "CY"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

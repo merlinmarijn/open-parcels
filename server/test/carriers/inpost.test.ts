@@ -1,7 +1,7 @@
 import { createHash } from "node:crypto";
 import { describe, expect, it } from "vitest";
 import { inpost } from "../../src/carriers/inpost/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, json } from "./harness.js";
@@ -12,7 +12,7 @@ const ACTIVE = "990000000000000000000001";
 const MISSING = "990000000000000000000009";
 const SECRET = { refreshToken: ["rt", "made", "up"].join("-"), market: "PL" as const };
 
-const plugin = register(inpost);
+const plugin = registerBuiltin(inpost);
 
 type Reply = { status: number; body: unknown } | Error;
 
@@ -34,7 +34,7 @@ function fake(routes: Record<string, Reply[]>) {
 }
 
 function context(fetchImpl: FetchLike, session: unknown = null) {
-  const { base, saved, unknownKeys } = fakeContext(inpost.http, fetchImpl, { session });
+  const { base, saved, unknownKeys } = fakeContext(inpost, fetchImpl, { session });
   return { base, saved, unknown: unknownKeys };
 }
 

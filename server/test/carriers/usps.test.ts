@@ -1,6 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { usps } from "../../src/carriers/usps/index.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { SignInRejectedError, TransientError } from "../../src/provider/errors.js";
 import { fakeContext, fakeNetwork, json, raw, routeTable, type Answer } from "./harness.js";
 
@@ -13,7 +13,7 @@ const CODE = "9400000000000000000001";
 const TOKEN = "POST apis.usps.com/oauth2/v3/token";
 const DETAIL = `GET apis.usps.com/tracking/v3/tracking/${CODE}`;
 const keys = { consumerKey: "made-up-key", consumerSecret: ["made", "up", "value"].join("-") };
-const plugin = register(usps);
+const plugin = registerBuiltin(usps);
 
 const token = (n: number, scope = "tracking addresses") =>
   json({ access_token: `token-${n}`, expires_in: 28_800, scope }, 200);
@@ -43,7 +43,7 @@ describe("USPS tracking", () => {
         json(detail("Delivered", "Delivered, In/At Mailbox"), 200),
       ],
     });
-    const { base, saved, unknownKeys: unknown } = fakeContext(usps.http, fetchImpl);
+    const { base, saved, unknownKeys: unknown } = fakeContext(usps, fetchImpl);
     const first = await plugin.track(base, {}, keys, [CODE]);
     expect(first.snapshots[0]).toMatchObject({
       carrier: "usps",
@@ -74,7 +74,7 @@ describe("USPS tracking", () => {
 
   it("treats a 404 as not found", async () => {
     const { fetchImpl } = network({ [TOKEN]: [token(1)], [DETAIL]: [json({}, 404)] });
-    const { base } = fakeContext(usps.http, fetchImpl);
+    const { base } = fakeContext(usps, fetchImpl);
     expect(await plugin.track(base, {}, keys, [CODE])).toEqual({ snapshots: [], complete: true });
   });
 
@@ -83,7 +83,7 @@ describe("USPS tracking", () => {
       [TOKEN]: [token(1)],
       [DETAIL]: [json(detail("Made-up Category", "Made-up Category"), 200)],
     });
-    const { base, unknownKeys: unknown } = fakeContext(usps.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(usps, fetchImpl);
     const result = await plugin.track(base, {}, keys, [CODE]);
     expect(result.snapshots[0]).toMatchObject({ status: null, rawStatus: "Made-up Category" });
     expect(unknown).toEqual(["Made-up Category"]);
@@ -93,7 +93,7 @@ describe("USPS tracking", () => {
     const { fetchImpl } = network({
       [TOKEN]: [json({ error: "invalid_client" }, 401), token(2, "addresses")],
     });
-    const { base } = fakeContext(usps.http, fetchImpl);
+    const { base } = fakeContext(usps, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(SignInRejectedError);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(SignInRejectedError);
   });
@@ -103,7 +103,7 @@ describe("USPS tracking", () => {
       [TOKEN]: [token(1), token(2)],
       [DETAIL]: [json({}, 401), json({}, 401)],
     });
-    const { base } = fakeContext(usps.http, fetchImpl);
+    const { base } = fakeContext(usps, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(SignInRejectedError);
     expect(calls.map((call) => call.key)).toEqual([TOKEN, DETAIL, TOKEN, DETAIL]);
   });
@@ -115,7 +115,7 @@ describe("USPS tracking", () => {
       [DETAIL]: [json({}, 401), json(detail("Delivered", "Delivered"), 200)],
       [`GET apis.usps.com/tracking/v3/tracking/${other}`]: [json({}, 401)],
     });
-    const { base } = fakeContext(usps.http, fetchImpl);
+    const { base } = fakeContext(usps, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE, other])).rejects.toBeInstanceOf(
       SignInRejectedError,
     );
@@ -127,7 +127,7 @@ describe("USPS tracking", () => {
       [TOKEN]: [token(1)],
       [DETAIL]: [new Error("offline")],
     });
-    const { base } = fakeContext(usps.http, fetchImpl);
+    const { base } = fakeContext(usps, fetchImpl);
     await expect(plugin.track(base, {}, keys, [CODE])).rejects.toBeInstanceOf(TransientError);
     expect(calls.map((call) => call.key)).toEqual([TOKEN, DETAIL]);
   });

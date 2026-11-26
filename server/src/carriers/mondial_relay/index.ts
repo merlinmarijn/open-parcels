@@ -68,9 +68,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const mondialRelay = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Mondial Relay",
-  countries: ["FR", "BE", "NL", "ES", "PT", "LU"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [accountSignIn<Config>(), { type: "none", kinds: ["tracking"] }],

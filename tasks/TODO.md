@@ -53,29 +53,16 @@ image are shipped (see `DONE.md`). Left:
 
 ## 3. Provider rewrite (decision record draft 0002, provider ecosystem)
 
-- [ ] Glossary pass in the other repos, in lockstep with the server (the server repo is done, see
-      `DONE.md`; it no longer serves any old name, `CHANGELOG.md`):
-  - open-parcels-ha: read `/api/v1/connections`, `tracking_number`, `expected_from`/`expected_to`
-    (and `expected_days` for whole-day dates in sensors and the calendar), `direction`
-    `receiving`/`sending` (today `!= "outgoing"` counts sending parcels as receiving), live events
-    `connection.*` and `parcel.sending_registered`/`_delivered` (`const.py`); send
-    `tracking_number` and `receiving`/`sending` in `add_parcel`; rename the `barcode` attribute to
-    `tracking_number`, source devices/buttons/translations to
-    connections (entity and device ids kept), Home Assistant event names with "sending"; texts:
-    Inbox, email, Log in (web UI) vs Sign in (carrier)
-  - open-parcels-ha-apps: option descriptions, translations, DOCS/README and changelog text
-    (connection, provider, inbox, email, Log in); nothing API-facing
-  - open-parcels-extension: README, store texts and UI strings (provider, connection, Sign in);
-    the page/extension `postMessage` field `source` is DOM protocol and stays
-  - website (open-parcels.github.io): guides, carrier list and API examples (`/api/v1/connections`,
-    `tracking_number`, `expected_from`), providers not plug-ins, connections not sources, inbox,
-    email, tracking number, Receiving/Sending, Log in vs Sign in
-  - .github org profile: README terms (provider, connection, email, tracking number)
-  - open-parcels-rules (another agent is on it): docs "mail" → "email" where it means a message;
-    `MAIL_SOURCES` (subject/text/html) names parts of an email, not a connection, so a rename to
-    "parts" avoids the clash; `trackingNumbers` already fits
-- [ ] Manifest format and capabilities model; give every built-in carrier a manifest and enforce its
-      declared hosts
+- [ ] Glossary pass in the other repos: done on 2026-11-25 (HA integration `e14747d`, HA app
+      `cfdf033`, extension `b13f25d`, website `1b28cf3`, org profile `6274398`, all pushed) and
+      re-checked on 2026-11-26 against every tracked file. One leftover:
+  - open-parcels-ha `custom_components/open_parcels/parcels.py:59`: the docstring says "a mail
+    connection"; it means the `mail` role, so "an email connection (role `mail`)". The role value
+    itself is API and stays.
+  - Not leftovers (checked): `MIGRATION.md` and `migrate.py` name old terms on purpose;
+    "formerly an add-on" in the HA app README, website and org profile; Firefox's own "Add-on"
+    wording in the extension README; `ParcelPosition.source` (`courier`/`scan`) is a position
+    source, not a connection; the extension's `postMessage` `source` is DOM protocol.
 - [ ] Themes: replace the light/dark-only setting with installable themes. Two separate settings:
       Theme (default, installed themes) and Mode (Automatic from device / Light / Dark); a theme
       may ship a light and a dark variant (Automatic follows the device), or one variant that
@@ -85,7 +72,6 @@ image are shipped (see `DONE.md`). Left:
       repo (the repo manifest lists themes), installed from the providers page with the same tiers
       and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
       everywhere, no hard-coded colours.
-- [ ] Provider sandbox (child process with Node permission model, broker for HTTP, secrets per call)
 - [ ] Connection actions and jobs (buttons on connection cards, progress, cancel, resume, HA
       buttons)
 - [ ] Amazon "Import history" job (all years, resumable, conservative pacing, imported history kept)

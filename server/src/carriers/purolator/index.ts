@@ -168,9 +168,6 @@ async function track(context: ProviderContext<Config, null>, barcodes: readonly 
 /** Purolator (Canada): the public tracking website's lookup, by tracking number. */
 export const purolator = defineCarrier<Config, null>({
   id: CARRIER_ID,
-  name: "Purolator",
-  countries: ["CA"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.null(),
   signIn: { type: "none" },

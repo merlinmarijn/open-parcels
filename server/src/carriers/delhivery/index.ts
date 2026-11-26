@@ -134,9 +134,6 @@ async function track(context: ProviderContext<unknown, unknown>, barcodes: reado
 /** Delhivery (India): the public waybill tracking used by its website. */
 export const delhivery = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "Delhivery",
-  countries: ["IN"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

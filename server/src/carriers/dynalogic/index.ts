@@ -174,9 +174,6 @@ async function track(context: ProviderContext<Config, unknown>, barcodes: readon
 /** Dynalogic (Netherlands, Belgium): heavy and two-person deliveries, tracked by order number. */
 export const dynalogic = defineCarrier<Config, unknown>({
   id: CARRIER_ID,
-  name: "Dynalogic",
-  countries: ["NL", "BE"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema: z.unknown(),
   signIn: { type: "none" },

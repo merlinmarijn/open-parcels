@@ -153,9 +153,6 @@ type Secret = z.infer<typeof secretSchema>;
 
 export const airmee = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Airmee",
-  countries: ["SE"],
-  connectionKinds: ["account", "tracking"],
   configSchema,
   secretSchema,
   signIn: [smsSignIn<Config>(), { type: "api_key", kinds: ["tracking"] }],

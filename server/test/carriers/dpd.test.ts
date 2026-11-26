@@ -68,7 +68,7 @@ const USERNAME = "someone@example.invalid";
 const credentials = { username: USERNAME, password: ["made", "up", "words"].join("-") };
 
 function context(fake: FakeDpd, options: { publicTracking?: boolean; saved?: unknown } = {}) {
-  const fakeCtx = fakeContext(dpd.http, fake.fetch, { session: options.saved ?? null });
+  const fakeCtx = fakeContext(dpd, fake.fetch, { session: options.saved ?? null });
   const unknowns: string[] = [];
   const ctx: ProviderContext<{ publicTracking: boolean }, typeof credentials | null> = {
     ...fakeCtx.base,

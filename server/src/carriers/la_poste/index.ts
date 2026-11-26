@@ -76,10 +76,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const laposte = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "La Poste (Colissimo, Chronopost)",
-  countries: ["FR"],
-  aliases: ["Colissimo", "Chronopost"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -2,14 +2,14 @@ import { describe, expect, it } from "vitest";
 import { slovakParcelService } from "../../src/carriers/slovak_parcel_service/index.js";
 import { slovakTime } from "../../src/carriers/slovak_parcel_service/parse.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import { fakeContext, fakeNetwork, json, routeTable, type Answer } from "./harness.js";
 
 /** Routes by `METHOD host/path`; anything unscripted answers 404 with {}. */
 const network = (table: Record<string, Answer[]>) =>
   fakeNetwork([routeTable(table)], () => json({}, 404));
 
-const plugin = register(slovakParcelService);
+const plugin = registerBuiltin(slovakParcelService);
 
 // Made-up codes and values only.
 const CODE = "TEST00000001";
@@ -39,7 +39,7 @@ describe("Slovak Parcel Service tracking", () => {
         ),
       ],
     });
-    const { base } = fakeContext(slovakParcelService.http, fetchImpl);
+    const { base } = fakeContext(slovakParcelService, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE]);
     expect(result.snapshots[0]).toMatchObject({
       carrier: "slovak_parcel_service",
@@ -67,7 +67,7 @@ describe("Slovak Parcel Service tracking", () => {
         }),
       ],
     });
-    const { base } = fakeContext(slovakParcelService.http, fetchImpl);
+    const { base } = fakeContext(slovakParcelService, fetchImpl);
     const [parcel] = (await plugin.track(base, {}, null, [CODE])).snapshots;
     // July is CEST, two hours ahead of UTC.
     expect(parcel).toMatchObject({ delivered: true, deliveredAt: "2026-07-01T10:00:00.000Z" });
@@ -77,7 +77,7 @@ describe("Slovak Parcel Service tracking", () => {
     const { fetchImpl } = network({
       [ROUTE]: [json({ status: false, code: 404, data: null }, 200)],
     });
-    const { base } = fakeContext(slovakParcelService.http, fetchImpl);
+    const { base } = fakeContext(slovakParcelService, fetchImpl);
     expect((await plugin.track(base, {}, null, [CODE, "../x"])).snapshots).toEqual([]);
   });
 
@@ -88,7 +88,7 @@ describe("Slovak Parcel Service tracking", () => {
         found([state("DDSP", 38, "2026-11-18 08:00:00", "Upresnenie")]),
       ],
     });
-    const { base, unknownKeys: unknown } = fakeContext(slovakParcelService.http, fetchImpl);
+    const { base, unknownKeys: unknown } = fakeContext(slovakParcelService, fetchImpl);
     const result = await plugin.track(base, {}, null, [CODE, CODE]);
     expect(result.snapshots.map((p) => p.status)).toEqual([null, null]);
     expect(unknown).toEqual(["ZZZZ"]);
@@ -96,14 +96,14 @@ describe("Slovak Parcel Service tracking", () => {
 
   it("stops when the transport key is refused or the server fails", async () => {
     const refused = fakeContext(
-      slovakParcelService.http,
+      slovakParcelService,
       network({ [ROUTE]: [json({}, 401)] }).fetchImpl,
     );
     await expect(plugin.track(refused.base, {}, null, [CODE])).rejects.toBeInstanceOf(
       UnexpectedResponseError,
     );
     const failing = fakeContext(
-      slovakParcelService.http,
+      slovakParcelService,
       network({ [ROUTE]: [json({}, 500)] }).fetchImpl,
     );
     await expect(plugin.track(failing.base, {}, null, [CODE])).rejects.toBeInstanceOf(

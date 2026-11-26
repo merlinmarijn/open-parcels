@@ -106,9 +106,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const ctt = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "CTT",
-  countries: ["PT", "ES"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

@@ -147,9 +147,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 
 export const cdl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "CDL Last Mile",
-  countries: ["US"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },

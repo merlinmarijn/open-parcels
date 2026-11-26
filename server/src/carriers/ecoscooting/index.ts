@@ -157,9 +157,6 @@ async function track(context: ProviderContext<unknown, unknown>, barcodes: reado
 /** Ecoscooting (Spain): last-mile delivery for marketplace parcels, public tracking by code. */
 export const ecoscooting = defineCarrier<unknown, unknown>({
   id: CARRIER_ID,
-  name: "Ecoscooting",
-  countries: ["ES"],
-  connectionKinds: ["tracking"],
   configSchema: z.looseObject({}),
   secretSchema: z.unknown(),
   signIn: { type: "none" },

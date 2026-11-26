@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import { nzPost } from "../../src/carriers/nz_post/index.js";
 import { TransientError, UnexpectedResponseError } from "../../src/provider/errors.js";
-import { register } from "../../src/engine/registry.js";
+import { registerBuiltin } from "../manifests.js";
 import type { CarrierProvider } from "../../src/provider/api.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
 import { fakeContext, fakeNetwork, inOrder, json, type Answer } from "./harness.js";
@@ -10,8 +10,8 @@ import { fakeContext, fakeNetwork, inOrder, json, type Answer } from "./harness.
 const scripted = (replies: Answer[]) => fakeNetwork([inOrder(...replies)], () => json({}, 500));
 
 function harness<C, S>(plugin: CarrierProvider<C, S>, fetchImpl: FetchLike) {
-  const { base, unknownKeys } = fakeContext(plugin.http, fetchImpl);
-  return { registered: register(plugin), base, unknown: unknownKeys };
+  const { base, unknownKeys } = fakeContext(plugin, fetchImpl);
+  return { registered: registerBuiltin(plugin), base, unknown: unknownKeys };
 }
 
 // Made-up codes and values only.

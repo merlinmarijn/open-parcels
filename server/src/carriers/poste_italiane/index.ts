@@ -144,9 +144,6 @@ async function track(context: ProviderContext<Config, Secret>, barcodes: readonl
 /** Poste Italiane: the public "Dove e quando" tracking. */
 export const posteItaliane = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
-  name: "Poste Italiane",
-  countries: ["IT"],
-  connectionKinds: ["tracking"],
   configSchema,
   secretSchema,
   signIn: { type: "none" },
