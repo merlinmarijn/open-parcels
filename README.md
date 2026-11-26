@@ -32,7 +32,7 @@ the REST API with its event stream, the Docker image and the Unraid template.
 ## Quick start
 
 ```sh
-docker compose up -d   # uses docker-compose.yml from this repository
+docker compose up -d --build   # builds the image from this repository
 ```
 
 Then open <http://localhost:3000> and finish the setup with the code from `docker compose logs open-parcels`. The website has guides for Unraid and Home Assistant. For something to look at before

@@ -2,7 +2,11 @@
 # `docker compose logs open-parcels` and enter it in the web UI at http://localhost:3000.
 services:
   open-parcels:
-    image: bluscream1/open-parcels:latest
+    # Built from this repository, so a redeploy (Dokploy, `docker compose up -d --build`) runs the
+    # checked-out commit. For the published image instead: image: bluscream1/open-parcels:latest
+    build:
+      context: .
+    image: open-parcels:local
     container_name: open-parcels
     restart: unless-stopped
     ports:
