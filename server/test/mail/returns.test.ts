@@ -1,5 +1,6 @@
-import { loadRules } from "open-parcels-rules";
+import { loadRules, withEmailRules } from "open-parcels-rules";
 import { describe, expect, it } from "vitest";
+import { AMAZON_EMAIL_RULES } from "../../src/carriers/amazon/email-rules.js";
 import { mailLines, readMoney } from "../../src/mail/return-details.js";
 import { createReturnInterpreter } from "../../src/mail/returns.js";
 import type { MailInput } from "../../src/mail/types.js";
@@ -8,7 +9,11 @@ import type { MailInput } from "../../src/mail/types.js";
  * Made-up return and refund mails. Their layout follows the shop's real mails (labelled lines,
  * links on their own line or in brackets); every name, number, address and link is invented.
  */
-const interpret = createReturnInterpreter(loadRules(), "Europe/Berlin");
+/** Amazon's return emails are read with the Amazon provider's email rules, as the inbox routes them. */
+const interpret = createReturnInterpreter(
+  withEmailRules(loadRules(), AMAZON_EMAIL_RULES),
+  "Europe/Berlin",
+);
 const ORDER = "302-0000000-0000001";
 
 function mail(partial: Partial<MailInput> & Pick<MailInput, "subject" | "text">): MailInput {

@@ -1,3 +1,4 @@
+import type { EmailRuleDefinition } from "open-parcels-rules";
 import type { z } from "zod";
 import type { Clock } from "../clock.js";
 import type { HttpPolicy, ProviderHttp } from "./http.js";
@@ -16,6 +17,8 @@ export * from "./kit/track.js";
 export * from "./rules.js";
 export * from "./snapshot.js";
 export type { Clock } from "../clock.js";
+/** An email rule as a provider ships it (`docs/rules-split.md`): the rules' email rule format. */
+export type { EmailRuleDefinition } from "open-parcels-rules";
 export type { Direction } from "../domain/parcel.js";
 export type { DropOffKind, DropOffOption, ReturnStatus } from "../domain/return.js";
 export type { LiveReading, LiveTarget } from "./live.js";
@@ -183,6 +186,12 @@ export interface CarrierProvider<Config = unknown, Secret = unknown> {
    * exactly the providers with that section implement it.
    */
   parseEmail?(context: EmailContext, email: ProviderEmail): Promise<EmailResult>;
+  /**
+   * Email rules in place of `parseEmail` (`docs/rules-split.md`): the core reads the emails routed
+   * to the provider with them, as it reads unrouted emails with the shared rules. A provider has
+   * one or the other, and the manifest's `email` section exactly when it has one.
+   */
+  readonly emailRules?: readonly EmailRuleDefinition[];
   /**
    * The code of the manifest's task actions, by action id (`defineAction`); exactly the manifest's
    * tasks, no more and no fewer. Each runs as a job (`docs/connection-actions-and-jobs.md`).

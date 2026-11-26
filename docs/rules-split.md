@@ -34,9 +34,9 @@ uses for the shared rules (parcels, orders, returns).
 - A moved rule leaves the rules package in the same release that the provider gains it, and the
   server bumps to that release in the same commit (no version of the server has both).
 - A provider's rules see the email exactly as the shared rules saw it before: the same rules,
-  the same `ignore` rules, the same fallback, the same interpreters. An email they give nothing
-  for falls through to the shared rules, which no longer hold the moved rules, so they give
-  nothing either (or the same fallback result, never both).
+  the same `ignore` rules, the same schema.org reading and fallback, the same interpreters. So
+  their reading is complete even when it finds nothing, and the email never falls through to
+  the shared rules (which would run the fallback on an email a moved rule had already claimed).
 - Sender domains of two providers never overlap (a test checks the built-ins).
 
 ## Unauthenticated senders

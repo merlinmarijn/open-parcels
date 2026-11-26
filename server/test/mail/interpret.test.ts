@@ -1,4 +1,4 @@
-import { loadRules } from "open-parcels-rules";
+import { loadRules, withEmailRules } from "open-parcels-rules";
 import { describe, expect, it } from "vitest";
 import {
   carrierFor,
@@ -7,11 +7,13 @@ import {
   senderName,
   subjectAsStatus,
 } from "../../src/mail/interpret.js";
+import { DHL_EMAIL_RULES } from "../../src/carriers/dhl/email-rules.js";
 
 const rules = loadRules();
-const interpret = createMailInterpreter(rules, "Europe/Berlin");
+/** DHL emails are read with the DHL provider's email rules, as the inbox routes them. */
+const interpret = createMailInterpreter(withEmailRules(rules, DHL_EMAIL_RULES), "Europe/Berlin");
 
-describe("mail interpretation with the shared rules", () => {
+describe("mail interpretation with email rules", () => {
   it("turns a German DHL shipping notice into a DHL parcel", () => {
     const snapshots = interpret({
       messageId: null,

@@ -25,5 +25,8 @@
     "secrets": ["credentials"],
     "session": true,
     "user_agent": false
+  },
+  "email": {
+    "from_domains": [".hermesworld.com", ".myhermes.de"]
   }
 }

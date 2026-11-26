@@ -11,6 +11,7 @@ import type {
 } from "../provider/api.js";
 import { hostMatches } from "../provider/manifest.js";
 import { mailId, senderDomain, senderName } from "./interpret.js";
+import type { EmailRuleReader } from "./rule-reader.js";
 import type { MailInput } from "./types.js";
 
 /**
@@ -97,12 +98,14 @@ interface EmailRouterDeps {
   readonly providers: () => readonly RegisteredProvider[];
   /** The global switch (`OPENPARCELS_EMAIL_ROUTING`), read on every email. */
   readonly enabled: () => boolean;
+  /** Runs the email rules of providers that bring rules instead of `parseEmail`. */
+  readonly ruleReader: EmailRuleReader;
   readonly clock: Clock;
   readonly logger: Logger;
 }
 
-/** What the providers found in one email; null when none read it. */
-interface RoutedEmail {
+/** What the providers found in one email. */
+export interface RoutedEmail {
   readonly snapshots: readonly ParcelSnapshot[];
   readonly orders: readonly OrderSnapshot[];
   readonly returns: readonly ReturnSnapshot[];
@@ -124,7 +127,7 @@ export class EmailRouter {
       .providers()
       .filter(
         (provider) =>
-          provider.canParseEmail &&
+          (provider.canParseEmail || provider.emailRules !== null) &&
           provider.manifest.email?.from_domains.some((pattern) => hostMatches(pattern, domain)) ===
             true,
       );
@@ -166,7 +169,10 @@ export class EmailRouter {
         },
       };
       try {
-        const result = await provider.parseEmail(context, email);
+        const result: EmailResult =
+          provider.emailRules === null
+            ? await provider.parseEmail(context, email)
+            : this.deps.ruleReader.read(provider.emailRules, mail);
         if (result.ignored !== undefined) continue;
         read.push(result);
         logger.debug(

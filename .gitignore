@@ -12,6 +12,8 @@ secret.key
 imap-config.json
 parsed_mails.json
 *.eml
+# Made-up email fixtures of providers' email rules (never real mail).
+!server/test/fixtures/email/*/*.eml
 *.har
 
 # Local research material and scratch space

@@ -1,6 +1,7 @@
 import { z } from "zod";
 import { defineCarrier, pastedRedirect, SignInRejectedError } from "../../provider/api.js";
 import { fetchDeAccount } from "./de/account.js";
+import { DHL_EMAIL_RULES } from "./email-rules.js";
 import { finishSignIn, startSignIn } from "./de/session.js";
 import { IBERIA_HOST } from "./iberia.js";
 import { fetchNlAccount, NL_HOST, nlSignIn } from "./nl/account.js";
@@ -62,6 +63,7 @@ export const dhl = defineCarrier<Config, Secret>({
   id: "dhl",
   configSchema,
   secretSchema,
+  emailRules: DHL_EMAIL_RULES,
   signIn: [
     pastedRedirect<Config, Secret>({
       id: "de_account",

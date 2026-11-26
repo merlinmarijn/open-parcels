@@ -73,7 +73,9 @@ Status page shows `2.0.0-dev.<date> (<commit>)`.
 - **No secrets in logs or events.** Use the logger, which redacts. Event payloads go through
   `parcelForEvent`, which strips courier coordinates.
 - **Carrier knowledge that other projects could reuse goes to `open-parcels-rules`, not here.**
-  That covers regexes, status tables, locale tables and email rules.
+  That covers regexes, status tables and locale tables, and the email rules of shops and carriers
+  without a provider. The email rules of a shop or carrier with a provider live in that provider
+  (`emailRules`, fixtures in `server/test/fixtures/email/<provider>/`; `docs/rules-split.md`).
 - **Don't name the projects an endpoint was learned from** in code, docs or commit messages.
 - **Migrate, don't keep legacy code.** A rename or format change is done in one step: no
   deprecated aliases, old fields next to new ones, old names accepted in requests or code that

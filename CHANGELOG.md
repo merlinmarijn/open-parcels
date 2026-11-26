@@ -2,6 +2,17 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Changed: Amazon, DHL and Hermes read their own emails (rules 2.0.0-dev.15)
+
+The first step of splitting the shared rules ([`docs/rules-split.md`](docs/rules-split.md)):
+providers may bring email rules (`emailRules`, the rules' email rule format) instead of
+`parseEmail`, which the core runs with the shared engine. Amazon's order, shipping, return and
+dunning rules, DHL's and Hermes' shipping rules and their fixtures moved out of
+`open-parcels-rules` (released as `2.0.0-dev.15`, with the new `withEmailRules`) into those
+providers, whose manifests now name their sender domains. Routed emails read exactly as before;
+an email from those senders that fails the DKIM/DMARC check is no longer read by their rules
+(turn the inbox's sender check off for a mail server that adds no `Authentication-Results`).
+
 ### Added: per-inbox sender check switch
 
 Inboxes get the setting "Check senders (DKIM/DMARC)" (`checkSenders`, on by default). Off, for a

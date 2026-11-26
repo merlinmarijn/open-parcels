@@ -20,6 +20,7 @@ import {
   type AmazonSecret,
 } from "./auth.js";
 import { AMAZON_ID } from "./build.js";
+import { AMAZON_EMAIL_RULES } from "./email-rules.js";
 import { importHistory } from "./history.js";
 import { readLive } from "./live.js";
 import { STOREFRONT_IDS, STOREFRONTS } from "./storefronts.js";
@@ -45,6 +46,7 @@ export function amazonCarrier(rules?: Rules): CarrierProvider<AmazonConfig, Amaz
     id: AMAZON_ID,
     configSchema,
     secretSchema: amazonSecretSchema.nullable(),
+    emailRules: AMAZON_EMAIL_RULES,
     signIn: pastedRedirect<AmazonConfig, AmazonSecret | null>({
       start({ config }) {
         const deviceSerial = newDeviceSerial();

@@ -44,6 +44,21 @@
     "session": true,
     "user_agent": true
   },
+  "email": {
+    "from_domains": [
+      ".amazon.ca",
+      ".amazon.co.uk",
+      ".amazon.com",
+      ".amazon.com.au",
+      ".amazon.de",
+      ".amazon.es",
+      ".amazon.fr",
+      ".amazon.in",
+      ".amazon.it",
+      ".amazon.nl",
+      ".amazon.pl"
+    ]
+  },
   "actions": [
     {
       "id": "import_history",

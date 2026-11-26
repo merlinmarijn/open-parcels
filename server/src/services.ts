@@ -37,6 +37,7 @@ import { createMailInterpreter, createOrderInterpreter } from "./mail/interpret.
 import { createReturnInterpreter } from "./mail/returns.js";
 import { ReturnService } from "./returns/service.js";
 import type { MailboxClientFactory, MailInterpreter } from "./mail/types.js";
+import { EmailRuleReader } from "./mail/rule-reader.js";
 import { EmailRouter } from "./mail/routing.js";
 import { MailWatcher } from "./mail/watcher.js";
 import type { Presentation } from "./parcels/repository.js";
@@ -150,11 +151,19 @@ async function followUntracked(
   return linked.parcels > 0 || handedOver > 0;
 }
 
-/** Hands emails to the providers of their sender domains; the switch is read on every email. */
+/**
+ * Hands emails to the providers of their sender domains; the switch is read on every email. The
+ * providers' email rules are compiled here, so one that does not match the schema stops the start.
+ */
 function emailRouter(registry: ProviderRegistry, deps: ServiceDeps): EmailRouter {
+  const ruleReader = new EmailRuleReader(loadRules(), deps.config.timeZone);
+  for (const provider of registry.list()) {
+    if (provider.emailRules !== null) ruleReader.prepare(provider.emailRules);
+  }
   return new EmailRouter({
     providers: () => registry.list(),
     enabled: () => deps.config.emailRouting,
+    ruleReader,
     clock: deps.clock,
     logger: deps.logger,
   });

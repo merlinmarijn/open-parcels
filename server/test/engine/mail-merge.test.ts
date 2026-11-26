@@ -1,5 +1,6 @@
-import { loadRules } from "open-parcels-rules";
+import { loadRules, withEmailRules } from "open-parcels-rules";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { HERMES_EMAIL_RULES } from "../../src/carriers/hermes/email-rules.js";
 import { healState, mergeParcel, type ParcelState } from "../../src/engine/merge.js";
 import { maskIdentifiers } from "../../src/engine/vocab.js";
 import { createMailInterpreter } from "../../src/mail/interpret.js";
@@ -131,9 +132,13 @@ describe("merging a statusless mail into a delivered parcel", () => {
 });
 
 describe("the Hermes delivery mail", () => {
-  const interpret = createMailInterpreter(loadRules(), "Europe/Berlin");
+  // Read with the Hermes provider's email rules, as the inbox routes it.
+  const interpret = createMailInterpreter(
+    withEmailRules(loadRules(), HERMES_EMAIL_RULES),
+    "Europe/Berlin",
+  );
 
-  it("maps to delivered through the rules", () => {
+  it("maps to delivered through the Hermes provider's rules", () => {
     const [found] = interpret(mail("2026-11-18T14:28:16Z"));
     expect(found).toMatchObject({ carrier: "hermes", status: "delivered", delivered: true });
     expect(found?.history[0]?.status).toBe("delivered");

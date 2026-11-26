@@ -41,5 +41,8 @@
     "secrets": ["api_key", "token"],
     "session": true,
     "user_agent": false
+  },
+  "email": {
+    "from_domains": [".dhl.com", ".dhl.de"]
   }
 }

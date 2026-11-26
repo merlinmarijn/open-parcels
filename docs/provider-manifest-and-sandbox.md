@@ -44,7 +44,8 @@ parsed into the same schema then. The schema moves to the engine package with th
   rules, tracking-number patterns) are added to `provides` by the phases that build them (P2c,
   P5); format 1 refuses unknown keys, so a manifest cannot claim them early.
 - **Email** (`email`, optional): `{ "from_domains": ["example-shop.de", ".example-shop.com"] }`,
-  the sender domains whose emails the provider reads (§3). Exact or a leading-dot suffix, as
+  the sender domains whose emails the provider reads (§3), with `parseEmail` or with email rules
+  (`emailRules`, [`rules-split.md`](rules-split.md)). Exact or a leading-dot suffix, as
   `network` hosts; webmail domains (`gmail.com`, `web.de`, …) are refused.
 - **Actions** (`actions`, optional): buttons on the provider's connection cards, links and tasks
   that run as jobs ([`connection-actions-and-jobs.md`](connection-actions-and-jobs.md) §1).
@@ -64,7 +65,8 @@ parsed into the same schema then. The schema moves to the engine package with th
   manifest parses; its `id` equals the code's; `provides.connections` covers exactly the kinds the
   code implements (`account`/`shop` need `fetchAccount`, `tracking` needs `track`); `live` iff
   `readLive`; `secrets` equals what the sign-in flows produce; `user_agent` iff the code sets one;
-  every host in `http.limits` is covered by `network`; `email` iff `parseEmail`; the logo exists.
+  every host in `http.limits` is covered by `network`; `email` iff `parseEmail` or `emailRules`
+  (never both); the logo exists.
 - **Enforced at run time:** `ProviderHttp` refuses any request, and any redirect hop, to a host
   the manifest does not list (`HostNotAllowedError`: not a transient error, so the run is logged
   as a bug, and never a sign-in problem). A session store of a provider without `session` refuses
@@ -153,6 +155,12 @@ Narrows decision record 0002 §2.14 to what is built now.
   declares a shop's domain takes that shop's emails over from the rules completely: it must read
   every kind of email the rules read from there (shipping, order, return), or ignore those it does
   not.
+- **Email rules:** a provider may bring email rules (`emailRules`, the rules' email rule format)
+  instead of `parseEmail`. The core runs them itself, never in the sandbox: the shared rules with
+  the provider's email rules in place of the shared ones (the `ignore` rules stay), through the
+  same interpreters as unrouted email. Their reading is complete even when it finds nothing, so a
+  routed email never reaches the shared rules too ([`rules-split.md`](rules-split.md)). Amazon,
+  DHL and Hermes read their emails this way.
 - **Filed under the inbox:** results are ingested under the inbox connection (role `mail`), as the
   rules' results are.
 - **The switch:** `OPENPARCELS_EMAIL_ROUTING` (live, on by default). Off: the rules read every

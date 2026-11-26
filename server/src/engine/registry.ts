@@ -6,6 +6,7 @@ import type {
   CheckpointStore,
   EmailContext,
   EmailResult,
+  EmailRuleDefinition,
   JobProgress,
   FetchResult,
   LiveReading,
@@ -133,8 +134,13 @@ export interface RegisteredProvider {
   readonly canFetchAccount: boolean;
   readonly canTrack: boolean;
   readonly canReadLive: boolean;
-  /** Reads email (`parseEmail`); exactly the providers whose manifest has an `email` section. */
+  /** Reads email with code (`parseEmail`). */
   readonly canParseEmail: boolean;
+  /**
+   * Its email rules, which the core runs (`docs/rules-split.md`); null for a provider without.
+   * Every provider whose manifest has an `email` section has these or `parseEmail`.
+   */
+  readonly emailRules: readonly EmailRuleDefinition[] | null;
   /** Reads one email routed to it; a provider without `parseEmail` ignores every email. */
   parseEmail(context: EmailContext, email: ProviderEmail): Promise<EmailResult>;
   /** Checks a configuration and returns it parsed, with the provider's defaults applied. */
@@ -313,8 +319,12 @@ function disagreements<Config, Secret>(
   if (manifest.provides.live !== (provider.readLive !== undefined)) {
     problems.push("provides.live and readLive must come together");
   }
-  if ((manifest.email !== undefined) !== (provider.parseEmail !== undefined)) {
-    problems.push("email and parseEmail must come together");
+  const readsEmail = provider.parseEmail !== undefined || provider.emailRules !== undefined;
+  if ((manifest.email !== undefined) !== readsEmail) {
+    problems.push("email and parseEmail (or emailRules) must come together");
+  }
+  if (provider.parseEmail !== undefined && provider.emailRules !== undefined) {
+    problems.push("parseEmail and emailRules exclude each other");
   }
   const secrets = flows.flatMap((flow) => FLOW_SECRET[flow.type] ?? []);
   if (!sameSet(secrets, manifest.permissions.secrets)) {
@@ -401,6 +411,7 @@ export function register<Config, Secret>(
     canTrack: provider.track !== undefined,
     canReadLive: provider.readLive !== undefined,
     canParseEmail: provider.parseEmail !== undefined,
+    emailRules: provider.emailRules ?? null,
     async parseEmail(emailContext, email) {
       if (provider.parseEmail === undefined) {
         return { snapshots: [], ignored: `${provider.name} reads no email.` };

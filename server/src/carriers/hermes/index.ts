@@ -10,6 +10,7 @@ import {
 } from "../../provider/api.js";
 import { accountSnapshot } from "./account-parcels.js";
 import { HermesAccount, readInbox } from "./account.js";
+import { HERMES_EMAIL_RULES } from "./email-rules.js";
 import { ACCOUNT_HOST, CARRIER_ID, TRACKING_HOST } from "./shared.js";
 import { isPlausibleBarcode, lookUp, readForecast, trackingSnapshot } from "./tracking.js";
 
@@ -114,6 +115,7 @@ export const hermes = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   configSchema,
   secretSchema,
+  emailRules: HERMES_EMAIL_RULES,
   signIn: [
     { type: "credentials", kinds: ["account"] },
     // Public tracking needs no sign-in.
