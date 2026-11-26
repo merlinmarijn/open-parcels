@@ -177,6 +177,25 @@
   display: none;
 }
 
+.parcel-card.compact .parcel-card-meta {
+  flex-wrap: nowrap;
+  overflow: hidden;
+}
+
+.parcel-card.compact .parcel-card-meta > span {
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.parcel-card.compact .parcel-card-meta > span:first-child {
+  flex: none;
+}
+
+.parcel-card.compact .parcel-card-said {
+  display: none;
+}
+
 @media (max-width: 600px) {
   .parcel-card {
     gap: var(--space-3);
@@ -220,6 +239,15 @@
   flex-wrap: wrap;
 }
 
+/* Without a place to show, the overview stands alone in a readable column. */
+.detail-solo {
+  max-width: 760px;
+}
+
+.detail-solo .panel {
+  height: auto;
+}
+
 .detail-head {
   display: flex;
   align-items: flex-start;
@@ -232,12 +260,13 @@
   font-size: var(--text-xl);
   font-weight: 650;
   letter-spacing: -0.015em;
-  overflow-wrap: anywhere;
+  overflow-wrap: break-word;
+  min-width: 0;
 }
 
 .detail-head-text {
   flex: 1;
-  min-width: 10rem;
+  min-width: min(100%, 15rem);
 }
 
 .detail-head-text > .muted {

@@ -458,29 +458,43 @@ fieldset.inline {
   border-color: color-mix(in srgb, var(--warn) 26%, transparent);
 }
 
+/* "No reader password": one slim line above the page, an icon, a link and a close button. */
 .reader-notice {
   display: flex;
   flex-wrap: wrap;
   align-items: center;
-  gap: var(--space-2) var(--space-4);
-  margin-bottom: var(--space-6);
-}
-
-.reader-notice {
-  padding: var(--space-2) var(--space-2) var(--space-2) var(--space-4);
+  gap: var(--space-1) var(--space-3);
+  padding: 6px 6px 6px var(--space-3);
+  margin-bottom: var(--space-4);
+  border-radius: var(--radius);
+  background: color-mix(in srgb, var(--warn) 9%, transparent);
   font-size: var(--text-sm);
 }
 
+.reader-notice > svg {
+  flex: none;
+  color: var(--warn);
+}
+
 .reader-notice p {
-  flex: 1 1 320px;
+  flex: 1 1 0;
+  min-width: 12rem;
   margin: 0;
   color: var(--text-soft);
 }
 
-.reader-notice .button {
-  min-height: 30px;
-  padding: 4px 12px;
-  font-size: var(--text-sm);
+.reader-notice a {
+  font-weight: 550;
+  white-space: nowrap;
+}
+
+.reader-notice .icon-button {
+  width: 28px;
+  height: 28px;
+}
+
+.reader-notice .notice {
+  width: 100%;
 }
 
 .read-only-hint {
@@ -796,14 +810,13 @@ fieldset.inline {
   justify-content: center;
   flex-shrink: 0;
   border-radius: 28%;
-  font-weight: 700;
+  font-weight: 650;
   letter-spacing: 0.02em;
-  color: #fff;
   text-transform: uppercase;
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.22),
-    inset 0 -8px 16px rgba(0, 0, 0, 0.12),
-    0 1px 2px rgba(0, 0, 0, 0.15);
+  /* A soft wash of the carrier's colour, its letters in a deeper (light) or brighter (dark) shade. */
+  color: color-mix(in oklab, var(--tile, var(--muted)) 62%, var(--text));
+  background: color-mix(in oklab, var(--tile, var(--muted)) 16%, var(--panel));
+  box-shadow: inset 0 0 0 1px color-mix(in oklab, var(--tile, var(--muted)) 22%, transparent);
 }
 
 .carrier-logo::before {

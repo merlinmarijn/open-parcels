@@ -271,6 +271,14 @@ function Overview({ parcel }: { readonly parcel: ParcelDetail }): ReactNode {
   );
 }
 
+/** Whether the map would show anything: a placed scan or the courier (as LocationMap draws). */
+function hasPlace(parcel: ParcelDetail): boolean {
+  return (
+    parcel.location?.source === "courier" ||
+    parcel.history.some((entry) => entry.latitude !== null && entry.longitude !== null)
+  );
+}
+
 export function ParcelDetailPage({ parcelId }: { readonly parcelId: string }): ReactNode {
   const query = useParcel(parcelId);
   const parcel = query.data;
@@ -287,7 +295,7 @@ export function ParcelDetailPage({ parcelId }: { readonly parcelId: string }): R
         query.isPending ? (
           <Spinner />
         ) : null
-      ) : (
+      ) : hasPlace(parcel) ? (
         <div className="split-page with-bar">
           <SplitContainer
             leftPanel={<Overview parcel={parcel} />}
@@ -299,6 +307,10 @@ export function ParcelDetailPage({ parcelId }: { readonly parcelId: string }): R
               </div>
             }
           />
+        </div>
+      ) : (
+        <div className="detail-solo">
+          <Overview parcel={parcel} />
         </div>
       )}
     </section>

@@ -14,6 +14,7 @@
 .connection-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(min(100%, 340px), 1fr));
+  align-items: start;
   gap: var(--space-4);
 }
 
@@ -208,26 +209,85 @@
   }
 }
 
+/* An inbox's live sync: accent wash, a phase pill, the count large, the steps as a small log. */
+.inbox-sync {
+  gap: var(--space-2);
+  background: color-mix(in srgb, var(--accent) 7%, var(--panel));
+  border: 1px solid color-mix(in srgb, var(--accent) 18%, transparent);
+}
+
+.inbox-sync .connection-job-head strong {
+  font-size: var(--text-sm);
+  font-weight: 600;
+}
+
+.inbox-sync .connection-job-head .badge {
+  color: var(--accent-hover);
+}
+
+.inbox-sync .connection-job-head .badge::before {
+  animation: pulse 1.2s ease-in-out infinite;
+}
+
+.inbox-sync progress {
+  height: 6px;
+  border-radius: 3px;
+}
+
+.inbox-sync p[aria-live] {
+  font-size: var(--text-base);
+  font-weight: 550;
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.inbox-sync > p.muted {
+  font-size: var(--text-xs);
+}
+
+.inbox-sync p[role="alert"] {
+  color: var(--danger);
+}
+
+details.inbox-sync {
+  background: var(--tint);
+  border-color: transparent;
+}
+
 .inbox-sync summary {
   cursor: pointer;
   color: var(--text-soft);
+  list-style-position: outside;
+  margin-left: var(--space-4);
+}
+
+.inbox-sync summary::marker {
+  color: var(--muted);
 }
 
 .inbox-sync-log {
   max-height: 8rem;
   overflow-y: auto;
-  margin: 0;
-  padding: var(--space-2) 0 0 var(--space-3);
-  border-left: 2px solid var(--panel-border);
+  margin: var(--space-1) 0 0;
+  padding: var(--space-2) 0 0;
+  border-top: 1px solid var(--panel-border);
   list-style: none;
   color: var(--muted);
   font-size: var(--text-xs);
-  line-height: 1.6;
+  line-height: 1.7;
+  scrollbar-width: thin;
+}
+
+.inbox-sync-log li:last-child {
+  color: var(--text-soft);
 }
 
 .inbox-sync-log time {
-  font-family: var(--mono);
+  display: inline-block;
+  min-width: 5.5em;
   margin-right: var(--space-2);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
 }
 
 .connection-icon-actions {

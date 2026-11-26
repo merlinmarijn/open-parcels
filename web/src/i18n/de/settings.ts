@@ -4,6 +4,9 @@ export const settings: Messages["settings"] = {
   title: "Einstellungen",
   serverSettings: "Servereinstellungen",
   serverSettingsAdminOnly: "Servereinstellungen und Passwörter sind nur für den Admin.",
+  groupYou: "Allgemein",
+  groupServer: "Server",
+  sections: "Abschnitte",
   language: {
     title: "Sprache",
     intro:
