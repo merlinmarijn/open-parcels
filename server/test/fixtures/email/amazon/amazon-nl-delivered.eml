@@ -1,0 +1,9 @@
+From: "Amazon.nl" <update-bestelling@amazon.nl>
+To: jan.jansen@example.com
+Subject: Delivered: Example item
+Date: Tue, 24 Nov 2026 10:00:00 +0100
+Content-Type: text/plain; charset=utf-8
+
+Your package has been delivered.
+
+https://www.amazon.nl/progress-tracker/package?orderId=402-1234567-1234567&shipmentId=Example

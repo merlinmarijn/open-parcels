@@ -1,0 +1,9 @@
+From: "Amazon.nl" <update-bestelling@amazon.nl>
+To: jan.jansen@example.com
+Subject: Item cancelled successfully: Example item
+Date: Tue, 24 Nov 2026 10:00:00 +0100
+Content-Type: text/plain; charset=utf-8
+
+Your item was cancelled.
+
+Order #402-7654321-7654321

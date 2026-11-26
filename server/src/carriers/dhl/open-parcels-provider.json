@@ -43,6 +43,6 @@
     "user_agent": false
   },
   "email": {
-    "from_domains": [".dhl.com", ".dhl.de"]
+    "from_domains": [".dhl.com", ".dhl.de", ".dhlecommerce.nl", ".dhlparcel.nl"]
   }
 }

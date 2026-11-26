@@ -168,6 +168,98 @@ export const AMAZON_EMAIL_RULES: readonly EmailRuleDefinition[] = [
     ],
   },
   {
+    // Amazon.nl sends from its own addresses, with English or Dutch subjects and the order number
+    // only in its links.
+    id: "order-amazon-nl",
+    name: "Amazon.nl order, shipping, delivery and cancellation updates",
+    kind: "order",
+    senders: {
+      domains: ["amazon.nl"],
+      local_parts: ["auto-bevestiging", "verzending-volgen", "update-bestelling"],
+    },
+    subject: [
+      "^(?:ordered|besteld|dispatched|shipped|verzonden|out for delivery|wordt vandaag bezorgd|delivered|bezorgd|item cancell?ed|geannuleerd)",
+    ],
+    extract: {
+      order_number: [
+        {
+          pattern: "(?<order_number>\\b\\d{3}-\\d{7}-\\d{7}\\b)",
+          in: ["text", "html"],
+        },
+      ],
+    },
+    event_keywords: [
+      {
+        event: "order_cancelled",
+        patterns: ["^(?:item cancell?ed|geannuleerd)"],
+        in: ["subject"],
+      },
+      {
+        event: "order_delivered",
+        patterns: ["^(?:delivered|bezorgd)"],
+        in: ["subject"],
+      },
+      {
+        event: "order_shipped",
+        patterns: ["^(?:dispatched|shipped|verzonden|out for delivery|wordt vandaag bezorgd)"],
+        in: ["subject"],
+      },
+      {
+        event: "order_confirmed",
+        patterns: ["^(?:ordered|besteld)"],
+        in: ["subject"],
+      },
+    ],
+    require: ["order_number"],
+    tests: [
+      {
+        fixture: "amazon-nl-ordered.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            kind: "order",
+            event: "order_confirmed",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-dispatched.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_shipped",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-delivered.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_delivered",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-cancelled.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_cancelled",
+            orderNumbers: ["402-7654321-7654321"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-newsletter.eml",
+        expect: [],
+      },
+    ],
+  },
+  {
     id: "parcel-amazon",
     name: "Amazon shipping and delivery notifications",
     kind: "parcel",

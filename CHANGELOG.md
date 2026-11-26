@@ -2,6 +2,15 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: Dutch shop and carrier emails (rules 2.0.0-dev.15.1)
+
+DHL reads DHL eCommerce Netherlands emails (`dhlecommerce.nl`, `dhlparcel.nl`; JJD and JVGL
+numbers, rule `parcel-dhl-nl`), and Amazon reads Amazon.nl order, shipping, delivery and
+cancellation updates, which come from other addresses than the other storefronts and name the
+order only in links (`order-amazon-nl`). The vendored rules `2.0.0-dev.15.1` add bol
+(`order-bol`, and `parcel-bol` for partner sellers' GLS emails through `verkopen.bol.com`) and
+Megekko (`order-megekko`). Read missed emails again with the email lab's re-read.
+
 ### Added: email lab, custom email rules and a guide for AI agents
 
 An agent (or the admin) can now find out why an email was not detected and fix it

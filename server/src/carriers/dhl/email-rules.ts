@@ -166,4 +166,93 @@ export const DHL_EMAIL_RULES: readonly EmailRuleDefinition[] = [
       },
     ],
   },
+  {
+    id: "parcel-dhl-nl",
+    name: "DHL eCommerce Netherlands parcel notifications",
+    kind: "parcel",
+    senders: {
+      domains: ["dhlecommerce.nl", "dhlparcel.nl"],
+    },
+    carrier: "dhl",
+    extract: {
+      // JJD and JVGL piece ids, in the subject's brackets or after "pakket"/"Zendingsnummer".
+      tracking_number: [
+        {
+          pattern: "\\((?<tracking_number>J[A-Z]{2,3}\\d{14,24})\\)",
+          in: ["subject"],
+        },
+        {
+          pattern: "(?:pakket|zendingsnummer)\\s+(?<tracking_number>J[A-Z]{2,3}\\d{14,24})\\b",
+          in: ["text"],
+        },
+      ],
+      tracking_url: [
+        {
+          pattern: '(?<tracking_url>https://my\\.dhlecommerce\\.nl/[^\\s"<>]+)',
+          in: ["text", "html"],
+        },
+      ],
+    },
+    status_keywords: [
+      {
+        status: "delivered",
+        patterns: ["is bezorgd|is afgeleverd"],
+        in: ["subject"],
+      },
+      {
+        status: "at_pickup_point",
+        patterns: ["ligt (?:voor je )?klaar|kun je ophalen"],
+        in: ["subject"],
+      },
+      {
+        status: "problem",
+        patterns: ["niet bezorgd|niet thuis|gemist"],
+        in: ["subject"],
+      },
+      {
+        status: "out_for_delivery",
+        patterns: [
+          "staan (?:vandaag|vanavond|vanmiddag|vanochtend) voor de deur|bezorger is onderweg",
+        ],
+        in: ["subject"],
+      },
+    ],
+    default_status: "in_transit",
+    require: ["tracking_number"],
+    tests: [
+      {
+        fixture: "dhl-nl-announcement.eml",
+        expect: [
+          {
+            ruleId: "parcel-dhl-nl",
+            kind: "parcel",
+            carrier: "dhl",
+            trackingNumbers: ["JJD000012345678901234"],
+            status: "in_transit",
+          },
+        ],
+      },
+      {
+        fixture: "dhl-nl-today.eml",
+        expect: [
+          {
+            ruleId: "parcel-dhl-nl",
+            trackingNumbers: ["JVGL0123456789012345678"],
+            status: "out_for_delivery",
+          },
+        ],
+      },
+      {
+        fixture: "dhl-nl-delivered.eml",
+        expect: [
+          {
+            ruleId: "parcel-dhl-nl",
+            trackingNumbers: ["JJD000012345678901234"],
+            status: "delivered",
+            trackingUrl: "https://my.dhlecommerce.nl/go-track-trace?tc=JJD000012345678901234",
+          },
+        ],
+      },
+    ],
+  },
 ];
