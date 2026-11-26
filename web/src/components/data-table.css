@@ -65,8 +65,7 @@
 }
 
 /* The table view */
-.table-scroll {
-  overflow-x: auto;
+.data-table .table-scroll {
   padding: 0;
 }
 
@@ -170,10 +169,6 @@
 .row-list > li + li:has(> a:hover),
 .row-list > li:has(> a:hover) + li {
   border-top-color: transparent;
-}
-
-p.row-list {
-  padding: var(--space-12) var(--space-4);
 }
 
 @media (max-width: 600px) {

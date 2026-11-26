@@ -4,6 +4,12 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-26
 
+- Web UI redesign: design tokens (`web/src/styles/tokens.css`) and one style sheet per feature
+  instead of `styles.css`; collapsible sidebar (bottom tabs and a "More" sheet on phones) built
+  from one nav list; parcels as rich rows with progress and the day in words (`?view=table`
+  keeps the table), the same rows on orders and the map; new parcel detail, timeline, dialogs
+  (bottom sheets on phones), connections, settings and sign-in looks (commit: see the log,
+  "design system")
 - TODO §3: Amazon "Import history" job (`docs/connection-actions-and-jobs.md` §6–§7): all years
   from the orders page's time filter, page by page, paced, resumable, tracking pages only for
   recent shipments; imported history flagged (`imported_at`, migration 0030), quiet

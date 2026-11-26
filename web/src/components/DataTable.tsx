@@ -10,7 +10,7 @@ import {
   type SortingState,
   type Updater,
 } from "@tanstack/react-table";
-import { ChevronDown, ChevronsUpDown, ChevronUp, Search } from "lucide-react";
+import { ChevronDown, ChevronsUpDown, ChevronUp, Inbox, Search } from "lucide-react";
 import { useId, type ReactNode } from "react";
 import { useUrlParam } from "../lib/urlState";
 import { t } from "../i18n";
@@ -119,7 +119,10 @@ export function DataTable<TData>(props: DataTableProps<TData>): ReactNode {
       {props.renderItem === undefined ? (
         <TableBody table={table} visible={visible} empty={empty} {...props} />
       ) : visible.length === 0 ? (
-        <p className="row-list empty">{empty}</p>
+        <div className="card empty-state">
+          <Inbox size={28} aria-hidden="true" />
+          <p>{empty}</p>
+        </div>
       ) : (
         <ul className="row-list" aria-label={props.caption}>
           {visible.map((row) => (

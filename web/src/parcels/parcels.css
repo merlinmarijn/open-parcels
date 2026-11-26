@@ -198,6 +198,14 @@
     display: none;
   }
 
+  .parcel-card-meta {
+    gap: 0 var(--space-3);
+  }
+
+  .parcel-card-meta > span + span::before {
+    display: none;
+  }
+
   .parcel-progress {
     width: 84px;
   }

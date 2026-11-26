@@ -7,9 +7,7 @@ Assistant integration, `AP-` Home Assistant app, `EX-` extension, `WS-` website,
 
 ## 1. Core hardening (server + web, audit "Now" items not yet shipped)
 
-Groups 1–24 are shipped (see `DONE.md`). Left, optional:
-
-- [ ] `styles.css` per feature (2,343 lines; CSS is outside the line limits)
+Groups 1–24 are shipped (see `DONE.md`).
 
 ## 2. Production readiness
 
@@ -22,12 +20,11 @@ Groups 1–24 are shipped (see `DONE.md`). Left, optional:
       Still to do by hand: keyboard walk of every page and dialog (focus order, focus return
       after dialogs, the map and calendar widgets), screen-reader pass (NVDA/Orca) of live
       updates and sign-in steps
-- [ ] Mobile layout pass: phone CSS at 360–480 px done (nav on its own row, icons only; tables
-      scroll inside their card; smaller paddings; dialogs nearly full width; calendar toolbar
-      wraps and opens the list view on phones; map menu kept clear). Still to look at on a real
-      phone: the parcels table (scrolls, maybe cards), the split map/list pages and Leaflet's
-      controls, FullCalendar's week/day views, the sign-in dialog's steps, the Settings place
-      picker map, and Safari's dialog height (`100dvh`)
+- [ ] Mobile layout pass: the redesign (see `DONE.md`) gives phones a top bar, bottom tabs and a
+      "More" sheet, parcel rows instead of a table, stacked map/list pages, bottom-sheet dialogs
+      at `100dvh` and no sideways scroll at 375 px. Still to look at on a real phone: Leaflet's
+      controls, FullCalendar's week/day views, the sign-in dialog's steps and the Settings place
+      picker map
 - [ ] Performance follow-ups (`docs/performance.md`, "Left as it is"): re-measure the order list
       now paged in SQL; the web UI still loads every page of parcels, because the parcels table
       searches, sorts and counts in the browser and the map and connections pages use every parcel
