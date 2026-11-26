@@ -109,7 +109,14 @@ describe("SSE replay", () => {
     const { context: ctx, app } = await setUp();
     await app.listen({ host: "127.0.0.1", port: 0 });
     const base = `http://127.0.0.1:${String((app.server.address() as AddressInfo).port)}`;
-    const token = (await ctx.services.auth.createToken("sse", ["read"], null)).token;
+    const created = await ctx.services.auth.createToken("sse", ["read"], null);
+    const token = created.token;
+    // Used just now: opening the stream records no use, so no `token.used` event takes a seq.
+    await ctx.services.db
+      .updateTable("api_tokens")
+      .set({ last_used_at: ctx.clock.now().toISOString() })
+      .where("id", "=", created.info.id)
+      .execute();
     return {
       ctx,
       open: (id = lastEventId) =>
