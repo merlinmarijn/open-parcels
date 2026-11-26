@@ -81,4 +81,18 @@ export const admin = {
     endConfirm: (name: string) => `Log out “${name}”?`,
     end: "Log out",
   },
+  agents: {
+    title: "For AI agents",
+    intro:
+      "An AI agent (an assistant acting for you) can operate this server and debug emails that are not detected. It reads this guide at",
+    address: "/llms.txt",
+    introEnd: ".",
+    tokenBefore: "Give it its own token: create one under",
+    tokenLink: "API tokens",
+    tokenAfter:
+      " with the smallest scopes it needs (admin only for the email lab), and revoke it when done.",
+    copy: "Copy guide",
+    copied: "Copied.",
+    copyUnavailable: "Copying is not available here: give the agent the address instead.",
+  },
 };

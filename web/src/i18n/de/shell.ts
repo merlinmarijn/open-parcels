@@ -11,6 +11,7 @@ export const shell: Messages["shell"] = {
     tokens: "API-Tokens",
     status: "Status",
     settings: "Einstellungen",
+    agents: "Für KI-Agenten",
   },
   mainNav: "Hauptmenü",
   live: { connecting: "Verbinde…", live: "Live", offline: "Offline" },

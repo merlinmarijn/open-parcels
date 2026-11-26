@@ -121,8 +121,8 @@ export interface MailboxClient {
   listFolders(): Promise<string[]>;
   /** Opens a folder read-only and returns its UIDVALIDITY. */
   open(folder: string): Promise<{ uidValidity: string }>;
-  /** UIDs of messages received on or after `since`. */
-  searchSince(since: Date): Promise<number[]>;
+  /** UIDs of messages received on or after `since` (and before `before`, when given). */
+  searchSince(since: Date, before?: Date): Promise<number[]>;
   /** Messages with a UID above `afterUid`, oldest first. */
   fetchAfter(afterUid: number): AsyncIterable<FetchedMessage>;
   fetchUids(uids: readonly number[]): AsyncIterable<FetchedMessage>;

@@ -26,6 +26,7 @@ const ConnectionsPage = lazy(() =>
 const TokensPage = lazy(() =>
   import("./admin/TokensPage").then((m) => ({ default: m.TokensPage })),
 );
+const AgentPage = lazy(() => import("./admin/AgentPage").then((m) => ({ default: m.AgentPage })));
 const StatusPage = lazy(() =>
   import("./admin/StatusPage").then((m) => ({ default: m.StatusPage })),
 );
@@ -81,6 +82,7 @@ const routeTree = rootRoute.addChildren([
   createRoute({ getParentRoute: () => rootRoute, path: "/tokens", component: TokensPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/status", component: StatusPage }),
   createRoute({ getParentRoute: () => rootRoute, path: "/settings", component: SettingsPage }),
+  createRoute({ getParentRoute: () => rootRoute, path: "/agent", component: AgentPage }),
 ]);
 
 /** `/`, or the Home Assistant ingress prefix the server wrote into `<base href>`. */

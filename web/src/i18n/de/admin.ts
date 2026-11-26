@@ -82,4 +82,18 @@ export const admin: Messages["admin"] = {
     endConfirm: (name: string) => `„${name}“ ausloggen?`,
     end: "Ausloggen",
   },
+  agents: {
+    title: "Für KI-Agenten",
+    intro:
+      "Ein KI-Agent (ein Assistent, der für dich handelt) kann diesen Server bedienen und E-Mails untersuchen, die nicht erkannt werden. Er liest diese Anleitung unter",
+    address: "/llms.txt",
+    introEnd: ".",
+    tokenBefore: "Gib ihm einen eigenen Token: Erstelle einen unter",
+    tokenLink: "API-Tokens",
+    tokenAfter:
+      " mit den kleinsten nötigen Berechtigungen (Admin nur für das E-Mail-Labor) und widerrufe ihn danach.",
+    copy: "Anleitung kopieren",
+    copied: "Kopiert.",
+    copyUnavailable: "Kopieren ist hier nicht möglich: Gib dem Agenten stattdessen die Adresse.",
+  },
 };

@@ -33,10 +33,10 @@ import { EventBus } from "./events/bus.js";
 import { ImageProxy } from "./images/proxy.js";
 import { loadRules } from "open-parcels-rules";
 import { imapClientFactory } from "./mail/imap-client.js";
-import { createMailInterpreter, createOrderInterpreter } from "./mail/interpret.js";
-import { createReturnInterpreter } from "./mail/returns.js";
 import { ReturnService } from "./returns/service.js";
-import type { MailboxClientFactory, MailInterpreter } from "./mail/types.js";
+import type { MailboxClientFactory, MailInput, MailInterpreter } from "./mail/types.js";
+import { CustomEmailRules } from "./mail/custom-rules.js";
+import { EmailLab } from "./mail/email-lab.js";
 import { EmailRuleReader } from "./mail/rule-reader.js";
 import { EmailRouter } from "./mail/routing.js";
 import { MailWatcher } from "./mail/watcher.js";
@@ -88,6 +88,10 @@ export interface Services {
   readonly configSettings: ConfigSettings;
   readonly collages: CollageMaker;
   readonly mail: MailWatcher;
+  /** Reads inboxes for the owner or an agent debugging detection (`docs/email-lab.md`). */
+  readonly emailLab: EmailLab;
+  /** The owner's own email rules, read by every inbox. */
+  readonly customRules: CustomEmailRules;
   readonly reconciler: Reconciler;
   readonly runner: ConnectionRunner;
   readonly scheduler: Scheduler;
@@ -155,8 +159,11 @@ async function followUntracked(
  * Hands emails to the providers of their sender domains; the switch is read on every email. The
  * providers' email rules are compiled here, so one that does not match the schema stops the start.
  */
-function emailRouter(registry: ProviderRegistry, deps: ServiceDeps): EmailRouter {
-  const ruleReader = new EmailRuleReader(loadRules(), deps.config.timeZone);
+function emailRouter(
+  registry: ProviderRegistry,
+  deps: ServiceDeps,
+  ruleReader: EmailRuleReader,
+): EmailRouter {
   for (const provider of registry.list()) {
     if (provider.emailRules !== null) ruleReader.prepare(provider.emailRules);
   }
@@ -169,14 +176,70 @@ function emailRouter(registry: ProviderRegistry, deps: ServiceDeps): EmailRouter
   });
 }
 
-/** The inbox interpreters, all reading one copy of the rules. */
-function mailInterpreters(timeZone: string, interpret: MailInterpreter | undefined) {
-  const rules = loadRules();
+/**
+ * The inbox interpreters: the shared rules plus the owner's custom email rules, looked up on every
+ * email so a rule saved in the email lab applies to the next one.
+ */
+function mailInterpreters(reader: EmailRuleReader, interpret: MailInterpreter | undefined) {
   return {
-    interpret: interpret ?? createMailInterpreter(rules, timeZone),
-    interpretReturns: createReturnInterpreter(rules, timeZone),
-    interpretOrders: createOrderInterpreter(rules, timeZone),
+    interpret: interpret ?? ((mail: MailInput) => reader.shared().parcels(mail)),
+    interpretReturns: (mail: MailInput) => reader.shared().returns(mail),
+    interpretOrders: (mail: MailInput) => reader.shared().orders(mail),
   };
+}
+
+/** The inbox watcher, the email lab and the custom email rules, all reading one rule reader. */
+async function mailServices(
+  deps: ServiceDeps,
+  engine: {
+    readonly registry: ProviderRegistry;
+    readonly connections: ConnectionService;
+    readonly reconciler: Reconciler;
+    readonly followUp: (connectionId: string) => Promise<void>;
+  },
+): Promise<{ mail: MailWatcher; emailLab: EmailLab; customRules: CustomEmailRules }> {
+  const { db, clock, logger } = deps;
+  const { registry, connections, reconciler, followUp } = engine;
+  const ruleReader = new EmailRuleReader(loadRules(), deps.config.timeZone);
+  const router = emailRouter(registry, deps, ruleReader);
+  const customRules = new CustomEmailRules(
+    db,
+    clock,
+    ruleReader,
+    () =>
+      new Set([
+        ...ruleReader.sharedIds(),
+        ...registry.list().flatMap((provider) => provider.emailRules?.map((rule) => rule.id) ?? []),
+      ]),
+    logger,
+  );
+  await customRules.load();
+  const clientFactory = deps.mailClientFactory ?? imapClientFactory;
+  const mail = new MailWatcher({
+    db,
+    secrets: deps.secrets,
+    connections,
+    reconciler,
+    clock,
+    logger,
+    clientFactory,
+    router,
+    ...mailInterpreters(ruleReader, deps.mailInterpreter),
+    followUp,
+  });
+  const emailLab = new EmailLab({
+    db,
+    secrets: deps.secrets,
+    clock,
+    logger,
+    clientFactory,
+    router,
+    reader: ruleReader,
+    customRules,
+    reconciler,
+    followUp,
+  });
+  return { mail, emailLab, customRules };
 }
 
 /**
@@ -346,16 +409,10 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     presentation,
     enabled: () => deps.config.geocoding,
   });
-  const mail = new MailWatcher({
-    db,
-    secrets: deps.secrets,
+  const { mail, emailLab, customRules } = await mailServices(deps, {
+    registry,
     connections,
     reconciler,
-    clock,
-    logger,
-    clientFactory: deps.mailClientFactory ?? imapClientFactory,
-    router: emailRouter(registry, deps),
-    ...mailInterpreters(deps.config.timeZone, deps.mailInterpreter),
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();
@@ -382,6 +439,8 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     configSettings,
     collages: new CollageMaker(path.join(deps.config.dataDir, "collages")),
     mail,
+    emailLab,
+    customRules,
     reconciler,
     runner,
     scheduler,

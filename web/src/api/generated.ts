@@ -402,7 +402,9 @@ export type PostApiV1Session401Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -464,7 +466,9 @@ export type PostApiV1Session429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -542,7 +546,9 @@ export type PostApiV1Setup403Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -604,7 +610,9 @@ export type PostApiV1Setup409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -666,7 +674,9 @@ export type PostApiV1Setup429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -742,7 +752,9 @@ export type PutApiV1AdminPassword400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -804,7 +816,9 @@ export type DeleteApiV1AdminPassword409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -905,7 +919,9 @@ export type PostApiV1Logins401Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -967,7 +983,9 @@ export type PostApiV1Logins429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1068,7 +1086,9 @@ export type PostApiV1LoginsRefresh401Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1135,7 +1155,9 @@ export type DeleteApiV1LoginsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1244,7 +1266,9 @@ export type DeleteApiV1TokensId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1575,7 +1599,9 @@ export type PatchApiV1SettingsConfig400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1711,7 +1737,9 @@ export type DeleteApiV1SettingsConfigKey400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1773,7 +1801,9 @@ export type DeleteApiV1SettingsConfigKey404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1849,7 +1879,9 @@ export type GetApiV1Geocode400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1911,7 +1943,9 @@ export type GetApiV1Geocode502Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -2666,7 +2700,9 @@ export type PostApiV1Parcels400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -2728,7 +2764,9 @@ export type PostApiV1Parcels409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -3111,7 +3149,9 @@ export type GetApiV1ParcelsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -3518,7 +3558,9 @@ export type PatchApiV1ParcelsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -3580,7 +3622,9 @@ export type DeleteApiV1ParcelsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4187,7 +4231,9 @@ export type GetApiV1OrdersId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4524,7 +4570,9 @@ export type PatchApiV1OrdersId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4586,7 +4634,9 @@ export type DeleteApiV1OrdersId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4847,7 +4897,9 @@ export type GetApiV1ReturnsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5051,7 +5103,9 @@ export type PostApiV1InboxFolders400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5235,7 +5289,9 @@ export type PostApiV1Connections400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5358,7 +5414,9 @@ export type PatchApiV1ConnectionsId400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5420,7 +5478,9 @@ export type PatchApiV1ConnectionsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5482,7 +5542,9 @@ export type DeleteApiV1ConnectionsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5548,7 +5610,9 @@ export type PutApiV1ConnectionsIdSecret400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5610,7 +5674,9 @@ export type PutApiV1ConnectionsIdSecret404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5672,7 +5738,9 @@ export type PostApiV1ConnectionsIdSync404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5734,7 +5802,9 @@ export type PostApiV1ConnectionsIdSync429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5817,7 +5887,9 @@ export type GetApiV1ConnectionsIdData404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5900,7 +5972,9 @@ export type PostApiV1ConnectionsIdClear404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6011,7 +6085,9 @@ export type GetApiV1ConnectionsIdActions404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6131,7 +6207,9 @@ export type PostApiV1ConnectionsIdActionsAction400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6193,7 +6271,9 @@ export type PostApiV1ConnectionsIdActionsAction404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6255,7 +6335,9 @@ export type PostApiV1ConnectionsIdActionsAction409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6317,7 +6399,9 @@ export type PostApiV1ConnectionsIdActionsAction429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6479,7 +6563,9 @@ export type GetApiV1JobsId404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6587,7 +6673,9 @@ export type PostApiV1JobsIdCancel400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6649,7 +6737,9 @@ export type PostApiV1JobsIdCancel404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6711,7 +6801,9 @@ export type PostApiV1JobsIdCancel409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6773,7 +6865,9 @@ export type PostApiV1JobsIdCancel429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6881,7 +6975,9 @@ export type PostApiV1JobsIdResume400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6943,7 +7039,9 @@ export type PostApiV1JobsIdResume404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7005,7 +7103,9 @@ export type PostApiV1JobsIdResume409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7067,7 +7167,9 @@ export type PostApiV1JobsIdResume429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7175,7 +7277,9 @@ export type PostApiV1JobsIdRestart400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7237,7 +7341,9 @@ export type PostApiV1JobsIdRestart404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7299,7 +7405,9 @@ export type PostApiV1JobsIdRestart409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7361,7 +7469,9 @@ export type PostApiV1JobsIdRestart429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7374,6 +7484,1193 @@ export type PostApiV1JobsIdRestart429 = {
   message: string;
   /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
   params: PostApiV1JobsIdRestart429Params;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesParams = {
+  /**
+   * The IMAP folder.
+   * @minLength 1
+   * @maxLength 200
+   */
+  folder?: string;
+  /**
+   * A day, `YYYY-MM-DD` (UTC).
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  since?: string;
+  /**
+   * A day, `YYYY-MM-DD` (UTC).
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  before?: string;
+  /**
+   * @minimum 1
+   * @maximum 50
+   */
+  limit?: number;
+  /**
+   * @minimum 0
+   * @maximum 9007199254740991
+   */
+  offset?: number;
+};
+
+/**
+ * `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionOutcome =
+  "detected" | "ignored" | "not_detected";
+/**
+ * Who read it: the providers of its sender's domain, or the shared email rules.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionReadBy =
+  "providers" | "shared_rules";
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionRuleResultsItem = {
+  /** The email rule, `schema.org` for embedded markup, or `fallback`. */
+  rule_id: string;
+  kind: string;
+  /** @nullable */
+  carrier: string | null;
+  tracking_numbers: string[];
+  order_numbers: string[];
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  event: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionParcelsItem = {
+  carrier: string;
+  tracking_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  shop: string | null;
+  /** @nullable */
+  order_number: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionOrdersItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionReturnsItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetection = {
+  /** `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing. */
+  outcome: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionOutcome;
+  /** Who read it: the providers of its sender's domain, or the shared email rules. */
+  read_by: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionReadBy;
+  /** Providers the email is routed to (sender domain and DKIM/DMARC check). */
+  providers: string[];
+  /** What each rule that applied extracted. */
+  rule_results: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionRuleResultsItem[];
+  parcels: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionParcelsItem[];
+  orders: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionOrdersItem[];
+  returns: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetectionReturnsItem[];
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200MessagesItem = {
+  /**
+   * The IMAP UID; 0 for a pasted message.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  uid: number;
+  /** @nullable */
+  date: string | null;
+  from: string;
+  subject: string;
+  detection: GetApiV1ConnectionsIdEmailLabMessages200MessagesItemDetection;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessages200 = {
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  total: number;
+  messages: GetApiV1ConnectionsIdEmailLabMessages200MessagesItem[];
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages404Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdEmailLabMessages404 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdEmailLabMessages404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdEmailLabMessages404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages502Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessages502Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdEmailLabMessages502 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdEmailLabMessages502Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdEmailLabMessages502Params;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUidParams = {
+  /**
+   * The IMAP folder.
+   * @minLength 1
+   * @maxLength 200
+   */
+  folder?: string;
+};
+
+/**
+ * `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionOutcome =
+  "detected" | "ignored" | "not_detected";
+/**
+ * Who read it: the providers of its sender's domain, or the shared email rules.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionReadBy =
+  "providers" | "shared_rules";
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionRuleResultsItem = {
+  /** The email rule, `schema.org` for embedded markup, or `fallback`. */
+  rule_id: string;
+  kind: string;
+  /** @nullable */
+  carrier: string | null;
+  tracking_numbers: string[];
+  order_numbers: string[];
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  event: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionParcelsItem = {
+  carrier: string;
+  tracking_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  shop: string | null;
+  /** @nullable */
+  order_number: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionOrdersItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionReturnsItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200Detection = {
+  /** `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing. */
+  outcome: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionOutcome;
+  /** Who read it: the providers of its sender's domain, or the shared email rules. */
+  read_by: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionReadBy;
+  /** Providers the email is routed to (sender domain and DKIM/DMARC check). */
+  providers: string[];
+  /** What each rule that applied extracted. */
+  rule_results: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionRuleResultsItem[];
+  parcels: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionParcelsItem[];
+  orders: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionOrdersItem[];
+  returns: GetApiV1ConnectionsIdEmailLabMessagesUid200DetectionReturnsItem[];
+};
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid200 = {
+  /**
+   * The IMAP UID; 0 for a pasted message.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  uid: number;
+  /** @nullable */
+  date: string | null;
+  from: string;
+  subject: string;
+  detection: GetApiV1ConnectionsIdEmailLabMessagesUid200Detection;
+  /** @nullable */
+  message_id: string | null;
+  /** @nullable */
+  authentication_results: string | null;
+  /** @nullable */
+  text: string | null;
+  /**
+   * The HTML part as plain lines, as the rules see it.
+   * @nullable
+   */
+  html_text: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid404Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid404 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdEmailLabMessagesUid404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdEmailLabMessagesUid404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid502Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdEmailLabMessagesUid502Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdEmailLabMessagesUid502 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdEmailLabMessagesUid502Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdEmailLabMessagesUid502Params;
+};
+
+export type PostApiV1EmailLabTestBody = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id?: string;
+  /**
+   * The IMAP folder.
+   * @minLength 1
+   * @maxLength 200
+   */
+  folder?: string;
+  /**
+   * @minimum 1
+   * @maximum 9007199254740991
+   */
+  uid?: number;
+  /**
+   * @minLength 1
+   * @maxLength 900000
+   */
+  raw?: string;
+  /** Overrides the inbox's DKIM/DMARC check; on when no inbox is given. */
+  check_senders?: boolean;
+  /** @maxItems 50 */
+  rules?: unknown[];
+};
+
+export type PostApiV1EmailLabTest200ProblemsItem = {
+  /**
+   * The rule's place in the list sent.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  index: number;
+  /** @nullable */
+  id: string | null;
+  message: string;
+};
+
+/**
+ * `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing.
+ */
+export type PostApiV1EmailLabTest200MessageDetectionOutcome =
+  "detected" | "ignored" | "not_detected";
+/**
+ * Who read it: the providers of its sender's domain, or the shared email rules.
+ */
+export type PostApiV1EmailLabTest200MessageDetectionReadBy = "providers" | "shared_rules";
+export type PostApiV1EmailLabTest200MessageDetectionRuleResultsItem = {
+  /** The email rule, `schema.org` for embedded markup, or `fallback`. */
+  rule_id: string;
+  kind: string;
+  /** @nullable */
+  carrier: string | null;
+  tracking_numbers: string[];
+  order_numbers: string[];
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  event: string | null;
+};
+
+export type PostApiV1EmailLabTest200MessageDetectionParcelsItem = {
+  carrier: string;
+  tracking_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  shop: string | null;
+  /** @nullable */
+  order_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200MessageDetectionOrdersItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+};
+
+export type PostApiV1EmailLabTest200MessageDetectionReturnsItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200MessageDetection = {
+  /** `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing. */
+  outcome: PostApiV1EmailLabTest200MessageDetectionOutcome;
+  /** Who read it: the providers of its sender's domain, or the shared email rules. */
+  read_by: PostApiV1EmailLabTest200MessageDetectionReadBy;
+  /** Providers the email is routed to (sender domain and DKIM/DMARC check). */
+  providers: string[];
+  /** What each rule that applied extracted. */
+  rule_results: PostApiV1EmailLabTest200MessageDetectionRuleResultsItem[];
+  parcels: PostApiV1EmailLabTest200MessageDetectionParcelsItem[];
+  orders: PostApiV1EmailLabTest200MessageDetectionOrdersItem[];
+  returns: PostApiV1EmailLabTest200MessageDetectionReturnsItem[];
+};
+
+export type PostApiV1EmailLabTest200Message = {
+  /**
+   * The IMAP UID; 0 for a pasted message.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  uid: number;
+  /** @nullable */
+  date: string | null;
+  from: string;
+  subject: string;
+  detection: PostApiV1EmailLabTest200MessageDetection;
+  /** @nullable */
+  message_id: string | null;
+  /** @nullable */
+  authentication_results: string | null;
+  /** @nullable */
+  text: string | null;
+  /**
+   * The HTML part as plain lines, as the rules see it.
+   * @nullable
+   */
+  html_text: string | null;
+};
+
+/**
+ * `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing.
+ */
+export type PostApiV1EmailLabTest200BaselineOutcome = "detected" | "ignored" | "not_detected";
+/**
+ * Who read it: the providers of its sender's domain, or the shared email rules.
+ */
+export type PostApiV1EmailLabTest200BaselineReadBy = "providers" | "shared_rules";
+export type PostApiV1EmailLabTest200BaselineRuleResultsItem = {
+  /** The email rule, `schema.org` for embedded markup, or `fallback`. */
+  rule_id: string;
+  kind: string;
+  /** @nullable */
+  carrier: string | null;
+  tracking_numbers: string[];
+  order_numbers: string[];
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  event: string | null;
+};
+
+export type PostApiV1EmailLabTest200BaselineParcelsItem = {
+  carrier: string;
+  tracking_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  shop: string | null;
+  /** @nullable */
+  order_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200BaselineOrdersItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+};
+
+export type PostApiV1EmailLabTest200BaselineReturnsItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200Baseline = {
+  /** `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing. */
+  outcome: PostApiV1EmailLabTest200BaselineOutcome;
+  /** Who read it: the providers of its sender's domain, or the shared email rules. */
+  read_by: PostApiV1EmailLabTest200BaselineReadBy;
+  /** Providers the email is routed to (sender domain and DKIM/DMARC check). */
+  providers: string[];
+  /** What each rule that applied extracted. */
+  rule_results: PostApiV1EmailLabTest200BaselineRuleResultsItem[];
+  parcels: PostApiV1EmailLabTest200BaselineParcelsItem[];
+  orders: PostApiV1EmailLabTest200BaselineOrdersItem[];
+  returns: PostApiV1EmailLabTest200BaselineReturnsItem[];
+};
+
+/**
+ * `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing.
+ */
+export type PostApiV1EmailLabTest200ResultOutcome = "detected" | "ignored" | "not_detected";
+/**
+ * Who read it: the providers of its sender's domain, or the shared email rules.
+ */
+export type PostApiV1EmailLabTest200ResultReadBy = "providers" | "shared_rules";
+export type PostApiV1EmailLabTest200ResultRuleResultsItem = {
+  /** The email rule, `schema.org` for embedded markup, or `fallback`. */
+  rule_id: string;
+  kind: string;
+  /** @nullable */
+  carrier: string | null;
+  tracking_numbers: string[];
+  order_numbers: string[];
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  event: string | null;
+};
+
+export type PostApiV1EmailLabTest200ResultParcelsItem = {
+  carrier: string;
+  tracking_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  shop: string | null;
+  /** @nullable */
+  order_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200ResultOrdersItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+};
+
+export type PostApiV1EmailLabTest200ResultReturnsItem = {
+  shop: string;
+  order_number: string;
+  /** @nullable */
+  status: string | null;
+  /** @nullable */
+  tracking_number: string | null;
+};
+
+export type PostApiV1EmailLabTest200Result = {
+  /** `detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing. */
+  outcome: PostApiV1EmailLabTest200ResultOutcome;
+  /** Who read it: the providers of its sender's domain, or the shared email rules. */
+  read_by: PostApiV1EmailLabTest200ResultReadBy;
+  /** Providers the email is routed to (sender domain and DKIM/DMARC check). */
+  providers: string[];
+  /** What each rule that applied extracted. */
+  rule_results: PostApiV1EmailLabTest200ResultRuleResultsItem[];
+  parcels: PostApiV1EmailLabTest200ResultParcelsItem[];
+  orders: PostApiV1EmailLabTest200ResultOrdersItem[];
+  returns: PostApiV1EmailLabTest200ResultReturnsItem[];
+};
+
+export type PostApiV1EmailLabTest200 = {
+  problems: PostApiV1EmailLabTest200ProblemsItem[];
+  message: PostApiV1EmailLabTest200Message;
+  baseline: PostApiV1EmailLabTest200Baseline;
+  result: PostApiV1EmailLabTest200Result;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1EmailLabTest404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1EmailLabTest404Params = { [key: string]: string | number };
+
+export type PostApiV1EmailLabTest404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1EmailLabTest404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1EmailLabTest404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1EmailLabTest502Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1EmailLabTest502Params = { [key: string]: string | number };
+
+export type PostApiV1EmailLabTest502 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1EmailLabTest502Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1EmailLabTest502Params;
+};
+
+export type PostApiV1ConnectionsIdEmailLabRereadBody = {
+  /**
+   * A day, `YYYY-MM-DD` (UTC).
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  since?: string;
+  /**
+   * A day, `YYYY-MM-DD` (UTC).
+   * @pattern ^(?:(?:\d\d[2468][048]|\d\d[13579][26]|\d\d0[48]|[02468][048]00|[13579][26]00)-02-29|\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\d|30)|(?:02)-(?:0[1-9]|1\d|2[0-8])))$
+   */
+  before?: string;
+  /**
+   * @minItems 1
+   * @maxItems 50
+   * @items.minLength 1
+   * @items.maxLength 200
+   */
+  folders?: string[];
+};
+
+export type PostApiV1ConnectionsIdEmailLabReread200 = {
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  messages: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  returns: number;
+  truncated: boolean;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdEmailLabReread404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdEmailLabReread404Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdEmailLabReread404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdEmailLabReread404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdEmailLabReread404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdEmailLabReread502Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdEmailLabReread502Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdEmailLabReread502 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdEmailLabReread502Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdEmailLabReread502Params;
+};
+
+/**
+ * The rule in the email rule format (`schema/mail-rule.schema.json` of the rules).
+ */
+export type GetApiV1EmailRules200ItemDefinition = { [key: string]: unknown };
+
+export type GetApiV1EmailRules200Item = {
+  id: string;
+  /** The rule in the email rule format (`schema/mail-rule.schema.json` of the rules). */
+  definition: GetApiV1EmailRules200ItemDefinition;
+  created_at: string;
+  updated_at: string;
+};
+
+export type PutApiV1EmailRulesRuleBody = { [key: string]: unknown };
+
+/**
+ * The rule in the email rule format (`schema/mail-rule.schema.json` of the rules).
+ */
+export type PutApiV1EmailRulesRule200Definition = { [key: string]: unknown };
+
+export type PutApiV1EmailRulesRule200 = {
+  id: string;
+  /** The rule in the email rule format (`schema/mail-rule.schema.json` of the rules). */
+  definition: PutApiV1EmailRulesRule200Definition;
+  created_at: string;
+  updated_at: string;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PutApiV1EmailRulesRule400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PutApiV1EmailRulesRule400Params = { [key: string]: string | number };
+
+export type PutApiV1EmailRulesRule400 = {
+  /** Stable machine-readable error code. */
+  error: PutApiV1EmailRulesRule400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PutApiV1EmailRulesRule400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type DeleteApiV1EmailRulesRule404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type DeleteApiV1EmailRulesRule404Params = { [key: string]: string | number };
+
+export type DeleteApiV1EmailRulesRule404 = {
+  /** Stable machine-readable error code. */
+  error: DeleteApiV1EmailRulesRule404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: DeleteApiV1EmailRulesRule404Params;
 };
 
 export type GetApiV1Data200CacheBytes = {
@@ -7598,7 +8895,9 @@ export type PostApiV1DataBackups500Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7714,7 +9013,9 @@ export type PostApiV1DataClear400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7776,7 +9077,9 @@ export type PostApiV1DataClear500Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7851,7 +9154,9 @@ export type GetApiV1ConnectionsIdSignInFlows404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7983,7 +9288,9 @@ export type PostApiV1ConnectionsIdSignInAttempts400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8045,7 +9352,9 @@ export type PostApiV1ConnectionsIdSignInAttempts404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8107,7 +9416,9 @@ export type PostApiV1ConnectionsIdSignInAttempts409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8169,7 +9480,9 @@ export type PostApiV1ConnectionsIdSignInAttempts429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8231,7 +9544,9 @@ export type PostApiV1ConnectionsIdSignInAttempts503Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8366,7 +9681,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8430,7 +9747,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8494,7 +9813,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8558,7 +9879,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8622,7 +9945,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8751,7 +10076,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8815,7 +10142,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8879,7 +10208,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -8943,7 +10274,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -9007,7 +10340,9 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -9071,7 +10406,9 @@ export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -9225,7 +10562,9 @@ export type GetApiV1Calendar400Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -10149,7 +11488,9 @@ export type GetApiV1Sync410Error =
   | "action_cooldown"
   | "invalid_input"
   | "job_running"
-  | "job_state";
+  | "job_state"
+  | "mailbox_failed"
+  | "invalid_email_rule";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -11268,6 +12609,194 @@ export const postApiV1JobsIdRestart = async (
   return apiFetch<PostApiV1JobsIdRestart200>(getPostApiV1JobsIdRestartUrl(id), {
     ...options,
     method: "POST",
+  });
+};
+
+export const getGetApiV1ConnectionsIdEmailLabMessagesUrl = (
+  id: string,
+  params?: GetApiV1ConnectionsIdEmailLabMessagesParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/connections/${id}/email-lab/messages?${stringifiedParams}`
+    : `/api/v1/connections/${id}/email-lab/messages`;
+};
+
+/**
+ * Opens a short-lived read-only connection of its own (the inbox's watcher is not touched). `since` defaults to 30 days ago; `before` is exclusive. Emails are personal data: this is admin only.
+ * @summary List an inbox folder's emails, newest first, with how each is read.
+ */
+export const getApiV1ConnectionsIdEmailLabMessages = async (
+  id: string,
+  params?: GetApiV1ConnectionsIdEmailLabMessagesParams,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1ConnectionsIdEmailLabMessages200> => {
+  return apiFetch<GetApiV1ConnectionsIdEmailLabMessages200>(
+    getGetApiV1ConnectionsIdEmailLabMessagesUrl(id, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getGetApiV1ConnectionsIdEmailLabMessagesUidUrl = (
+  id: string,
+  uid: number,
+  params?: GetApiV1ConnectionsIdEmailLabMessagesUidParams,
+) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0
+    ? `/api/v1/connections/${id}/email-lab/messages/${uid}?${stringifiedParams}`
+    : `/api/v1/connections/${id}/email-lab/messages/${uid}`;
+};
+
+/**
+ * @summary One email: its headers, text, HTML as text and how it is read.
+ */
+export const getApiV1ConnectionsIdEmailLabMessagesUid = async (
+  id: string,
+  uid: number,
+  params?: GetApiV1ConnectionsIdEmailLabMessagesUidParams,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1ConnectionsIdEmailLabMessagesUid200> => {
+  return apiFetch<GetApiV1ConnectionsIdEmailLabMessagesUid200>(
+    getGetApiV1ConnectionsIdEmailLabMessagesUidUrl(id, uid, params),
+    {
+      ...options,
+      method: "GET",
+    },
+  );
+};
+
+export const getPostApiV1EmailLabTestUrl = () => {
+  return `/api/v1/email-lab/test`;
+};
+
+/**
+ * The email is an inbox's (`connection_id`, `folder`, `uid`) or pasted RFC 822 source (`raw`, an .eml file's content). `rules` are candidate custom email rules; one with the id of a saved custom rule replaces it for this test. `baseline` is how the email reads now, `result` how it reads with the candidates. Candidates with `problems` are left out.
+ * @summary Read one email with candidate email rules, without saving anything.
+ */
+export const postApiV1EmailLabTest = async (
+  postApiV1EmailLabTestBody: PostApiV1EmailLabTestBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1EmailLabTest200> => {
+  return apiFetch<PostApiV1EmailLabTest200>(getPostApiV1EmailLabTestUrl(), {
+    ...options,
+    method: "POST",
+    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+    body: JSON.stringify(postApiV1EmailLabTestBody),
+  });
+};
+
+export const getPostApiV1ConnectionsIdEmailLabRereadUrl = (id: string) => {
+  return `/api/v1/connections/${id}/email-lab/reread`;
+};
+
+/**
+ * Additive: nothing stored is removed, and an email read again adds no second history entry. At most the newest 1000 emails per call; `truncated` says more were left. `folders` defaults to the inbox's folders, `since` to 30 days ago.
+ * @summary Read a window of an inbox again with the rules in use and store what it finds.
+ */
+export const postApiV1ConnectionsIdEmailLabReread = async (
+  id: string,
+  postApiV1ConnectionsIdEmailLabRereadBody: PostApiV1ConnectionsIdEmailLabRereadBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1ConnectionsIdEmailLabReread200> => {
+  return apiFetch<PostApiV1ConnectionsIdEmailLabReread200>(
+    getPostApiV1ConnectionsIdEmailLabRereadUrl(id),
+    {
+      ...options,
+      method: "POST",
+      headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+      body: JSON.stringify(postApiV1ConnectionsIdEmailLabRereadBody),
+    },
+  );
+};
+
+export const getGetApiV1EmailRulesUrl = () => {
+  return `/api/v1/email-rules`;
+};
+
+/**
+ * @summary The owner's custom email rules, read by every inbox next to the shared ones.
+ */
+export const getApiV1EmailRules = async (
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1EmailRules200Item[]> => {
+  return apiFetch<GetApiV1EmailRules200Item[]>(getGetApiV1EmailRulesUrl(), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPutApiV1EmailRulesRuleUrl = (rule: string) => {
+  return `/api/v1/email-rules/${rule}`;
+};
+
+/**
+ * The body is the rule in the email rule format; its `id` must be the path's and may not be a shared or provider rule's. It applies to the next email; read older ones again with the re-read. A rule others could use belongs upstream in open-parcels-rules.
+ * @summary Create or replace a custom email rule.
+ */
+export const putApiV1EmailRulesRule = async (
+  rule: string,
+  putApiV1EmailRulesRuleBody: PutApiV1EmailRulesRuleBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PutApiV1EmailRulesRule200> => {
+  return apiFetch<PutApiV1EmailRulesRule200>(getPutApiV1EmailRulesRuleUrl(rule), {
+    ...options,
+    method: "PUT",
+    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+    body: JSON.stringify(putApiV1EmailRulesRuleBody),
+  });
+};
+
+export const getDeleteApiV1EmailRulesRuleUrl = (rule: string) => {
+  return `/api/v1/email-rules/${rule}`;
+};
+
+/**
+ * @summary Delete a custom email rule.
+ */
+export const deleteApiV1EmailRulesRule = async (
+  rule: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<null> => {
+  return apiFetch<null>(getDeleteApiV1EmailRulesRuleUrl(rule), {
+    ...options,
+    method: "DELETE",
+  });
+};
+
+export const getGetLlmsTxtUrl = () => {
+  return `/llms.txt`;
+};
+
+/**
+ * Holds no data and no secrets, so it needs no login.
+ * @summary How an AI agent operates and debugs this server (Markdown).
+ */
+export const getLlmsTxt = async (options?: Parameters<typeof apiFetch>[1]): Promise<void> => {
+  return apiFetch<void>(getGetLlmsTxtUrl(), {
+    ...options,
+    method: "GET",
   });
 };
 

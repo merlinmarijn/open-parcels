@@ -10,6 +10,7 @@ export const shell = {
     tokens: "API tokens",
     status: "Status",
     settings: "Settings",
+    agents: "For AI agents",
   },
   mainNav: "Main",
   live: { connecting: "Connecting…", live: "Live", offline: "Offline" },

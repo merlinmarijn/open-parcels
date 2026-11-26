@@ -37,6 +37,8 @@ import { registerDataRoutes } from "./routes/data.js";
 import { registerConnectionDataRoutes } from "./routes/connection-data.js";
 import { registerConnectionRoutes } from "./routes/connections.js";
 import { registerJobRoutes } from "./routes/jobs.js";
+import { registerAgentGuideRoutes } from "./routes/agent-guide.js";
+import { registerEmailLabRoutes } from "./routes/email-lab.js";
 import { registerSyncRoutes } from "./routes/sync.js";
 import { registerTokenRoutes } from "./routes/tokens.js";
 import { registerWebUi } from "./web-ui.js";
@@ -206,6 +208,8 @@ export async function buildApp(services: Services, options: BuildAppOptions = {}
   registerConnectionRoutes(typed, services);
   registerConnectionDataRoutes(typed, services);
   registerJobRoutes(typed, services);
+  registerEmailLabRoutes(typed, services);
+  registerAgentGuideRoutes(typed);
   registerDataRoutes(typed, services);
   registerSignInRoutes(typed, services);
   registerCalendarRoutes(typed, services);

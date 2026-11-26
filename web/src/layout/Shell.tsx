@@ -1,6 +1,7 @@
 import { Link, Outlet } from "@tanstack/react-router";
 import {
   Activity,
+  Bot,
   CalendarDays,
   KeyRound,
   LogIn,
@@ -34,6 +35,7 @@ const NAV = [
   { to: "/tokens", label: t.shell.nav.tokens, icon: KeyRound, adminOnly: true },
   { to: "/status", label: t.shell.nav.status, icon: Activity },
   { to: "/settings", label: t.shell.nav.settings, icon: Settings },
+  { to: "/agent", label: t.shell.nav.agents, icon: Bot },
 ] as const satisfies readonly {
   to: string;
   label: string;

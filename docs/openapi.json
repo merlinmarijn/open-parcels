@@ -953,7 +953,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1039,7 +1041,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1235,7 +1239,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1321,7 +1327,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1407,7 +1415,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1544,7 +1554,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1652,7 +1664,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1857,7 +1871,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1943,7 +1959,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2190,7 +2208,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2356,7 +2376,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2654,7 +2676,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3345,7 +3369,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3613,7 +3639,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3699,7 +3727,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3837,7 +3867,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3923,7 +3955,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -5405,7 +5439,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -5491,7 +5527,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -6224,7 +6262,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -6989,7 +7029,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -7109,7 +7151,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -8361,7 +8405,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -9035,7 +9081,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -9156,7 +9204,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -9701,7 +9751,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10220,7 +10272,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10570,7 +10624,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10799,7 +10855,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10885,7 +10943,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11005,7 +11065,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11143,7 +11205,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11229,7 +11293,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11352,7 +11418,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11438,7 +11506,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11582,7 +11652,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11727,7 +11799,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11953,7 +12027,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12222,7 +12298,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12308,7 +12386,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12394,7 +12474,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12480,7 +12562,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12848,7 +12932,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13066,7 +13152,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13152,7 +13240,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13238,7 +13328,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13324,7 +13416,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13542,7 +13636,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13628,7 +13724,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13714,7 +13812,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13800,7 +13900,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14018,7 +14120,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14104,7 +14208,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14190,7 +14296,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14276,7 +14384,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14308,6 +14418,2413 @@
                 }
               }
             }
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/email-lab/messages": {
+      "get": {
+        "summary": "List an inbox folder's emails, newest first, with how each is read.",
+        "tags": [
+          "email-lab"
+        ],
+        "description": "Opens a short-lived read-only connection of its own (the inbox's watcher is not touched). `since` defaults to 30 days ago; `before` is exclusive. Emails are personal data: this is admin only.",
+        "parameters": [
+          {
+            "schema": {
+              "default": "INBOX",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "in": "query",
+            "name": "folder",
+            "required": false,
+            "description": "The IMAP folder."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            },
+            "in": "query",
+            "name": "since",
+            "required": false,
+            "description": "A day, `YYYY-MM-DD` (UTC)."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "date",
+              "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$"
+            },
+            "in": "query",
+            "name": "before",
+            "required": false,
+            "description": "A day, `YYYY-MM-DD` (UTC)."
+          },
+          {
+            "schema": {
+              "default": 20,
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 50
+            },
+            "in": "query",
+            "name": "limit",
+            "required": false
+          },
+          {
+            "schema": {
+              "default": 0,
+              "type": "integer",
+              "minimum": 0,
+              "maximum": 9007199254740991
+            },
+            "in": "query",
+            "name": "offset",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "total": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "messages": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "uid": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "description": "The IMAP UID; 0 for a pasted message."
+                          },
+                          "date": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "from": {
+                            "type": "string"
+                          },
+                          "subject": {
+                            "type": "string"
+                          },
+                          "detection": {
+                            "type": "object",
+                            "properties": {
+                              "outcome": {
+                                "type": "string",
+                                "enum": [
+                                  "detected",
+                                  "ignored",
+                                  "not_detected"
+                                ],
+                                "description": "`detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing."
+                              },
+                              "read_by": {
+                                "type": "string",
+                                "enum": [
+                                  "providers",
+                                  "shared_rules"
+                                ],
+                                "description": "Who read it: the providers of its sender's domain, or the shared email rules."
+                              },
+                              "providers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                },
+                                "description": "Providers the email is routed to (sender domain and DKIM/DMARC check)."
+                              },
+                              "rule_results": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "rule_id": {
+                                      "type": "string",
+                                      "description": "The email rule, `schema.org` for embedded markup, or `fallback`."
+                                    },
+                                    "kind": {
+                                      "type": "string"
+                                    },
+                                    "carrier": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "tracking_numbers": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "order_numbers": {
+                                      "type": "array",
+                                      "items": {
+                                        "type": "string"
+                                      }
+                                    },
+                                    "status": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "event": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "rule_id",
+                                    "kind",
+                                    "carrier",
+                                    "tracking_numbers",
+                                    "order_numbers",
+                                    "status",
+                                    "event"
+                                  ],
+                                  "additionalProperties": false
+                                },
+                                "description": "What each rule that applied extracted."
+                              },
+                              "parcels": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "carrier": {
+                                      "type": "string"
+                                    },
+                                    "tracking_number": {
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "shop": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "order_number": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "carrier",
+                                    "tracking_number",
+                                    "status",
+                                    "shop",
+                                    "order_number"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "orders": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "shop": {
+                                      "type": "string"
+                                    },
+                                    "order_number": {
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "shop",
+                                    "order_number",
+                                    "status"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              },
+                              "returns": {
+                                "type": "array",
+                                "items": {
+                                  "type": "object",
+                                  "properties": {
+                                    "shop": {
+                                      "type": "string"
+                                    },
+                                    "order_number": {
+                                      "type": "string"
+                                    },
+                                    "status": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    },
+                                    "tracking_number": {
+                                      "nullable": true,
+                                      "type": "string"
+                                    }
+                                  },
+                                  "required": [
+                                    "shop",
+                                    "order_number",
+                                    "status",
+                                    "tracking_number"
+                                  ],
+                                  "additionalProperties": false
+                                }
+                              }
+                            },
+                            "required": [
+                              "outcome",
+                              "read_by",
+                              "providers",
+                              "rule_results",
+                              "parcels",
+                              "orders",
+                              "returns"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "required": [
+                          "uid",
+                          "date",
+                          "from",
+                          "subject",
+                          "detection"
+                        ],
+                        "additionalProperties": false
+                      }
+                    }
+                  },
+                  "required": [
+                    "total",
+                    "messages"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/email-lab/messages/{uid}": {
+      "get": {
+        "summary": "One email: its headers, text, HTML as text and how it is read.",
+        "tags": [
+          "email-lab"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "default": "INBOX",
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 200
+            },
+            "in": "query",
+            "name": "folder",
+            "required": false,
+            "description": "The IMAP folder."
+          },
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "maximum": 9007199254740991
+            },
+            "in": "path",
+            "name": "uid",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "uid": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991,
+                      "description": "The IMAP UID; 0 for a pasted message."
+                    },
+                    "date": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "from": {
+                      "type": "string"
+                    },
+                    "subject": {
+                      "type": "string"
+                    },
+                    "detection": {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "detected",
+                            "ignored",
+                            "not_detected"
+                          ],
+                          "description": "`detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing."
+                        },
+                        "read_by": {
+                          "type": "string",
+                          "enum": [
+                            "providers",
+                            "shared_rules"
+                          ],
+                          "description": "Who read it: the providers of its sender's domain, or the shared email rules."
+                        },
+                        "providers": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Providers the email is routed to (sender domain and DKIM/DMARC check)."
+                        },
+                        "rule_results": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rule_id": {
+                                "type": "string",
+                                "description": "The email rule, `schema.org` for embedded markup, or `fallback`."
+                              },
+                              "kind": {
+                                "type": "string"
+                              },
+                              "carrier": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "order_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "event": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "rule_id",
+                              "kind",
+                              "carrier",
+                              "tracking_numbers",
+                              "order_numbers",
+                              "status",
+                              "event"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "What each rule that applied extracted."
+                        },
+                        "parcels": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "carrier": {
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "shop": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "carrier",
+                              "tracking_number",
+                              "status",
+                              "shop",
+                              "order_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "orders": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "returns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status",
+                              "tracking_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "read_by",
+                        "providers",
+                        "rule_results",
+                        "parcels",
+                        "orders",
+                        "returns"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "message_id": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "authentication_results": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "text": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "html_text": {
+                      "nullable": true,
+                      "description": "The HTML part as plain lines, as the rules see it.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "uid",
+                    "date",
+                    "from",
+                    "subject",
+                    "detection",
+                    "message_id",
+                    "authentication_results",
+                    "text",
+                    "html_text"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email-lab/test": {
+      "post": {
+        "summary": "Read one email with candidate email rules, without saving anything.",
+        "tags": [
+          "email-lab"
+        ],
+        "description": "The email is an inbox's (`connection_id`, `folder`, `uid`) or pasted RFC 822 source (`raw`, an .eml file's content). `rules` are candidate custom email rules; one with the id of a saved custom rule replaces it for this test. `baseline` is how the email reads now, `result` how it reads with the candidates. Candidates with `problems` are left out.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "connection_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  },
+                  "folder": {
+                    "default": "INBOX",
+                    "description": "The IMAP folder.",
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 200
+                  },
+                  "uid": {
+                    "type": "integer",
+                    "minimum": 1,
+                    "maximum": 9007199254740991
+                  },
+                  "raw": {
+                    "type": "string",
+                    "minLength": 1,
+                    "maxLength": 900000
+                  },
+                  "check_senders": {
+                    "description": "Overrides the inbox's DKIM/DMARC check; on when no inbox is given.",
+                    "type": "boolean"
+                  },
+                  "rules": {
+                    "default": [],
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {}
+                  }
+                }
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "problems": {
+                      "type": "array",
+                      "items": {
+                        "type": "object",
+                        "properties": {
+                          "index": {
+                            "type": "integer",
+                            "minimum": -9007199254740991,
+                            "maximum": 9007199254740991,
+                            "description": "The rule's place in the list sent."
+                          },
+                          "id": {
+                            "nullable": true,
+                            "type": "string"
+                          },
+                          "message": {
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "index",
+                          "id",
+                          "message"
+                        ],
+                        "additionalProperties": false
+                      }
+                    },
+                    "message": {
+                      "type": "object",
+                      "properties": {
+                        "uid": {
+                          "type": "integer",
+                          "minimum": -9007199254740991,
+                          "maximum": 9007199254740991,
+                          "description": "The IMAP UID; 0 for a pasted message."
+                        },
+                        "date": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "from": {
+                          "type": "string"
+                        },
+                        "subject": {
+                          "type": "string"
+                        },
+                        "detection": {
+                          "type": "object",
+                          "properties": {
+                            "outcome": {
+                              "type": "string",
+                              "enum": [
+                                "detected",
+                                "ignored",
+                                "not_detected"
+                              ],
+                              "description": "`detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing."
+                            },
+                            "read_by": {
+                              "type": "string",
+                              "enum": [
+                                "providers",
+                                "shared_rules"
+                              ],
+                              "description": "Who read it: the providers of its sender's domain, or the shared email rules."
+                            },
+                            "providers": {
+                              "type": "array",
+                              "items": {
+                                "type": "string"
+                              },
+                              "description": "Providers the email is routed to (sender domain and DKIM/DMARC check)."
+                            },
+                            "rule_results": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "rule_id": {
+                                    "type": "string",
+                                    "description": "The email rule, `schema.org` for embedded markup, or `fallback`."
+                                  },
+                                  "kind": {
+                                    "type": "string"
+                                  },
+                                  "carrier": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "tracking_numbers": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "order_numbers": {
+                                    "type": "array",
+                                    "items": {
+                                      "type": "string"
+                                    }
+                                  },
+                                  "status": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "event": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "rule_id",
+                                  "kind",
+                                  "carrier",
+                                  "tracking_numbers",
+                                  "order_numbers",
+                                  "status",
+                                  "event"
+                                ],
+                                "additionalProperties": false
+                              },
+                              "description": "What each rule that applied extracted."
+                            },
+                            "parcels": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "carrier": {
+                                    "type": "string"
+                                  },
+                                  "tracking_number": {
+                                    "type": "string"
+                                  },
+                                  "status": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "shop": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "order_number": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "carrier",
+                                  "tracking_number",
+                                  "status",
+                                  "shop",
+                                  "order_number"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "orders": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "shop": {
+                                    "type": "string"
+                                  },
+                                  "order_number": {
+                                    "type": "string"
+                                  },
+                                  "status": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "shop",
+                                  "order_number",
+                                  "status"
+                                ],
+                                "additionalProperties": false
+                              }
+                            },
+                            "returns": {
+                              "type": "array",
+                              "items": {
+                                "type": "object",
+                                "properties": {
+                                  "shop": {
+                                    "type": "string"
+                                  },
+                                  "order_number": {
+                                    "type": "string"
+                                  },
+                                  "status": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  },
+                                  "tracking_number": {
+                                    "nullable": true,
+                                    "type": "string"
+                                  }
+                                },
+                                "required": [
+                                  "shop",
+                                  "order_number",
+                                  "status",
+                                  "tracking_number"
+                                ],
+                                "additionalProperties": false
+                              }
+                            }
+                          },
+                          "required": [
+                            "outcome",
+                            "read_by",
+                            "providers",
+                            "rule_results",
+                            "parcels",
+                            "orders",
+                            "returns"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "message_id": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "authentication_results": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "text": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "html_text": {
+                          "nullable": true,
+                          "description": "The HTML part as plain lines, as the rules see it.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "uid",
+                        "date",
+                        "from",
+                        "subject",
+                        "detection",
+                        "message_id",
+                        "authentication_results",
+                        "text",
+                        "html_text"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "baseline": {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "detected",
+                            "ignored",
+                            "not_detected"
+                          ],
+                          "description": "`detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing."
+                        },
+                        "read_by": {
+                          "type": "string",
+                          "enum": [
+                            "providers",
+                            "shared_rules"
+                          ],
+                          "description": "Who read it: the providers of its sender's domain, or the shared email rules."
+                        },
+                        "providers": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Providers the email is routed to (sender domain and DKIM/DMARC check)."
+                        },
+                        "rule_results": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rule_id": {
+                                "type": "string",
+                                "description": "The email rule, `schema.org` for embedded markup, or `fallback`."
+                              },
+                              "kind": {
+                                "type": "string"
+                              },
+                              "carrier": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "order_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "event": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "rule_id",
+                              "kind",
+                              "carrier",
+                              "tracking_numbers",
+                              "order_numbers",
+                              "status",
+                              "event"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "What each rule that applied extracted."
+                        },
+                        "parcels": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "carrier": {
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "shop": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "carrier",
+                              "tracking_number",
+                              "status",
+                              "shop",
+                              "order_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "orders": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "returns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status",
+                              "tracking_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "read_by",
+                        "providers",
+                        "rule_results",
+                        "parcels",
+                        "orders",
+                        "returns"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "result": {
+                      "type": "object",
+                      "properties": {
+                        "outcome": {
+                          "type": "string",
+                          "enum": [
+                            "detected",
+                            "ignored",
+                            "not_detected"
+                          ],
+                          "description": "`detected`: it gives a parcel, order or return; `ignored`: an `ignore` rule drops it; `not_detected`: nothing."
+                        },
+                        "read_by": {
+                          "type": "string",
+                          "enum": [
+                            "providers",
+                            "shared_rules"
+                          ],
+                          "description": "Who read it: the providers of its sender's domain, or the shared email rules."
+                        },
+                        "providers": {
+                          "type": "array",
+                          "items": {
+                            "type": "string"
+                          },
+                          "description": "Providers the email is routed to (sender domain and DKIM/DMARC check)."
+                        },
+                        "rule_results": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "rule_id": {
+                                "type": "string",
+                                "description": "The email rule, `schema.org` for embedded markup, or `fallback`."
+                              },
+                              "kind": {
+                                "type": "string"
+                              },
+                              "carrier": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "order_numbers": {
+                                "type": "array",
+                                "items": {
+                                  "type": "string"
+                                }
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "event": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "rule_id",
+                              "kind",
+                              "carrier",
+                              "tracking_numbers",
+                              "order_numbers",
+                              "status",
+                              "event"
+                            ],
+                            "additionalProperties": false
+                          },
+                          "description": "What each rule that applied extracted."
+                        },
+                        "parcels": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "carrier": {
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "shop": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "carrier",
+                              "tracking_number",
+                              "status",
+                              "shop",
+                              "order_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "orders": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status"
+                            ],
+                            "additionalProperties": false
+                          }
+                        },
+                        "returns": {
+                          "type": "array",
+                          "items": {
+                            "type": "object",
+                            "properties": {
+                              "shop": {
+                                "type": "string"
+                              },
+                              "order_number": {
+                                "type": "string"
+                              },
+                              "status": {
+                                "nullable": true,
+                                "type": "string"
+                              },
+                              "tracking_number": {
+                                "nullable": true,
+                                "type": "string"
+                              }
+                            },
+                            "required": [
+                              "shop",
+                              "order_number",
+                              "status",
+                              "tracking_number"
+                            ],
+                            "additionalProperties": false
+                          }
+                        }
+                      },
+                      "required": [
+                        "outcome",
+                        "read_by",
+                        "providers",
+                        "rule_results",
+                        "parcels",
+                        "orders",
+                        "returns"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "problems",
+                    "message",
+                    "baseline",
+                    "result"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/email-lab/reread": {
+      "post": {
+        "summary": "Read a window of an inbox again with the rules in use and store what it finds.",
+        "tags": [
+          "email-lab"
+        ],
+        "description": "Additive: nothing stored is removed, and an email read again adds no second history entry. At most the newest 1000 emails per call; `truncated` says more were left. `folders` defaults to the inbox's folders, `since` to 30 days ago.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "since": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                    "description": "A day, `YYYY-MM-DD` (UTC)."
+                  },
+                  "before": {
+                    "type": "string",
+                    "format": "date",
+                    "pattern": "^(?:(?:\\d\\d[2468][048]|\\d\\d[13579][26]|\\d\\d0[48]|[02468][048]00|[13579][26]00)-02-29|\\d{4}-(?:(?:0[13578]|1[02])-(?:0[1-9]|[12]\\d|3[01])|(?:0[469]|11)-(?:0[1-9]|[12]\\d|30)|(?:02)-(?:0[1-9]|1\\d|2[0-8])))$",
+                    "description": "A day, `YYYY-MM-DD` (UTC)."
+                  },
+                  "folders": {
+                    "minItems": 1,
+                    "maxItems": 50,
+                    "type": "array",
+                    "items": {
+                      "type": "string",
+                      "minLength": 1,
+                      "maxLength": 200
+                    }
+                  }
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "messages": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "parcels": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "orders": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "returns": {
+                      "type": "integer",
+                      "minimum": -9007199254740991,
+                      "maximum": 9007199254740991
+                    },
+                    "truncated": {
+                      "type": "boolean"
+                    }
+                  },
+                  "required": [
+                    "messages",
+                    "parcels",
+                    "orders",
+                    "returns",
+                    "truncated"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "502": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email-rules": {
+      "get": {
+        "summary": "The owner's custom email rules, read by every inbox next to the shared ones.",
+        "tags": [
+          "email-lab"
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "definition": {
+                        "type": "object",
+                        "additionalProperties": {},
+                        "description": "The rule in the email rule format (`schema/mail-rule.schema.json` of the rules)."
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "definition",
+                      "created_at",
+                      "updated_at"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/email-rules/{rule}": {
+      "put": {
+        "summary": "Create or replace a custom email rule.",
+        "tags": [
+          "email-lab"
+        ],
+        "description": "The body is the rule in the email rule format; its `id` must be the path's and may not be a shared or provider rule's. It applies to the next email; read older ones again with the re-read. A rule others could use belongs upstream in open-parcels-rules.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "additionalProperties": {}
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "path",
+            "name": "rule",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string"
+                    },
+                    "definition": {
+                      "type": "object",
+                      "additionalProperties": {},
+                      "description": "The rule in the email rule format (`schema/mail-rule.schema.json` of the rules)."
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "definition",
+                    "created_at",
+                    "updated_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "summary": "Delete a custom email rule.",
+        "tags": [
+          "email-lab"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "minLength": 1,
+              "maxLength": 100
+            },
+            "in": "path",
+            "name": "rule",
+            "required": true
+          }
+        ],
+        "responses": {
+          "204": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "string",
+                  "nullable": true,
+                  "enum": [
+                    null
+                  ]
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/llms.txt": {
+      "get": {
+        "summary": "How an AI agent operates and debugs this server (Markdown).",
+        "tags": [
+          "agents"
+        ],
+        "description": "Holds no data and no secrets, so it needs no login.",
+        "security": [],
+        "responses": {
+          "200": {
+            "description": "Default Response"
           }
         }
       }
@@ -14676,7 +17193,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14934,7 +17453,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15020,7 +17541,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15185,7 +17708,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15574,7 +18099,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15660,7 +18187,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15746,7 +18275,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15832,7 +18363,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -15918,7 +18451,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -16322,7 +18857,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -16408,7 +18945,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -16494,7 +19033,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -16580,7 +19121,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -16666,7 +19209,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17048,7 +19593,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17134,7 +19681,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17220,7 +19769,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17306,7 +19857,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17392,7 +19945,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17524,7 +20079,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -17820,7 +20377,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -19865,7 +22424,9 @@
                         "action_cooldown",
                         "invalid_input",
                         "job_running",
-                        "job_state"
+                        "job_state",
+                        "mailbox_failed",
+                        "invalid_email_rule"
                       ],
                       "description": "Stable machine-readable error code."
                     },

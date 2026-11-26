@@ -2378,3 +2378,23 @@ tbody tr:hover {
 .card-table-scroll code {
   overflow-wrap: anywhere;
 }
+
+/* The agent guide ("For AI agents"): Markdown from the server, plain and readable. */
+.guide {
+  max-width: 80ch;
+  overflow-wrap: anywhere;
+}
+
+.guide code {
+  font-family: var(--mono);
+  font-size: 0.9em;
+}
+
+.guide-code {
+  background: var(--field);
+  border-radius: 6px;
+  padding: 0.75rem;
+  overflow-x: auto;
+  overflow-wrap: normal;
+  white-space: pre;
+}

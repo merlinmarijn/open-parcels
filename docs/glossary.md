@@ -31,6 +31,10 @@ events, the web UI, Home Assistant, the website and every document. Chosen by th
 | Home Assistant event | An event on Home Assistant's bus fired by the integration (open_parcels_*); always named with "Home Assistant" | HA event, bus event |
 | Inbox | A connection to an e-mail account folder that open-parcels reads (IMAP) | mailbox, mail source, mail account, Postfach |
 | Email | One message in an inbox ("shipping email", "return email"); write "email" without a hyphen | mail, message, e-mail, Nachricht |
+| Email rule | A data rule (sender, subject and body patterns, extractors) that reads an email into parcels, orders or returns; shared ones live in the rules, a provider's in that provider | mail rule, parser, email parser, Regel |
+| Custom email rule | An email rule the owner saved in this server (email lab); inboxes read with it next to the shared and providers' rules | user rule, own rule, local rule, eigene Regel |
+| Email lab | The admin's tools (API) for seeing how an inbox's emails are read and trying email rules on them | mail debugger, rule tester, detection debugger |
+| Agent | An AI assistant that operates the server for the owner through the API, with its own token | AI, bot, LLM, assistant, KI |
 | Action | A button or command a provider offers on a connection ("Import history", "Open account page") | button, command, operation, task |
 | Job | The long-running, resumable work an action starts, with progress and cancel | task, run, background task, process |
 | Built-in (tier) | A provider shipped inside the open-parcels image | core, bundled, internal, first-party |
@@ -101,6 +105,10 @@ chosen once in `web/src/i18n/de/` and are added here when they matter.
 | Connection | Verbindung |
 | Inbox | Postfach |
 | Email | E-Mail |
+| Email rule | E-Mail-Regel |
+| Custom email rule | Eigene E-Mail-Regel |
+| Email lab | E-Mail-Labor |
+| Agent | KI-Agent |
 | Order | Bestellung |
 | Return | Rücksendung |
 | Refund | Erstattung |

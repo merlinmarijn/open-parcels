@@ -58,7 +58,9 @@ export type NotFoundResource =
   | "sign_in"
   | "setting"
   | "pictures"
-  | "job";
+  | "job"
+  | "message"
+  | "email_rule";
 export type InvalidConnectionReason =
   | "inbox_kind"
   | "inbox_fields"

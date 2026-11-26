@@ -2,6 +2,18 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: email lab, custom email rules and a guide for AI agents
+
+An agent (or the admin) can now find out why an email was not detected and fix it
+([`docs/email-lab.md`](docs/email-lab.md)). Admin-only endpoints list an inbox folder's emails
+with how each is read (`GET /api/v1/connections/{id}/email-lab/messages`, `.../messages/{uid}`),
+read one email with candidate rules (`POST /api/v1/email-lab/test`, also for pasted `.eml`
+source), save custom email rules (`/api/v1/email-rules`, migration 0031), which inboxes read next
+to the shared and providers' rules, and read a date window again
+(`POST /api/v1/connections/{id}/email-lab/reread`). The lab uses a short-lived connection of its
+own and never logs email content. The guide for agents is served at `/llms.txt` (no login) and
+shown in the web UI under "For AI agents".
+
 ### Changed: Amazon, DHL and Hermes read their own emails (rules 2.0.0-dev.15)
 
 The first step of splitting the shared rules ([`docs/rules-split.md`](docs/rules-split.md)):

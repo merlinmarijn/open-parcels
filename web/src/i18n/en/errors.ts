@@ -25,6 +25,8 @@ const NOT_FOUND: Readonly<Record<NotFoundResource, ErrorText>> = {
   setting: () => "There is no such setting.",
   pictures: () => "There are no item pictures.",
   job: () => "The job was not found.",
+  message: () => "The email was not found.",
+  email_rule: () => "The email rule was not found.",
 };
 
 const INVALID_CONNECTION: Readonly<Record<InvalidConnectionReason, ErrorText>> = {
@@ -116,6 +118,8 @@ export const errors: ErrorTexts = {
     invalid_input: (p) => withDetail("Check what you entered.", p),
     job_running: () => "This connection is busy with a job already.",
     job_state: () => "The job cannot do that in its current state.",
+    mailbox_failed: () => "The mail server refused or failed. Check the inbox under Connections.",
+    invalid_email_rule: (p) => withDetail("The email rule cannot be used.", p),
   },
   http: (status) => `The server answered with error ${String(status)}.`,
 };

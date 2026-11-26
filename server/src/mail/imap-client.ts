@@ -50,8 +50,9 @@ export const imapClientFactory: MailboxClientFactory = (config, secret) => {
       const mailbox = await client.mailboxOpen(folder, { readOnly: true });
       return { uidValidity: String(mailbox.uidValidity) };
     },
-    async searchSince(since) {
-      const result = await client.search({ since }, { uid: true });
+    async searchSince(since, before) {
+      const query = before === undefined ? { since } : { since, before };
+      const result = await client.search(query, { uid: true });
       return Array.isArray(result) ? result : [];
     },
     fetchAfter: (afterUid) => toMessages(`${afterUid + 1}:*`),

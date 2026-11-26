@@ -151,6 +151,8 @@ export class EmailRouter {
     connectionId: string,
     mail: MailInput,
     checkSenders: boolean,
+    /** The email lab tries candidate rules with a reader of its own. */
+    reader: EmailRuleReader = this.deps.ruleReader,
   ): Promise<RoutedEmail | null> {
     const routes = this.routes(mail, checkSenders);
     if (routes.length === 0) return null;
@@ -172,7 +174,7 @@ export class EmailRouter {
         const result: EmailResult =
           provider.emailRules === null
             ? await provider.parseEmail(context, email)
-            : this.deps.ruleReader.read(provider.emailRules, mail);
+            : reader.read(provider.emailRules, mail);
         if (result.ignored !== undefined) continue;
         read.push(result);
         logger.debug(

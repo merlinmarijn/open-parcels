@@ -330,6 +330,15 @@ interface SignInAttemptTable {
   poll_not_before: Timestamp | null;
 }
 
+/** One of the owner's own email rules (email lab). See migration 0031. */
+interface EmailRuleTable {
+  id: string;
+  /** JSON, the rule in the rules' email rule format. */
+  definition: string;
+  created_at: Timestamp;
+  updated_at: Timestamp;
+}
+
 /** A connection action's job. See migration 0029 and `docs/connection-actions-and-jobs.md`. */
 export interface JobTable {
   id: string;
@@ -383,6 +392,7 @@ export interface Database {
   sign_in_attempts: SignInAttemptTable;
   sync_changes: SyncChangeTable;
   jobs: JobTable;
+  email_rules: EmailRuleTable;
 }
 
 export type JobRow = Selectable<JobTable>;
