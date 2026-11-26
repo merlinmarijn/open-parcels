@@ -12,6 +12,7 @@ import type {
   GetApiV1Connections200Item,
   GetApiV1Jobs200Item,
   GetApiV1ConnectionsIdSignInFlows200Item,
+  GetApiV1ConnectionsIdSync200,
   GetApiV1Tokens200Item,
   PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200,
   PostApiV1Session401Error,
@@ -34,6 +35,8 @@ export type StateReason = NonNullable<Connection["state_reason"]>;
 export type SchedulerError = NonNullable<GetApiV1Status200["scheduler"]["last_error"]>;
 export type BackupError = NonNullable<GetApiV1Status200["backups"]["last_error"]>;
 export type SignInFlow = GetApiV1ConnectionsIdSignInFlows200Item;
+/** An inbox sync, as `GET /connections/{id}/sync` and `connection.sync_progress` carry it. */
+export type InboxSync = NonNullable<GetApiV1ConnectionsIdSync200>;
 export type SignInResult = PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200;
 export type SignInStepResult = Extract<SignInResult, { status: "step" }>;
 export type SignInStep = SignInStepResult["step"];

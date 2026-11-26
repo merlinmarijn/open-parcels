@@ -1,11 +1,12 @@
 import type { Kysely } from "kysely";
 import { simpleParser, type AddressObject } from "mailparser";
 import type { Logger } from "pino";
-import { ZodError } from "zod";
+import { z, ZodError } from "zod";
 import { DAY_MS, isoNow, type Clock } from "../clock.js";
 import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
+import type { EventBus } from "../events/bus.js";
 import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
 import { cause, NO_CAUSE } from "../engine/state-reason.js";
 import { InvalidConnectionConfigError } from "../engine/registry.js";
@@ -52,7 +53,99 @@ export interface MailWatcherDeps {
   readonly interpretOrders?: MailOrderInterpreter;
   /** Links parcels found in mail to their carrier's tracking connection, so they get polled. */
   readonly followUp: (connectionId: string) => Promise<void>;
+  /** Carries each sync's progress to live clients (`connection.sync_progress`). */
+  readonly bus: EventBus;
 }
+
+const SYNC_PHASES = ["connecting", "searching", "reading", "saving", "done", "failed"] as const;
+type SyncPhase = (typeof SYNC_PHASES)[number];
+
+/** One line of a sync's activity log: never a subject, an address or any content of a mail. */
+interface SyncStep {
+  readonly at: string;
+  readonly phase: SyncPhase;
+  readonly folder: string | null;
+  /** Mails to read (reading), items found (saving) or mails read (done); null when unknown. */
+  readonly count: number | null;
+}
+
+/** What one inbox's current or last sync is doing: phase, counts and the last steps. */
+export interface InboxSync {
+  readonly phase: SyncPhase;
+  readonly folder: string | null;
+  /** Mails read in the current folder, of `total` (null: unknown, an incremental fetch). */
+  readonly done: number;
+  readonly total: number | null;
+  readonly read: number;
+  readonly parcels: number;
+  readonly orders: number;
+  readonly returns: number;
+  /** Mails read in which nothing was found. */
+  readonly ignored: number;
+  readonly startedAt: string;
+  readonly finishedAt: string | null;
+  /** Why it failed, as a code; never the server's own words, which can carry personal data. */
+  readonly error: "sign_in_rejected" | "unreachable" | null;
+  readonly steps: readonly SyncStep[];
+}
+
+type SyncState = { -readonly [K in keyof InboxSync]: InboxSync[K] };
+
+/** A sync as the API and the `connection.sync_progress` message carry it. */
+export const inboxSyncSchema = z.object({
+  connection_id: z.uuid(),
+  phase: z.enum(SYNC_PHASES),
+  folder: z.string().nullable(),
+  done: z.number().int().describe("Mails read in `folder` so far."),
+  total: z
+    .number()
+    .int()
+    .nullable()
+    .describe("Mails to read in `folder`; null when unknown (only new mails are fetched)."),
+  read: z.number().int().describe("Mails read in this sync, every folder."),
+  parcels: z.number().int(),
+  orders: z.number().int(),
+  returns: z.number().int(),
+  ignored: z.number().int().describe("Mails read in which nothing was found."),
+  started_at: z.string(),
+  finished_at: z.string().nullable(),
+  error: z.enum(["sign_in_rejected", "unreachable"]).nullable(),
+  steps: z
+    .array(
+      z.object({
+        at: z.string(),
+        phase: z.enum(SYNC_PHASES),
+        folder: z.string().nullable(),
+        count: z.number().int().nullable(),
+      }),
+    )
+    .describe("The last 20 steps: folder names and counts, never mail content."),
+});
+
+export function inboxSyncBody(
+  connectionId: string,
+  sync: InboxSync,
+): z.infer<typeof inboxSyncSchema> {
+  return {
+    connection_id: connectionId,
+    phase: sync.phase,
+    folder: sync.folder,
+    done: sync.done,
+    total: sync.total,
+    read: sync.read,
+    parcels: sync.parcels,
+    orders: sync.orders,
+    returns: sync.returns,
+    ignored: sync.ignored,
+    started_at: sync.startedAt,
+    finished_at: sync.finishedAt,
+    error: sync.error,
+    steps: [...sync.steps],
+  };
+}
+
+const SYNC_STEPS_KEPT = 20;
+const SYNC_PUBLISH_MS = 500;
 
 /** What the status page shows of one inbox. */
 export interface InboxStatus {
@@ -145,6 +238,9 @@ export class MailWatcher {
   readonly #retries = new Map<string, number>();
   readonly #timers = new Map<string, ReturnType<typeof setTimeout>>();
   readonly #reconnectAt = new Map<string, string>();
+  // ponytail: in memory, so a restart forgets the last sync; store it when that matters.
+  readonly #syncs = new Map<string, SyncState>();
+  readonly #publishedAt = new Map<string, number>();
   #stopped = true;
 
   constructor(private readonly deps: MailWatcherDeps) {}
@@ -189,6 +285,25 @@ export class MailWatcher {
       reconnectAt: this.#reconnectAt.get(connectionId) ?? null,
       failures: this.#retries.get(connectionId) ?? 0,
     };
+  }
+
+  /** The inbox's current or last sync since the server started; null when none ran. */
+  sync(connectionId: string): InboxSync | null {
+    const sync = this.#syncs.get(connectionId);
+    return sync === undefined ? null : { ...sync };
+  }
+
+  /** "Sync now": every folder, at once; (re)connects first when the inbox is not connected. */
+  async syncNow(connectionId: string): Promise<void> {
+    const connection = this.#connections.get(connectionId);
+    if (connection !== undefined) {
+      this.#queueSync(connectionId, connection, connection.config.folders);
+      return;
+    }
+    clearTimeout(this.#timers.get(connectionId));
+    this.#timers.delete(connectionId);
+    this.#reconnectAt.delete(connectionId);
+    await this.connect(connectionId);
   }
 
   async start(): Promise<void> {
@@ -257,6 +372,7 @@ export class MailWatcher {
       syncing: Promise.resolve(),
       resync: undefined,
     };
+    this.#step(connectionId, this.#begin(connectionId), "connecting");
     try {
       await client.connect();
     } catch (error) {
@@ -380,20 +496,25 @@ export class MailWatcher {
     // Built on a copy and committed only once the mails are stored: a failed batch is read again
     // on the next sync, whatever else runs on the connection in between.
     let progress = connection.progress;
+    const sync = this.#begin(connectionId);
     // The first folder is opened last so it stays selected for IDLE.
     for (const folder of [...folders].reverse()) {
+      this.#step(connectionId, sync, "searching", folder);
       const { uidValidity } = await connection.client.open(folder);
       const known = progress[folder];
       let lastUid = known?.uidValidity === uidValidity ? known.lastUid : 0;
       const readUpTo = lastUid;
-      const messages: AsyncIterable<FetchedMessage> =
-        known?.uidValidity === uidValidity
-          ? connection.client.fetchAfter(lastUid)
-          : connection.client.fetchUids(
-              await connection.client.searchSince(
-                new Date(this.deps.clock.now().getTime() - connection.config.initialDays * DAY_MS),
-              ),
-            );
+      let messages: AsyncIterable<FetchedMessage>;
+      if (known?.uidValidity === uidValidity) {
+        messages = connection.client.fetchAfter(lastUid);
+        this.#step(connectionId, sync, "reading", folder);
+      } else {
+        const uids = await connection.client.searchSince(
+          new Date(this.deps.clock.now().getTime() - connection.config.initialDays * DAY_MS),
+        );
+        messages = connection.client.fetchUids(uids);
+        this.#step(connectionId, sync, "reading", folder, uids.length);
+      }
       for await (const message of messages) {
         // `UID FETCH n:*` returns the newest message even when nothing newer exists (`*` is the
         // highest UID, so the range turns around); it was read already.
@@ -409,19 +530,29 @@ export class MailWatcher {
           mail,
           connection.config.checkSenders,
         );
-        if (routed !== null) {
-          // Read by its providers: the shared rules must not read it again (no parcel twice).
-          snapshots.push(...routed.snapshots);
-          returns.push(...routed.returns);
-          orders.push(...routed.orders);
-          continue;
+        // Read by its providers: the shared rules must not read it again (no parcel twice).
+        const found = routed ?? {
+          snapshots: this.#interpret(connectionId, mail, this.deps.interpret),
+          returns: this.#interpret(connectionId, mail, this.deps.interpretReturns),
+          orders: this.#interpret(connectionId, mail, this.deps.interpretOrders),
+        };
+        snapshots.push(...found.snapshots);
+        returns.push(...found.returns);
+        orders.push(...found.orders);
+        sync.done += 1;
+        sync.read += 1;
+        sync.parcels += found.snapshots.length;
+        sync.returns += found.returns.length;
+        sync.orders += found.orders.length;
+        if (found.snapshots.length + found.returns.length + found.orders.length === 0) {
+          sync.ignored += 1;
         }
-        snapshots.push(...this.#interpret(connectionId, mail, this.deps.interpret));
-        returns.push(...this.#interpret(connectionId, mail, this.deps.interpretReturns));
-        orders.push(...this.#interpret(connectionId, mail, this.deps.interpretOrders));
+        this.#publish(connectionId, sync, false);
       }
       progress = { ...progress, [folder]: { uidValidity, lastUid } };
     }
+    const items = snapshots.length + returns.length + orders.length;
+    this.#step(connectionId, sync, "saving", null, items);
     if (snapshots.length > 0 || returns.length > 0 || orders.length > 0) {
       await this.deps.reconciler.ingest(connectionId, {
         snapshots,
@@ -445,6 +576,65 @@ export class MailWatcher {
     // drops it straight away must not be reconnected to every 30 seconds.
     this.#retries.delete(connectionId);
     await this.deps.connections.setState(connectionId, "ok", NO_CAUSE);
+    this.#step(connectionId, sync, "done", null, sync.read);
+  }
+
+  /** The sync a connect started, or a new one. */
+  #begin(connectionId: string): SyncState {
+    const current = this.#syncs.get(connectionId);
+    if (current?.phase === "connecting") {
+      return current;
+    }
+    const sync: SyncState = {
+      phase: "connecting",
+      folder: null,
+      done: 0,
+      total: null,
+      read: 0,
+      parcels: 0,
+      orders: 0,
+      returns: 0,
+      ignored: 0,
+      startedAt: isoNow(this.deps.clock),
+      finishedAt: null,
+      error: null,
+      steps: [],
+    };
+    this.#syncs.set(connectionId, sync);
+    return sync;
+  }
+
+  #step(
+    connectionId: string,
+    sync: SyncState,
+    phase: SyncPhase,
+    folder: string | null = null,
+    count: number | null = null,
+  ): void {
+    const at = isoNow(this.deps.clock);
+    sync.phase = phase;
+    sync.folder = folder;
+    sync.done = 0;
+    sync.total = phase === "reading" ? count : null;
+    if (phase === "done" || phase === "failed") {
+      sync.finishedAt = at;
+    }
+    sync.steps = [...sync.steps, { at, phase, folder, count }].slice(-SYNC_STEPS_KEPT);
+    this.#publish(connectionId, sync, true);
+  }
+
+  /** Steps always go out; reading progress at most every SYNC_PUBLISH_MS. */
+  #publish(connectionId: string, sync: SyncState, force: boolean): void {
+    const now = this.deps.clock.now().getTime();
+    const last = this.#publishedAt.get(connectionId) ?? Number.NEGATIVE_INFINITY;
+    if (!force && now - last < SYNC_PUBLISH_MS) {
+      return;
+    }
+    this.#publishedAt.set(connectionId, now);
+    this.deps.bus.publishEphemeral({
+      type: "connection.sync_progress",
+      payload: inboxSyncBody(connectionId, sync),
+    });
   }
 
   #interpret<T>(
@@ -468,6 +658,11 @@ export class MailWatcher {
     if (this.#stopped) {
       // Shutting down: connections closing now is expected, and the database may be gone.
       return;
+    }
+    const sync = this.#syncs.get(connectionId);
+    if (sync?.finishedAt === null) {
+      sync.error = isAuthFailure(error) ? "sign_in_rejected" : "unreachable";
+      this.#step(connectionId, sync, "failed");
     }
     if (isAuthFailure(error)) {
       await this.deps.connections.setState(

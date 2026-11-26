@@ -33,6 +33,7 @@ import {
   getApiV1Connections,
   getApiV1Jobs,
   getApiV1ConnectionsIdData,
+  getApiV1ConnectionsIdSync,
   getApiV1Logins,
   getApiV1Tokens,
   patchApiV1OrdersId,
@@ -69,6 +70,7 @@ export const keys = {
   returnList: (view: ReturnView) => ["returns", "list", { view }] as const,
   connections: ["connections"] as const,
   jobs: ["jobs"] as const,
+  inboxSync: (id: string) => ["inbox-sync", id] as const,
   signInFlows: (connectionId: string | undefined) => ["sign-in-flows", connectionId] as const,
   carriers: ["carriers"] as const,
   inboxForm: ["inbox-form"] as const,
@@ -418,7 +420,19 @@ export function useSyncConnection() {
   const client = useQueryClient();
   return useMutation({
     mutationFn: (id: string) => postApiV1ConnectionsIdSync(id),
-    onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
+    onSuccess: (_answer, id) =>
+      Promise.all([
+        client.invalidateQueries({ queryKey: keys.connections }),
+        client.invalidateQueries({ queryKey: keys.inboxSync(id) }),
+      ]),
+  });
+}
+
+/** An inbox's current or last sync; `connection.sync_progress` messages keep it current. */
+export function useInboxSync(id: string) {
+  return useQuery({
+    queryKey: keys.inboxSync(id),
+    queryFn: ({ signal }) => getApiV1ConnectionsIdSync(id, { signal }),
   });
 }
 

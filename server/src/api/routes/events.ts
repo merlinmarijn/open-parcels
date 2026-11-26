@@ -13,7 +13,13 @@ const HEARTBEAT_MS = 25_000;
  * control messages. Documented as an enum so the web client's generated types name them all.
  */
 const streamMessageSchema = z.object({
-  event: z.enum([...EVENT_TYPES, "parcel.live_position", "ready", "resync"]),
+  event: z.enum([
+    ...EVENT_TYPES,
+    "parcel.live_position",
+    "connection.sync_progress",
+    "ready",
+    "resync",
+  ]),
   id: z.number().int().optional(),
   data: z.unknown(),
 });
@@ -52,7 +58,9 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
           "current sequence as `id`) tells the client to reload everything over REST. " +
           "`parcel.live_position` messages carry the courier's position while on the road until " +
           "the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and " +
-          "`stops_away`; they have no `id` and are never replayed.",
+          "`stops_away`; they have no `id` and are never replayed. " +
+          "`connection.sync_progress` messages carry an inbox sync's progress, the body of " +
+          "`GET /api/v1/connections/{id}/sync`; they have no `id` either and are never replayed.",
         querystring: z.object({
           last_event_id: z.coerce.number().int().nonnegative().optional(),
           access_token: z
@@ -144,7 +152,7 @@ export function registerEventRoutes(app: TypedApp, services: Services): void {
         write(formatEvent(event));
       };
       cleanups.push(services.bus.subscribe(send));
-      // Courier positions: no `id`, so they are never part of a replay.
+      // Courier positions and sync progress: no `id`, so they are never part of a replay.
       cleanups.push(
         services.bus.subscribeEphemeral((message) => {
           write(`event: ${message.type}\ndata: ${JSON.stringify(message.payload)}\n\n`);
