@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-26
 
+- TODO §3: Amazon "Import history" job (`docs/connection-actions-and-jobs.md` §6–§7): all years
+  from the orders page's time filter, page by page, paced, resumable, tracking pages only for
+  recent shipments; imported history flagged (`imported_at`, migration 0030), quiet
+  (`imported: true`, old deliveries archived without events, `parcel.imported`) and kept by
+  retention; a cancel drops the job's request in flight; `ActionContext.wait`; provider-texts
+  test covers action input fields; HA integration skips imported events (commit: see the log,
+  "import history")
 - TODO §3: connection actions and jobs (`docs/connection-actions-and-jobs.md`): `actions` in the
   manifest, `jobs` table (migration 0029), job service sharing the connection lock between
   pages, pauses, retries, cancel, resume, restart and the 12 h ceiling, `runAction` in the

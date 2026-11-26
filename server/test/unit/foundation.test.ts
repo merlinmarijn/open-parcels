@@ -199,6 +199,7 @@ describe("migrations", () => {
         "0027-sync-changes",
         "0028-list-order-index",
         "0029-jobs",
+        "0030-imported",
       ]);
       expect(await migrateToLatest(db)).toEqual([]);
       // Every table rebuild kept its references whole (OP-025).

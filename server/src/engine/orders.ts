@@ -18,6 +18,8 @@ export interface OrderEnv {
   readonly clock: Clock;
   /** The order as the API shows it, read inside the transaction; undefined when hidden. */
   readonly orderView: (trx: Trx, id: string) => Promise<Order | undefined>;
+  /** Set while an import job's results are stored: the orders they start are imported. */
+  readonly importedAt?: string | null;
 }
 
 /** A digital shop's order is delivered once it is placed: there is no parcel to wait for. */
@@ -135,7 +137,8 @@ async function applyOrder(
   if (row !== undefined && row.deleted_at !== null) return 0;
   const shop = row?.shop ?? report.order.shop;
   const next = changes(row, shop, report);
-  const id = row?.id ?? (await createOrder(trx, report.order, now));
+  const id =
+    row?.id ?? (await createOrder(trx, report.order, now, { importedAt: env.importedAt ?? null }));
   if (row === undefined) {
     await trx.updateTable("orders").set(next).where("id", "=", id).execute();
   }

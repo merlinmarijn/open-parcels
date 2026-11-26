@@ -20,7 +20,7 @@ let headers: Record<string, string>;
 
 beforeEach(async () => {
   world = new JobWorld();
-  context = await createTestContext({ providers: [fakeJobs(world)] });
+  context = await createTestContext({ providers: [fakeJobs(world)], fetchImpl: world.fetch });
   app = await context.app();
   const session = await signIn(context, app);
   headers = { cookie: session.cookie, "x-csrf-token": session.csrf };
@@ -87,6 +87,7 @@ describe("connection actions", () => {
     const actions = carriers.find((carrier) => carrier.id === "fakejobs")?.actions ?? [];
     expect(actions.map((a) => [a.id, a.kind, a.input_required])).toEqual([
       ["walk", "task", false],
+      ["fetch", "task", false],
       ["rest", "task", false],
       ["needs_input", "task", true],
       ["open", "link", false],
@@ -98,6 +99,7 @@ describe("connection actions", () => {
       headers,
     });
     expect(own.json<{ id: string; available: boolean }[]>().map((a) => a.available)).toEqual([
+      true,
       true,
       true,
       true,
@@ -185,6 +187,18 @@ describe("jobs", () => {
     expect(resumed.json<JobBody>().state).toBe("queued");
     expect((await job(started.id)).state).toBe("done");
     expect(world.pages).toEqual([0, 1, 2, 3, 4]);
+  });
+
+  it("drops a request in flight on cancel and refuses the next one at once", async () => {
+    const id = await connection();
+    const seen = world.requestSeen();
+    const started = await start(id, "fetch");
+    await seen;
+    expect((await post(`/api/v1/jobs/${started.id}/cancel`)).statusCode).toBe(200);
+    // Recorded as cancelled by the job's own end, not by the 30 s grace running out.
+    expect(await job(started.id)).toMatchObject({ state: "cancelled", summary: "stopped" });
+    expect(world.requested).toEqual(["/slow"]);
+    expect(world.failures).toEqual(["HopAbortedError", "HopAbortedError"]);
   });
 
   it("pauses on a rate limit and resumes on its own from the checkpoint", async () => {

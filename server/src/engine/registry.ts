@@ -76,6 +76,7 @@ export interface ActionCall {
   readonly checkpoint: CheckpointStore;
   progress(update: JobProgress): void;
   emit(batch: ActionBatch): Promise<void>;
+  wait(ms: number): Promise<void>;
 }
 
 /** One call into an interactive flow: `start` (no state), `continue` (with input) or `poll`. */
@@ -457,6 +458,7 @@ export function register<Config, Secret>(
               call.progress(update);
             },
             emit: (batch) => call.emit(batch),
+            wait: (ms) => call.wait(ms),
           },
           input,
         ),

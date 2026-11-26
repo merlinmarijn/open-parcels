@@ -110,3 +110,61 @@ export function parseClock(text: string): { hour: number; minute: number } | nul
   }
   return hour > 23 || minute > 59 ? null : { hour, minute };
 }
+
+/** Month names as the order pages spell them (English and German), by their first letters. */
+const MONTH_PREFIXES = [
+  ["jan"],
+  ["feb"],
+  ["mar", "mär"],
+  ["apr"],
+  ["may", "mai"],
+  ["jun"],
+  ["jul"],
+  ["aug"],
+  ["sep"],
+  ["oct", "okt"],
+  ["nov"],
+  ["dec", "dez"],
+] as const;
+
+function monthOf(word: string): number | null {
+  const folded = foldText(word);
+  const index = MONTH_PREFIXES.findIndex((prefixes) =>
+    prefixes.some((prefix) => folded.startsWith(prefix)),
+  );
+  return index === -1 ? null : index + 1;
+}
+
+/**
+ * The day an order line says the order was placed, with its year: "10 November 2026",
+ * "10. November 2026" or "November 10, 2026". Null for anything else.
+ */
+export function placedDay(text: string | null): Day | null {
+  if (text === null) {
+    return null;
+  }
+  const dayFirst = /^(\d{1,2})\.?\s+(\p{L}+)\.?\s+(\d{4})$/u.exec(text.trim());
+  const monthFirst = /^(\p{L}+)\.?\s+(\d{1,2}),?\s+(\d{4})$/u.exec(text.trim());
+  const [dayText, monthText, yearText] =
+    dayFirst !== null
+      ? [dayFirst[1], dayFirst[2], dayFirst[3]]
+      : monthFirst !== null
+        ? [monthFirst[2], monthFirst[1], monthFirst[3]]
+        : [undefined, undefined, undefined];
+  if (dayText === undefined || monthText === undefined || yearText === undefined) {
+    return null;
+  }
+  const month = monthOf(monthText);
+  const day = Number(dayText);
+  const year = Number(yearText);
+  if (month === null || day < 1 || day > 31) {
+    return null;
+  }
+  const date = new Date(Date.UTC(year, month - 1, day));
+  return date.getUTCDate() === day ? { year, month, day } : null;
+}
+
+/** Whole days from `day` to `now`'s day in `timeZone`; negative for a day ahead. */
+export function daysSince(day: Day, now: Date, timeZone: string): number {
+  return Math.round((ordinal(today(now, timeZone)) - ordinal(day)) / 86_400_000);
+}

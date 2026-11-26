@@ -11,7 +11,8 @@ export interface RetentionPolicy {
   readonly archiveAfterDays: number;
   /**
    * Archived parcels, with their history and items, are deleted this many days after archiving;
-   * 0 keeps them forever (the default), and raw carrier payloads are then kept too.
+   * 0 keeps them forever (the default), and raw carrier payloads are then kept too. Parcels an
+   * import job stored (`imported_at`) are never deleted on their own.
    */
   readonly deleteAfterDays: number;
   /** Raw carrier payloads are dropped this many days after delivery. */
@@ -126,6 +127,8 @@ export async function applyRetention(
       .selectFrom("parcels")
       .select("id")
       .where("archived_at", "<", iso(policy.deleteAfterDays))
+      // Imported history was fetched on purpose, to keep: it is deleted only by hand.
+      .where("imported_at", "is", null)
       .execute();
     const deleted = await deleteParcels(
       trx,

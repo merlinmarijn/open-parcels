@@ -35,6 +35,11 @@ export interface ActionContext<Config, Secret> extends ProviderContext<Config, S
   readonly checkpoint: CheckpointStore;
   progress(update: JobProgress): void;
   emit(batch: ActionBatch): Promise<void>;
+  /**
+   * Rests `ms` between pages (a paced import's delay), holding no lock. Ends early, without an
+   * error, when the job is cancelled: check `signal` after it.
+   */
+  wait(ms: number): Promise<void>;
 }
 
 /**

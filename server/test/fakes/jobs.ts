@@ -12,6 +12,25 @@ export class JobWorld {
   script: (Error | undefined)[] = [];
   /** Pages that were read, by number (a resumed job must not read one twice). */
   readonly pages: number[] = [];
+  /** Paths the `fetch` action's requests reached the network with. */
+  readonly requested: string[] = [];
+  /** How each of the `fetch` action's requests failed, by error name. */
+  readonly failures: string[] = [];
+  #requestSeen: (() => void) | undefined;
+
+  /** Resolves once a request reaches the network. */
+  requestSeen(): Promise<void> {
+    return new Promise((resolve) => {
+      this.#requestSeen = resolve;
+    });
+  }
+
+  /** The network: records the request and never answers it, as a carrier that hangs. */
+  readonly fetch = (url: URL): Promise<Response> => {
+    this.requested.push(url.pathname);
+    this.#requestSeen?.();
+    return new Promise<Response>(() => undefined);
+  };
   /** When set, the next page waits until `release()`. */
   #hold: Promise<void> | undefined;
   #release: (() => void) | undefined;
@@ -80,6 +99,19 @@ export function fakeJobs(world: JobWorld): RegisteredProvider {
             return { status: "done", summary: `${String(input.pages)} pages` };
           },
         }),
+        fetch: defineAction({
+          input: z.object({}),
+          async run(context) {
+            for (const path of ["/slow", "/again"]) {
+              try {
+                await context.http.request(new URL(`https://shop.example.com${path}`));
+              } catch (error) {
+                world.failures.push(error instanceof Error ? error.name : "unknown");
+              }
+            }
+            return { status: "partial", summary: "stopped" };
+          },
+        }),
         rest: defineAction({
           input: z.object({}),
           run: () => Promise.resolve({ status: "pause", seconds: 600, summary: "resting" }),
@@ -107,6 +139,17 @@ export function fakeJobs(world: JobWorld): RegisteredProvider {
           destructive: false,
           expose_to_ha: true,
           cooldown_minutes: 60,
+        },
+        {
+          id: "fetch",
+          kind: "task",
+          label: "Fetch",
+          connection_kinds: ["account"],
+          when_state: ["ok", "idle"],
+          weight: "light",
+          destructive: false,
+          expose_to_ha: false,
+          cooldown_minutes: 0,
         },
         {
           id: "rest",

@@ -61,6 +61,7 @@ defineAction({
     await context.emit({ snapshots, orders });            // reconciled at once, idempotent
     await context.checkpoint.save({ page: at.page + 1 });  // after every emitted batch
     context.progress({ done: 3, total: 12, phase: "2023: page 4" });
+    await context.wait(8_000);                             // a paced rest, lock given up
     if (context.signal.aborted) return { status: "partial", summary: "…" };
     return { status: "done", summary: "412 orders, 37 parcels" };
     // or, to rest between legs: { status: "pause", seconds: 3600, summary: "…" }
@@ -69,8 +70,10 @@ defineAction({
 ```
 
 `ActionContext` is the connection's `ProviderContext` (config, secret, http, clock, logger,
-session, reportUnknown) plus `signal`, `checkpoint`, `progress` and `emit`. Requests go through
-the same transport, allow-list and host token buckets as the connection's runs.
+session, reportUnknown) plus `signal`, `checkpoint`, `progress`, `emit` and `wait`. Requests go
+through the same transport, allow-list and host token buckets as the connection's runs. `wait(ms)`
+is the provider's paced rest between pages: timed by the core, the connection's lock given up
+meanwhile, and ended early (without an error) by a cancel.
 
 ## 3. Jobs
 
@@ -97,13 +100,16 @@ States: `queued` → `running` → `done` | `partial` | `failed` | `cancelled`, 
   `paused`, `failed`, `partial` or `cancelled`) continues from it; a server start puts jobs that
   were `running` back to `queued`. Restart ("Start over") clears checkpoint and progress.
 - **Cancel** aborts `signal` at once for a running job; a queued or paused job is cancelled
-  at once. A running job that has not returned 30 s later is recorded as `cancelled` and every
-  further emit or checkpoint save of it is refused. Results emitted so far stay.
+  at once. The job's requests are bound to the signal: one waiting for its host's turn or in
+  flight is dropped at once and every further one is refused (`HopAbortedError`), so a provider
+  stops at the request it is in, not only at its next progress, emit or checkpoint. A running job
+  that has not returned 30 s later is recorded as `cancelled` and every further emit or
+  checkpoint save of it is refused. Results emitted so far stay.
 - **A hard ceiling of 12 h per leg:** the signal is aborted and the job pauses (`ceiling`);
   resume continues.
 - **In the sandbox** (`OPENPARCELS_PROVIDER_ISOLATION=pool`) the call is `runAction`, granted
   `http`, `log`, `report-unknown`, `session.save` (with `permissions.session`) and
-  `job.progress`, `job.emit`, `job.checkpoint`. The checkpoint travels with the call; every job
+  `job.progress`, `job.emit`, `job.checkpoint`, `job.wait`. The checkpoint travels with the call; every job
   capability's answer says whether the job was cancelled, which aborts the guest's signal.
 
 ## 4. API and live events
@@ -122,8 +128,8 @@ Live events carry the job (`job: {id, connection_id, provider, action, state, re
 summary, resume_at, …}`) and `connection: {id, provider, label, kind}`:
 `job.queued`, `job.started` (also on every resume), `job.progress` (at most one every 5 s per
 job; short-lived), `job.paused`, `job.finished` (`done`, `partial`, `failed` or `cancelled`).
-Parcels and orders a job emits fire their usual events; flagging imported history
-(`imported: true`, directly archived, `parcel.imported`, 0002 §2.15) comes with the Amazon import.
+Parcels and orders a job emits fire their usual events, marked `imported: true` (§6), and each
+stored batch fires one `parcel.imported`.
 
 ## 5. Clients
 
@@ -138,9 +144,39 @@ Parcels and orders a job emits fire their usual events; flagging imported histor
   `open_parcels.cancel_job`; and the Home Assistant events `open_parcels_job_finished` and
   `open_parcels_job_paused`.
 
-## 6. What the Amazon import adds on top
+## 6. Imported history
 
-Its manifest entry (`import_history`, heavy, `cooldown_minutes`), its `actions.import_history`
-(years from the orders page, checkpoint `{year, startIndex, pending}`, pacing inside the provider:
-6–10 s per page, a 2-minute break every 25 pages, `{status: "pause", seconds: 3600}` after 300
-pages), and the "imported" flags of 0002 §2.15. No change to jobs, routes or clients.
+What a job emits is history, not news (0002 §2.15). The core stores it like a run's results,
+plus:
+
+- **Flagged:** parcels and orders a job creates carry `imported_at` (migration 0030).
+- **Quiet:** every live event of a job's batch carries `imported: true`. A new parcel delivered
+  more than 30 days ago is stored **archived** and fires no event at all.
+- **Summed up:** each batch fires one `parcel.imported` (`connection {id, provider}`, `created`,
+  `updated`, `archived`, `orders`, `imported: true`). The HA integration fires no Home Assistant
+  event for imported live events and reloads after `parcel.imported`, so an import of years never
+  runs "delivered" automations.
+- **Kept:** retention never deletes a parcel with `imported_at`; it is deleted only by hand.
+
+## 7. Amazon "Import history"
+
+`server/src/carriers/amazon/history.ts` (0002 §2.13), on shop connections, heavy, a 24 h
+cooldown, with the input `since_year` (optional: the oldest year to read).
+
+1. **Plan:** the orders page's time filter (`year-2026`, `year-2025`, …) gives the years, newest
+   first; `total` is the number of years and `phase` reads "2023: page 4".
+2. **Walk** each year page by page (`?timeFilter=year-<y>&startIndex=<n>`, the next page's index
+   read from the page's links). Each page's orders are emitted from their order lines alone
+   (order number, placed date, item titles; `delivered` when every line says so). Shipments
+   placed within 90 days and not delivered long ago are queued; their tracking pages are read
+   afterwards, at most 8 per batch, and emitted as parcels.
+3. **Checkpoint** after every batch: `{years, year, startIndex, yearPage, pending, orders,
+   parcels}`; a resume never reads a page twice.
+
+**Pacing:** 6–10 s (jittered) before every page, a 2-minute break every 25 pages, and after 300
+pages the leg ends with `{status: "pause", seconds: 3600}`; the host bucket (one request per 5 s)
+still applies. **Trouble:** a captcha pauses the job (6 h), a sign-in page pauses it as
+`needs_sign_in` (never a new sign-in), and an orders page of an unexpected shape is read once more
+a minute later; the second time the job fails (`OrdersPageChangedError`), keeping its checkpoint.
+Digital orders are not on the orders page and are not imported. The manifest also has the link
+"Your orders" (`https://www.{storefront}/your-orders/orders`).

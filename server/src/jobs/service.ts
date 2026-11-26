@@ -1,6 +1,6 @@
 import { randomUUID } from "node:crypto";
 import type { Logger } from "pino";
-import { addMs, isoNow, type Clock } from "../clock.js";
+import { addMs, isoNow, realSleep, type Clock, type Sleep } from "../clock.js";
 import { DecryptionError, type SecretBox } from "../crypto/secrets.js";
 import type { ConnectionRow, Database, JobRow } from "../db/schema.js";
 import type { Kysely } from "kysely";
@@ -14,6 +14,7 @@ import {
   type ActionResult,
   type JobProgress,
 } from "../provider/api.js";
+import { abortableTransport, ProviderHttp } from "../provider/http.js";
 import { linkUrl, type ManifestAction } from "../provider/manifest.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import {
@@ -94,6 +95,8 @@ export interface JobDeps {
   readonly bus: EventBus;
   readonly clock: Clock;
   readonly logger: Logger;
+  /** How a job rests between pages (`ActionContext.wait`); tests pass a fast one. */
+  readonly sleep?: Sleep;
 }
 
 interface Running {
@@ -457,10 +460,21 @@ export class JobService {
     try {
       const row = await this.#connection(job.connection_id);
       if (row === undefined) return;
-      const { base, config, secret } = this.deps.runner.contextFor(row, provider, log);
-      const call = this.#call(started, running, async () => {
-        release();
-        release = await this.deps.runner.acquire(job.connection_id);
+      const context = this.deps.runner.contextFor(row, provider, log);
+      const { config, secret } = context;
+      // A cancel drops the request in flight and refuses every further one at once.
+      const signal = running.controller.signal;
+      const base = {
+        ...context.base,
+        http: new ProviderHttp(abortableTransport(context.base.http.transport, signal)),
+      };
+      const call = this.#call(started, running, {
+        release: () => {
+          release();
+        },
+        acquire: async () => {
+          release = await this.deps.runner.acquire(job.connection_id);
+        },
       });
       let outcome: unknown;
       try {
@@ -480,9 +494,15 @@ export class JobService {
   #call(
     job: JobRow,
     running: Running,
-    yieldLock: () => Promise<void>,
+    lock: { readonly release: () => void; readonly acquire: () => Promise<void> },
   ): { hooks: ActionCall; progress: () => JobProgressBody; retries: () => number } {
     const { secrets, clock } = this.deps;
+    const sleep = this.deps.sleep ?? realSleep;
+    const signal = running.controller.signal;
+    const yieldLock = async (): Promise<void> => {
+      lock.release();
+      await lock.acquire();
+    };
     let checkpoint =
       job.checkpoint_blob === null
         ? undefined
@@ -533,13 +553,28 @@ export class JobService {
       },
       emit: async (batch: ActionBatch) => {
         open();
-        await this.deps.reconciler.ingest(job.connection_id, {
-          snapshots: batch.snapshots ?? [],
-          ...(batch.orders === undefined ? {} : { orders: batch.orders }),
-          complete: false,
-        });
+        await this.deps.reconciler.ingest(
+          job.connection_id,
+          {
+            snapshots: batch.snapshots ?? [],
+            ...(batch.orders === undefined ? {} : { orders: batch.orders }),
+            complete: false,
+          },
+          [],
+          { imported: true },
+        );
         retries = 0;
         await yieldLock();
+      },
+      wait: async (ms: number) => {
+        if (signal.aborted) return;
+        // The lock is given up for the rest, so the connection's runs go on meanwhile.
+        lock.release();
+        try {
+          await untilAborted(sleep(Math.max(0, ms)), signal);
+        } finally {
+          await lock.acquire();
+        }
       },
     };
     return { hooks, progress: () => progress, retries: () => retries };
@@ -617,6 +652,20 @@ export class JobService {
       log.error({ err: error }, "A job failed unexpectedly.");
       await finished("failed", { reason: "unexpected" });
     }
+  }
+}
+
+/** Resolves with `work`, or as soon as `signal` aborts, whichever comes first. */
+async function untilAborted(work: Promise<void>, signal: AbortSignal): Promise<void> {
+  let stop: () => void = () => undefined;
+  const abort = new Promise<void>((resolve) => {
+    stop = resolve;
+  });
+  signal.addEventListener("abort", stop, { once: true });
+  try {
+    await Promise.race([work, abort]);
+  } finally {
+    signal.removeEventListener("abort", stop);
   }
 }
 

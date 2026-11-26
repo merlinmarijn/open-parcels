@@ -33,6 +33,7 @@ import { sameRows, writeOrderItems } from "./order-items.js";
 import { createOrder, findOrder } from "./order-rows.js";
 import { applyReturns } from "./returns.js";
 import { applyOrders } from "./orders.js";
+import { closeImport, deliveredLongAgo, lastSeq } from "./imported.js";
 import { OrderService } from "../orders/service.js";
 import { ReturnService } from "../returns/service.js";
 import { maskIdentifiers, recordUnknown, type UnknownValue } from "./vocab.js";
@@ -208,6 +209,8 @@ export class Reconciler {
     connectionId: string,
     result: FetchResult,
     asked: readonly string[] = [],
+    /** `imported`: an import job's batch, stored as history (`./imported.ts`). */
+    options: { readonly imported?: boolean } = {},
   ): Promise<IngestSummary> {
     const connection = await this.db
       .selectFrom("connections")
@@ -229,11 +232,19 @@ export class Reconciler {
     const unknown: UnknownValue[] = [];
     await this.db.transaction().execute(async (trx) => {
       const seen = new Set<string>();
+      const importedAt = options.imported === true ? isoNow(this.clock) : null;
+      const since = importedAt === null ? 0 : await lastSeq(trx);
+      let archived = 0;
+      const apply = async (parcel: ParcelSnapshot) => {
+        const outcome = await this.#applySnapshot(trx, connection, parcel, importedAt);
+        archived += outcome.archived ? 1 : 0;
+        return outcome;
+      };
       const trackParcel = async (parcel: ParcelSnapshot): Promise<string> =>
-        (await this.#applySnapshot(trx, connection, withSafeLinks(normalisedCodes(parcel))))
-          .parcelId;
+        (await apply(withSafeLinks(normalisedCodes(parcel)))).parcelId;
       const env = {
         clock: this.clock,
+        importedAt,
         timeZone: this.timeZone,
         trackParcel,
         orderView: (inner: Trx, id: string) =>
@@ -253,7 +264,7 @@ export class Reconciler {
         if (value !== null) {
           unknown.push(value);
         }
-        const outcome = await this.#applySnapshot(trx, connection, snapshot);
+        const outcome = await apply(snapshot);
         seen.add(outcome.parcelId);
         if (snapshot.live !== null) {
           summary.liveTargets.push({ parcelId: outcome.parcelId, target: snapshot.live });
@@ -269,6 +280,16 @@ export class Reconciler {
       }
       summary.found = await this.#recordLookup(trx, asked, seen);
       summary.events += await applyReturns(trx, env, connection.id, result.returns ?? []);
+      if (importedAt !== null) {
+        const { created, updated } = summary;
+        const orders = result.orders?.length ?? 0;
+        await closeImport(trx, this.clock, since, connection, {
+          created,
+          updated,
+          archived,
+          orders,
+        });
+      }
     });
     await this.bus.notify();
     const vocab = { db: this.db, bus: this.bus, clock: this.clock };
@@ -356,7 +377,8 @@ export class Reconciler {
     trx: Trx,
     connection: ConnectionRow,
     reported: ParcelSnapshot,
-  ): Promise<{ parcelId: string; created: boolean; events: number }> {
+    importedAt: string | null,
+  ): Promise<{ parcelId: string; created: boolean; events: number; archived: boolean }> {
     const snapshot = await withInferredHandoff(trx, connection, reported);
     if (snapshot.handoff === null && connection.kind !== "shop" && connection.kind !== "mail") {
       await adoptShopTwin(trx, this.#twinEnv(), snapshot);
@@ -388,7 +410,10 @@ export class Reconciler {
     const after =
       merged.delivered && merged.deliveredAt === null ? { ...merged, deliveredAt: now } : merged;
     const parcelId = existing?.id ?? crypto.randomUUID();
-    const orderId = await this.#upsertOrder(trx, snapshot, now);
+    const orderId = await this.#upsertOrder(trx, snapshot, now, importedAt);
+    // Imported and delivered long ago: history, stored archived and announced by nobody.
+    const archived =
+      existing === undefined && importedAt !== null && deliveredLongAgo(after, this.clock.now());
     if (orderId !== null) {
       await trx
         .insertInto("order_connections")
@@ -409,7 +434,12 @@ export class Reconciler {
               direction: after.direction,
               now,
             },
-            { ...stateColumns(after), order_id: orderId },
+            {
+              ...stateColumns(after),
+              order_id: orderId,
+              imported_at: importedAt,
+              archived_at: archived ? now : null,
+            },
           ),
         )
         .execute();
@@ -438,10 +468,9 @@ export class Reconciler {
       await writeOrderItems(trx, orderId, parcelId, snapshot);
     }
 
-    const derived = deriveEvents(
-      before === null ? null : eventView(before, manual),
-      eventView(after, manual),
-    );
+    const derived = archived
+      ? []
+      : deriveEvents(before === null ? null : eventView(before, manual), eventView(after, manual));
     if (derived.length > 0) {
       const parcel = await new ParcelRepository(trx, this.presentation).get(parcelId);
       for (const event of derived) {
@@ -454,10 +483,15 @@ export class Reconciler {
         }
       }
     }
-    return { parcelId, created: existing === undefined, events: derived.length };
+    return { parcelId, created: existing === undefined, events: derived.length, archived };
   }
 
-  async #upsertOrder(trx: Trx, snapshot: ParcelSnapshot, now: string): Promise<string | null> {
+  async #upsertOrder(
+    trx: Trx,
+    snapshot: ParcelSnapshot,
+    now: string,
+    importedAt: string | null,
+  ): Promise<string | null> {
     if (snapshot.order === null) {
       return null;
     }
@@ -494,6 +528,7 @@ export class Reconciler {
     return createOrder(trx, snapshot.order, now, {
       placedAt: snapshot.order.placedAt,
       returnUntil: snapshot.order.returnUntil ?? null,
+      importedAt,
     });
   }
 

@@ -62,7 +62,6 @@ image are shipped (see `DONE.md`). Left:
       repo (the repo manifest lists themes), installed from the providers page with the same tiers
       and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
       everywhere, no hard-coded colours.
-- [ ] Amazon "Import history" job (all years, resumable, conservative pacing, imported history kept)
 - [ ] Mail routing: mailboxes dispatch matching mails to providers' `parseMail` (sender domain +
       DKIM check, global switch on by default)
 - [ ] Split `open-parcels-rules`: provider data into providers, slim shared core stays

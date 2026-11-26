@@ -15,6 +15,17 @@ export interface TileSpec {
   readonly image?: string;
   /** Text shown under the line, such as its return window. */
   readonly note?: string;
+  /** The placed date as the line names it; "10 November 2026" when not given. */
+  readonly placed?: string;
+}
+
+/** The parts of an orders page around its lines: the time filter's years and paging links. */
+export interface ListingSpec {
+  readonly years?: readonly number[];
+  /** `startIndex` of the next page's link, when there is a next page. */
+  readonly next?: number;
+  /** `startIndex` of the previous page's link. */
+  readonly previous?: number;
 }
 
 const attr = (text: string): string =>
@@ -33,12 +44,12 @@ export function tilePath(tile: TileSpec): string {
   return `${path}?${query.toString()}`;
 }
 
-export function ordersPage(tiles: readonly TileSpec[]): string {
+export function ordersPage(tiles: readonly TileSpec[], listing: ListingSpec = {}): string {
   const cards = tiles
     .map(
       (tile) =>
         `<div class="item-card"><a class="item-card__link" href="${attr(tilePath(tile))}" ` +
-        `aria-label="${attr(`${tile.title}, Order placed 10 November 2026, ${tile.status}`)}">` +
+        `aria-label="${attr(`${tile.title}, Order placed ${tile.placed ?? "10 November 2026"}, ${tile.status}`)}">` +
         `<img src="https://img.example.invalid/1.jpg"></a>` +
         (tile.image === undefined
           ? ""
@@ -47,7 +58,21 @@ export function ordersPage(tiles: readonly TileSpec[]): string {
         `</div>`,
     )
     .join("\n");
-  return `<html><body><h1>Your Orders</h1>${cards}</body></html>`;
+  const filter =
+    listing.years === undefined
+      ? ""
+      : `<select name="timeFilter" id="time-filter"><option value="last30">past 30 days</option>` +
+        `<option value="months-3">past 3 months</option>` +
+        listing.years
+          .map((year) => `<option value="year-${String(year)}">${String(year)}</option>`)
+          .join("") +
+        `<option value="archived">Archived orders</option></select>`;
+  const link = (index: number | undefined, label: string): string =>
+    index === undefined
+      ? ""
+      : `<li class="a-${label}"><a href="/your-orders/orders?timeFilter=year-2000&amp;startIndex=${String(index)}">${label}</a></li>`;
+  const paging = `<ul class="a-pagination">${link(listing.previous, "normal")}${link(listing.next, "last")}</ul>`;
+  return `<html><body><h1>Your Orders</h1>${filter}${cards}${paging}</body></html>`;
 }
 
 export function trackPath(orderId: string, shipmentId: string): string {

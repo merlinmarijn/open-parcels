@@ -211,6 +211,40 @@ export interface HopRequest {
   readonly body: string | URLSearchParams | undefined;
   readonly timeoutMs?: number;
   readonly maxBytes?: number;
+  /** Aborts the hop (a cancelled job): the request is refused, or dropped while in flight. */
+  readonly signal?: AbortSignal;
+}
+
+/** A hop refused or dropped because the job that sent it was cancelled or reached its ceiling. */
+class HopAbortedError extends Error {
+  override readonly name = "HopAbortedError";
+}
+
+/** Whether a hop's signal has aborted (a call, so a check before a wait does not narrow it). */
+const stopped = (signal: AbortSignal | undefined): boolean => signal?.aborted === true;
+
+/** Rejects once `signal` aborts; never settles otherwise. */
+function aborted(signal: AbortSignal): Promise<never> {
+  return new Promise((_resolve, reject) => {
+    const fail = (): void => {
+      reject(new HopAbortedError("The job was stopped; the request was dropped."));
+    };
+    if (signal.aborted) fail();
+    else signal.addEventListener("abort", fail, { once: true });
+  });
+}
+
+/**
+ * `transport` bound to a job's signal: once it aborts, no hop is sent, and one waiting for its
+ * host's turn or in flight is dropped at once instead of running to its end.
+ */
+export function abortableTransport(transport: HopTransport, signal: AbortSignal): HopTransport {
+  return (hop) => {
+    if (signal.aborted) {
+      return Promise.reject(new HopAbortedError("The job was stopped; the request was refused."));
+    }
+    return Promise.race([transport({ ...hop, signal }), aborted(signal)]);
+  };
 }
 
 /** A hop's answer, its body already read (and capped). */
@@ -284,6 +318,10 @@ export function coreTransport(
       url.hostname,
       policy.limits[url.hostname] ?? policy.limits["*"] ?? DEFAULT_LIMIT,
     );
+    if (stopped(hop.signal)) {
+      throw new HopAbortedError("The job was stopped; the request was refused.");
+    }
+    const timeout = AbortSignal.timeout(hop.timeoutMs ?? DEFAULT_TIMEOUT_MS);
     const headers = new Headers(hop.headers);
     if (!headers.has("user-agent")) {
       headers.set("user-agent", policy.userAgent?.value ?? userAgent());
@@ -295,9 +333,14 @@ export function coreTransport(
         headers,
         ...(hop.body === undefined ? {} : { body: hop.body }),
         redirect: "manual",
-        signal: AbortSignal.timeout(hop.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+        signal: hop.signal === undefined ? timeout : AbortSignal.any([timeout, hop.signal]),
       });
     } catch (error) {
+      if (stopped(hop.signal)) {
+        throw new HopAbortedError("The job was stopped; the request was dropped.", {
+          cause: error,
+        });
+      }
       const cause = networkCause(error);
       const message = `Request to ${url.hostname} failed (${cause}).`;
       throw cause === "timeout"

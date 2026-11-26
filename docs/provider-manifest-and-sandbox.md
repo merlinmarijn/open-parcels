@@ -100,7 +100,7 @@ Providers are its first user; consumers its second.
   carries config, secret and the session as loaded, and is granted `http` (one hop, answered with
   the core's time, which is the guest's clock until the next hop), `log`, `report-unknown` and,
   only with `permissions.session`, `session.save`. A task action's leg (`runAction`) is also
-  granted `job.progress`, `job.emit` and `job.checkpoint`. A finished sign-in's secret is
+  granted `job.progress`, `job.emit`, `job.checkpoint` and `job.wait`. A finished sign-in's secret is
   validated again by the core against the provider's schema before it is stored. Errors keep their class across: a provider's
   own subclass (`BotGuardError extends TransientError`) travels with its nearest known class as
   `kind` and is rebuilt as that class under its own name; request timeouts are their own class

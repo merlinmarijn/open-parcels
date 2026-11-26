@@ -116,6 +116,8 @@ export interface OrderTable {
   total_amount: ColumnType<number | null, number | null | undefined>;
   total_currency: ColumnType<string | null, string | null | undefined>;
   total_source: ColumnType<"shop" | "payment" | null, "shop" | "payment" | null | undefined>;
+  /** When an import job created the order; null for one a run or an email started. See 0030. */
+  imported_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
 }
 
 interface ParcelTable {
@@ -149,6 +151,8 @@ interface ParcelTable {
   archived_at: Timestamp | null;
   /** Why the server archived the parcel on its own; null for retention or a user's archive. */
   archive_reason: ColumnType<string | null, string | null | undefined>;
+  /** When an import job created the parcel; retention never deletes it. See migration 0030. */
+  imported_at: ColumnType<Timestamp | null, Timestamp | null | undefined>;
   /** What a carrier last said about the code: pending (never answered), found or not_found. */
   lookup_state: ColumnType<
     "pending" | "found" | "not_found",

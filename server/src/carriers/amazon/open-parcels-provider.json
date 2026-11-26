@@ -43,5 +43,27 @@
     "secrets": ["token"],
     "session": true,
     "user_agent": true
-  }
+  },
+  "actions": [
+    {
+      "id": "import_history",
+      "kind": "task",
+      "label": "Import history",
+      "description": "Reads every order on the account, back to the first one, and keeps it as history.",
+      "connection_kinds": ["shop"],
+      "when_state": ["ok", "idle"],
+      "weight": "heavy",
+      "confirm": "This reads your whole order history, slowly. It can take hours.",
+      "destructive": false,
+      "expose_to_ha": true,
+      "cooldown_minutes": 1440
+    },
+    {
+      "id": "open_orders",
+      "kind": "link",
+      "label": "Your orders",
+      "connection_kinds": ["shop"],
+      "url": "https://www.{storefront}/your-orders/orders"
+    }
+  ]
 }

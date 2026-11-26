@@ -160,6 +160,7 @@ const methods: GuestMethods = {
           ask(CAPABILITY.jobProgress, update).catch(() => undefined);
         },
         emit: (batch) => ask(CAPABILITY.jobEmit, batch),
+        wait: (ms) => ask(CAPABILITY.jobWait, ms),
       },
     );
   }),

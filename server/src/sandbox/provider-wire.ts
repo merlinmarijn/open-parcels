@@ -77,6 +77,8 @@ export const CAPABILITY = {
   jobProgress: "job.progress",
   jobEmit: "job.emit",
   jobCheckpoint: "job.checkpoint",
+  /** A rest between pages, timed by the core and ended early by a cancel. */
+  jobWait: "job.wait",
 } as const;
 
 export interface LogRequest {

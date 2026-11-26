@@ -16,6 +16,20 @@ export const PROVIDER_TEXTS_DE: Readonly<Record<string, string>> = Object.fromEn
     "Reads the demo parcels again, one page at a time.",
     "Liest die Demo-Pakete erneut, Seite für Seite.",
   ],
+  [
+    "Reads every order on the account, back to the first one, and keeps it as history.",
+    "Liest jede Bestellung des Kontos bis zur ersten und behält sie als Verlauf.",
+  ],
+  [
+    "This reads your whole order history, slowly. It can take hours.",
+    "Das liest deinen ganzen Bestellverlauf, langsam. Es kann Stunden dauern.",
+  ],
+  ["Your orders", "Deine Bestellungen"],
+  ["Oldest year", "Ältestes Jahr"],
+  [
+    "Leave empty to read back to the first order.",
+    "Leer lassen, um bis zur ersten Bestellung zu lesen.",
+  ],
   ["Sign in in your browser", "Im Browser anmelden"],
   [
     "Open the address, sign in, and paste the full address your browser ends on.",

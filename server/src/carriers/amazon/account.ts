@@ -54,9 +54,14 @@ const DELIVERED_LOOKBACK_DAYS = 7;
 /** Any Amazon storefront may appear in a redirect (sign-in lives on amazon.com for some). */
 const AMAZON_HOST_RE = /^(?:www\.)?amazon\.(?:com|de|co\.uk|ie|ca|com\.au|in)$/;
 
-interface Page {
+export interface Page {
   readonly body: string;
   readonly url: string;
+}
+
+/** Reads one signed-in page; null when Amazon answers 404. */
+export interface PageReader {
+  page(path: string): Promise<Page | null>;
 }
 
 /**
@@ -65,7 +70,7 @@ interface Page {
  * page means the stored sign-in is refused. Network errors propagate as they are, so they never
  * lead to a new sign-in.
  */
-export class StorefrontReader {
+export class StorefrontReader implements PageReader {
   #minted = false;
   readonly #allow: (target: URL) => boolean;
 
@@ -77,6 +82,11 @@ export class StorefrontReader {
     const own = onStorefront(storefront);
     this.#allow = (target) =>
       own(target) || (target.protocol === "https:" && AMAZON_HOST_RE.test(target.hostname));
+  }
+
+  /** Whether this reader minted new cookies (so the session store holds older ones). */
+  get minted(): boolean {
+    return this.#minted;
   }
 
   async #mint(): Promise<void> {
@@ -158,9 +168,9 @@ async function readTiles(
   return null;
 }
 
-async function loadTrack(
+export async function loadTrack(
   context: AmazonContext,
-  reader: StorefrontReader,
+  reader: PageReader,
   lead: OrderTile,
 ): Promise<{ trackPath: string | null; track: TrackPage | null }> {
   let trackPath: string | null = lead.path;
@@ -186,7 +196,7 @@ async function loadTrack(
 
 const ordinal = (day: Day): number => Date.UTC(day.year, day.month - 1, day.day);
 
-function deliveredLongAgo(
+export function deliveredLongAgo(
   rules: Rules,
   lead: OrderTile,
   now: Date,
@@ -200,7 +210,7 @@ function deliveredLongAgo(
   return day !== null && ordinal(reference) - ordinal(day) > DELIVERED_LOOKBACK_DAYS * 86_400_000;
 }
 
-function groupTiles(rules: Rules, tiles: readonly OrderTile[]): Map<string, OrderTile[]> {
+export function groupTiles(rules: Rules, tiles: readonly OrderTile[]): Map<string, OrderTile[]> {
   const groups = new Map<string, OrderTile[]>();
   for (const tile of tiles) {
     if (isSkipped(rules, tile.statusText)) {

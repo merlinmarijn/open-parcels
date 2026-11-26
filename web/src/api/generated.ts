@@ -9114,6 +9114,7 @@ export type GetApiV1Events200Event =
   | "parcel.removed"
   | "parcel.deleted"
   | "parcel.archived"
+  | "parcel.imported"
   | "connection.added"
   | "connection.updated"
   | "connection.state_changed"

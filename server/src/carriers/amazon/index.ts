@@ -20,6 +20,7 @@ import {
   type AmazonSecret,
 } from "./auth.js";
 import { AMAZON_ID } from "./build.js";
+import { importHistory } from "./history.js";
 import { readLive } from "./live.js";
 import { STOREFRONT_IDS, STOREFRONTS } from "./storefronts.js";
 
@@ -72,6 +73,7 @@ export function amazonCarrier(rules?: Rules): CarrierProvider<AmazonConfig, Amaz
         reason: "Amazon's order pages answer a library User-Agent with a robot check.",
       },
     },
+    actions: { import_history: importHistory(getRules) },
     fetchAccount: (context) => readAccount(context, getRules()),
     readLive: (context, target) => readLive(context, target),
   });

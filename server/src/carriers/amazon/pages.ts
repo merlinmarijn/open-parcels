@@ -209,6 +209,38 @@ export function hasMoreOrderPages(page: string): boolean {
   return NEXT_PAGE_RE.test(page);
 }
 
+/** A year in the orders page's time filter: `<option value="year-2023">`. */
+const YEAR_OPTION_RE = /<option\b[^>]*\bvalue="year-(\d{4})"/g;
+/** A link to another page of the same listing, with its first order's index. */
+const START_INDEX_RE = /href="[^"]*[?&](?:amp;)?startIndex=(\d+)/g;
+
+/**
+ * The years the orders page's time filter offers (the years the account has orders in), newest
+ * first. Empty when the page has no such filter.
+ */
+export function parseOrderYears(page: string): number[] {
+  const years = new Set<number>();
+  for (const match of page.matchAll(YEAR_OPTION_RE)) {
+    years.add(Number(match[1]));
+  }
+  return [...years].sort((a, b) => b - a);
+}
+
+/**
+ * The `startIndex` of the listing's next page after the one at `current`, or null on its last
+ * page: the smallest index linked from the page that lies past the current one.
+ */
+export function nextStartIndex(page: string, current: number): number | null {
+  let next: number | null = null;
+  for (const match of page.matchAll(START_INDEX_RE)) {
+    const index = Number(match[1]);
+    if (index > current && (next === null || index < next)) {
+      next = index;
+    }
+  }
+  return next;
+}
+
 export function looksSignedOut(page: string, finalUrl: string): boolean {
   return finalUrl.includes("/ap/signin") || PASSWORD_FIELD_RE.test(page);
 }

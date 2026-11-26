@@ -14,6 +14,7 @@ export const EVENT_TYPES = [
   "parcel.removed",
   "parcel.deleted",
   "parcel.archived",
+  "parcel.imported",
   "connection.added",
   "connection.updated",
   "connection.state_changed",

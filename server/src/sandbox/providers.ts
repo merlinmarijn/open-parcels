@@ -196,6 +196,10 @@ export function isolated(provider: RegisteredProvider, sandbox: Sandbox): Regist
           await job.checkpoint.save(args);
           return answer();
         },
+        [CAPABILITY.jobWait]: async (args) => {
+          await job.wait(typeof args === "number" ? args : 0);
+          return answer();
+        },
       };
       return (await sandbox.call("runAction", call, {
         capabilities,

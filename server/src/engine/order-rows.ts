@@ -54,7 +54,12 @@ export async function createOrder(
   trx: Trx,
   key: OrderKey,
   now: string,
-  values: { readonly placedAt?: string | null; readonly returnUntil?: string | null } = {},
+  values: {
+    readonly placedAt?: string | null;
+    readonly returnUntil?: string | null;
+    /** Set when an import job creates the order. */
+    readonly importedAt?: string | null;
+  } = {},
 ): Promise<string> {
   const id = crypto.randomUUID();
   await trx
@@ -65,6 +70,7 @@ export async function createOrder(
       order_number: key.orderNumber,
       placed_at: values.placedAt ?? null,
       return_until: values.returnUntil ?? null,
+      imported_at: values.importedAt ?? null,
       status: null,
       created_at: now,
       updated_at: now,

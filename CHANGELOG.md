@@ -2,6 +2,24 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: Amazon "Import history"; imported history is flagged, quiet and kept
+
+Amazon shop connections get the action "Import history": every year of the orders page, newest
+first, paced (6–10 s a page, a 2-minute break every 25 pages, an hour's rest after 300), resumable
+from a checkpoint after every batch, and the link "Your orders"
+([`docs/connection-actions-and-jobs.md`](docs/connection-actions-and-jobs.md) §6, §7). What a job
+stores is history: parcels and orders get `imported_at` (migration 0030), the live events of a
+job's batch carry `imported: true`, new parcels delivered more than 30 days ago are stored
+archived without events, each batch fires the new live event `parcel.imported`, and retention
+never deletes imported parcels. The HA integration (updated in lockstep) fires no Home Assistant
+event for imported live events and reloads after `parcel.imported`.
+
+### Changed: cancelling a job drops its request in flight
+
+A job's requests are bound to its cancel: the one waiting or in flight is dropped at once and every
+further one refused, instead of the job stopping only at its next progress, results or checkpoint.
+Providers get `ActionContext.wait(ms)` for paced rests (sandbox capability `job.wait`).
+
 ### Added: connection actions and jobs
 
 Providers declare actions in their manifest (`actions`): links ("Your orders") and tasks that run

@@ -40,6 +40,8 @@ const REACTIONS = {
   "parcel.removed": "parcel",
   "parcel.deleted": "parcel",
   "parcel.archived": "parcel",
+  // An import job stored a batch of history: the lists and orders it filled.
+  "parcel.imported": "parcel",
   "parcel.live_position": "position",
   // Connections: added, renamed, a state change, a finished run (run times, counts), a removal.
   "connection.added": "connection",
