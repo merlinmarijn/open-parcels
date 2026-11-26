@@ -41,8 +41,11 @@ parsed into the same schema then. The schema moves to the engine package with th
   `engine` and `entry` come with installs (P3), as additions to format 1.
 - **Capabilities** (`provides`): the connection kinds (`account`, `tracking`, `shop`), `live`
   (courier map) and `fallback` (a fallback service). Data capabilities (status tables, email
-  rules, tracking-number patterns), `mail` and `actions` are added to `provides` by the phases that
-  build them (P2b, P2c, P5); format 1 refuses unknown keys, so a manifest cannot claim them early.
+  rules, tracking-number patterns) and `mail` are added to `provides` by the phases that build
+  them (P2b, P2c, P5); format 1 refuses unknown keys, so a manifest cannot claim them early.
+- **Actions** (`actions`, optional): buttons on the provider's connection cards, links and tasks
+  that run as jobs ([`connection-actions-and-jobs.md`](connection-actions-and-jobs.md) §1).
+  Registration checks that the manifest's tasks are exactly the code's `actions`.
 - **Permissions:**
   - `network`: every host the provider may reach, each with a reason. `host` is exact
     (`api.example.com`) or a leading-dot suffix (`.example.com`: the domain and its subdomains).
@@ -96,7 +99,9 @@ Providers are its first user; consumers its second.
   while what a provider is (manifest, schemas, flows) is answered without a call. Each call
   carries config, secret and the session as loaded, and is granted `http` (one hop, answered with
   the core's time, which is the guest's clock until the next hop), `log`, `report-unknown` and,
-  only with `permissions.session`, `session.save`. Errors keep their class across: a provider's
+  only with `permissions.session`, `session.save`. A task action's leg (`runAction`) is also
+  granted `job.progress`, `job.emit` and `job.checkpoint`. A finished sign-in's secret is
+  validated again by the core against the provider's schema before it is stored. Errors keep their class across: a provider's
   own subclass (`BotGuardError extends TransientError`) travels with its nearest known class as
   `kind` and is rebuilt as that class under its own name; request timeouts are their own class
   (`RequestTimeoutError`), since an error's `cause` does not cross.

@@ -14,6 +14,7 @@ const STREAM_RETRY_MAX_MS = 5 * 60_000;
 type Reaction =
   | "parcel"
   | "connection"
+  | "job"
   | "order"
   | "return"
   | "settings"
@@ -46,6 +47,12 @@ const REACTIONS = {
   "connection.state_changed": "connection",
   "connection.run_finished": "connection",
   "connection.removed": "connection",
+  // A job queued, started, moved on, paused or finished: the connection cards' job panels.
+  "job.queued": "job",
+  "job.started": "job",
+  "job.progress": "job",
+  "job.paused": "job",
+  "job.finished": "job",
   // An order created (from an email), renamed, (un)archived by hand, or deleted.
   "order.created": "order",
   "order.updated": "order",
@@ -264,6 +271,9 @@ export function useLiveUpdates(enabled: boolean): LiveState {
       void client.invalidateQueries({ queryKey: keys.backups });
       void client.invalidateQueries({ queryKey: keys.status });
     };
+    const onJob = (): void => {
+      void client.invalidateQueries({ queryKey: keys.jobs });
+    };
     const onHealth = (): void => {
       void client.invalidateQueries({ queryKey: keys.status });
     };
@@ -285,6 +295,7 @@ export function useLiveUpdates(enabled: boolean): LiveState {
     const handlers: Record<Reaction, (event: MessageEvent<string>) => void> = {
       parcel: onParcel,
       connection: onConnection,
+      job: onJob,
       order: onOrder,
       return: onReturn,
       settings: onSettings,

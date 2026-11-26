@@ -24,6 +24,7 @@ const NOT_FOUND: Readonly<Record<NotFoundResource, ErrorText>> = {
   sign_in: () => "The sign-in was not found. Start it again.",
   setting: () => "There is no such setting.",
   pictures: () => "There are no item pictures.",
+  job: () => "The job was not found.",
 };
 
 const INVALID_CONNECTION: Readonly<Record<InvalidConnectionReason, ErrorText>> = {
@@ -106,6 +107,13 @@ export const errors: ErrorTexts = {
     sign_in_captcha: () =>
       "The carrier showed a captcha. Your sign-in is kept; wait a while, then try the same step again.",
     no_sign_in: () => "This connection has no such sign-in.",
+    no_such_action: () => "This connection has no such action.",
+    action_unavailable: () => "This action cannot start now (check the connection's state).",
+    action_cooldown: (p) =>
+      `This action ran a short while ago; try again in ${param(p, "seconds")} seconds.`,
+    invalid_input: (p) => withDetail("Check what you entered.", p),
+    job_running: () => "This connection is busy with a job already.",
+    job_state: () => "The job cannot do that in its current state.",
   },
   http: (status) => `The server answered with error ${String(status)}.`,
 };

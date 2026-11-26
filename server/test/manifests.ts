@@ -65,6 +65,7 @@ export function testManifest(
     readonly countries?: readonly string[];
     readonly provides?: Partial<ProviderManifest["provides"]>;
     readonly permissions?: Partial<ProviderManifest["permissions"]>;
+    readonly actions?: ProviderManifest["actions"];
   } = {},
 ): ProviderManifest {
   return {
@@ -81,6 +82,7 @@ export function testManifest(
       user_agent: false,
       ...changes.permissions,
     },
+    actions: [...(changes.actions ?? [])],
   };
 }
 

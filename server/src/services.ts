@@ -19,6 +19,7 @@ import { trackingConnectionIn } from "./engine/linking.js";
 import { Reconciler } from "./engine/reconciler.js";
 import { ProviderRegistry, type RegisteredProvider } from "./engine/registry.js";
 import { ConnectionRunner } from "./engine/runner.js";
+import { JobService } from "./jobs/service.js";
 import type { Sandbox } from "./sandbox/host.js";
 import { builtinProviders, sandboxFilesIn } from "./sandbox/providers.js";
 import { SignInService } from "./engine/sign-in.js";
@@ -88,6 +89,8 @@ export interface Services {
   readonly reconciler: Reconciler;
   readonly runner: ConnectionRunner;
   readonly scheduler: Scheduler;
+  /** Connection actions and their jobs; started by main. */
+  readonly jobs: JobService;
   readonly live: LiveTracker;
   readonly calendar: CalendarService;
   readonly signIn: SignInService;
@@ -361,6 +364,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     reconciler,
     runner,
     scheduler,
+    jobs: new JobService({ ...deps, registry, runner, reconciler, bus }),
     live,
     calendar: new CalendarService(db, clock, deps.config.timeZone, presentation, returns),
     signIn: new SignInService({

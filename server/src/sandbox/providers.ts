@@ -4,7 +4,13 @@ import { fileURLToPath, pathToFileURL } from "node:url";
 import { BUILTIN_CARRIERS } from "../engine/builtin-carriers.js";
 import type { BaseContext, RegisteredProvider } from "../engine/registry.js";
 import type { Clock } from "../clock.js";
-import type { FetchResult, LiveReading } from "../provider/api.js";
+import type {
+  ActionBatch,
+  ActionResult,
+  FetchResult,
+  JobProgress,
+  LiveReading,
+} from "../provider/api.js";
 import type { SignInTurn } from "../provider/sign-in.js";
 import type { ProviderHttp } from "../provider/http.js";
 import { Sandbox, type Capability, type CallOptions } from "./host.js";
@@ -12,7 +18,9 @@ import { httpCapability } from "./http.js";
 import {
   CAPABILITY,
   rebuildProviderError,
+  type ActionWireCall,
   type ConnectionCall,
+  type JobAnswer,
   type LiveCall,
   type LogRequest,
   type SignInTurnCall,
@@ -24,6 +32,8 @@ import {
 const RUN_TIMEOUT_MS = 10 * 60_000;
 /** A live read or one sign-in turn is a handful of requests. */
 const TURN_TIMEOUT_MS = 2 * 60_000;
+/** A job's leg ends at its 12 h ceiling (the job service aborts it); a minute more to return. */
+const ACTION_TIMEOUT_MS = 12 * 60 * 60_000 + 60_000;
 /** Heap of the pool child: every built-in provider, a few connections' results at a time. */
 const POOL_MEMORY_MB = 256;
 
@@ -163,6 +173,35 @@ export function isolated(provider: RegisteredProvider, sandbox: Sandbox): Regist
       const options = connectionCapabilities(provider, base, TURN_TIMEOUT_MS);
       return (await sandbox.call("readLive", call, options)) as LiveReading | null;
     },
+    async runAction(base, rawConfig, rawSecret, job) {
+      const call: ActionWireCall = {
+        ...connectionCall(provider, base, rawConfig, rawSecret),
+        actionId: job.actionId,
+        input: job.input,
+        checkpoint: job.checkpoint.load(),
+      };
+      const answer = (): JobAnswer => ({ cancelled: job.signal.aborted });
+      const options = connectionCapabilities(provider, base, ACTION_TIMEOUT_MS);
+      const capabilities: Record<string, Capability> = {
+        ...options.capabilities,
+        [CAPABILITY.jobProgress]: (args) => {
+          job.progress(args as JobProgress);
+          return Promise.resolve(answer());
+        },
+        [CAPABILITY.jobEmit]: async (args) => {
+          await job.emit(args as ActionBatch);
+          return answer();
+        },
+        [CAPABILITY.jobCheckpoint]: async (args) => {
+          await job.checkpoint.save(args);
+          return answer();
+        },
+      };
+      return (await sandbox.call("runAction", call, {
+        capabilities,
+        timeoutMs: ACTION_TIMEOUT_MS,
+      })) as ActionResult;
+    },
     async signInTurn(turn) {
       const call: SignInTurnCall = {
         provider: provider.info.id,
@@ -179,7 +218,10 @@ export function isolated(provider: RegisteredProvider, sandbox: Sandbox): Regist
         capabilities: { [CAPABILITY.http]: hops(turn.http, turn.clock) },
         timeoutMs: TURN_TIMEOUT_MS,
       };
-      return (await sandbox.call("signInTurn", call, options)) as SignInTurn<unknown>;
+      const answer = (await sandbox.call("signInTurn", call, options)) as SignInTurn<unknown>;
+      // The guest validated a finished sign-in's secret already; the core checks it again on its
+      // own side, so a guest built from other code can never store sign-in data of another shape.
+      return "secret" in answer ? { secret: provider.validateSecret(answer.secret) } : answer;
     },
   };
 }

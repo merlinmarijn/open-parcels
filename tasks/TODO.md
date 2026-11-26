@@ -62,8 +62,6 @@ image are shipped (see `DONE.md`). Left:
       repo (the repo manifest lists themes), installed from the providers page with the same tiers
       and trust warnings. Precondition: the web UI must use design tokens (CSS custom properties)
       everywhere, no hard-coded colours.
-- [ ] Connection actions and jobs (buttons on connection cards, progress, cancel, resume, HA
-      buttons)
 - [ ] Amazon "Import history" job (all years, resumable, conservative pacing, imported history kept)
 - [ ] Mail routing: mailboxes dispatch matching mails to providers' `parseMail` (sender domain +
       DKIM check, global switch on by default)

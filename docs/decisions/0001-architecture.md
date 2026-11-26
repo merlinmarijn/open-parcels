@@ -407,6 +407,7 @@ Everything is under `/api/v1`. The OpenAPI document is at `/api/v1/openapi.json`
 | `connection.state_changed` | A connection changes state, including "needs sign-in" |
 | `connection.run_finished` | A connection run ended, successfully or not (`ok`). Clients refresh run times and counts. A run the provider skipped on purpose (DPD with public tracking off) is `ok` but leaves `last_ok_at` alone, with `state_reason` `provider_idle` and the provider's words in `carrier_message` |
 | `connection.removed` | A connection was deleted, or merged into another (`merged_into`: its id). Clients drop its device |
+| `job.queued`, `job.started`, `job.progress`, `job.paused`, `job.finished` | A connection action's job was queued, started or resumed, moved on (at most every 5 s; short-lived), paused (`reason`, `resume_at`) or ended (`done`, `partial`, `failed`, `cancelled`). Payload: `job` and `connection` ([`docs/connection-actions-and-jobs.md`](../connection-actions-and-jobs.md)) |
 | `backup.finished` | A database backup ended, successfully or not (`ok`, `reason`, `file`, `bytes`, `error`: a code such as `no_space`) |
 | `vocab.unknown` | An unmapped status value is seen for the first time |
 

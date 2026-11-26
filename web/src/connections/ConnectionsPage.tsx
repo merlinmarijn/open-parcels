@@ -7,10 +7,11 @@ import {
   useDeleteConnection,
   useParcels,
   useConnections,
+  useJobs,
   useSyncConnection,
   useUpdateConnection,
 } from "../api/queries";
-import type { Carrier, Parcel, Connection } from "../api/types";
+import type { Carrier, CarrierAction, Parcel, Connection, Job } from "../api/types";
 import { CarrierLogo } from "../components/CarrierLogo";
 import { useIsAdmin } from "../auth/session";
 import { ErrorNotice, ReadOnlyHint, Spinner } from "../components/ui";
@@ -20,6 +21,7 @@ import { INBOX_PROVIDER } from "./inbox";
 import { StateCause } from "./StateCause";
 import { SignInDialog } from "./SignInDialog";
 import { ConnectionDialog } from "./ConnectionDialog";
+import { ConnectionJobs } from "./ConnectionJobs";
 import { t } from "../i18n";
 import { formatNumber } from "../lib/locale";
 
@@ -75,9 +77,22 @@ function Stat(props: { readonly label: string; readonly value: number | string }
   );
 }
 
+/** Each connection's newest job (the list comes newest first). */
+function newestJobs(jobs: readonly Job[]): ReadonlyMap<string, Job> {
+  const newest = new Map<string, Job>();
+  for (const job of jobs) {
+    if (!newest.has(job.connection_id)) newest.set(job.connection_id, job);
+  }
+  return newest;
+}
+
+const NO_ACTIONS: readonly CarrierAction[] = [];
+
 function ConnectionRow(props: {
   readonly connection: Connection;
   readonly stats: ConnectionStats | undefined;
+  readonly actions: readonly CarrierAction[];
+  readonly job: Job | undefined;
   readonly signIn: boolean;
   /** Readers see the card without its actions. */
   readonly admin: boolean;
@@ -118,6 +133,12 @@ function ConnectionRow(props: {
         <dt>{t.connections.nextRun}</dt>
         <dd>{connection.next_run_at === null ? "—" : formatRelative(connection.next_run_at)}</dd>
       </dl>
+      <ConnectionJobs
+        connection={connection}
+        actions={props.actions}
+        job={props.job}
+        admin={props.admin}
+      />
       {props.admin ? <ConnectionActions {...props} /> : null}
     </li>
   );
@@ -244,6 +265,8 @@ export function ConnectionsPage(): ReactNode {
   const connections = useConnections();
   const carriers = useCarriers();
   const parcels = useParcels(true);
+  const jobs = useJobs();
+  const newest = useMemo(() => newestJobs(jobs.data ?? []), [jobs.data]);
   const stats = useMemo(() => statsByConnection(parcels.data ?? []), [parcels.data]);
   const list = connections.data ?? [];
   const working = list.filter(
@@ -300,6 +323,11 @@ export function ConnectionsPage(): ReactNode {
               key={connection.id}
               connection={connection}
               stats={stats.get(connection.id)}
+              actions={
+                carriers.data?.find((carrier) => carrier.id === connection.provider)?.actions ??
+                NO_ACTIONS
+              }
+              job={newest.get(connection.id)}
               signIn={canSignIn(connection, carriers.data)}
               admin={admin}
               onEdit={() => {

@@ -19,6 +19,7 @@ function carrier(id: string, name: string, extra: Partial<Carrier> = {}): Carrie
     sign_in_flows: [],
     config_schema: {},
     secret_schema: {},
+    actions: [],
     ...extra,
   };
 }

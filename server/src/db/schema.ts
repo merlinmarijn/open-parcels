@@ -326,6 +326,32 @@ interface SignInAttemptTable {
   poll_not_before: Timestamp | null;
 }
 
+/** A connection action's job. See migration 0029 and `docs/connection-actions-and-jobs.md`. */
+export interface JobTable {
+  id: string;
+  connection_id: string;
+  provider: string;
+  action: string;
+  /** JSON, the validated input. */
+  input: string;
+  state: "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+  /** Why it is paused or failed (`rate_limited`, `captcha`, `needs_sign_in`, …), else null. */
+  reason: string | null;
+  /** JSON `{done, total, phase}`. */
+  progress: string;
+  /** The provider's checkpoint, encrypted with the job's id as associated data. */
+  checkpoint_blob: Buffer | null;
+  summary: string | null;
+  /** Transient failures in a row; reset by every emitted batch. */
+  retries: Generated<number>;
+  created_at: Timestamp;
+  started_at: Timestamp | null;
+  updated_at: Timestamp;
+  finished_at: Timestamp | null;
+  /** When a paused job is queued again on its own; null: only by hand. */
+  resume_at: Timestamp | null;
+}
+
 export interface Database {
   owner: OwnerTable;
   sessions: SessionTable;
@@ -352,7 +378,10 @@ export interface Database {
   unknown_vocab: UnknownVocabTable;
   sign_in_attempts: SignInAttemptTable;
   sync_changes: SyncChangeTable;
+  jobs: JobTable;
 }
+
+export type JobRow = Selectable<JobTable>;
 
 export type ParcelRow = Selectable<ParcelTable>;
 export type NewParcelRow = Insertable<ParcelTable>;

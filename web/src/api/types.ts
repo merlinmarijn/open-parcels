@@ -10,6 +10,7 @@ import type {
   GetApiV1ReturnsView,
   GetApiV1Status200,
   GetApiV1Connections200Item,
+  GetApiV1Jobs200Item,
   GetApiV1ConnectionsIdSignInFlows200Item,
   GetApiV1Tokens200Item,
   PostApiV1ConnectionsIdSignInAttemptsAttemptContinue200,
@@ -25,6 +26,9 @@ export type ParcelStatus = Parcel["status"];
 export type LookupState = Parcel["lookup"]["state"];
 export type Carrier = GetApiV1Carriers200Item;
 export type Connection = GetApiV1Connections200Item;
+export type CarrierAction = Carrier["actions"][number];
+export type Job = GetApiV1Jobs200Item;
+export type JobState = Job["state"];
 export type ConnectionState = Connection["state"];
 export type StateReason = NonNullable<Connection["state_reason"]>;
 export type SchedulerError = NonNullable<GetApiV1Status200["scheduler"]["last_error"]>;

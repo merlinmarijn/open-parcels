@@ -2,6 +2,27 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: connection actions and jobs
+
+Providers declare actions in their manifest (`actions`): links ("Your orders") and tasks that run
+as resumable **jobs** with progress, cancel, resume and start over
+([`docs/connection-actions-and-jobs.md`](docs/connection-actions-and-jobs.md)). New: table `jobs`
+(migration 0029); `GET /api/v1/carriers` lists each provider's `actions`;
+`GET /api/v1/connections/{id}/actions`, `POST /api/v1/connections/{id}/actions/{action}`,
+`GET /api/v1/jobs`, `GET /api/v1/jobs/{id}`, `POST /api/v1/jobs/{id}/cancel|resume|restart`;
+live events `job.queued`, `job.started`, `job.progress`, `job.paused`, `job.finished`; error codes
+`no_such_action`, `action_unavailable`, `action_cooldown`, `invalid_input`, `job_running`,
+`job_state`. The web UI shows actions and the newest job on each connection card; the HA
+integration adds action buttons, a job sensor per connection, the services
+`open_parcels.run_action` and `open_parcels.cancel_job`, and the Home Assistant events
+`open_parcels_job_paused` and `open_parcels_job_finished` (HA integration updated in lockstep:
+it reads `/jobs` on every load). The demo courier has "Import history" to try them.
+
+### Changed: the pool checks a finished sign-in's secret itself
+
+With `OPENPARCELS_PROVIDER_ISOLATION=pool`, the secret a sign-in finishes with is validated again
+against the provider's schema in the server, not only in the sandbox child, before it is stored.
+
 ### Added: `OPENPARCELS_PROVIDER_ISOLATION` runs the built-in providers in a sandbox
 
 `pool` runs every built-in provider in one separate Node process under the permission model: no

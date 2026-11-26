@@ -81,9 +81,14 @@ describe("provider texts", () => {
     expect(untitled).toEqual([]);
   });
 
-  it("has a German text for every flow label, field title and description", () => {
+  it("has a German text for every flow label, action text, field title and description", () => {
     const texts = BUILTIN_CARRIERS.flatMap(({ info }) => [
       ...info.signInFlows.map((flow) => flow.label),
+      ...info.actions.flatMap((action) => [
+        action.label,
+        action.description,
+        action.kind === "task" ? action.confirm : undefined,
+      ]),
       ...[info.configSchema, info.secretSchema, ...info.signInFlows.map((flow) => flow.fields)]
         .filter((schema): schema is z.ZodType => schema !== null)
         .flatMap((schema) => fields(jsonSchema(schema)))

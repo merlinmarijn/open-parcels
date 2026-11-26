@@ -9,8 +9,10 @@ import {
   CAPABILITY,
   rebuildProviderError,
   withKind,
+  type ActionWireCall,
   type CallBase,
   type ConnectionCall,
+  type JobAnswer,
   type LiveCall,
   type LogRequest,
   type SignInTurnCall,
@@ -130,6 +132,37 @@ const methods: GuestMethods = {
       call.target,
     ),
   ),
+
+  runAction: served((call: ActionWireCall, broker) => {
+    const controller = new AbortController();
+    // Every job capability's answer says whether the job was cancelled: that aborts the signal.
+    const ask = async (capability: string, args: unknown): Promise<void> => {
+      const answer = (await broker.request(capability, args)) as JobAnswer;
+      if (answer.cancelled) controller.abort();
+    };
+    let checkpoint = call.checkpoint;
+    return providerOf(call.provider).runAction(
+      baseFor(call, broker),
+      call.rawConfig,
+      call.rawSecret,
+      {
+        actionId: call.actionId,
+        input: call.input,
+        signal: controller.signal,
+        checkpoint: {
+          load: () => checkpoint,
+          async save(value) {
+            await ask(CAPABILITY.jobCheckpoint, value);
+            checkpoint = value;
+          },
+        },
+        progress(update) {
+          ask(CAPABILITY.jobProgress, update).catch(() => undefined);
+        },
+        emit: (batch) => ask(CAPABILITY.jobEmit, batch),
+      },
+    );
+  }),
 
   signInTurn: served((call: SignInTurnCall, broker) => {
     const { clock, http } = connect(call, broker);

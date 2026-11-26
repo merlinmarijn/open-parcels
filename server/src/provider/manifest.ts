@@ -21,6 +21,45 @@ const networkEntry = z.union([
 const SECRET_KINDS = ["credentials", "api_key", "token"] as const;
 export type SecretKind = (typeof SECRET_KINDS)[number];
 
+/** Connection states an action may start in (`when_state`); see `docs/connection-actions-and-jobs.md`. */
+const ACTION_STATES = ["ok", "idle", "needs_sign_in", "error"] as const;
+
+const actionText = z.string().trim().min(1).max(300);
+
+const actionCommon = {
+  id: z.string().regex(/^[a-z0-9_]{1,40}$/),
+  label: z.string().trim().min(1).max(60),
+  description: actionText.optional(),
+  connection_kinds: z.array(z.enum(CONNECTION_KINDS)).min(1),
+  when_state: z.array(z.enum(ACTION_STATES)).min(1).default(["ok", "idle"]),
+};
+
+/** A button on the provider's connection cards (`docs/connection-actions-and-jobs.md` §1). */
+const actionSchema = z.discriminatedUnion("kind", [
+  z.strictObject({
+    ...actionCommon,
+    kind: z.literal("task"),
+    /** `heavy`: one at a time per server, the rest wait as queued. */
+    weight: z.enum(["light", "heavy"]).default("light"),
+    confirm: actionText.optional(),
+    /** Never an HA button; the HA service needs `confirm: true`. */
+    destructive: z.boolean().default(false),
+    expose_to_ha: z.boolean().default(false),
+    /** Earliest re-run after a finished (`done`) job, in minutes. */
+    cooldown_minutes: z.number().int().min(0).max(525_600).default(0),
+  }),
+  z.strictObject({
+    ...actionCommon,
+    kind: z.literal("link"),
+    /** https only; `{field}` placeholders take the connection's config values. */
+    url: z
+      .string()
+      .regex(/^https:\/\/[^\s]+$/)
+      .max(500),
+  }),
+]);
+export type ManifestAction = z.infer<typeof actionSchema>;
+
 const providerManifestSchema = z.strictObject({
   schema: z.literal(1),
   id: z.string().regex(/^[a-z0-9_]{2,40}$/),
@@ -55,8 +94,41 @@ const providerManifestSchema = z.strictObject({
     /** Overrides the honest User-Agent (the value and its reason are in the code). */
     user_agent: z.boolean(),
   }),
+  /** Buttons on its connection cards: links, and tasks that run as jobs. */
+  actions: z
+    .array(actionSchema)
+    .default([])
+    .refine((actions) => new Set(actions.map((action) => action.id)).size === actions.length, {
+      message: "two actions share an id",
+    }),
 });
 export type ProviderManifest = z.infer<typeof providerManifestSchema>;
+
+/**
+ * A link action's URL for one connection: its `{field}` placeholders filled from the config, or
+ * undefined when a field is missing or the result is not an https URL the manifest allows.
+ */
+export function linkUrl(
+  manifest: ProviderManifest,
+  template: string,
+  config: unknown,
+): string | undefined {
+  const values =
+    config !== null && typeof config === "object" ? (config as Record<string, unknown>) : {};
+  const missing: string[] = [];
+  const filled = template.replace(/\{([a-z][a-z0-9_]*)\}/g, (_, field: string) => {
+    const value = values[field];
+    if (typeof value !== "string" && typeof value !== "number") {
+      missing.push(field);
+      return "";
+    }
+    return encodeURIComponent(String(value));
+  });
+  if (missing.length > 0 || !URL.canParse(filled)) return undefined;
+  const url = new URL(filled);
+  if (url.protocol !== "https:" || url.username !== "" || url.password !== "") return undefined;
+  return networkAllowList(manifest, config).allows(url.hostname) ? url.toString() : undefined;
+}
 
 /** Parses a manifest; the error names the provider and every field that is wrong. */
 export function parseManifest(raw: unknown, source: string): ProviderManifest {

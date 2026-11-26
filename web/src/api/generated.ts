@@ -395,7 +395,13 @@ export type PostApiV1Session401Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -450,7 +456,13 @@ export type PostApiV1Session429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -521,7 +533,13 @@ export type PostApiV1Setup403Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -576,7 +594,13 @@ export type PostApiV1Setup409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -631,7 +655,13 @@ export type PostApiV1Setup429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -700,7 +730,13 @@ export type PutApiV1AdminPassword400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -755,7 +791,13 @@ export type DeleteApiV1AdminPassword409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -849,7 +891,13 @@ export type PostApiV1Logins401Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -904,7 +952,13 @@ export type PostApiV1Logins429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -998,7 +1052,13 @@ export type PostApiV1LoginsRefresh401Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1058,7 +1118,13 @@ export type DeleteApiV1LoginsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1160,7 +1226,13 @@ export type DeleteApiV1TokensId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1482,7 +1554,13 @@ export type PatchApiV1SettingsConfig400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1610,7 +1688,13 @@ export type DeleteApiV1SettingsConfigKey400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1665,7 +1749,13 @@ export type DeleteApiV1SettingsConfigKey404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1734,7 +1824,13 @@ export type GetApiV1Geocode400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -1789,7 +1885,13 @@ export type GetApiV1Geocode502Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -2537,7 +2639,13 @@ export type PostApiV1Parcels400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -2592,7 +2700,13 @@ export type PostApiV1Parcels409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -2968,7 +3082,13 @@ export type GetApiV1ParcelsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -3368,7 +3488,13 @@ export type PatchApiV1ParcelsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -3423,7 +3549,13 @@ export type DeleteApiV1ParcelsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4023,7 +4155,13 @@ export type GetApiV1OrdersId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4353,7 +4491,13 @@ export type PatchApiV1OrdersId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4408,7 +4552,13 @@ export type DeleteApiV1OrdersId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4662,7 +4812,13 @@ export type GetApiV1ReturnsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -4694,6 +4850,50 @@ export type GetApiV1Carriers200ItemSignInFlowsItem = {
   conditional: boolean;
 };
 
+/**
+ * A task runs as a job; a link only opens an address.
+ */
+export type GetApiV1Carriers200ItemActionsItemKind = "task" | "link";
+export type GetApiV1Carriers200ItemActionsItemConnectionKindsItem = "account" | "tracking" | "shop";
+export type GetApiV1Carriers200ItemActionsItemWhenStateItem =
+  "ok" | "idle" | "needs_sign_in" | "error";
+/**
+ * Heavy jobs run one at a time per server.
+ */
+export type GetApiV1Carriers200ItemActionsItemWeight = "light" | "heavy";
+export type GetApiV1Carriers200ItemActionsItem = {
+  id: string;
+  /** A task runs as a job; a link only opens an address. */
+  kind: GetApiV1Carriers200ItemActionsItemKind;
+  label: string;
+  /** @nullable */
+  description: string | null;
+  connection_kinds: GetApiV1Carriers200ItemActionsItemConnectionKindsItem[];
+  /** Connection states in which the action may start. */
+  when_state: GetApiV1Carriers200ItemActionsItemWhenStateItem[];
+  /** Heavy jobs run one at a time per server. */
+  weight: GetApiV1Carriers200ItemActionsItemWeight;
+  /**
+   * Ask the user this before starting, when set.
+   * @nullable
+   */
+  confirm: string | null;
+  /** Have the connection's label typed to confirm; never an HA button. */
+  destructive: boolean;
+  /** Offered as an HA button when it needs no input. */
+  expose_to_ha: boolean;
+  /**
+   * Earliest re-run after a finished job.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  cooldown_minutes: number;
+  /** JSON Schema of the task's input form; null for a link or a task without input. */
+  input_schema: unknown;
+  /** Some input field has no default: ask before starting. */
+  input_required: boolean;
+};
+
 export type GetApiV1Carriers200Item = {
   id: string;
   name: string;
@@ -4716,6 +4916,8 @@ export type GetApiV1Carriers200Item = {
   config_schema: unknown;
   /** JSON Schema of the sign-in data for credentials and api_key flows: field names only, never values. */
   secret_schema: unknown;
+  /** Buttons on its connection cards; `connection_kinds` says on which. */
+  actions: GetApiV1Carriers200ItemActionsItem[];
 };
 
 export type GetApiV1InboxForm200Provider = "imap";
@@ -4889,7 +5091,13 @@ export type PostApiV1Connections400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5005,7 +5213,13 @@ export type PatchApiV1ConnectionsId400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5060,7 +5274,13 @@ export type PatchApiV1ConnectionsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5115,7 +5335,13 @@ export type DeleteApiV1ConnectionsId404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5174,7 +5400,13 @@ export type PutApiV1ConnectionsIdSecret400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5229,7 +5461,13 @@ export type PutApiV1ConnectionsIdSecret404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5284,7 +5522,13 @@ export type PostApiV1ConnectionsIdSync404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5339,7 +5583,13 @@ export type PostApiV1ConnectionsIdSync429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5415,7 +5665,13 @@ export type GetApiV1ConnectionsIdData404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5491,7 +5747,13 @@ export type PostApiV1ConnectionsIdClear404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5504,6 +5766,1449 @@ export type PostApiV1ConnectionsIdClear404 = {
   message: string;
   /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
   params: PostApiV1ConnectionsIdClear404Params;
+};
+
+/**
+ * A task runs as a job; a link only opens an address.
+ */
+export type GetApiV1ConnectionsIdActions200ItemKind = "task" | "link";
+export type GetApiV1ConnectionsIdActions200ItemConnectionKindsItem =
+  "account" | "tracking" | "shop";
+export type GetApiV1ConnectionsIdActions200ItemWhenStateItem =
+  "ok" | "idle" | "needs_sign_in" | "error";
+/**
+ * Heavy jobs run one at a time per server.
+ */
+export type GetApiV1ConnectionsIdActions200ItemWeight = "light" | "heavy";
+export type GetApiV1ConnectionsIdActions200Item = {
+  id: string;
+  /** A task runs as a job; a link only opens an address. */
+  kind: GetApiV1ConnectionsIdActions200ItemKind;
+  label: string;
+  /** @nullable */
+  description: string | null;
+  connection_kinds: GetApiV1ConnectionsIdActions200ItemConnectionKindsItem[];
+  /** Connection states in which the action may start. */
+  when_state: GetApiV1ConnectionsIdActions200ItemWhenStateItem[];
+  /** Heavy jobs run one at a time per server. */
+  weight: GetApiV1ConnectionsIdActions200ItemWeight;
+  /**
+   * Ask the user this before starting, when set.
+   * @nullable
+   */
+  confirm: string | null;
+  /** Have the connection's label typed to confirm; never an HA button. */
+  destructive: boolean;
+  /** Offered as an HA button when it needs no input. */
+  expose_to_ha: boolean;
+  /**
+   * Earliest re-run after a finished job.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  cooldown_minutes: number;
+  /** JSON Schema of the task's input form; null for a link or a task without input. */
+  input_schema: unknown;
+  /** Some input field has no default: ask before starting. */
+  input_required: boolean;
+  /** May start now: the connection's state allows it, no job runs. */
+  available: boolean;
+  /** @nullable */
+  cooldown_until: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdActions404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdActions404Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdActions404 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdActions404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdActions404Params;
+};
+
+export type PostApiV1ConnectionsIdActionsActionBody = {
+  input?: unknown;
+};
+
+export type PostApiV1ConnectionsIdActionsAction200 = {
+  url: string;
+};
+
+export type PostApiV1ConnectionsIdActionsAction202JobState =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type PostApiV1ConnectionsIdActionsAction202JobProgress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type PostApiV1ConnectionsIdActionsAction202Job = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: PostApiV1ConnectionsIdActionsAction202JobState;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: PostApiV1ConnectionsIdActionsAction202JobProgress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+export type PostApiV1ConnectionsIdActionsAction202 = {
+  job: PostApiV1ConnectionsIdActionsAction202Job;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdActionsAction400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdActionsAction400Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdActionsAction400 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdActionsAction400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdActionsAction400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdActionsAction404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdActionsAction404Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdActionsAction404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdActionsAction404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdActionsAction404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdActionsAction409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdActionsAction409Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdActionsAction409 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdActionsAction409Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdActionsAction409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdActionsAction429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdActionsAction429Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdActionsAction429 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdActionsAction429Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdActionsAction429Params;
+};
+
+export type GetApiV1JobsParams = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id?: string;
+  state?: GetApiV1JobsState;
+};
+
+export type GetApiV1JobsState =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type GetApiV1Jobs200ItemState =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type GetApiV1Jobs200ItemProgress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type GetApiV1Jobs200Item = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: GetApiV1Jobs200ItemState;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: GetApiV1Jobs200ItemProgress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+export type GetApiV1JobsId200State =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type GetApiV1JobsId200Progress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type GetApiV1JobsId200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: GetApiV1JobsId200State;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: GetApiV1JobsId200Progress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1JobsId404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1JobsId404Params = { [key: string]: string | number };
+
+export type GetApiV1JobsId404 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1JobsId404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1JobsId404Params;
+};
+
+export type PostApiV1JobsIdCancel200State =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type PostApiV1JobsIdCancel200Progress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type PostApiV1JobsIdCancel200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: PostApiV1JobsIdCancel200State;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: PostApiV1JobsIdCancel200Progress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdCancel400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdCancel400Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdCancel400 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdCancel400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdCancel400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdCancel404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdCancel404Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdCancel404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdCancel404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdCancel404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdCancel409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdCancel409Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdCancel409 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdCancel409Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdCancel409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdCancel429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdCancel429Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdCancel429 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdCancel429Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdCancel429Params;
+};
+
+export type PostApiV1JobsIdResume200State =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type PostApiV1JobsIdResume200Progress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type PostApiV1JobsIdResume200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: PostApiV1JobsIdResume200State;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: PostApiV1JobsIdResume200Progress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdResume400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdResume400Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdResume400 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdResume400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdResume400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdResume404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdResume404Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdResume404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdResume404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdResume404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdResume409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdResume409Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdResume409 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdResume409Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdResume409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdResume429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdResume429Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdResume429 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdResume429Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdResume429Params;
+};
+
+export type PostApiV1JobsIdRestart200State =
+  "queued" | "running" | "paused" | "done" | "partial" | "failed" | "cancelled";
+export type PostApiV1JobsIdRestart200Progress = {
+  /** @nullable */
+  done: number | null;
+  /**
+   * Null: not known (yet).
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Where it is, in the provider's words.
+   * @nullable
+   */
+  phase: string | null;
+};
+
+export type PostApiV1JobsIdRestart200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  id: string;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  provider: string;
+  action: string;
+  state: PostApiV1JobsIdRestart200State;
+  /**
+   * Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.
+   * @nullable
+   */
+  reason: string | null;
+  progress: PostApiV1JobsIdRestart200Progress;
+  /** @nullable */
+  summary: string | null;
+  created_at: string;
+  /** @nullable */
+  started_at: string | null;
+  updated_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /**
+   * When a paused job continues on its own.
+   * @nullable
+   */
+  resume_at: string | null;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdRestart400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdRestart400Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdRestart400 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdRestart400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdRestart400Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdRestart404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdRestart404Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdRestart404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdRestart404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdRestart404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdRestart409Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdRestart409Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdRestart409 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdRestart409Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdRestart409Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1JobsIdRestart429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1JobsIdRestart429Params = { [key: string]: string | number };
+
+export type PostApiV1JobsIdRestart429 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1JobsIdRestart429Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1JobsIdRestart429Params;
 };
 
 export type GetApiV1Data200CacheBytes = {
@@ -5721,7 +7426,13 @@ export type PostApiV1DataBackups500Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5830,7 +7541,13 @@ export type PostApiV1DataClear400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5885,7 +7602,13 @@ export type PostApiV1DataClear500Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -5953,7 +7676,13 @@ export type GetApiV1ConnectionsIdSignInFlows404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6078,7 +7807,13 @@ export type PostApiV1ConnectionsIdSignInAttempts400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6133,7 +7868,13 @@ export type PostApiV1ConnectionsIdSignInAttempts404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6188,7 +7929,13 @@ export type PostApiV1ConnectionsIdSignInAttempts409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6243,7 +7990,13 @@ export type PostApiV1ConnectionsIdSignInAttempts429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6298,7 +8051,13 @@ export type PostApiV1ConnectionsIdSignInAttempts503Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6426,7 +8185,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6483,7 +8248,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6540,7 +8311,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6597,7 +8374,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6654,7 +8437,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6776,7 +8565,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6833,7 +8628,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6890,7 +8691,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -6947,7 +8754,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7004,7 +8817,13 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7061,7 +8880,13 @@ export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7208,7 +9033,13 @@ export type GetApiV1Calendar400Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -7288,6 +9119,11 @@ export type GetApiV1Events200Event =
   | "connection.state_changed"
   | "connection.run_finished"
   | "connection.removed"
+  | "job.queued"
+  | "job.started"
+  | "job.progress"
+  | "job.paused"
+  | "job.finished"
   | "order.created"
   | "order.updated"
   | "order.deleted"
@@ -8119,7 +9955,13 @@ export type GetApiV1Sync410Error =
   | "sign_in_poll_too_soon"
   | "sign_in_unavailable"
   | "sign_in_captcha"
-  | "no_sign_in";
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
 /**
  * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
  */
@@ -9077,6 +10919,146 @@ export const postApiV1ConnectionsIdClear = async (
   options?: Parameters<typeof apiFetch>[1],
 ): Promise<PostApiV1ConnectionsIdClear200> => {
   return apiFetch<PostApiV1ConnectionsIdClear200>(getPostApiV1ConnectionsIdClearUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getGetApiV1ConnectionsIdActionsUrl = (id: string) => {
+  return `/api/v1/connections/${id}/actions`;
+};
+
+/**
+ * @summary The connection's actions, with whether each may start now.
+ */
+export const getApiV1ConnectionsIdActions = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1ConnectionsIdActions200Item[]> => {
+  return apiFetch<GetApiV1ConnectionsIdActions200Item[]>(getGetApiV1ConnectionsIdActionsUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1ConnectionsIdActionsActionUrl = (id: string, action: string) => {
+  return `/api/v1/connections/${id}/actions/${action}`;
+};
+
+/**
+ * 409 `job_running` while the connection has a job, 409 `action_unavailable` in a state the action does not run in, 429 `action_cooldown` (with `Retry-After`) shortly after the last finished job.
+ * @summary Start an action: a task becomes a job, a link answers with its address.
+ */
+export const postApiV1ConnectionsIdActionsAction = async (
+  id: string,
+  action: string,
+  postApiV1ConnectionsIdActionsActionBody: PostApiV1ConnectionsIdActionsActionBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1ConnectionsIdActionsAction200 | PostApiV1ConnectionsIdActionsAction202> => {
+  return apiFetch<PostApiV1ConnectionsIdActionsAction200 | PostApiV1ConnectionsIdActionsAction202>(
+    getPostApiV1ConnectionsIdActionsActionUrl(id, action),
+    {
+      ...options,
+      method: "POST",
+      headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+      body: JSON.stringify(postApiV1ConnectionsIdActionsActionBody),
+    },
+  );
+};
+
+export const getGetApiV1JobsUrl = (params?: GetApiV1JobsParams) => {
+  const normalizedParams = new URLSearchParams();
+
+  Object.entries(params || {}).forEach(([key, value]) => {
+    if (value !== undefined) {
+      normalizedParams.append(key, value === null ? "null" : String(value));
+    }
+  });
+
+  const stringifiedParams = normalizedParams.toString();
+
+  return stringifiedParams.length > 0 ? `/api/v1/jobs?${stringifiedParams}` : `/api/v1/jobs`;
+};
+
+/**
+ * @summary Jobs, newest first (at most 200).
+ */
+export const getApiV1Jobs = async (
+  params?: GetApiV1JobsParams,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1Jobs200Item[]> => {
+  return apiFetch<GetApiV1Jobs200Item[]>(getGetApiV1JobsUrl(params), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getGetApiV1JobsIdUrl = (id: string) => {
+  return `/api/v1/jobs/${id}`;
+};
+
+/**
+ * @summary One job: state, progress and summary.
+ */
+export const getApiV1JobsId = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1JobsId200> => {
+  return apiFetch<GetApiV1JobsId200>(getGetApiV1JobsIdUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1JobsIdCancelUrl = (id: string) => {
+  return `/api/v1/jobs/${id}/cancel`;
+};
+
+/**
+ * 409 `job_state` when the job's state does not allow it.
+ * @summary Cancel a job; a running one stops at its next page.
+ */
+export const postApiV1JobsIdCancel = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1JobsIdCancel200> => {
+  return apiFetch<PostApiV1JobsIdCancel200>(getPostApiV1JobsIdCancelUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getPostApiV1JobsIdResumeUrl = (id: string) => {
+  return `/api/v1/jobs/${id}/resume`;
+};
+
+/**
+ * 409 `job_state` when the job's state does not allow it.
+ * @summary Continue a stopped job from its checkpoint.
+ */
+export const postApiV1JobsIdResume = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1JobsIdResume200> => {
+  return apiFetch<PostApiV1JobsIdResume200>(getPostApiV1JobsIdResumeUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
+export const getPostApiV1JobsIdRestartUrl = (id: string) => {
+  return `/api/v1/jobs/${id}/restart`;
+};
+
+/**
+ * 409 `job_state` when the job's state does not allow it.
+ * @summary Start a job over: its checkpoint and progress are dropped.
+ */
+export const postApiV1JobsIdRestart = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<PostApiV1JobsIdRestart200> => {
+  return apiFetch<PostApiV1JobsIdRestart200>(getPostApiV1JobsIdRestartUrl(id), {
     ...options,
     method: "POST",
   });

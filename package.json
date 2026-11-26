@@ -20,7 +20,7 @@
   },
   "scripts": {
     "typecheck": "npm run typecheck --workspaces",
-    "lint": "eslint --max-warnings 0 .",
+    "lint": "node --max-old-space-size=2560 node_modules/eslint/bin/eslint.js --max-warnings 0 .",
     "knip": "knip --no-progress",
     "format:check": "prettier --check .",
     "format": "prettier --write .",

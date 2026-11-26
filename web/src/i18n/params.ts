@@ -57,7 +57,8 @@ export type NotFoundResource =
   | "calendar_feed"
   | "sign_in"
   | "setting"
-  | "pictures";
+  | "pictures"
+  | "job";
 export type InvalidConnectionReason =
   | "inbox_kind"
   | "inbox_fields"

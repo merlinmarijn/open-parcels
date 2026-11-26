@@ -4,6 +4,13 @@ Shipped work, newest first, with the commit that shipped it.
 
 ## 2026-11-26
 
+- TODO §3: connection actions and jobs (`docs/connection-actions-and-jobs.md`): `actions` in the
+  manifest, `jobs` table (migration 0029), job service sharing the connection lock between
+  pages, pauses, retries, cancel, resume, restart and the 12 h ceiling, `runAction` in the
+  sandbox, API routes and `job.*` live events, web UI on the connection cards (EN/DE), demo
+  "Import history"; HA integration: action buttons, job sensor, `run_action`/`cancel_job`,
+  `open_parcels_job_paused`/`_finished` (commit: see the log, "jobs"). Also: in pool mode the core
+  validates a finished sign-in's secret again (commit: see the log, "sandbox")
 - TODO §3: provider sandbox. The built-in providers can run in one sandbox child under the Node
   permission model (`OPENPARCELS_PROVIDER_ISOLATION=pool`; default `off`, reasons in
   `docs/provider-manifest-and-sandbox.md` §2): the provider guest, brokered HTTP, session, log and

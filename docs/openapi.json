@@ -946,7 +946,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1025,7 +1031,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1214,7 +1226,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1293,7 +1311,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1372,7 +1396,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1502,7 +1532,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1603,7 +1639,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1801,7 +1843,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -1880,7 +1928,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2120,7 +2174,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2279,7 +2339,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -2570,7 +2636,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3252,7 +3324,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3512,7 +3590,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3591,7 +3675,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3722,7 +3812,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -3801,7 +3897,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -5276,7 +5378,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -5355,7 +5463,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -6081,7 +6195,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -6839,7 +6959,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -6952,7 +7078,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -8197,7 +8329,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -8864,7 +9002,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -8978,7 +9122,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -9516,7 +9666,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -9695,6 +9851,108 @@
                       },
                       "secret_schema": {
                         "description": "JSON Schema of the sign-in data for credentials and api_key flows: field names only, never values."
+                      },
+                      "actions": {
+                        "type": "array",
+                        "items": {
+                          "type": "object",
+                          "properties": {
+                            "id": {
+                              "type": "string"
+                            },
+                            "kind": {
+                              "type": "string",
+                              "enum": [
+                                "task",
+                                "link"
+                              ],
+                              "description": "A task runs as a job; a link only opens an address."
+                            },
+                            "label": {
+                              "type": "string"
+                            },
+                            "description": {
+                              "nullable": true,
+                              "type": "string"
+                            },
+                            "connection_kinds": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "account",
+                                  "tracking",
+                                  "shop"
+                                ]
+                              }
+                            },
+                            "when_state": {
+                              "type": "array",
+                              "items": {
+                                "type": "string",
+                                "enum": [
+                                  "ok",
+                                  "idle",
+                                  "needs_sign_in",
+                                  "error"
+                                ]
+                              },
+                              "description": "Connection states in which the action may start."
+                            },
+                            "weight": {
+                              "type": "string",
+                              "enum": [
+                                "light",
+                                "heavy"
+                              ],
+                              "description": "Heavy jobs run one at a time per server."
+                            },
+                            "confirm": {
+                              "nullable": true,
+                              "description": "Ask the user this before starting, when set.",
+                              "type": "string"
+                            },
+                            "destructive": {
+                              "type": "boolean",
+                              "description": "Have the connection's label typed to confirm; never an HA button."
+                            },
+                            "expose_to_ha": {
+                              "type": "boolean",
+                              "description": "Offered as an HA button when it needs no input."
+                            },
+                            "cooldown_minutes": {
+                              "type": "integer",
+                              "minimum": -9007199254740991,
+                              "maximum": 9007199254740991,
+                              "description": "Earliest re-run after a finished job."
+                            },
+                            "input_schema": {
+                              "nullable": true,
+                              "description": "JSON Schema of the task's input form; null for a link or a task without input."
+                            },
+                            "input_required": {
+                              "type": "boolean",
+                              "description": "Some input field has no default: ask before starting."
+                            }
+                          },
+                          "required": [
+                            "id",
+                            "kind",
+                            "label",
+                            "description",
+                            "connection_kinds",
+                            "when_state",
+                            "weight",
+                            "confirm",
+                            "destructive",
+                            "expose_to_ha",
+                            "cooldown_minutes",
+                            "input_schema",
+                            "input_required"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "description": "Buttons on its connection cards; `connection_kinds` says on which."
                       }
                     },
                     "required": [
@@ -9708,7 +9966,8 @@
                       "sign_in",
                       "sign_in_flows",
                       "config_schema",
-                      "secret_schema"
+                      "secret_schema",
+                      "actions"
                     ],
                     "additionalProperties": false
                   }
@@ -10066,7 +10325,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10288,7 +10553,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10367,7 +10638,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10480,7 +10757,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10611,7 +10894,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10690,7 +10979,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10806,7 +11101,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -10885,7 +11186,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11022,7 +11329,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11160,7 +11473,2544 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/actions": {
+      "get": {
+        "summary": "The connection's actions, with whether each may start now.",
+        "tags": [
+          "jobs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string"
+                      },
+                      "kind": {
+                        "type": "string",
+                        "enum": [
+                          "task",
+                          "link"
+                        ],
+                        "description": "A task runs as a job; a link only opens an address."
+                      },
+                      "label": {
+                        "type": "string"
+                      },
+                      "description": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "connection_kinds": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "account",
+                            "tracking",
+                            "shop"
+                          ]
+                        }
+                      },
+                      "when_state": {
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "enum": [
+                            "ok",
+                            "idle",
+                            "needs_sign_in",
+                            "error"
+                          ]
+                        },
+                        "description": "Connection states in which the action may start."
+                      },
+                      "weight": {
+                        "type": "string",
+                        "enum": [
+                          "light",
+                          "heavy"
+                        ],
+                        "description": "Heavy jobs run one at a time per server."
+                      },
+                      "confirm": {
+                        "nullable": true,
+                        "description": "Ask the user this before starting, when set.",
+                        "type": "string"
+                      },
+                      "destructive": {
+                        "type": "boolean",
+                        "description": "Have the connection's label typed to confirm; never an HA button."
+                      },
+                      "expose_to_ha": {
+                        "type": "boolean",
+                        "description": "Offered as an HA button when it needs no input."
+                      },
+                      "cooldown_minutes": {
+                        "type": "integer",
+                        "minimum": -9007199254740991,
+                        "maximum": 9007199254740991,
+                        "description": "Earliest re-run after a finished job."
+                      },
+                      "input_schema": {
+                        "nullable": true,
+                        "description": "JSON Schema of the task's input form; null for a link or a task without input."
+                      },
+                      "input_required": {
+                        "type": "boolean",
+                        "description": "Some input field has no default: ask before starting."
+                      },
+                      "available": {
+                        "type": "boolean",
+                        "description": "May start now: the connection's state allows it, no job runs."
+                      },
+                      "cooldown_until": {
+                        "nullable": true,
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "kind",
+                      "label",
+                      "description",
+                      "connection_kinds",
+                      "when_state",
+                      "weight",
+                      "confirm",
+                      "destructive",
+                      "expose_to_ha",
+                      "cooldown_minutes",
+                      "input_schema",
+                      "input_required",
+                      "available",
+                      "cooldown_until"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/connections/{id}/actions/{action}": {
+      "post": {
+        "summary": "Start an action: a task becomes a job, a link answers with its address.",
+        "tags": [
+          "jobs"
+        ],
+        "description": "409 `job_running` while the connection has a job, 409 `action_unavailable` in a state the action does not run in, 429 `action_cooldown` (with `Retry-After`) shortly after the last finished job.",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "default": {},
+                "type": "object",
+                "properties": {
+                  "input": {}
+                }
+              }
+            }
+          }
+        },
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          },
+          {
+            "schema": {
+              "type": "string",
+              "pattern": "^[a-z0-9_]{1,40}$"
+            },
+            "in": "path",
+            "name": "action",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "url": {
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "url"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "202": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "job": {
+                      "type": "object",
+                      "properties": {
+                        "id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "connection_id": {
+                          "type": "string",
+                          "format": "uuid",
+                          "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                        },
+                        "provider": {
+                          "type": "string"
+                        },
+                        "action": {
+                          "type": "string"
+                        },
+                        "state": {
+                          "type": "string",
+                          "enum": [
+                            "queued",
+                            "running",
+                            "paused",
+                            "done",
+                            "partial",
+                            "failed",
+                            "cancelled"
+                          ]
+                        },
+                        "reason": {
+                          "nullable": true,
+                          "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                          "type": "string"
+                        },
+                        "progress": {
+                          "type": "object",
+                          "properties": {
+                            "done": {
+                              "nullable": true,
+                              "type": "number"
+                            },
+                            "total": {
+                              "nullable": true,
+                              "description": "Null: not known (yet).",
+                              "type": "number"
+                            },
+                            "phase": {
+                              "nullable": true,
+                              "description": "Where it is, in the provider's words.",
+                              "type": "string"
+                            }
+                          },
+                          "required": [
+                            "done",
+                            "total",
+                            "phase"
+                          ],
+                          "additionalProperties": false
+                        },
+                        "summary": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "created_at": {
+                          "type": "string"
+                        },
+                        "started_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "updated_at": {
+                          "type": "string"
+                        },
+                        "finished_at": {
+                          "nullable": true,
+                          "type": "string"
+                        },
+                        "resume_at": {
+                          "nullable": true,
+                          "description": "When a paused job continues on its own.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "id",
+                        "connection_id",
+                        "provider",
+                        "action",
+                        "state",
+                        "reason",
+                        "progress",
+                        "summary",
+                        "created_at",
+                        "started_at",
+                        "updated_at",
+                        "finished_at",
+                        "resume_at"
+                      ],
+                      "additionalProperties": false
+                    }
+                  },
+                  "required": [
+                    "job"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs": {
+      "get": {
+        "summary": "Jobs, newest first (at most 200).",
+        "tags": [
+          "jobs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "query",
+            "name": "connection_id",
+            "required": false
+          },
+          {
+            "schema": {
+              "type": "string",
+              "enum": [
+                "queued",
+                "running",
+                "paused",
+                "done",
+                "partial",
+                "failed",
+                "cancelled"
+              ]
+            },
+            "in": "query",
+            "name": "state",
+            "required": false
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "object",
+                    "properties": {
+                      "id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "connection_id": {
+                        "type": "string",
+                        "format": "uuid",
+                        "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                      },
+                      "provider": {
+                        "type": "string"
+                      },
+                      "action": {
+                        "type": "string"
+                      },
+                      "state": {
+                        "type": "string",
+                        "enum": [
+                          "queued",
+                          "running",
+                          "paused",
+                          "done",
+                          "partial",
+                          "failed",
+                          "cancelled"
+                        ]
+                      },
+                      "reason": {
+                        "nullable": true,
+                        "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                        "type": "string"
+                      },
+                      "progress": {
+                        "type": "object",
+                        "properties": {
+                          "done": {
+                            "nullable": true,
+                            "type": "number"
+                          },
+                          "total": {
+                            "nullable": true,
+                            "description": "Null: not known (yet).",
+                            "type": "number"
+                          },
+                          "phase": {
+                            "nullable": true,
+                            "description": "Where it is, in the provider's words.",
+                            "type": "string"
+                          }
+                        },
+                        "required": [
+                          "done",
+                          "total",
+                          "phase"
+                        ],
+                        "additionalProperties": false
+                      },
+                      "summary": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "created_at": {
+                        "type": "string"
+                      },
+                      "started_at": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "updated_at": {
+                        "type": "string"
+                      },
+                      "finished_at": {
+                        "nullable": true,
+                        "type": "string"
+                      },
+                      "resume_at": {
+                        "nullable": true,
+                        "description": "When a paused job continues on its own.",
+                        "type": "string"
+                      }
+                    },
+                    "required": [
+                      "id",
+                      "connection_id",
+                      "provider",
+                      "action",
+                      "state",
+                      "reason",
+                      "progress",
+                      "summary",
+                      "created_at",
+                      "started_at",
+                      "updated_at",
+                      "finished_at",
+                      "resume_at"
+                    ],
+                    "additionalProperties": false
+                  }
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}": {
+      "get": {
+        "summary": "One job: state, progress and summary.",
+        "tags": [
+          "jobs"
+        ],
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "connection_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "running",
+                        "paused",
+                        "done",
+                        "partial",
+                        "failed",
+                        "cancelled"
+                      ]
+                    },
+                    "reason": {
+                      "nullable": true,
+                      "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "done": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "total": {
+                          "nullable": true,
+                          "description": "Null: not known (yet).",
+                          "type": "number"
+                        },
+                        "phase": {
+                          "nullable": true,
+                          "description": "Where it is, in the provider's words.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "done",
+                        "total",
+                        "phase"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    },
+                    "finished_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "resume_at": {
+                      "nullable": true,
+                      "description": "When a paused job continues on its own.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "connection_id",
+                    "provider",
+                    "action",
+                    "state",
+                    "reason",
+                    "progress",
+                    "summary",
+                    "created_at",
+                    "started_at",
+                    "updated_at",
+                    "finished_at",
+                    "resume_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/cancel": {
+      "post": {
+        "summary": "Cancel a job; a running one stops at its next page.",
+        "tags": [
+          "jobs"
+        ],
+        "description": "409 `job_state` when the job's state does not allow it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "connection_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "running",
+                        "paused",
+                        "done",
+                        "partial",
+                        "failed",
+                        "cancelled"
+                      ]
+                    },
+                    "reason": {
+                      "nullable": true,
+                      "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "done": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "total": {
+                          "nullable": true,
+                          "description": "Null: not known (yet).",
+                          "type": "number"
+                        },
+                        "phase": {
+                          "nullable": true,
+                          "description": "Where it is, in the provider's words.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "done",
+                        "total",
+                        "phase"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    },
+                    "finished_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "resume_at": {
+                      "nullable": true,
+                      "description": "When a paused job continues on its own.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "connection_id",
+                    "provider",
+                    "action",
+                    "state",
+                    "reason",
+                    "progress",
+                    "summary",
+                    "created_at",
+                    "started_at",
+                    "updated_at",
+                    "finished_at",
+                    "resume_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/resume": {
+      "post": {
+        "summary": "Continue a stopped job from its checkpoint.",
+        "tags": [
+          "jobs"
+        ],
+        "description": "409 `job_state` when the job's state does not allow it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "connection_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "running",
+                        "paused",
+                        "done",
+                        "partial",
+                        "failed",
+                        "cancelled"
+                      ]
+                    },
+                    "reason": {
+                      "nullable": true,
+                      "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "done": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "total": {
+                          "nullable": true,
+                          "description": "Null: not known (yet).",
+                          "type": "number"
+                        },
+                        "phase": {
+                          "nullable": true,
+                          "description": "Where it is, in the provider's words.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "done",
+                        "total",
+                        "phase"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    },
+                    "finished_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "resume_at": {
+                      "nullable": true,
+                      "description": "When a paused job continues on its own.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "connection_id",
+                    "provider",
+                    "action",
+                    "state",
+                    "reason",
+                    "progress",
+                    "summary",
+                    "created_at",
+                    "started_at",
+                    "updated_at",
+                    "finished_at",
+                    "resume_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/jobs/{id}/restart": {
+      "post": {
+        "summary": "Start a job over: its checkpoint and progress are dropped.",
+        "tags": [
+          "jobs"
+        ],
+        "description": "409 `job_state` when the job's state does not allow it.",
+        "parameters": [
+          {
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+            },
+            "in": "path",
+            "name": "id",
+            "required": true
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "connection_id": {
+                      "type": "string",
+                      "format": "uuid",
+                      "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                    },
+                    "provider": {
+                      "type": "string"
+                    },
+                    "action": {
+                      "type": "string"
+                    },
+                    "state": {
+                      "type": "string",
+                      "enum": [
+                        "queued",
+                        "running",
+                        "paused",
+                        "done",
+                        "partial",
+                        "failed",
+                        "cancelled"
+                      ]
+                    },
+                    "reason": {
+                      "nullable": true,
+                      "description": "Why it is paused or failed: rate_limited, captcha, needs_sign_in, retrying, waiting_for_carrier, resting, ceiling, invalid_config, action_missing or unexpected.",
+                      "type": "string"
+                    },
+                    "progress": {
+                      "type": "object",
+                      "properties": {
+                        "done": {
+                          "nullable": true,
+                          "type": "number"
+                        },
+                        "total": {
+                          "nullable": true,
+                          "description": "Null: not known (yet).",
+                          "type": "number"
+                        },
+                        "phase": {
+                          "nullable": true,
+                          "description": "Where it is, in the provider's words.",
+                          "type": "string"
+                        }
+                      },
+                      "required": [
+                        "done",
+                        "total",
+                        "phase"
+                      ],
+                      "additionalProperties": false
+                    },
+                    "summary": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "created_at": {
+                      "type": "string"
+                    },
+                    "started_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "updated_at": {
+                      "type": "string"
+                    },
+                    "finished_at": {
+                      "nullable": true,
+                      "type": "string"
+                    },
+                    "resume_at": {
+                      "nullable": true,
+                      "description": "When a paused job continues on its own.",
+                      "type": "string"
+                    }
+                  },
+                  "required": [
+                    "id",
+                    "connection_id",
+                    "provider",
+                    "action",
+                    "state",
+                    "reason",
+                    "progress",
+                    "summary",
+                    "created_at",
+                    "started_at",
+                    "updated_at",
+                    "finished_at",
+                    "resume_at"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "404": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "409": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          },
+          "429": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11553,7 +14403,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11804,7 +14660,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -11883,7 +14745,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12041,7 +14909,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12423,7 +15297,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12502,7 +15382,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12581,7 +15467,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12660,7 +15552,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -12739,7 +15637,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13136,7 +16040,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13215,7 +16125,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13294,7 +16210,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13373,7 +16295,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13452,7 +16380,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13827,7 +16761,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13906,7 +16846,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -13985,7 +16931,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14064,7 +17016,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14143,7 +17101,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14268,7 +17232,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14557,7 +17527,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },
@@ -14951,6 +17927,11 @@
                         "connection.state_changed",
                         "connection.run_finished",
                         "connection.removed",
+                        "job.queued",
+                        "job.started",
+                        "job.progress",
+                        "job.paused",
+                        "job.finished",
                         "order.created",
                         "order.updated",
                         "order.deleted",
@@ -16589,7 +19570,13 @@
                         "sign_in_poll_too_soon",
                         "sign_in_unavailable",
                         "sign_in_captcha",
-                        "no_sign_in"
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
                       ],
                       "description": "Stable machine-readable error code."
                     },

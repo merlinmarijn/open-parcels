@@ -17,6 +17,9 @@ import { CookieJar } from "../../src/provider/cookies.js";
 import { FakeClock } from "../helpers.js";
 import { testManifest } from "../manifests.js";
 import { networkAllowList } from "../../src/provider/manifest.js";
+import { isolated } from "../../src/sandbox/providers.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
+import { fakeShop, FakeWorld } from "../fakes/carriers.js";
 
 const started: Sandbox[] = [];
 
@@ -178,5 +181,25 @@ describe("HTTP across the sandbox boundary", () => {
     await expect(http.request(new URL("https://www.carrier.example/away"))).rejects.toBeInstanceOf(
       HostNotAllowedError,
     );
+  });
+});
+
+describe("providers in the pool", () => {
+  it("checks a finished sign-in's secret again in the core, whatever the guest says", async () => {
+    let answer: unknown = { secret: { refreshToken: 5 } };
+    const pool = { call: () => Promise.resolve(answer) } as unknown as Sandbox;
+    const shop = isolated(fakeShop(new FakeWorld()), pool);
+    const turn = {
+      action: "continue" as const,
+      flowId: "interactive",
+      kind: "shop" as const,
+      rawConfig: {},
+      // Never asked: the pool's answer is made up here.
+      http: { transport: undefined } as never,
+      clock: new FakeClock(),
+    };
+    await expect(shop.signInTurn(turn)).rejects.toBeInstanceOf(InvalidConnectionConfigError);
+    answer = { secret: { refreshToken: "rt-1" } };
+    await expect(shop.signInTurn(turn)).resolves.toEqual({ secret: { refreshToken: "rt-1" } });
   });
 });

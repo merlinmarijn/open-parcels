@@ -125,6 +125,11 @@ export class ConnectionRunner {
     return this.#locks.exclusive(connectionId, work);
   }
 
+  /** Holds the connection's lock until the returned function is called (a job, between pages). */
+  acquire(connectionId: string): Promise<() => void> {
+    return this.#locks.acquire(connectionId);
+  }
+
   async run(connectionId: string): Promise<RunOutcome> {
     return this.exclusive(connectionId, () => this.#run(connectionId));
   }
@@ -220,7 +225,7 @@ export class ConnectionRunner {
     if (row === undefined || provider?.canReadLive !== true) {
       return null;
     }
-    const { base, config, secret } = this.#prepare(
+    const { base, config, secret } = this.contextFor(
       row,
       provider,
       this.deps.logger.child({ provider: row.provider, connection: row.id, live: true }),
@@ -234,7 +239,7 @@ export class ConnectionRunner {
     provider: RegisteredProvider,
     log: Logger,
   ): Promise<{ result: FetchResult; asked: readonly string[] }> {
-    const { base, config, secret } = this.#prepare(row, provider, log);
+    const { base, config, secret } = this.contextFor(row, provider, log);
     if (row.kind !== "tracking") {
       return { result: await provider.fetchAccount(base, config, secret), asked: [] };
     }
@@ -281,7 +286,8 @@ export class ConnectionRunner {
     return new Set(rows.map((row) => row.parcel_id));
   }
 
-  #prepare(
+  /** What a provider call for this connection gets: the core's side of its context, config and secret. */
+  contextFor(
     row: ConnectionRow,
     provider: RegisteredProvider,
     log: Logger,

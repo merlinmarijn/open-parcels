@@ -3,8 +3,8 @@ import { describe, expect, it } from "vitest";
 import { z } from "zod";
 import { BUILTIN_CARRIERS } from "../../src/engine/builtin-carriers.js";
 import { register } from "../../src/engine/registry.js";
-import { defineCarrier } from "../../src/provider/api.js";
-import { hostMatches, parseManifest } from "../../src/provider/manifest.js";
+import { defineAction, defineCarrier } from "../../src/provider/api.js";
+import { hostMatches, linkUrl, parseManifest } from "../../src/provider/manifest.js";
 import { testManifest } from "../manifests.js";
 
 const tracker = defineCarrier({
@@ -62,6 +62,47 @@ describe("provider manifests", () => {
     expect(() => register(tracker, testManifest("other", { permissions: allowed }))).toThrow(
       /id is tracker/,
     );
+  });
+
+  it("checks actions: valid declarations, tasks that match the code, safe link addresses", () => {
+    const valid = testManifest("tracker", { permissions: allowed });
+    const link = {
+      id: "open",
+      kind: "link",
+      label: "Open",
+      connection_kinds: ["tracking"],
+      url: "https://{host}/x",
+    };
+    const taskAction = { id: "open", kind: "task", label: "Open", connection_kinds: ["tracking"] };
+    const parsed = parseManifest({ ...valid, actions: [link] }, "test");
+    expect(parsed.actions[0]).toMatchObject({ when_state: ["ok", "idle"] });
+    for (const actions of [
+      [{ ...link, url: "javascript:alert(1)" }],
+      [link, link],
+      [{ ...taskAction, weight: "huge" }],
+      [{ ...taskAction, url: "https://www.tracker.example/" }],
+    ]) {
+      expect(() => parseManifest({ ...valid, actions }, "test")).toThrow(/actions/);
+    }
+    expect(linkUrl(parsed, "https://{host}/x", { host: "www.tracker.example" })).toBe(
+      "https://www.tracker.example/x",
+    );
+    for (const host of ["evil.example", "a@www.tracker.example", undefined]) {
+      expect(linkUrl(parsed, "https://{host}/x", { host })).toBeUndefined();
+    }
+    const task = parseManifest({ ...valid, actions: [taskAction] }, "test");
+    expect(() => register(tracker, task)).toThrow(/manifest's tasks \[open\]/);
+    const withAction = {
+      ...tracker,
+      actions: {
+        open: defineAction({
+          input: z.object({}),
+          run: () => Promise.resolve({ status: "done" as const, summary: "" }),
+        }),
+      },
+    };
+    expect(() => register(withAction, task)).not.toThrow();
+    expect(() => register(withAction, parsed)).toThrow(/manifest's tasks \[\]/);
   });
 
   it("keeps no session for a provider whose manifest has none", async () => {

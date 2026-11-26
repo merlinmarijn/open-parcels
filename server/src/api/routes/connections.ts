@@ -11,6 +11,7 @@ import { ApiError, errorBodySchema, notFound } from "../errors.js";
 import { connectionKindSchema } from "../../domain/parcel.js";
 import { loadLogos, logoPath } from "../../logos.js";
 import { registerLogoRoutes } from "./logos.js";
+import { actionBody, actionSchema } from "./jobs.js";
 import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema } from "../../mail/types.js";
 import {
   carrierMessageSchema,
@@ -91,6 +92,9 @@ const carrierSchema = z.object({
     .describe(
       "JSON Schema of the sign-in data for credentials and api_key flows: field names only, never values.",
     ),
+  actions: z
+    .array(actionSchema)
+    .describe("Buttons on its connection cards; `connection_kinds` says on which."),
 });
 
 export function toBody(view: ConnectionView): z.infer<typeof connectionSchema> {
@@ -152,6 +156,7 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
         sign_in_flows: provider.info.signInFlows.map((flow) => flowSummary(language, flow)),
         config_schema: schema(provider.info.configSchema),
         secret_schema: schema(provider.info.secretSchema),
+        actions: provider.info.actions.map((action) => actionBody(language, provider, action)),
       }));
     },
   );

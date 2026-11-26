@@ -110,6 +110,7 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
     logger.error({ err: error }, "Restricting the backup files' permissions failed.");
   });
   services.scheduler.start();
+  await services.jobs.start();
   services.live.start();
   services.places.start();
   await services.mail.start();
@@ -153,6 +154,7 @@ export async function startServer(processEnv: NodeJS.ProcessEnv): Promise<Runnin
       clearInterval(maintenance);
       clearTimeout(firstMaintenance);
       services.scheduler.stop();
+      services.jobs.stop();
       services.live.stop();
       services.places.stop();
       services.providerPool?.stop();

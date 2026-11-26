@@ -44,6 +44,18 @@ export interface LiveCall extends ConnectionCall {
   readonly target: LiveTarget;
 }
 
+/** One leg of a task action: its input and the checkpoint the last leg saved travel with it. */
+export interface ActionWireCall extends ConnectionCall {
+  readonly actionId: string;
+  readonly input: unknown;
+  readonly checkpoint: unknown;
+}
+
+/** What every job capability answers: whether the job was cancelled meanwhile. */
+export interface JobAnswer {
+  readonly cancelled: boolean;
+}
+
 export interface SignInTurnCall extends CallBase {
   readonly action: "start" | "continue" | "poll";
   readonly flowId: string;
@@ -61,6 +73,10 @@ export const CAPABILITY = {
   sessionSave: "session.save",
   log: "log",
   reportUnknown: "report-unknown",
+  /** A task action's progress, results and checkpoint (`runAction` only). */
+  jobProgress: "job.progress",
+  jobEmit: "job.emit",
+  jobCheckpoint: "job.checkpoint",
 } as const;
 
 export interface LogRequest {

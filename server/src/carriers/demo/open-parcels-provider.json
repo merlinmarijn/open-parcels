@@ -14,5 +14,16 @@
     "secrets": [],
     "session": false,
     "user_agent": false
-  }
+  },
+  "actions": [
+    {
+      "id": "import_history",
+      "kind": "task",
+      "label": "Import history",
+      "description": "Reads the demo parcels again, one page at a time.",
+      "connection_kinds": ["account"],
+      "weight": "light",
+      "expose_to_ha": true
+    }
+  ]
 }

@@ -31,6 +31,7 @@ import {
   getApiV1Parcels,
   getApiV1ParcelsId,
   getApiV1Connections,
+  getApiV1Jobs,
   getApiV1ConnectionsIdData,
   getApiV1Logins,
   getApiV1Tokens,
@@ -42,6 +43,10 @@ import {
   postApiV1Connections,
   postApiV1ConnectionsIdClear,
   postApiV1ConnectionsIdSync,
+  postApiV1ConnectionsIdActionsAction,
+  postApiV1JobsIdCancel,
+  postApiV1JobsIdRestart,
+  postApiV1JobsIdResume,
   postApiV1Tokens,
   type PatchApiV1OrdersIdBody,
   type PostApiV1DataClearBody,
@@ -63,6 +68,7 @@ export const keys = {
   returns: ["returns"] as const,
   returnList: (view: ReturnView) => ["returns", "list", { view }] as const,
   connections: ["connections"] as const,
+  jobs: ["jobs"] as const,
   signInFlows: (connectionId: string | undefined) => ["sign-in-flows", connectionId] as const,
   carriers: ["carriers"] as const,
   inboxForm: ["inbox-form"] as const,
@@ -413,6 +419,44 @@ export function useSyncConnection() {
   return useMutation({
     mutationFn: (id: string) => postApiV1ConnectionsIdSync(id),
     onSuccess: () => client.invalidateQueries({ queryKey: keys.connections }),
+  });
+}
+
+/** Every connection's jobs, newest first; the `job.*` live events keep them current. */
+export function useJobs() {
+  return useQuery({
+    queryKey: keys.jobs,
+    queryFn: ({ signal }) => getApiV1Jobs(undefined, { signal }),
+  });
+}
+
+/** Starts an action: a task's new job, or a link's address. */
+export function useStartAction() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { connectionId: string; action: string; input?: unknown }) =>
+      postApiV1ConnectionsIdActionsAction(
+        args.connectionId,
+        args.action,
+        args.input === undefined ? {} : { input: args.input },
+      ),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.jobs }),
+  });
+}
+
+const JOB_CONTROLS = {
+  cancel: postApiV1JobsIdCancel,
+  resume: postApiV1JobsIdResume,
+  restart: postApiV1JobsIdRestart,
+} as const;
+
+/** Cancel, resume or start over a job. */
+export function useJobControl() {
+  const client = useQueryClient();
+  return useMutation({
+    mutationFn: (args: { id: string; control: keyof typeof JOB_CONTROLS }) =>
+      JOB_CONTROLS[args.control](args.id),
+    onSuccess: () => client.invalidateQueries({ queryKey: keys.jobs }),
   });
 }
 

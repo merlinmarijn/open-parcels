@@ -1,5 +1,10 @@
 import { z } from "zod";
-import { defineCarrier, type ParcelSnapshot } from "../../provider/api.js";
+import {
+  defineAction,
+  defineCarrier,
+  type ActionContext,
+  type ParcelSnapshot,
+} from "../../provider/api.js";
 import {
   courierView,
   DEMO_CARRIER,
@@ -31,6 +36,34 @@ function fromCourier(parcel: DemoParcel, now: number): ParcelSnapshot {
 }
 
 const LIMITS = { "*": { intervalMs: 1_000, burst: 1 } } as const;
+
+/**
+ * "Import history" as a real import does it, without the network: one parcel per page, a
+ * checkpoint after each, so cancel, resume and restart can be tried on the demo.
+ */
+const importHistory = defineAction({
+  input: z.object({}),
+  async run(context: ActionContext<z.infer<typeof configSchema>, null>) {
+    const saved = z.object({ page: z.number().int().min(0) }).safeParse(context.checkpoint.load());
+    let page = saved.success ? saved.data.page : 0;
+    context.progress({ done: page, total: DEMO_PARCELS.length, phase: `Page ${String(page + 1)}` });
+    for (; page < DEMO_PARCELS.length; page += 1) {
+      if (context.signal.aborted) {
+        return {
+          status: "partial",
+          summary: `${String(page)} of ${String(DEMO_PARCELS.length)} pages`,
+        };
+      }
+      const parcel = DEMO_PARCELS[page];
+      if (parcel === undefined) break;
+      await context.emit({ snapshots: [fromCourier(parcel, context.clock.now().getTime())] });
+      await context.checkpoint.save({ page: page + 1 });
+      context.progress({ done: page + 1, phase: `Page ${String(page + 2)}` });
+    }
+    return { status: "done", summary: `${String(DEMO_PARCELS.length)} parcels` };
+  },
+});
+
 const liveRef = z.object({ barcode: z.string() });
 
 export const demoCarrier = defineCarrier({
@@ -40,6 +73,7 @@ export const demoCarrier = defineCarrier({
   secretSchema,
   signIn: { type: "none" },
   http: { limits: LIMITS },
+  actions: { import_history: importHistory },
   fetchAccount: (context) => {
     const now = context.clock.now().getTime();
     return Promise.resolve({

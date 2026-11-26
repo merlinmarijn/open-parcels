@@ -1666,6 +1666,43 @@ tbody tr:hover {
   gap: 0.4rem;
 }
 
+.connection-jobs {
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
+}
+
+.connection-card .connection-jobs .actions {
+  margin-top: 0;
+}
+
+.connection-job {
+  display: flex;
+  flex-direction: column;
+  gap: 0.3rem;
+  padding: 0.5rem 0.6rem;
+  border: 1px solid var(--panel-border);
+  border-radius: calc(var(--radius) / 2);
+  background: var(--tint);
+  font-size: 13px;
+}
+
+.connection-job-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+}
+
+.connection-job progress {
+  width: 100%;
+  accent-color: var(--accent);
+}
+
+.connection-job p {
+  margin: 0;
+}
+
 .connection-icon-actions {
   display: flex;
   gap: 0.2rem;

@@ -1,6 +1,10 @@
 import type { z } from "zod";
 import type {
+  ActionBatch,
+  ActionResult,
   CarrierProvider,
+  CheckpointStore,
+  JobProgress,
   FetchResult,
   LiveReading,
   LiveTarget,
@@ -61,6 +65,19 @@ export interface SignInFlowInfo {
   readonly fields: z.ZodType | null;
 }
 
+/**
+ * What the job service hands a task action besides config and secret: its input (validated
+ * already), and the job's side of the context (`ActionContext` without the connection's part).
+ */
+export interface ActionCall {
+  readonly actionId: string;
+  readonly input: unknown;
+  readonly signal: AbortSignal;
+  readonly checkpoint: CheckpointStore;
+  progress(update: JobProgress): void;
+  emit(batch: ActionBatch): Promise<void>;
+}
+
 /** One call into an interactive flow: `start` (no state), `continue` (with input) or `poll`. */
 export interface SignInCall {
   readonly action: "start" | "continue" | "poll";
@@ -94,6 +111,8 @@ interface ProviderInfo {
   readonly pollIntervalMs: number | null;
   /** A fallback tracking service, not a carrier (see `CarrierProvider`). */
   readonly fallback: boolean;
+  /** Its actions as the manifest declares them. */
+  readonly actions: ProviderManifest["actions"];
 }
 
 /**
@@ -112,6 +131,8 @@ export interface RegisteredProvider {
   readonly canReadLive: boolean;
   /** Checks a configuration and returns it parsed, with the provider's defaults applied. */
   validateConfig(raw: unknown): unknown;
+  /** Checks sign-in data against the provider's secret schema and returns it parsed. */
+  validateSecret(raw: unknown): unknown;
   /** The sign-in flows that apply to a connection of this kind and configuration, default first. */
   signInFlows(kind: ProviderConnectionKind, rawConfig: unknown): SignInFlowInfo[];
   /** Runs one call of an interactive flow. A finished sign-in's secret is already validated. */
@@ -129,6 +150,15 @@ export interface RegisteredProvider {
     rawSecret: unknown,
     trackingNumbers: readonly string[],
   ): Promise<FetchResult>;
+  /** A task action's input schema; undefined for a link or an unknown id. */
+  actionInput(actionId: string): z.ZodType | undefined;
+  /** Runs one leg of a task action (`docs/connection-actions-and-jobs.md` §2). */
+  runAction(
+    base: BaseContext,
+    rawConfig: unknown,
+    rawSecret: unknown,
+    call: ActionCall,
+  ): Promise<ActionResult>;
 }
 
 /** A provider's settings error, as the engine's own, so the connection shows it as invalid settings. */
@@ -285,6 +315,15 @@ function disagreements<Config, Secret>(
   const patterns = manifest.permissions.network.flatMap((entry) =>
     "host" in entry ? [entry.host] : [],
   );
+  const tasks = manifest.actions.filter((action) => action.kind === "task").map((a) => a.id);
+  if (!sameSet(tasks, Object.keys(provider.actions ?? {}))) {
+    problems.push(`the code's actions must be the manifest's tasks [${tasks.join(", ")}]`);
+  }
+  for (const action of manifest.actions) {
+    if (action.connection_kinds.some((kind) => !kinds.includes(kind))) {
+      problems.push(`action ${action.id} names a connection kind the provider does not offer`);
+    }
+  }
   for (const host of Object.keys(provider.http.limits)) {
     if (host !== "*" && !patterns.some((pattern) => hostMatches(pattern, host))) {
       problems.push(`http.limits names ${host}, which permissions.network does not allow`);
@@ -342,6 +381,7 @@ export function register<Config, Secret>(
       imageHosts: manifest.permissions.image_hosts,
       pollIntervalMs: provider.pollIntervalMs ?? null,
       fallback: manifest.provides.fallback,
+      actions: manifest.actions,
     },
     manifest,
     http: provider.http,
@@ -365,6 +405,9 @@ export function register<Config, Secret>(
     validateConfig(raw) {
       return parseWith(provider.configSchema, raw, "configuration", provider.id);
     },
+    validateSecret(raw) {
+      return parseWith(provider.secretSchema, raw, "sign-in data", provider.id);
+    },
     async fetchAccount(base, rawConfig, rawSecret) {
       if (provider.fetchAccount === undefined) {
         throw new InvalidConnectionConfigError(
@@ -387,6 +430,37 @@ export function register<Config, Secret>(
         provider.track(context(base, rawConfig, rawSecret), trackingNumbers),
       );
       return fileUnderTracked(provider.id, trackingNumbers, result, base.logger);
+    },
+    actionInput: (actionId) =>
+      Object.hasOwn(provider.actions ?? {}, actionId)
+        ? provider.actions?.[actionId]?.input
+        : undefined,
+    async runAction(base, rawConfig, rawSecret, call) {
+      const action = Object.hasOwn(provider.actions ?? {}, call.actionId)
+        ? provider.actions?.[call.actionId]
+        : undefined;
+      if (action === undefined) {
+        throw new InvalidConnectionConfigError(
+          `${provider.name} has no action ${call.actionId}.`,
+          "no_such_kind",
+          { provider: provider.name, kind: call.actionId },
+        );
+      }
+      const input = parseWith(action.input, call.input, "action input", provider.id);
+      return asConnectionConfigError(
+        action.run(
+          {
+            ...context(base, rawConfig, rawSecret),
+            signal: call.signal,
+            checkpoint: call.checkpoint,
+            progress: (update) => {
+              call.progress(update);
+            },
+            emit: (batch) => call.emit(batch),
+          },
+          input,
+        ),
+      );
     },
   };
 }

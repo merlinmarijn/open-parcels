@@ -119,4 +119,19 @@ describe("demo courier and demo shop", () => {
     });
     expect(again?.history).toHaveLength(1);
   });
+
+  it("imports its history as a job, page by page, in either isolation mode", async () => {
+    const courier = await connection("demo", "account");
+    const outcome = await context.services.jobs.startAction(courier, "import_history", {});
+    if (!("job" in outcome)) throw new Error("The import should be a job.");
+    await context.services.jobs.settled();
+    const job = await context.services.jobs.store.get(outcome.job.id);
+    expect(job).toMatchObject({ state: "done", summary: "3 parcels" });
+    expect(JSON.parse(job?.progress ?? "{}")).toMatchObject({ done: 3, total: 3 });
+    expect([...(await parcels()).keys()].sort()).toEqual([
+      "DEMO0000000001",
+      "DEMO0000000002",
+      "DEMO0000000003",
+    ]);
+  });
 });

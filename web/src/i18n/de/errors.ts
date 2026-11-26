@@ -24,6 +24,7 @@ const NOT_FOUND: Readonly<Record<NotFoundResource, ErrorText>> = {
   sign_in: () => "Die Anmeldung wurde nicht gefunden. Bitte neu beginnen.",
   setting: () => "Diese Einstellung gibt es nicht.",
   pictures: () => "Es gibt keine Artikelbilder.",
+  job: () => "Der Auftrag wurde nicht gefunden.",
 };
 
 const INVALID_CONNECTION: Readonly<Record<InvalidConnectionReason, ErrorText>> = {
@@ -114,6 +115,14 @@ export const errors: ErrorTexts = {
     sign_in_captcha: () =>
       "Der Paketdienst hat ein Captcha gezeigt. Deine Anmeldung bleibt erhalten; warte eine Weile und versuche denselben Schritt dann noch einmal.",
     no_sign_in: () => "Diese Verbindung hat keine solche Anmeldung.",
+    no_such_action: () => "Diese Verbindung hat keine solche Aktion.",
+    action_unavailable: () =>
+      "Diese Aktion kann gerade nicht starten (prüfe den Zustand der Verbindung).",
+    action_cooldown: (p) =>
+      `Diese Aktion lief vor Kurzem; versuche es in ${param(p, "seconds")} Sekunden erneut.`,
+    invalid_input: (p) => withDetail("Prüfe deine Eingaben.", p),
+    job_running: () => "Diese Verbindung hat schon einen laufenden Auftrag.",
+    job_state: () => "Das geht im aktuellen Zustand des Auftrags nicht.",
   },
   http: (status) => `Der Server hat mit Fehler ${String(status)} geantwortet.`,
 };

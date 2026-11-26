@@ -17,6 +17,7 @@ export const SHORT_LIVED_RETENTION_MS = 15 * 60 * 1000;
 const SHORT_LIVED_TYPES: readonly EventType[] = [
   "parcel.live_updated",
   "connection.run_finished",
+  "job.progress",
   "token.used",
 ];
 /** The most rows kept, whatever their age, so a burst (a history import) cannot grow it. */

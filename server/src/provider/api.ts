@@ -2,9 +2,11 @@ import type { z } from "zod";
 import type { Clock } from "../clock.js";
 import type { HttpPolicy, ProviderHttp } from "./http.js";
 import type { LiveReading, LiveTarget } from "./live.js";
+import type { ProviderAction } from "./actions.js";
 import type { SignInFlow } from "./sign-in.js";
 import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "./snapshot.js";
 
+export * from "./actions.js";
 export * from "./errors.js";
 export * from "./kit/html.js";
 export * from "./kit/json.js";
@@ -136,6 +138,11 @@ export interface CarrierProvider<Config = unknown, Secret = unknown> {
     context: ProviderContext<Config, Secret>,
     target: LiveTarget,
   ): Promise<LiveReading | null>;
+  /**
+   * The code of the manifest's task actions, by action id (`defineAction`); exactly the manifest's
+   * tasks, no more and no fewer. Each runs as a job (`docs/connection-actions-and-jobs.md`).
+   */
+  readonly actions?: Readonly<Record<string, ProviderAction<Config, Secret>>>;
 }
 
 /** Identity helper that keeps the generic parameters inferred from the schemas. */

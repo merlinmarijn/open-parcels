@@ -43,6 +43,12 @@ const ERROR_CODES = [
   "sign_in_unavailable",
   "sign_in_captcha",
   "no_sign_in",
+  "no_such_action",
+  "action_unavailable",
+  "action_cooldown",
+  "invalid_input",
+  "job_running",
+  "job_state",
 ] as const;
 export type ErrorCode = (typeof ERROR_CODES)[number];
 
@@ -58,7 +64,8 @@ export type NotFoundResource =
   | "calendar_feed"
   | "sign_in"
   | "setting"
-  | "pictures";
+  | "pictures"
+  | "job";
 
 export type ErrorParams = Readonly<Record<string, string | number>>;
 
@@ -104,6 +111,7 @@ const NOT_FOUND_TEXT: Readonly<Record<NotFoundResource, string>> = {
   sign_in: "The sign-in attempt",
   setting: "The setting",
   pictures: "The item pictures",
+  job: "The job",
 };
 export const notFound = (resource: NotFoundResource): ApiError =>
   new ApiError(404, "not_found", `${NOT_FOUND_TEXT[resource]} was not found.`, { resource });
