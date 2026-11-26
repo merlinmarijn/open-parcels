@@ -8,6 +8,7 @@ import type { Database, ConnectionRow } from "../db/schema.js";
 import type { Reconciler } from "../engine/reconciler.js";
 import { secretAad, sessionAad, type ConnectionService } from "../engine/connections.js";
 import { cause, NO_CAUSE } from "../engine/state-reason.js";
+import { InvalidConnectionConfigError } from "../engine/registry.js";
 import type { OrderSnapshot, ParcelSnapshot, ReturnSnapshot } from "../provider/snapshot.js";
 import type { EmailRouter } from "./routing.js";
 import {
@@ -147,6 +148,40 @@ export class MailWatcher {
   #stopped = true;
 
   constructor(private readonly deps: MailWatcherDeps) {}
+
+  /** A separate, short-lived connection keeps discovery out of the watcher's sync queue. */
+  async listFolders(
+    config: MailConfig,
+    secret?: MailSecret,
+    connectionId?: string,
+  ): Promise<string[]> {
+    if (secret === undefined && connectionId !== undefined) {
+      const row = await this.deps.db
+        .selectFrom("connections")
+        .selectAll()
+        .where("id", "=", connectionId)
+        .executeTakeFirst();
+      if (row?.kind === "mail" && row.provider === MAIL_PROVIDER && row.secret_blob !== null) {
+        secret = mailSecretSchema.parse(
+          this.deps.secrets.decryptJson(row.secret_blob, secretAad(row.id)),
+        );
+      }
+    }
+    if (secret === undefined) {
+      throw new InvalidConnectionConfigError(
+        "The inbox needs a username and a password.",
+        "inbox_fields",
+      );
+    }
+    const client = this.deps.clientFactory(config, secret);
+    client.onClose(() => undefined);
+    try {
+      await client.connect();
+      return [...new Set(await client.listFolders())];
+    } finally {
+      await client.close().catch(() => undefined);
+    }
+  }
 
   status(connectionId: string): InboxStatus {
     return {

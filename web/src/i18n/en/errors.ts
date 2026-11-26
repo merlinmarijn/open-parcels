@@ -58,6 +58,8 @@ const INVALID_PASSWORD: Readonly<Record<PasswordProblem, ErrorText>> = {
 /** English texts for the server's error codes; `params` are the values it sent along. */
 export const errors: ErrorTexts = {
   byCode: {
+    folder_discovery_failed: () =>
+      "Could not list IMAP folders. Check the server, port, TLS and sign-in details, then try again.",
     unauthorized: () => "Log in again.",
     forbidden: (p) => `This needs the "${param(p, "scope")}" permission.`,
     csrf: () => "The page is out of date. Reload it and try again.",

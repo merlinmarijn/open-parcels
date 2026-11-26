@@ -54,6 +54,13 @@ export const connections = {
   // Inbox forms (mirror the server's mail schemas)
   userNameAndPasswordText: "User name and password",
   onePerLine: "One per line",
+  folders: "Folders",
+  foldersHint:
+    "Enter the server and sign-in details, then detect folders. Choose at least one folder to scan. Select all chooses the folders currently listed; detect again to find new folders.",
+  detectFolders: "Detect folders",
+  selectAllFolders: "Select all",
+  noFolders: "No selectable folders found.",
+  chooseFolder: "Choose at least one folder.",
   // Sign-in dialog
   saveSignIn: "Save sign-in",
   signedIn: "Signed in. The connection runs now.",

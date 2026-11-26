@@ -29,7 +29,7 @@ export const mailConfigSchema = z.object({
   folders: z
     .array(z.string().min(1).max(200))
     .min(1)
-    .max(20)
+    .max(1000)
     .default(["INBOX"])
     .meta({ title: "Folders" }),
   /** How far back the first sync looks. */
@@ -117,6 +117,8 @@ export interface FetchedMessage {
 /** What the watcher needs from an IMAP connection; the real one wraps imapflow, tests use a fake. */
 export interface MailboxClient {
   connect(): Promise<void>;
+  /** Exact paths of selectable folders, including unsubscribed folders. */
+  listFolders(): Promise<string[]>;
   /** Opens a folder read-only and returns its UIDVALIDITY. */
   open(folder: string): Promise<{ uidValidity: string }>;
   /** UIDs of messages received on or after `since`. */

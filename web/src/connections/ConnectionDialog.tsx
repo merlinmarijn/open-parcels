@@ -4,6 +4,7 @@ import type { Carrier, Connection } from "../api/types";
 import { Dialog, ErrorNotice, Field } from "../components/ui";
 import { LogoTile } from "../components/CarrierLogo";
 import { INBOX_PROVIDER } from "./inbox";
+import { InboxFolders } from "./InboxFolders";
 import { pickerEntries } from "./picker";
 import { ProviderPicker } from "./ProviderPicker";
 import { SchemaFields } from "./SchemaForm";
@@ -76,6 +77,15 @@ export function ConnectionDialog(props: {
   const [kind, setKind] = useState<Kind | "">(editing?.kind ?? "");
   const effectiveKind = kind !== "" && kinds.includes(kind) ? kind : (kinds[0] ?? "");
   const schema = configSchema(provider, list, inbox);
+  const formSchema =
+    provider === INBOX_PROVIDER
+      ? {
+          ...schema,
+          properties: Object.fromEntries(
+            Object.entries(schema.properties ?? {}).filter(([name]) => name !== "folders"),
+          ),
+        }
+      : schema;
   const [label, setLabel] = useState(editing?.label ?? "");
   const [secret, setSecret] = useState<FormValues>({});
   const needsInboxSecret = editing === null && provider === INBOX_PROVIDER;
@@ -182,10 +192,27 @@ export function ConnectionDialog(props: {
             )}
           </Field>
           {provider === "" ? null : (
-            <SchemaFields schema={schema} values={values} onChange={setValues} />
+            <SchemaFields schema={formSchema} values={values} onChange={setValues} />
           )}
           {needsInboxSecret ? (
             <SchemaFields schema={secretSchema} values={secret} onChange={setSecret} />
+          ) : null}
+          {provider === INBOX_PROVIDER ? (
+            <InboxFolders
+              key={JSON.stringify([
+                values["host"],
+                values["port"],
+                values["secure"],
+                values["allowPlaintext"],
+                secret["username"],
+              ])}
+              config={values}
+              secret={secret}
+              {...(editing === null ? {} : { connectionId: editing.id })}
+              onChange={(folders) => {
+                setValues({ ...values, folders });
+              }}
+            />
           ) : null}
           {editing === null && provider !== "" && !needsInboxSecret ? (
             <p className="muted">{t.connections.afterAdding}</p>
@@ -201,6 +228,9 @@ export function ConnectionDialog(props: {
               disabled={
                 mutation.isPending ||
                 provider === "" ||
+                (provider === INBOX_PROVIDER &&
+                  Array.isArray(values["folders"]) &&
+                  values["folders"].length === 0) ||
                 (needsInboxSecret && inboxForm.data === undefined)
               }
             >

@@ -386,6 +386,7 @@ export type PostApiV1Session401Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -447,6 +448,7 @@ export type PostApiV1Session429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -524,6 +526,7 @@ export type PostApiV1Setup403Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -585,6 +588,7 @@ export type PostApiV1Setup409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -646,6 +650,7 @@ export type PostApiV1Setup429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -721,6 +726,7 @@ export type PutApiV1AdminPassword400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -782,6 +788,7 @@ export type DeleteApiV1AdminPassword409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -882,6 +889,7 @@ export type PostApiV1Logins401Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -943,6 +951,7 @@ export type PostApiV1Logins429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1043,6 +1052,7 @@ export type PostApiV1LoginsRefresh401Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1109,6 +1119,7 @@ export type DeleteApiV1LoginsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1217,6 +1228,7 @@ export type DeleteApiV1TokensId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1547,6 +1559,7 @@ export type PatchApiV1SettingsConfig400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1682,6 +1695,7 @@ export type DeleteApiV1SettingsConfigKey400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1743,6 +1757,7 @@ export type DeleteApiV1SettingsConfigKey404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1818,6 +1833,7 @@ export type GetApiV1Geocode400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -1879,6 +1895,7 @@ export type GetApiV1Geocode502Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -2633,6 +2650,7 @@ export type PostApiV1Parcels400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -2694,6 +2712,7 @@ export type PostApiV1Parcels409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -3076,6 +3095,7 @@ export type GetApiV1ParcelsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -3482,6 +3502,7 @@ export type PatchApiV1ParcelsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -3543,6 +3564,7 @@ export type DeleteApiV1ParcelsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -4149,6 +4171,7 @@ export type GetApiV1OrdersId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -4485,6 +4508,7 @@ export type PatchApiV1OrdersId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -4546,6 +4570,7 @@ export type DeleteApiV1OrdersId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -4806,6 +4831,7 @@ export type GetApiV1ReturnsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -4930,6 +4956,114 @@ export type GetApiV1InboxForm200 = {
   config_schema: unknown;
   /** JSON Schema of the inbox sign-in data. */
   secret_schema: unknown;
+};
+
+export type PostApiV1InboxFoldersBodyConfig = {
+  /**
+   * For example imap.example.org.
+   * @minLength 1
+   * @maxLength 255
+   */
+  host: string;
+  /**
+   * @minimum 1
+   * @maximum 65535
+   */
+  port?: number;
+  /** Off: the connection must switch to TLS with STARTTLS, usually on port 143. */
+  secure?: boolean;
+  /** Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text. */
+  allowPlaintext?: boolean;
+  /**
+   * @minItems 1
+   * @maxItems 1000
+   * @items.minLength 1
+   * @items.maxLength 200
+   */
+  folders?: string[];
+  /**
+   * @minimum 1
+   * @maximum 365
+   */
+  initialDays?: number;
+  /** Off only if your mail server adds no Authentication-Results header: emails then reach a shop's or carrier's provider by the sender's domain alone, which a forged sender can fake. */
+  checkSenders?: boolean;
+};
+
+export type PostApiV1InboxFoldersBodySecret = {
+  /** @minLength 1 */
+  username: string;
+  /** @minLength 1 */
+  password: string;
+};
+
+export type PostApiV1InboxFoldersBody = {
+  config: PostApiV1InboxFoldersBodyConfig;
+  secret?: PostApiV1InboxFoldersBodySecret;
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id?: string;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1InboxFolders400Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1InboxFolders400Params = { [key: string]: string | number };
+
+export type PostApiV1InboxFolders400 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1InboxFolders400Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1InboxFolders400Params;
 };
 
 export type GetApiV1Connections200ItemKind = "account" | "tracking" | "shop" | "mail";
@@ -5085,6 +5219,7 @@ export type PostApiV1Connections400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5207,6 +5342,7 @@ export type PatchApiV1ConnectionsId400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5268,6 +5404,7 @@ export type PatchApiV1ConnectionsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5329,6 +5466,7 @@ export type DeleteApiV1ConnectionsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5394,6 +5532,7 @@ export type PutApiV1ConnectionsIdSecret400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5455,6 +5594,7 @@ export type PutApiV1ConnectionsIdSecret404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5516,6 +5656,7 @@ export type PostApiV1ConnectionsIdSync404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5577,6 +5718,7 @@ export type PostApiV1ConnectionsIdSync429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5659,6 +5801,7 @@ export type GetApiV1ConnectionsIdData404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5741,6 +5884,7 @@ export type PostApiV1ConnectionsIdClear404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5851,6 +5995,7 @@ export type GetApiV1ConnectionsIdActions404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -5970,6 +6115,7 @@ export type PostApiV1ConnectionsIdActionsAction400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6031,6 +6177,7 @@ export type PostApiV1ConnectionsIdActionsAction404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6092,6 +6239,7 @@ export type PostApiV1ConnectionsIdActionsAction409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6153,6 +6301,7 @@ export type PostApiV1ConnectionsIdActionsAction429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6314,6 +6463,7 @@ export type GetApiV1JobsId404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6421,6 +6571,7 @@ export type PostApiV1JobsIdCancel400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6482,6 +6633,7 @@ export type PostApiV1JobsIdCancel404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6543,6 +6695,7 @@ export type PostApiV1JobsIdCancel409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6604,6 +6757,7 @@ export type PostApiV1JobsIdCancel429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6711,6 +6865,7 @@ export type PostApiV1JobsIdResume400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6772,6 +6927,7 @@ export type PostApiV1JobsIdResume404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6833,6 +6989,7 @@ export type PostApiV1JobsIdResume409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -6894,6 +7051,7 @@ export type PostApiV1JobsIdResume429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7001,6 +7159,7 @@ export type PostApiV1JobsIdRestart400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7062,6 +7221,7 @@ export type PostApiV1JobsIdRestart404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7123,6 +7283,7 @@ export type PostApiV1JobsIdRestart409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7184,6 +7345,7 @@ export type PostApiV1JobsIdRestart429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7420,6 +7582,7 @@ export type PostApiV1DataBackups500Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7535,6 +7698,7 @@ export type PostApiV1DataClear400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7596,6 +7760,7 @@ export type PostApiV1DataClear500Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7670,6 +7835,7 @@ export type GetApiV1ConnectionsIdSignInFlows404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7801,6 +7967,7 @@ export type PostApiV1ConnectionsIdSignInAttempts400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7862,6 +8029,7 @@ export type PostApiV1ConnectionsIdSignInAttempts404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7923,6 +8091,7 @@ export type PostApiV1ConnectionsIdSignInAttempts409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -7984,6 +8153,7 @@ export type PostApiV1ConnectionsIdSignInAttempts429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8045,6 +8215,7 @@ export type PostApiV1ConnectionsIdSignInAttempts503Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8179,6 +8350,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8242,6 +8414,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8305,6 +8478,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8368,6 +8542,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8431,6 +8606,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptContinue503Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8559,6 +8735,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8622,6 +8799,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8685,6 +8863,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll409Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8748,6 +8927,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll429Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8811,6 +8991,7 @@ export type PostApiV1ConnectionsIdSignInAttemptsAttemptPoll503Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -8874,6 +9055,7 @@ export type DeleteApiV1ConnectionsIdSignInAttemptsAttempt404Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -9027,6 +9209,7 @@ export type GetApiV1Calendar400Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -9950,6 +10133,7 @@ export type GetApiV1Sync410Error =
   | "login_ended"
   | "sync_expired"
   | "invalid_connection"
+  | "folder_discovery_failed"
   | "connection_backing_off"
   | "sign_in_expired"
   | "sign_in_timeout"
@@ -10780,6 +10964,25 @@ export const getApiV1InboxForm = async (
   return apiFetch<GetApiV1InboxForm200>(getGetApiV1InboxFormUrl(), {
     ...options,
     method: "GET",
+  });
+};
+
+export const getPostApiV1InboxFoldersUrl = () => {
+  return `/api/v1/inbox-folders`;
+};
+
+/**
+ * @summary Discover selectable IMAP folders without saving or reading mail.
+ */
+export const postApiV1InboxFolders = async (
+  postApiV1InboxFoldersBody: PostApiV1InboxFoldersBody,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<string[]> => {
+  return apiFetch<string[]>(getPostApiV1InboxFoldersUrl(), {
+    ...options,
+    method: "POST",
+    headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
+    body: JSON.stringify(postApiV1InboxFoldersBody),
   });
 };
 

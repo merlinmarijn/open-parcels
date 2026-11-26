@@ -18,6 +18,9 @@ const FAILED = `mx.example.invalid; dkim=fail header.d=${SHOP_DOMAIN}; dmarc=fai
 
 /** A mailbox holding the given raw messages in INBOX. */
 class FakeMailbox implements MailboxClient {
+  listFolders(): Promise<string[]> {
+    return Promise.resolve(["INBOX"]);
+  }
   constructor(readonly messages: readonly FetchedMessage[]) {}
   connect(): Promise<void> {
     return Promise.resolve();

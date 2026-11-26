@@ -190,8 +190,46 @@ function registerCarrierRoutes(app: TypedApp, services: Services): void {
   );
 }
 
+function registerInboxFolderRoutes(app: TypedApp, services: Services): void {
+  const admin = requireScope("admin");
+
+  app.post(
+    "/api/v1/inbox-folders",
+    {
+      preHandler: admin,
+      schema: {
+        tags: ["connections"],
+        summary: "Discover selectable IMAP folders without saving or reading mail.",
+        body: z.object({
+          config: mailConfigSchema,
+          secret: mailSecretSchema.optional(),
+          connection_id: z.uuid().optional(),
+        }),
+        response: { 200: z.array(z.string()), 400: errorBodySchema },
+      },
+    },
+    async (request) => {
+      try {
+        return await services.mail.listFolders(
+          request.body.config,
+          request.body.secret,
+          request.body.connection_id,
+        );
+      } catch {
+        // Server responses can contain personal data; never return raw IMAP errors.
+        throw new ApiError(
+          400,
+          "folder_discovery_failed",
+          "Could not list IMAP folders. Check the server, port, TLS and sign-in details, then try again.",
+        );
+      }
+    },
+  );
+}
+
 export function registerConnectionRoutes(app: TypedApp, services: Services): void {
   registerCarrierRoutes(app, services);
+  registerInboxFolderRoutes(app, services);
   const read = requireScope("read");
   const admin = requireScope("admin");
 

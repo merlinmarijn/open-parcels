@@ -28,6 +28,9 @@ class FakeMailbox implements MailboxClient {
   connect(): Promise<void> {
     return this.connectError === undefined ? Promise.resolve() : Promise.reject(this.connectError);
   }
+  listFolders(): Promise<string[]> {
+    return Promise.resolve([...this.folders.keys()]);
+  }
   open(folder: string): Promise<{ uidValidity: string }> {
     this.current = folder;
     return Promise.resolve({ uidValidity: this.#folder().uidValidity });
@@ -158,6 +161,45 @@ async function addMailbox(): Promise<string> {
 }
 
 describe("mail watcher", () => {
+  it("discovers folders with supplied or stored credentials and requires admin access", async () => {
+    mailbox.folders.set("Orders/届いた", { uidValidity: "2", messages: [] });
+    const payload = { config: { host: "imap.example.invalid" }, secret: mailSecret };
+    const discover = (body: Record<string, unknown>, requestHeaders = headers) =>
+      app.inject({
+        method: "POST",
+        url: "/api/v1/inbox-folders",
+        headers: requestHeaders,
+        payload: body,
+      });
+    const close = vi.spyOn(mailbox, "close");
+    const result = await discover(payload);
+    expect(result.statusCode).toBe(200);
+    expect(result.json()).toEqual(["INBOX", "Orders/届いた"]);
+    expect(close).toHaveBeenCalledOnce();
+    expect(mailbox.fetched).toEqual([]);
+    const id = await addMailbox();
+    expect((await discover({ config: payload.config, connection_id: id })).json()).toEqual([
+      "INBOX",
+      "Orders/届いた",
+    ]);
+    expect((await discover(payload, {})).statusCode).toBe(401);
+    expect((await discover(payload, { cookie: headers["cookie"] ?? "" })).statusCode).toBe(403);
+    expect((await discover({ config: {} })).statusCode).toBe(400);
+  });
+
+  it("closes discovery connections after failure and hides raw server errors", async () => {
+    const close = vi.spyOn(mailbox, "close");
+    vi.spyOn(mailbox, "listFolders").mockRejectedValueOnce(new Error("private server data"));
+    const result = await app.inject({
+      method: "POST",
+      url: "/api/v1/inbox-folders",
+      headers,
+      payload: { config: { host: "imap.example.invalid" }, secret: mailSecret },
+    });
+    expect(result.statusCode).toBe(400);
+    expect(result.body).not.toContain("private server data");
+    expect(close).toHaveBeenCalledOnce();
+  });
   it("imports the last 30 days on first sync and follows found parcels with their carrier", async () => {
     mailbox.add(1, "2026-09-01T10:00:00Z", "Old FP0001");
     mailbox.add(2, "2026-11-10T10:00:00Z", "Recent FP0002");

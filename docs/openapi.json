@@ -937,6 +937,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1022,6 +1023,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1217,6 +1219,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1302,6 +1305,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1387,6 +1391,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1523,6 +1528,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1630,6 +1636,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1834,6 +1841,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -1919,6 +1927,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -2165,6 +2174,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -2330,6 +2340,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -2627,6 +2638,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -3317,6 +3329,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -3584,6 +3597,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -3669,6 +3683,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -3806,6 +3821,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -3891,6 +3907,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -5372,6 +5389,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -5457,6 +5475,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -6189,6 +6208,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -6953,6 +6973,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -7072,6 +7093,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -8323,6 +8345,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -8996,6 +9019,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -9116,6 +9140,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -9660,6 +9685,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10021,6 +10047,215 @@
         }
       }
     },
+    "/api/v1/inbox-folders": {
+      "post": {
+        "summary": "Discover selectable IMAP folders without saving or reading mail.",
+        "tags": [
+          "connections"
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "type": "object",
+                "properties": {
+                  "config": {
+                    "type": "object",
+                    "properties": {
+                      "host": {
+                        "type": "string",
+                        "minLength": 1,
+                        "maxLength": 255,
+                        "title": "IMAP server",
+                        "description": "For example imap.example.org."
+                      },
+                      "port": {
+                        "default": 993,
+                        "title": "Port",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 65535
+                      },
+                      "secure": {
+                        "default": true,
+                        "title": "Use TLS",
+                        "description": "Off: the connection must switch to TLS with STARTTLS, usually on port 143.",
+                        "type": "boolean"
+                      },
+                      "allowPlaintext": {
+                        "default": false,
+                        "title": "Allow an unencrypted connection",
+                        "description": "Only with TLS off: connect even when the server offers no STARTTLS. Sends the password in clear text.",
+                        "type": "boolean"
+                      },
+                      "folders": {
+                        "default": [
+                          "INBOX"
+                        ],
+                        "title": "Folders",
+                        "minItems": 1,
+                        "maxItems": 1000,
+                        "type": "array",
+                        "items": {
+                          "type": "string",
+                          "minLength": 1,
+                          "maxLength": 200
+                        }
+                      },
+                      "initialDays": {
+                        "default": 30,
+                        "title": "Days to look back on the first sync",
+                        "type": "integer",
+                        "minimum": 1,
+                        "maximum": 365
+                      },
+                      "checkSenders": {
+                        "default": true,
+                        "title": "Check senders (DKIM/DMARC)",
+                        "description": "Off only if your mail server adds no Authentication-Results header: emails then reach a shop's or carrier's provider by the sender's domain alone, which a forged sender can fake.",
+                        "type": "boolean"
+                      }
+                    },
+                    "required": [
+                      "host"
+                    ]
+                  },
+                  "secret": {
+                    "type": "object",
+                    "properties": {
+                      "username": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Username"
+                      },
+                      "password": {
+                        "type": "string",
+                        "minLength": 1,
+                        "title": "Password"
+                      }
+                    },
+                    "required": [
+                      "username",
+                      "password"
+                    ]
+                  },
+                  "connection_id": {
+                    "type": "string",
+                    "format": "uuid",
+                    "pattern": "^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$"
+                  }
+                },
+                "required": [
+                  "config"
+                ]
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "array",
+                  "items": {
+                    "type": "string"
+                  }
+                }
+              }
+            }
+          },
+          "400": {
+            "description": "Default Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "type": "object",
+                  "properties": {
+                    "error": {
+                      "type": "string",
+                      "enum": [
+                        "unauthorized",
+                        "forbidden",
+                        "csrf",
+                        "admin_required",
+                        "not_found",
+                        "invalid_request",
+                        "internal",
+                        "invalid_range",
+                        "carrier_not_detected",
+                        "duplicate",
+                        "backup_failed",
+                        "delete_backup_failed",
+                        "confirmation_required",
+                        "invalid_setting",
+                        "geocode_failed",
+                        "tile",
+                        "image",
+                        "too_many_attempts",
+                        "current_required",
+                        "invalid_password",
+                        "no_environment_password",
+                        "already_set_up",
+                        "bad_setup_code",
+                        "wrong_password",
+                        "login_ended",
+                        "sync_expired",
+                        "invalid_connection",
+                        "folder_discovery_failed",
+                        "connection_backing_off",
+                        "sign_in_expired",
+                        "sign_in_timeout",
+                        "sign_in_refused",
+                        "sign_in_failed",
+                        "sign_in_wrong_step",
+                        "sign_in_poll_too_soon",
+                        "sign_in_unavailable",
+                        "sign_in_captcha",
+                        "no_sign_in",
+                        "no_such_action",
+                        "action_unavailable",
+                        "action_cooldown",
+                        "invalid_input",
+                        "job_running",
+                        "job_state"
+                      ],
+                      "description": "Stable machine-readable error code."
+                    },
+                    "message": {
+                      "type": "string",
+                      "description": "English explanation, for logs and scripts."
+                    },
+                    "params": {
+                      "type": "object",
+                      "additionalProperties": {
+                        "anyOf": [
+                          {
+                            "type": "string"
+                          },
+                          {
+                            "type": "number"
+                          }
+                        ]
+                      },
+                      "description": "Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words."
+                    }
+                  },
+                  "required": [
+                    "error",
+                    "message",
+                    "params"
+                  ],
+                  "additionalProperties": false
+                }
+              }
+            }
+          }
+        }
+      }
+    },
     "/api/v1/connections": {
       "get": {
         "summary": "Carrier accounts, shops, tracking connections and inboxes.",
@@ -10319,6 +10554,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10547,6 +10783,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10632,6 +10869,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10751,6 +10989,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10888,6 +11127,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -10973,6 +11213,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11095,6 +11336,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11180,6 +11422,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11323,6 +11566,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11467,6 +11711,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11692,6 +11937,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -11960,6 +12206,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12045,6 +12292,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12130,6 +12378,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12215,6 +12464,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12582,6 +12832,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12799,6 +13050,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12884,6 +13136,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -12969,6 +13222,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13054,6 +13308,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13271,6 +13526,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13356,6 +13612,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13441,6 +13698,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13526,6 +13784,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13743,6 +14002,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13828,6 +14088,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13913,6 +14174,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -13998,6 +14260,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -14397,6 +14660,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -14654,6 +14918,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -14739,6 +15004,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -14903,6 +15169,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -15291,6 +15558,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -15376,6 +15644,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -15461,6 +15730,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -15546,6 +15816,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -15631,6 +15902,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16034,6 +16306,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16119,6 +16392,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16204,6 +16478,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16289,6 +16564,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16374,6 +16650,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16755,6 +17032,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16840,6 +17118,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -16925,6 +17204,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -17010,6 +17290,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -17095,6 +17376,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -17226,6 +17508,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -17521,6 +17804,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",
@@ -19565,6 +19849,7 @@
                         "login_ended",
                         "sync_expired",
                         "invalid_connection",
+                        "folder_discovery_failed",
                         "connection_backing_off",
                         "sign_in_expired",
                         "sign_in_timeout",

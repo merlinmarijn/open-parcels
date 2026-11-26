@@ -55,6 +55,13 @@ export const connections: Messages["connections"] = {
   save: "Speichern",
   userNameAndPasswordText: "Benutzername und Passwort",
   onePerLine: "Einer pro Zeile",
+  folders: "Ordner",
+  foldersHint:
+    "Server und Anmeldedaten eingeben, dann Ordner suchen. Mindestens einen Ordner zum Einlesen wählen. Alle auswählen wählt die aufgelisteten Ordner; erneut suchen, um neue Ordner zu finden.",
+  detectFolders: "Ordner suchen",
+  selectAllFolders: "Alle auswählen",
+  noFolders: "Keine auswählbaren Ordner gefunden.",
+  chooseFolder: "Mindestens einen Ordner auswählen.",
   saveSignIn: "Anmeldung speichern",
   signedIn: "Angemeldet. Die Verbindung läuft jetzt.",
   close: "Schließen",

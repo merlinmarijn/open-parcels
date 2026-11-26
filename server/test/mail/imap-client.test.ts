@@ -11,6 +11,16 @@ const { FakeImapFlow } = await vi.hoisted(async () => {
     readonly calls: unknown[][] = [];
     messages: { uid: number; source?: Buffer; internalDate?: Date | string }[] = [];
     searchResult: number[] | false = [];
+    folders = [
+      { path: "INBOX", flags: new Set<string>() },
+      { path: "Parent", flags: new Set(["\\Noselect"]) },
+      { path: "Parent/Orders", flags: new Set<string>() },
+    ];
+
+    list() {
+      this.calls.push(["list"]);
+      return Promise.resolve(this.folders);
+    }
 
     constructor(readonly options: unknown) {
       super();
@@ -89,6 +99,11 @@ describe("IMAP connection options (OP-012)", () => {
 });
 
 describe("the IMAP client (OP-070)", () => {
+  it("lists exact selectable folder paths without opening or reading them", async () => {
+    const { client, flow } = connect();
+    expect(await client.listFolders()).toEqual(["INBOX", "Parent/Orders"]);
+    expect(flow.calls).toEqual([["list"]]);
+  });
   it("opens folders read-only, never logs, and reads UIDVALIDITY as text", async () => {
     const { client, flow } = connect();
     expect(flow.options).toMatchObject({ logger: false });

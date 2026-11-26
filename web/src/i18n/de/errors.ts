@@ -59,6 +59,8 @@ const INVALID_PASSWORD: Readonly<Record<PasswordProblem, ErrorText>> = {
 /** German texts for the server's error codes. */
 export const errors: ErrorTexts = {
   byCode: {
+    folder_discovery_failed: () =>
+      "IMAP-Ordner konnten nicht geladen werden. Server, Port, TLS und Anmeldedaten prüfen und erneut versuchen.",
     unauthorized: () => "Bitte erneut einloggen.",
     forbidden: (p) => `Dafür ist die Berechtigung „${param(p, "scope")}“ nötig.`,
     csrf: () => "Die Seite ist veraltet. Bitte neu laden und erneut versuchen.",

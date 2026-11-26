@@ -33,6 +33,7 @@ const ERROR_CODES = [
   "login_ended",
   "sync_expired",
   "invalid_connection",
+  "folder_discovery_failed",
   "connection_backing_off",
   "sign_in_expired",
   "sign_in_timeout",

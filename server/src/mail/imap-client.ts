@@ -40,6 +40,12 @@ export const imapClientFactory: MailboxClientFactory = (config, secret) => {
   }
   const wrapper: MailboxClient = {
     connect: () => client.connect(),
+    async listFolders() {
+      const folders = await client.list();
+      return folders
+        .filter((folder) => !folder.flags.has("\\Noselect"))
+        .map((folder) => folder.path);
+    },
     async open(folder) {
       const mailbox = await client.mailboxOpen(folder, { readOnly: true });
       return { uidValidity: String(mailbox.uidValidity) };
