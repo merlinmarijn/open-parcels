@@ -1,6 +1,6 @@
 import { createHash } from "node:crypto";
 import { newParcelRow } from "../parcels/new-row.js";
-import type { ExpressionBuilder, Kysely, Transaction } from "kysely";
+import type { Kysely, Transaction } from "kysely";
 import type { Logger } from "pino";
 import { addMs, isoNow, type Clock } from "../clock.js";
 import type { Database, ParcelRow, ConnectionRow } from "../db/schema.js";
@@ -14,12 +14,19 @@ import { appendEvent, type EventBus } from "../events/bus.js";
 import { parcelEventPayload } from "../events/payload.js";
 import { ParcelRepository, RAW_PRESENTATION, type Presentation } from "../parcels/repository.js";
 import type { FetchResult, LiveTarget } from "../provider/api.js";
-import { snapshot, type ParcelSnapshot, type SnapshotEvent } from "../provider/snapshot.js";
+import type { ParcelSnapshot, SnapshotEvent } from "../provider/snapshot.js";
 import { healState, mergeParcel, type Authority, type ParcelState } from "./merge.js";
 import { deriveEvents, type EventView } from "./rules.js";
 import { utcSnapshot } from "./utc.js";
 import { normaliseTrackingNumber } from "./tracking-number.js";
-import { foldParcel } from "./fold.js";
+import {
+  adoptShopTwin,
+  findParcel,
+  foldShopDuplicate,
+  foldStoredTwins,
+  withInferredHandoff,
+  type TwinEnv,
+} from "./twins.js";
 import { scrubRaw } from "./raw-scrub.js";
 import { withSafeLinks } from "./links.js";
 import { sameRows, writeOrderItems } from "./order-items.js";
@@ -169,70 +176,6 @@ async function storedHistory(trx: Trx, parcelId: string): Promise<SnapshotEvent[
 }
 
 /**
- * Long enough to be a carrier's tracking code rather than a shop's own shipment key, so a shared
- * value across carriers means the same parcel.
- */
-function isCarrierCode(trackingNumber: string): boolean {
-  return /^[A-Z0-9]{8,40}$/i.test(trackingNumber);
-}
-
-/**
- * Parcels stored under a shop's name (a provider that has a shop connection) with this code, other than
- * `carrier`'s. Imported parcels count too, linked to the shop or not.
- */
-async function shopTwins(
-  trx: Trx,
-  trackingNumber: string,
-  carrier: string,
-): Promise<{ carrier: string; tracking_number: string }[]> {
-  return trx
-    .selectFrom("parcels")
-    .select(["parcels.carrier", "parcels.tracking_number"])
-    .where("parcels.tracking_number", "=", trackingNumber)
-    .where("parcels.carrier", "!=", carrier)
-    .where((eb) =>
-      eb.exists(
-        eb
-          .selectFrom("connections")
-          .select("connections.id")
-          .where("connections.kind", "=", "shop")
-          .whereRef("connections.provider", "=", "parcels.carrier"),
-      ),
-    )
-    .execute();
-}
-
-/**
- * A hand-off goes to a carrier, never to another shop: a parcel stored under a provider that has a
- * shop connection is not a hand-off target, so a second shop's parcel with the same code is not
- * folded into it.
- */
-function notUnderAShop(eb: ExpressionBuilder<Database, "parcels">) {
-  return eb.not(
-    eb.exists(
-      eb
-        .selectFrom("connections")
-        .select("connections.id")
-        .where("connections.kind", "=", "shop")
-        .whereRef("connections.provider", "=", "parcels.carrier"),
-    ),
-  );
-}
-
-async function findParcel(
-  trx: Trx,
-  carrier: string,
-  trackingNumber: string,
-): Promise<ParcelRow | undefined> {
-  return trx
-    .selectFrom("parcels")
-    .selectAll()
-    .where("carrier", "=", carrier)
-    .where("tracking_number", "=", trackingNumber)
-    .executeTakeFirst();
-}
-
-/**
  * The only writer of carrier data. Turns provider snapshots into stored parcels and canonical
  * events, in one transaction per connection run.
  */
@@ -250,6 +193,10 @@ export class Reconciler {
   ) {
     this.presentation = options.presentation ?? RAW_PRESENTATION;
     this.timeZone = options.timeZone ?? "UTC";
+  }
+
+  #twinEnv(): TwinEnv {
+    return { clock: this.clock, presentation: this.presentation, logger: this.logger };
   }
 
   /**
@@ -340,7 +287,9 @@ export class Reconciler {
    * delivered in status only), from their stored history. Idempotent; run at startup.
    */
   async repair(): Promise<number> {
-    const twins = await this.db.transaction().execute((trx) => this.#foldStoredTwins(trx));
+    const twins = await this.db
+      .transaction()
+      .execute((trx) => foldStoredTwins(trx, this.#twinEnv()));
     if (twins > 0) {
       await this.bus.notify();
       this.logger.info({ folded: twins }, "Folded shop parcels into their carriers' parcels.");
@@ -408,9 +357,9 @@ export class Reconciler {
     connection: ConnectionRow,
     reported: ParcelSnapshot,
   ): Promise<{ parcelId: string; created: boolean; events: number }> {
-    const snapshot = await this.#withInferredHandoff(trx, connection, reported);
+    const snapshot = await withInferredHandoff(trx, connection, reported);
     if (snapshot.handoff === null && connection.kind !== "shop" && connection.kind !== "mail") {
-      await this.#adoptShopTwin(trx, snapshot);
+      await adoptShopTwin(trx, this.#twinEnv(), snapshot);
     }
     const key = snapshot.handoff ?? {
       carrier: snapshot.carrier,
@@ -424,7 +373,7 @@ export class Reconciler {
 
     let existing = await findParcel(trx, key.carrier, key.trackingNumber);
     if (snapshot.handoff !== null) {
-      existing = await this.#foldShopDuplicate(trx, snapshot, existing);
+      existing = await foldShopDuplicate(trx, this.#twinEnv(), snapshot, existing);
     }
     const before = existing === undefined ? null : rowToState(existing);
     const manual = existing === undefined ? null : parseStatus(existing.manual_status);
@@ -506,158 +455,6 @@ export class Reconciler {
       }
     }
     return { parcelId, created: existing === undefined, events: derived.length };
-  }
-
-  /**
-   * A shop that reports a carrier's code without naming the carrier (an unmapped carrier code, a
-   * page without tracking details) still hands the parcel off: when exactly one parcel of another
-   * carrier has the same code, the shop's snapshot becomes a hand-off to it.
-   */
-  async #withInferredHandoff(
-    trx: Trx,
-    connection: ConnectionRow,
-    snapshot: ParcelSnapshot,
-  ): Promise<ParcelSnapshot> {
-    if (
-      snapshot.handoff !== null ||
-      connection.kind !== "shop" ||
-      !isCarrierCode(snapshot.trackingNumber)
-    ) {
-      return snapshot;
-    }
-    const twins = await trx
-      .selectFrom("parcels")
-      .select(["carrier", "tracking_number"])
-      .where("tracking_number", "=", snapshot.trackingNumber)
-      .where("carrier", "!=", snapshot.carrier)
-      .where(notUnderAShop)
-      .execute();
-    const [twin] = twins;
-    return twins.length === 1 && twin !== undefined
-      ? { ...snapshot, handoff: { carrier: twin.carrier, trackingNumber: twin.tracking_number } }
-      : snapshot;
-  }
-
-  /**
-   * The reverse: a carrier reports a code that a shop already stored under its own name. The shop's
-   * parcel is folded into the carrier's, so the code is one parcel with two connections.
-   */
-  async #adoptShopTwin(trx: Trx, snapshot: ParcelSnapshot): Promise<void> {
-    if (!isCarrierCode(snapshot.trackingNumber)) {
-      return;
-    }
-    const twins = await shopTwins(trx, snapshot.trackingNumber, snapshot.carrier);
-    const [twin] = twins;
-    if (twins.length !== 1 || twin === undefined) {
-      return;
-    }
-    const target = await findParcel(trx, snapshot.carrier, snapshot.trackingNumber);
-    await this.#foldShopDuplicate(
-      trx,
-      {
-        ...snapshot,
-        carrier: twin.carrier,
-        trackingNumber: twin.tracking_number,
-        handoff: { carrier: snapshot.carrier, trackingNumber: snapshot.trackingNumber },
-      },
-      target,
-    );
-  }
-
-  /**
-   * Repairs codes stored twice, once by a shop and once by the carrier that delivers it, from
-   * before hand-offs were inferred. Each pair becomes one parcel under the carrier. Idempotent.
-   */
-  async #foldStoredTwins(trx: Trx): Promise<number> {
-    const shopProviders = await trx
-      .selectFrom("connections")
-      .select("provider")
-      .where("kind", "=", "shop")
-      .distinct()
-      .execute();
-    if (shopProviders.length === 0) {
-      return 0;
-    }
-    const rows = await trx
-      .selectFrom("parcels")
-      .select(["carrier", "tracking_number"])
-      .where(
-        "carrier",
-        "in",
-        shopProviders.map((row) => row.provider),
-      )
-      .execute();
-    let folded = 0;
-    for (const shop of rows) {
-      if (!isCarrierCode(shop.tracking_number)) {
-        continue;
-      }
-      const others = await trx
-        .selectFrom("parcels")
-        .selectAll()
-        .where("tracking_number", "=", shop.tracking_number)
-        .where("carrier", "!=", shop.carrier)
-        .where(notUnderAShop)
-        .execute();
-      const [target] = others;
-      if (others.length !== 1 || target === undefined) {
-        continue;
-      }
-      await this.#foldShopDuplicate(
-        trx,
-        snapshot({
-          carrier: shop.carrier,
-          trackingNumber: shop.tracking_number,
-          status: null,
-          rawStatus: null,
-          handoff: { carrier: target.carrier, trackingNumber: target.tracking_number },
-        }),
-        target,
-      );
-      folded += 1;
-    }
-    return folded;
-  }
-
-  /**
-   * A shop may have reported a parcel under its own key before it knew the real carrier. Once the
-   * hand-off is known, that entry is moved under the carrier's key, or folded into the carrier's
-   * parcel if one exists, so there is never a duplicate.
-   */
-  async #foldShopDuplicate(
-    trx: Trx,
-    snapshot: ParcelSnapshot,
-    target: ParcelRow | undefined,
-  ): Promise<ParcelRow | undefined> {
-    const handoff = snapshot.handoff;
-    if (handoff === null) {
-      return target;
-    }
-    const duplicate = await findParcel(trx, snapshot.carrier, snapshot.trackingNumber);
-    if (duplicate === undefined || duplicate.id === target?.id) {
-      return target;
-    }
-    if (target === undefined) {
-      await trx
-        .updateTable("parcels")
-        .set({ carrier: handoff.carrier, tracking_number: handoff.trackingNumber })
-        .where("id", "=", duplicate.id)
-        .execute();
-      // The shop's links now hand the parcel off; the carrier's own connection becomes primary.
-      await trx
-        .updateTable("parcel_connections")
-        .set({ role: "handoff" })
-        .where("parcel_id", "=", duplicate.id)
-        .where("role", "=", "primary")
-        .execute();
-      this.logger.debug({ parcelId: duplicate.id }, "Re-keyed a shop parcel under its carrier.");
-      return { ...duplicate, carrier: handoff.carrier, tracking_number: handoff.trackingNumber };
-    }
-    // History, links, raw payloads and items move over; the duplicate goes, naming the target.
-    const env = { clock: this.clock, presentation: this.presentation };
-    await foldParcel(trx, env, duplicate, target, { linkRole: "handoff" });
-    this.logger.debug({ parcelId: target.id }, "Folded a shop duplicate into the carrier parcel.");
-    return target;
   }
 
   async #upsertOrder(trx: Trx, snapshot: ParcelSnapshot, now: string): Promise<string | null> {
