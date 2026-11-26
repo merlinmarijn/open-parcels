@@ -6,7 +6,7 @@
 import type { BaseContext, RegisteredProvider } from "../../src/engine/registry.js";
 import { NOT_FILED_AS_TRACKED } from "../../src/engine/tracked.js";
 import type { CarrierProvider, FetchResult, ProviderContext } from "../../src/provider/api.js";
-import { HostLimiter, ProviderHttp, type HttpPolicy } from "../../src/provider/http.js";
+import { coreHttp, HostLimiter, type HttpPolicy } from "../../src/provider/http.js";
 import { networkAllowList, type HostAllowList } from "../../src/provider/manifest.js";
 import { builtinManifest, registerBuiltin } from "../manifests.js";
 import type { FetchLike } from "../../src/net/guarded-fetch.js";
@@ -198,7 +198,7 @@ export function fakeContext(
   let current: unknown = options.session ?? null;
   const base: BaseContext = {
     connectionId: "connection-1",
-    http: new ProviderHttp(
+    http: coreHttp(
       carrier.http,
       { allows: (hostname) => hosts.allows(hostname) },
       limiter,

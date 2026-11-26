@@ -5,7 +5,7 @@ import {
   HostLimiter,
   HostNotAllowedError,
   parseRetryAfter,
-  ProviderHttp,
+  coreHttp,
 } from "../../src/provider/http.js";
 import { networkAllowList } from "../../src/provider/manifest.js";
 import { CookieJar, restoreJar, serializeJar } from "../../src/provider/cookies.js";
@@ -27,7 +27,7 @@ function setup(fetchImpl: FetchLike, userAgent?: { value: string; reason: string
     ...(userAgent === undefined ? {} : { userAgent }),
   };
   return {
-    http: new ProviderHttp(policy, ANY_HOST, limiter, clock, fetchImpl),
+    http: coreHttp(policy, ANY_HOST, limiter, clock, fetchImpl),
     waits,
     clock,
     limiter,
@@ -57,7 +57,7 @@ describe("provider HTTP client", () => {
       );
     };
     const clock = new FakeClock();
-    const http = new ProviderHttp(
+    const http = coreHttp(
       { limits: {} },
       networkAllowList(manifest, { url: "https://lookup.home.example/api" }),
       new HostLimiter(clock, () => Promise.resolve()),
@@ -142,7 +142,7 @@ describe("provider HTTP client", () => {
     };
     const { http, clock, limiter } = setup(answer);
     // A second connection of the same carrier shares the limiter.
-    const other = new ProviderHttp(
+    const other = coreHttp(
       { limits: { "*": { intervalMs: 1000, burst: 2 } } },
       ANY_HOST,
       limiter,

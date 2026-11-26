@@ -132,13 +132,6 @@ export interface RequestOptions {
 
 const MAX_REDIRECTS = 10;
 
-/** One request of a redirect chain: the method and body change after a 303. */
-interface Hop {
-  readonly method: string;
-  readonly headers: Readonly<Record<string, string>>;
-  readonly body: string | URLSearchParams | undefined;
-}
-
 /** Headers that carry a credential or a session, which must not follow a redirect elsewhere. */
 const CREDENTIAL_HEADER =
   /^(?:authorization|proxy-authorization|cookie|x-[\w-]*(?:token|csrf|xsrf|key|auth|session)[\w-]*)$/i;
@@ -210,22 +203,133 @@ export class HostNotAllowedError extends Error {
   override readonly name = "HostNotAllowedError";
 }
 
-/** The only way providers reach the network. */
+/** One request, no redirects: what the client hands its transport for each hop. */
+export interface HopRequest {
+  readonly url: URL;
+  readonly method: string;
+  readonly headers: Readonly<Record<string, string>>;
+  readonly body: string | URLSearchParams | undefined;
+  readonly timeoutMs?: number;
+  readonly maxBytes?: number;
+}
+
+/** A hop's answer, its body already read (and capped). */
+export interface HopResponse {
+  readonly status: number;
+  readonly headers: Headers;
+  readonly body: Buffer;
+}
+
+/**
+ * Sends one hop. The core's transport (`coreTransport`) is where every rule about the network
+ * lives; a sandboxed provider reaches it over IPC (`sandbox/http.ts`).
+ */
+export type HopTransport = (request: HopRequest) => Promise<HopResponse>;
+
+async function readBody(response: Response, maxBytes: number, url: URL): Promise<Buffer> {
+  const reader = response.body?.getReader();
+  if (reader === undefined) {
+    return Buffer.alloc(0);
+  }
+  const chunks: Uint8Array[] = [];
+  let total = 0;
+  for (;;) {
+    const result = await reader.read();
+    if (result.done) {
+      break;
+    }
+    const chunk: unknown = result.value;
+    if (!(chunk instanceof Uint8Array)) {
+      throw new TransientError(`Unexpected body chunk from ${url.hostname}.`);
+    }
+    total += chunk.byteLength;
+    if (total > maxBytes) {
+      await reader.cancel();
+      throw new TransientError(`Response from ${url.hostname} exceeded ${maxBytes} bytes.`);
+    }
+    chunks.push(chunk);
+  }
+  return Buffer.concat(chunks);
+}
+
+/**
+ * The core's transport for one provider: the manifest's hosts, no non-public addresses, the host
+ * token buckets and pauses, the honest User-Agent, a timeout and a body cap, for every hop.
+ */
+export function coreTransport(
+  policy: HttpPolicy,
+  /** The hosts the provider's manifest allows. */
+  hosts: HostAllowList,
+  limiter: HostLimiter,
+  clock: Clock,
+  fetchImpl: FetchLike = guardedFetch,
+): HopTransport {
+  return async (hop) => {
+    const url = hop.url;
+    if (!hosts.allows(url.hostname)) {
+      throw new HostNotAllowedError(`${url.hostname} is not in the provider's manifest.`);
+    }
+    // Providers build some URLs from carrier data (links, redirects); none may point inward.
+    if (isNonPublicHostLiteral(url.hostname)) {
+      throw new TransientError("Refusing a request to a non-public address.");
+    }
+    const paused = limiter.pausedFor(url.hostname);
+    if (paused !== undefined) {
+      throw new RateLimitedError(
+        `${url.hostname} asked us to slow down; waiting ${String(paused)} s more before asking again.`,
+        paused,
+      );
+    }
+    await limiter.acquire(
+      url.hostname,
+      policy.limits[url.hostname] ?? policy.limits["*"] ?? DEFAULT_LIMIT,
+    );
+    const headers = new Headers(hop.headers);
+    if (!headers.has("user-agent")) {
+      headers.set("user-agent", policy.userAgent?.value ?? userAgent());
+    }
+    let response: Response;
+    try {
+      response = await fetchImpl(url, {
+        method: hop.method,
+        headers,
+        ...(hop.body === undefined ? {} : { body: hop.body }),
+        redirect: "manual",
+        signal: AbortSignal.timeout(hop.timeoutMs ?? DEFAULT_TIMEOUT_MS),
+      });
+    } catch (error) {
+      throw new TransientError(`Request to ${url.hostname} failed (${networkCause(error)}).`, {
+        cause: error,
+      });
+    }
+    const retryAfter = parseRetryAfter(response.headers.get("retry-after"), clock.now());
+    if (response.status === 429 || (response.status === 503 && retryAfter !== undefined)) {
+      await response.body?.cancel();
+      limiter.pause(url.hostname, retryAfter);
+      throw new RateLimitedError(
+        `${url.hostname} asked us to slow down (HTTP ${response.status}).`,
+        retryAfter,
+      );
+    }
+    const isRedirect = response.status >= 300 && response.status < 400;
+    if (isRedirect && response.headers.has("location")) {
+      await response.body?.cancel();
+      return { status: response.status, headers: response.headers, body: Buffer.alloc(0) };
+    }
+    const body = await readBody(response, hop.maxBytes ?? DEFAULT_MAX_BYTES, url);
+    return { status: response.status, headers: response.headers, body };
+  };
+}
+
+/** The only way providers reach the network: redirects, cookies and decoding over a transport. */
 export class ProviderHttp {
-  constructor(
-    private readonly policy: HttpPolicy,
-    /** The hosts the provider's manifest allows; checked for every request and redirect hop. */
-    private readonly hosts: HostAllowList,
-    private readonly limiter: HostLimiter,
-    private readonly clock: Clock,
-    private readonly fetchImpl: FetchLike = guardedFetch,
-  ) {}
+  constructor(private readonly transport: HopTransport) {}
 
   /**
    * Sends a request. Redirects are followed here, hop by hop (never by the runtime), so every hop
-   * is paced, checked for non-public addresses and capped at MAX_REDIRECTS; with a cookie jar,
-   * cookies set along the way are kept. Headers that carry credentials are not sent on to
-   * another host.
+   * goes through the transport (paced, checked against the manifest and for non-public
+   * addresses) and the chain is capped at MAX_REDIRECTS; with a cookie jar, cookies set along the
+   * way are kept. Headers that carry credentials are not sent on to another host.
    */
   async request(url: URL, options: RequestOptions = {}): Promise<HttpResponse> {
     const jar = options.jar;
@@ -242,8 +346,14 @@ export class ProviderHttp {
     for (let hop = 0; hop <= MAX_REDIRECTS; hop += 1) {
       const cookie = jar === undefined ? "" : await jar.getCookieString(current);
       const own = current.host === url.host ? options.headers : withoutCredentials(options.headers);
-      const headers = { ...own, ...(cookie === "" ? {} : { cookie }) };
-      const response = await this.#send(current, options, { method, headers, body });
+      const response = await this.transport({
+        url: current,
+        method,
+        headers: { ...own, ...(cookie === "" ? {} : { cookie }) },
+        body,
+        ...(options.timeoutMs === undefined ? {} : { timeoutMs: options.timeoutMs }),
+        ...(options.maxBytes === undefined ? {} : { maxBytes: options.maxBytes }),
+      });
       if (jar !== undefined) {
         for (const setCookie of response.headers.getSetCookie()) {
           await jar.setCookie(setCookie, current, { ignoreError: true });
@@ -256,9 +366,15 @@ export class ProviderHttp {
         location === null ||
         options.redirect === "manual"
       ) {
-        return this.#result(response, current.toString(), options, current);
+        const text = response.body.toString(options.encoding ?? "utf8");
+        return {
+          status: response.status,
+          headers: response.headers,
+          url: current.toString(),
+          body: text,
+          json: () => JSON.parse(text) as unknown,
+        };
       }
-      await response.body?.cancel();
       const next = new URL(location, current);
       if (!allow(next)) {
         throw new TransientError(
@@ -276,94 +392,15 @@ export class ProviderHttp {
     }
     throw new TransientError(`Too many redirects from ${url.hostname}.`);
   }
+}
 
-  async #send(url: URL, options: RequestOptions, hop: Hop): Promise<Response> {
-    if (!this.hosts.allows(url.hostname)) {
-      throw new HostNotAllowedError(`${url.hostname} is not in the provider's manifest.`);
-    }
-    // Providers build some URLs from carrier data (links, redirects); none may point inward.
-    if (isNonPublicHostLiteral(url.hostname)) {
-      throw new TransientError("Refusing a request to a non-public address.");
-    }
-    const paused = this.limiter.pausedFor(url.hostname);
-    if (paused !== undefined) {
-      throw new RateLimitedError(
-        `${url.hostname} asked us to slow down; waiting ${String(paused)} s more before asking again.`,
-        paused,
-      );
-    }
-    const limit = this.policy.limits[url.hostname] ?? this.policy.limits["*"] ?? DEFAULT_LIMIT;
-    await this.limiter.acquire(url.hostname, limit);
-    const headers = new Headers(hop.headers);
-    if (!headers.has("user-agent")) {
-      headers.set("user-agent", this.policy.userAgent?.value ?? userAgent());
-    }
-    let response: Response;
-    try {
-      response = await this.fetchImpl(url, {
-        method: hop.method,
-        headers,
-        ...(hop.body === undefined ? {} : { body: hop.body }),
-        redirect: "manual",
-        signal: AbortSignal.timeout(options.timeoutMs ?? DEFAULT_TIMEOUT_MS),
-      });
-    } catch (error) {
-      throw new TransientError(`Request to ${url.hostname} failed (${networkCause(error)}).`, {
-        cause: error,
-      });
-    }
-    const retryAfter = parseRetryAfter(response.headers.get("retry-after"), this.clock.now());
-    if (response.status === 429 || (response.status === 503 && retryAfter !== undefined)) {
-      await response.body?.cancel();
-      this.limiter.pause(url.hostname, retryAfter);
-      throw new RateLimitedError(
-        `${url.hostname} asked us to slow down (HTTP ${response.status}).`,
-        retryAfter,
-      );
-    }
-    return response;
-  }
-
-  async #result(
-    response: Response,
-    finalUrl: string,
-    options: RequestOptions,
-    url: URL,
-  ): Promise<HttpResponse> {
-    const bytes = await this.#readBody(response, options.maxBytes ?? DEFAULT_MAX_BYTES, url);
-    const body = bytes.toString(options.encoding ?? "utf8");
-    return {
-      status: response.status,
-      headers: response.headers,
-      url: finalUrl,
-      body,
-      json: () => JSON.parse(body) as unknown,
-    };
-  }
-
-  async #readBody(response: Response, maxBytes: number, url: URL): Promise<Buffer> {
-    const reader = response.body?.getReader();
-    if (reader === undefined) {
-      return Buffer.alloc(0);
-    }
-    const chunks: Uint8Array[] = [];
-    let total = 0;
-    for (;;) {
-      const result = await reader.read();
-      if (result.done) {
-        break;
-      }
-      const chunk: unknown = result.value;
-      if (!(chunk instanceof Uint8Array)) {
-        throw new TransientError(`Unexpected body chunk from ${url.hostname}.`);
-      }
-      total += chunk.byteLength;
-      if (total > maxBytes) {
-        await reader.cancel();
-        throw new TransientError(`Response from ${url.hostname} exceeded ${maxBytes} bytes.`);
-      }
-      chunks.push(chunk);
-    }
-    return Buffer.concat(chunks);
-  }
+/** A provider's HTTP client in the core: `ProviderHttp` over `coreTransport`. */
+export function coreHttp(
+  policy: HttpPolicy,
+  hosts: HostAllowList,
+  limiter: HostLimiter,
+  clock: Clock,
+  fetchImpl: FetchLike = guardedFetch,
+): ProviderHttp {
+  return new ProviderHttp(coreTransport(policy, hosts, limiter, clock, fetchImpl));
 }

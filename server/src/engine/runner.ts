@@ -15,7 +15,7 @@ import {
   type ProviderLogger,
   type SessionStore,
 } from "../provider/api.js";
-import { ProviderHttp, type HostLimiter } from "../provider/http.js";
+import { coreHttp, type HostLimiter, type ProviderHttp } from "../provider/http.js";
 import { redactText } from "../log/redact.js";
 import type { FetchLike } from "../net/guarded-fetch.js";
 import { fallbackProviders, linkFallbacks } from "./fallback.js";
@@ -193,7 +193,7 @@ export class ConnectionRunner {
    * to the hosts its manifest allows for this config.
    */
   httpFor(provider: RegisteredProvider, rawConfig: unknown): ProviderHttp {
-    return new ProviderHttp(
+    return coreHttp(
       provider.http,
       provider.hostsFor(rawConfig),
       this.deps.limiter,

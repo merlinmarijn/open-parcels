@@ -1,5 +1,5 @@
 import { describe, expect, it } from "vitest";
-import { HostLimiter, ProviderHttp } from "../../src/provider/http.js";
+import { coreHttp, HostLimiter } from "../../src/provider/http.js";
 import { extractAddress, pastedRedirect, type SignInContext } from "../../src/provider/sign-in.js";
 import { FakeClock } from "../helpers.js";
 import { ANY_HOST } from "../manifests.js";
@@ -41,7 +41,7 @@ describe("pastedRedirect", () => {
     config: {},
     kind: "account",
     clock,
-    http: new ProviderHttp(
+    http: coreHttp(
       { limits: {} },
       ANY_HOST,
       new HostLimiter(clock, () => Promise.resolve()),
