@@ -22,6 +22,7 @@ import { StateCause } from "./StateCause";
 import { SignInDialog } from "./SignInDialog";
 import { ConnectionDialog } from "./ConnectionDialog";
 import { ConnectionJobs } from "./ConnectionJobs";
+import { InboxSyncPanel } from "./InboxSyncPanel";
 import { t } from "../i18n";
 import { formatNumber } from "../lib/locale";
 import "./connections.css";
@@ -134,6 +135,7 @@ function ConnectionRow(props: {
         <dt>{t.connections.nextRun}</dt>
         <dd>{connection.next_run_at === null ? "—" : formatRelative(connection.next_run_at)}</dd>
       </dl>
+      {connection.kind === "mail" ? <InboxSyncPanel connectionId={connection.id} /> : null}
       <ConnectionJobs
         connection={connection}
         actions={props.actions}

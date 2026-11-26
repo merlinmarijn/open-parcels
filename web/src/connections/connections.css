@@ -186,6 +186,50 @@
   margin: 0;
 }
 
+/* Indeterminate while the total is unknown: a sliding stripe instead of an empty bar. */
+.connection-job progress:indeterminate {
+  background: linear-gradient(90deg, transparent, var(--accent), transparent) 0 0 / 40% 100%
+    no-repeat var(--tint-strong);
+  animation: inbox-sync-slide 1.2s ease-in-out infinite;
+}
+
+@keyframes inbox-sync-slide {
+  from {
+    background-position: -40% 0;
+  }
+  to {
+    background-position: 140% 0;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .connection-job progress:indeterminate {
+    animation: none;
+  }
+}
+
+.inbox-sync summary {
+  cursor: pointer;
+  color: var(--text-soft);
+}
+
+.inbox-sync-log {
+  max-height: 8rem;
+  overflow-y: auto;
+  margin: 0;
+  padding: var(--space-2) 0 0 var(--space-3);
+  border-left: 2px solid var(--panel-border);
+  list-style: none;
+  color: var(--muted);
+  font-size: var(--text-xs);
+  line-height: 1.6;
+}
+
+.inbox-sync-log time {
+  font-family: var(--mono);
+  margin-right: var(--space-2);
+}
+
 .connection-icon-actions {
   display: flex;
   gap: 2px;

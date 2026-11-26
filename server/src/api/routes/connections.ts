@@ -13,6 +13,7 @@ import { loadLogos, logoPath } from "../../logos.js";
 import { registerLogoRoutes } from "./logos.js";
 import { actionBody, actionSchema } from "./jobs.js";
 import { MAIL_PROVIDER, mailConfigSchema, mailSecretSchema } from "../../mail/types.js";
+import { inboxSyncBody, inboxSyncSchema } from "../../mail/watcher.js";
 import {
   carrierMessageSchema,
   idParams,
@@ -225,6 +226,31 @@ function registerInboxFolderRoutes(app: TypedApp, services: Services): void {
       }
     },
   );
+
+  app.get(
+    "/api/v1/connections/:id/sync",
+    {
+      preHandler: requireScope("read"),
+      schema: {
+        tags: ["connections"],
+        summary: "An inbox's current or last sync: phase, counts and its last steps.",
+        description:
+          "Null when no sync ran since the server started. While one runs, the event stream " +
+          "sends the same body as `connection.sync_progress` messages (no `id`, never replayed), " +
+          "at most every half second while mails are read.",
+        params: idParams,
+        response: { 200: inboxSyncSchema.nullable(), 404: errorBodySchema },
+      },
+    },
+    async (request) => {
+      const connection = await services.connections.get(request.params.id);
+      if (connection?.kind !== "mail") {
+        throw notFound("connection");
+      }
+      const sync = services.mail.sync(connection.id);
+      return sync === null ? null : inboxSyncBody(connection.id, sync);
+    },
+  );
 }
 
 export function registerConnectionRoutes(app: TypedApp, services: Services): void {
@@ -363,8 +389,16 @@ export function registerConnectionRoutes(app: TypedApp, services: Services): voi
       },
     },
     async (request, reply) => {
-      if ((await services.connections.get(request.params.id)) === undefined) {
+      const connection = await services.connections.get(request.params.id);
+      if (connection === undefined) {
         throw notFound("connection");
+      }
+      if (connection.kind === "mail") {
+        // Inboxes are not polled by the scheduler: read every folder now. A paused one stays so.
+        if (connection.state !== "disabled") {
+          await services.mail.syncNow(connection.id);
+        }
+        return reply.code(202).send(null);
       }
       const { deferredUntil } = await services.connections.requestRun(request.params.id);
       if (deferredUntil !== null) {

@@ -356,6 +356,7 @@ export async function createServices(deps: ServiceDeps): Promise<Services> {
     clientFactory: deps.mailClientFactory ?? imapClientFactory,
     router: emailRouter(registry, deps),
     ...mailInterpreters(deps.config.timeZone, deps.mailInterpreter),
+    bus,
     followUp: async (connectionId) => {
       if (await followUntracked(connections, registry, logger, connectionId)) {
         scheduler.wake();

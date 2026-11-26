@@ -5066,6 +5066,271 @@ export type PostApiV1InboxFolders400 = {
   params: PostApiV1InboxFolders400Params;
 };
 
+export type GetApiV1ConnectionsIdSync200Phase =
+  "connecting" | "searching" | "reading" | "saving" | "done" | "failed";
+/**
+ * @nullable
+ */
+export type GetApiV1ConnectionsIdSync200Error = "sign_in_rejected" | "unreachable" | null;
+export type GetApiV1ConnectionsIdSync200StepsItemPhase =
+  "connecting" | "searching" | "reading" | "saving" | "done" | "failed";
+export type GetApiV1ConnectionsIdSync200StepsItem = {
+  at: string;
+  phase: GetApiV1ConnectionsIdSync200StepsItemPhase;
+  /** @nullable */
+  folder: string | null;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  count: number | null;
+};
+
+/**
+ * @nullable
+ */
+export type GetApiV1ConnectionsIdSync200 = {
+  /** @pattern ^([0-9a-fA-F]{8}-[0-9a-fA-F]{4}-[1-8][0-9a-fA-F]{3}-[89abAB][0-9a-fA-F]{3}-[0-9a-fA-F]{12}|00000000-0000-0000-0000-000000000000|ffffffff-ffff-ffff-ffff-ffffffffffff)$ */
+  connection_id: string;
+  phase: GetApiV1ConnectionsIdSync200Phase;
+  /** @nullable */
+  folder: string | null;
+  /**
+   * Mails read in `folder` so far.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  done: number;
+  /**
+   * Mails to read in `folder`; null when unknown (only new mails are fetched).
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   * @nullable
+   */
+  total: number | null;
+  /**
+   * Mails read in this sync, every folder.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  read: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  parcels: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  orders: number;
+  /**
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  returns: number;
+  /**
+   * Mails read in which nothing was found.
+   * @minimum -9007199254740991
+   * @maximum 9007199254740991
+   */
+  ignored: number;
+  started_at: string;
+  /** @nullable */
+  finished_at: string | null;
+  /** @nullable */
+  error: GetApiV1ConnectionsIdSync200Error;
+  /** The last 20 steps: folder names and counts, never mail content. */
+  steps: GetApiV1ConnectionsIdSync200StepsItem[];
+} | null;
+
+/**
+ * Stable machine-readable error code.
+ */
+export type GetApiV1ConnectionsIdSync404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type GetApiV1ConnectionsIdSync404Params = { [key: string]: string | number };
+
+export type GetApiV1ConnectionsIdSync404 = {
+  /** Stable machine-readable error code. */
+  error: GetApiV1ConnectionsIdSync404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: GetApiV1ConnectionsIdSync404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSync404Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSync404Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdSync404 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdSync404Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSync404Params;
+};
+
+/**
+ * Stable machine-readable error code.
+ */
+export type PostApiV1ConnectionsIdSync429Error =
+  | "unauthorized"
+  | "forbidden"
+  | "csrf"
+  | "admin_required"
+  | "not_found"
+  | "invalid_request"
+  | "internal"
+  | "invalid_range"
+  | "carrier_not_detected"
+  | "duplicate"
+  | "backup_failed"
+  | "delete_backup_failed"
+  | "confirmation_required"
+  | "invalid_setting"
+  | "geocode_failed"
+  | "tile"
+  | "image"
+  | "too_many_attempts"
+  | "current_required"
+  | "invalid_password"
+  | "no_environment_password"
+  | "already_set_up"
+  | "bad_setup_code"
+  | "wrong_password"
+  | "login_ended"
+  | "sync_expired"
+  | "invalid_connection"
+  | "folder_discovery_failed"
+  | "connection_backing_off"
+  | "sign_in_expired"
+  | "sign_in_timeout"
+  | "sign_in_refused"
+  | "sign_in_failed"
+  | "sign_in_wrong_step"
+  | "sign_in_poll_too_soon"
+  | "sign_in_unavailable"
+  | "sign_in_captcha"
+  | "no_sign_in"
+  | "no_such_action"
+  | "action_unavailable"
+  | "action_cooldown"
+  | "invalid_input"
+  | "job_running"
+  | "job_state";
+/**
+ * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
+ */
+export type PostApiV1ConnectionsIdSync429Params = { [key: string]: string | number };
+
+export type PostApiV1ConnectionsIdSync429 = {
+  /** Stable machine-readable error code. */
+  error: PostApiV1ConnectionsIdSync429Error;
+  /** English explanation, for logs and scripts. */
+  message: string;
+  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
+  params: PostApiV1ConnectionsIdSync429Params;
+};
+
 export type GetApiV1Connections200ItemKind = "account" | "tracking" | "shop" | "mail";
 export type GetApiV1Connections200ItemState =
   "ok" | "idle" | "needs_sign_in" | "error" | "disabled";
@@ -5623,130 +5888,6 @@ export type PutApiV1ConnectionsIdSecret404 = {
   message: string;
   /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
   params: PutApiV1ConnectionsIdSecret404Params;
-};
-
-/**
- * Stable machine-readable error code.
- */
-export type PostApiV1ConnectionsIdSync404Error =
-  | "unauthorized"
-  | "forbidden"
-  | "csrf"
-  | "admin_required"
-  | "not_found"
-  | "invalid_request"
-  | "internal"
-  | "invalid_range"
-  | "carrier_not_detected"
-  | "duplicate"
-  | "backup_failed"
-  | "delete_backup_failed"
-  | "confirmation_required"
-  | "invalid_setting"
-  | "geocode_failed"
-  | "tile"
-  | "image"
-  | "too_many_attempts"
-  | "current_required"
-  | "invalid_password"
-  | "no_environment_password"
-  | "already_set_up"
-  | "bad_setup_code"
-  | "wrong_password"
-  | "login_ended"
-  | "sync_expired"
-  | "invalid_connection"
-  | "folder_discovery_failed"
-  | "connection_backing_off"
-  | "sign_in_expired"
-  | "sign_in_timeout"
-  | "sign_in_refused"
-  | "sign_in_failed"
-  | "sign_in_wrong_step"
-  | "sign_in_poll_too_soon"
-  | "sign_in_unavailable"
-  | "sign_in_captcha"
-  | "no_sign_in"
-  | "no_such_action"
-  | "action_unavailable"
-  | "action_cooldown"
-  | "invalid_input"
-  | "job_running"
-  | "job_state";
-/**
- * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
- */
-export type PostApiV1ConnectionsIdSync404Params = { [key: string]: string | number };
-
-export type PostApiV1ConnectionsIdSync404 = {
-  /** Stable machine-readable error code. */
-  error: PostApiV1ConnectionsIdSync404Error;
-  /** English explanation, for logs and scripts. */
-  message: string;
-  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
-  params: PostApiV1ConnectionsIdSync404Params;
-};
-
-/**
- * Stable machine-readable error code.
- */
-export type PostApiV1ConnectionsIdSync429Error =
-  | "unauthorized"
-  | "forbidden"
-  | "csrf"
-  | "admin_required"
-  | "not_found"
-  | "invalid_request"
-  | "internal"
-  | "invalid_range"
-  | "carrier_not_detected"
-  | "duplicate"
-  | "backup_failed"
-  | "delete_backup_failed"
-  | "confirmation_required"
-  | "invalid_setting"
-  | "geocode_failed"
-  | "tile"
-  | "image"
-  | "too_many_attempts"
-  | "current_required"
-  | "invalid_password"
-  | "no_environment_password"
-  | "already_set_up"
-  | "bad_setup_code"
-  | "wrong_password"
-  | "login_ended"
-  | "sync_expired"
-  | "invalid_connection"
-  | "folder_discovery_failed"
-  | "connection_backing_off"
-  | "sign_in_expired"
-  | "sign_in_timeout"
-  | "sign_in_refused"
-  | "sign_in_failed"
-  | "sign_in_wrong_step"
-  | "sign_in_poll_too_soon"
-  | "sign_in_unavailable"
-  | "sign_in_captcha"
-  | "no_sign_in"
-  | "no_such_action"
-  | "action_unavailable"
-  | "action_cooldown"
-  | "invalid_input"
-  | "job_running"
-  | "job_state";
-/**
- * Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words.
- */
-export type PostApiV1ConnectionsIdSync429Params = { [key: string]: string | number };
-
-export type PostApiV1ConnectionsIdSync429 = {
-  /** Stable machine-readable error code. */
-  error: PostApiV1ConnectionsIdSync429Error;
-  /** English explanation, for logs and scripts. */
-  message: string;
-  /** Values a client's own text for the code needs, e.g. `resource` for `not_found`, `seconds` for `too_many_attempts`, `detail` for a carrier's or validator's own words. */
-  params: PostApiV1ConnectionsIdSync429Params;
 };
 
 export type GetApiV1ConnectionsIdData200 = {
@@ -9322,6 +9463,7 @@ export type GetApiV1Events200Event =
   | "token.used"
   | "vocab.unknown"
   | "parcel.live_position"
+  | "connection.sync_progress"
   | "ready"
   | "resync";
 export type GetApiV1Events200 = {
@@ -10986,6 +11128,42 @@ export const postApiV1InboxFolders = async (
   });
 };
 
+export const getGetApiV1ConnectionsIdSyncUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sync`;
+};
+
+/**
+ * Null when no sync ran since the server started. While one runs, the event stream sends the same body as `connection.sync_progress` messages (no `id`, never replayed), at most every half second while mails are read.
+ * @summary An inbox's current or last sync: phase, counts and its last steps.
+ */
+export const getApiV1ConnectionsIdSync = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<GetApiV1ConnectionsIdSync200> => {
+  return apiFetch<GetApiV1ConnectionsIdSync200>(getGetApiV1ConnectionsIdSyncUrl(id), {
+    ...options,
+    method: "GET",
+  });
+};
+
+export const getPostApiV1ConnectionsIdSyncUrl = (id: string) => {
+  return `/api/v1/connections/${id}/sync`;
+};
+
+/**
+ * While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.
+ * @summary Run a connection now.
+ */
+export const postApiV1ConnectionsIdSync = async (
+  id: string,
+  options?: Parameters<typeof apiFetch>[1],
+): Promise<null> => {
+  return apiFetch<null>(getPostApiV1ConnectionsIdSyncUrl(id), {
+    ...options,
+    method: "POST",
+  });
+};
+
 export const getGetApiV1ConnectionsUrl = () => {
   return `/api/v1/connections`;
 };
@@ -11075,24 +11253,6 @@ export const putApiV1ConnectionsIdSecret = async (
     method: "PUT",
     headers: getHeaders({ "Content-Type": "application/json" }, options?.headers),
     body: JSON.stringify(putApiV1ConnectionsIdSecretBody),
-  });
-};
-
-export const getPostApiV1ConnectionsIdSyncUrl = (id: string) => {
-  return `/api/v1/connections/${id}/sync`;
-};
-
-/**
- * While the connection backs off (a captcha pause or the carrier's rate limit) the run is not brought forward: the answer is 429 `connection_backing_off` with `Retry-After`.
- * @summary Run a connection now.
- */
-export const postApiV1ConnectionsIdSync = async (
-  id: string,
-  options?: Parameters<typeof apiFetch>[1],
-): Promise<null> => {
-  return apiFetch<null>(getPostApiV1ConnectionsIdSyncUrl(id), {
-    ...options,
-    method: "POST",
   });
 };
 
@@ -11650,7 +11810,7 @@ export const getGetApiV1EventsUrl = (params?: GetApiV1EventsParams) => {
 };
 
 /**
- * Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed.
+ * Each message carries `id` (the outbox sequence), `event` (the live event type) and JSON `data`. Reconnect with `Last-Event-ID` (or `?last_event_id=`) to replay up to 24 hours of missed live events. A stream without one starts with `ready` (its `id` is the current sequence). When the given id is newer than any event or older than what is kept, `resync` (also carrying the current sequence as `id`) tells the client to reload everything over REST. `parcel.live_position` messages carry the courier's position while on the road until the delivery ends: `parcel_id`, `latitude`, `longitude`, `accuracy`, `position_at` and `stops_away`; they have no `id` and are never replayed. `connection.sync_progress` messages carry an inbox sync's progress, the body of `GET /api/v1/connections/{id}/sync`; they have no `id` either and are never replayed.
  * @summary Server-Sent Events stream of live events about parcels, orders and connections.
  */
 export const getApiV1Events = async (

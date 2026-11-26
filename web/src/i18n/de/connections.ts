@@ -1,4 +1,5 @@
 import type { Messages } from "../messages";
+import { plural } from "../plural";
 
 export const connections: Messages["connections"] = {
   title: "Verbindungen",
@@ -153,4 +154,32 @@ export const connections: Messages["connections"] = {
     inbox_unreachable: "Der Mailserver war nicht erreichbar; neuer Versuch läuft.",
   },
   carrierMessage: (message: string) => `Details: ${message}`,
+  inboxSync: {
+    title: "Mail-Abgleich",
+    activity: "Verlauf",
+    phase: {
+      connecting: "Verbindung zum Mailserver",
+      searching: "Suche nach Mails",
+      reading: "Mails werden gelesen",
+      saving: "Gefundenes wird gespeichert",
+      done: "Fertig",
+      failed: "Fehlgeschlagen",
+    },
+    searching: (folder) => `Suche nach Mails in ${folder}`,
+    reading: (done, total, folder) => `${done} von ${total} in ${folder} gelesen`,
+    readingNew: (done, folder) => `Neue Mails in ${folder}: bisher ${done}`,
+    toRead: (n, count, folder) => `${count} ${plural(n, "Mail", "Mails")} in ${folder} zu lesen`,
+    newIn: (folder) => `Neue Mails in ${folder} werden gelesen`,
+    saving: (n, count) => `${count} ${plural(n, "Eintrag", "Einträge")} werden gespeichert`,
+    done: (n, count) => `Fertig: ${count} ${plural(n, "Mail", "Mails")} gelesen`,
+    found: (parcels, orders, returns, ignored) =>
+      `${parcels} Pakete, ${orders} Bestellungen, ${returns} Retouren gefunden · ${ignored} ohne Treffer`,
+    last: (when, n, mails, parcels) =>
+      `Letzter Abgleich: ${when}, ${mails} ${plural(n, "Mail", "Mails")}, ${parcels} Pakete`,
+    showDetails: "Details",
+    errors: {
+      sign_in_rejected: "Der Mailserver hat die Anmeldung abgelehnt.",
+      unreachable: "Der Mailserver war nicht erreichbar oder die Verbindung brach ab.",
+    },
+  },
 };
