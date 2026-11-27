@@ -9,6 +9,7 @@ import { appleExpress } from "../carriers/apple_express/index.js";
 import { aramex } from "../carriers/aramex/index.js";
 import { betterTrucks } from "../carriers/better_trucks/index.js";
 import { boxNow } from "../carriers/box_now/index.js";
+import { bol } from "../carriers/bol/index.js";
 import { bpost } from "../carriers/bpost/index.js";
 import { brt } from "../carriers/brt/index.js";
 import { budbee } from "../carriers/budbee/index.js";
@@ -101,6 +102,7 @@ import mAramex from "../carriers/aramex/open-parcels-provider.json" with { type:
 import mBetterTrucks from "../carriers/better_trucks/open-parcels-provider.json" with { type: "json" };
 import mBoxNow from "../carriers/box_now/open-parcels-provider.json" with { type: "json" };
 import mBpost from "../carriers/bpost/open-parcels-provider.json" with { type: "json" };
+import mBol from "../carriers/bol/open-parcels-provider.json" with { type: "json" };
 import mBrt from "../carriers/brt/open-parcels-provider.json" with { type: "json" };
 import mBudbee from "../carriers/budbee/open-parcels-provider.json" with { type: "json" };
 import mCainiao from "../carriers/cainiao/open-parcels-provider.json" with { type: "json" };
@@ -209,6 +211,7 @@ export const BUILTIN_CARRIERS: readonly RegisteredProvider[] = [
   builtin(aramex, mAramex, "aramex"),
   builtin(betterTrucks, mBetterTrucks, "better_trucks"),
   builtin(boxNow, mBoxNow, "box_now"),
+  builtin(bol, mBol, "bol"),
   builtin(bpost, mBpost, "bpost"),
   builtin(brt, mBrt, "brt"),
   builtin(budbee, mBudbee, "budbee"),

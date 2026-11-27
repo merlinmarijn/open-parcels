@@ -193,6 +193,7 @@ pace applies):
 | Posten / Bring | `api.posten.no` 1 per 5 s, burst 2; `id.posten.no` 1 per 10 s, burst 2; `login.bring.com` 1 per 10 s, burst 2; `*` 1 per 10 s |
 | Posti | `graphql.posti.fi` 1 per 4 s, burst 2; `auth-service.posti.fi` 1 per 15 s, burst 4; `mfa.posti.fi` 1 per 5 s, burst 3; `todentaminen.posti.fi` 1 per 3 s, burst 3; `*` 1 per 10 s |
 | PostNL | `jouw.postnl.nl` 1 per 4 s, burst 2; `login.postnl.nl` 1 per 30 s, burst 2; `*` 1 per 10 s |
+| bol.com | `www.bol.com` 1 per 5 s, no burst; reads the five most recent orders and at most 25 item details per sync using the browser session supplied by the user |
 | PostNord | `api2.postnord.com` 1 per 4 s, burst 2; `account.postnord.com` 1 per 10 s, burst 2; `*` 1 per 10 s |
 | Pošta Slovenije | `moja.posta.si` 1 per 4 s, burst 2; `auth.posta.si` 1 per 30 s, burst 2; `*` 1 per 10 s |
 | Pošta Srbije | `api.posta.rs` 1 per 6 s, burst 2; `*` 1 per 10 s |

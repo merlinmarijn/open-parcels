@@ -6,7 +6,15 @@ describe("connection form schemas", () => {
     for (const name of ["postalCode", "postal_code", "countryCode", "trackingCode", "keyword"]) {
       expect(isSecretField(name), name).toBe(false);
     }
-    for (const name of ["password", "apiKey", "api_key", "refreshToken", "pinCode", "otp"]) {
+    for (const name of [
+      "password",
+      "apiKey",
+      "api_key",
+      "refreshToken",
+      "pinCode",
+      "otp",
+      "cookie",
+    ]) {
       expect(isSecretField(name), name).toBe(true);
     }
   });

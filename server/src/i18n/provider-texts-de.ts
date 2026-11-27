@@ -10,6 +10,8 @@ export const PROVIDER_TEXTS_DE: Readonly<Record<string, string>> = Object.fromEn
   ["Username and password", "Benutzername und Passwort"],
   ["API key", "API-Schlüssel"],
   ["Sign in", "Anmelden"],
+  ["Cookie header", "Cookie-Header"],
+  ["Browser session", "Browsersitzung"],
   // Actions
   ["Import history", "Verlauf importieren"],
   [

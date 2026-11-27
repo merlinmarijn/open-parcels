@@ -37,6 +37,7 @@ const SECRET_WORDS = new Set([
   "passcode",
   "secret",
   "token",
+  "cookie",
   "key",
   "apikey",
   "pin",

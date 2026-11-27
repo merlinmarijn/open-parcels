@@ -1,0 +1,28 @@
+{
+  "schema": 1,
+  "id": "bol",
+  "name": "bol.com",
+  "countries": ["NL", "BE"],
+  "provides": { "connections": ["shop"], "live": false, "fallback": false },
+  "permissions": {
+    "network": [
+      {
+        "host": "www.bol.com",
+        "reason": "Read the signed-in account's purchases and shipment details."
+      }
+    ],
+    "image_hosts": ["media.s-bol.com"],
+    "secrets": ["credentials"],
+    "session": false,
+    "user_agent": false
+  },
+  "actions": [
+    {
+      "id": "open_orders",
+      "kind": "link",
+      "label": "Your orders",
+      "connection_kinds": ["shop"],
+      "url": "https://www.bol.com/nl/nl/account/bestellingen/overzicht/"
+    }
+  ]
+}

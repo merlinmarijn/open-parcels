@@ -44,6 +44,14 @@ For PostNL parcels without an account, add a **PostNL** tracking connection unde
 barcode under **Parcels**. A PostNL link ending in `BARCODE-NL-1234AB` uses `BARCODE` as the
 tracking number and `1234AB` as the connection's postcode. No sign-in is needed.
 
+For a personal **bol.com** account, add a bol.com shop connection. Sign in to bol.com in your
+browser and open **Mijn bestellingen**. In the browser's developer tools, open **Network**, reload
+the page, select the order overview request and copy its **Cookie** request header value into
+the connection's sign-in form. It is stored encrypted; replace it when the browser session expires.
+Sync reads the five most recent orders (up to 25 item detail pages), imports purchases and return
+deadlines, and links tracking numbers to their carriers. Older parcels are preserved. Historical
+pagination and automatic session renewal are not available yet.
+
 ## Access
 
 Two passwords, both optional settings (environment, or **Settings → Security**):
