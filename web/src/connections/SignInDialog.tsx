@@ -10,6 +10,7 @@ import { asSchema, cleanValues, type FormValues } from "./schema";
 import { StepRenderer } from "./StepRenderer";
 import { useSignInAttempt } from "./useSignInAttempt";
 import { t } from "../i18n";
+import { BolBrowserSignIn } from "./BolBrowserSignIn";
 
 /** Credentials and API keys: a form from the carrier's sign-in schema, sent once with PUT. */
 function StaticSecretForm(props: {
@@ -44,6 +45,14 @@ function StaticSecretForm(props: {
   };
   return (
     <form onSubmit={submit} className="stack" autoComplete="off">
+      {props.connection.provider === "bol" ? (
+        <BolBrowserSignIn
+          busy={save.isPending}
+          onCookie={(cookie) => {
+            save.mutate({ cookie });
+          }}
+        />
+      ) : null}
       <SchemaFields schema={schema} values={values} onChange={setValues} />
       <ErrorNotice error={save.error} />
       <div className="actions">

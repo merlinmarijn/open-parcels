@@ -76,7 +76,7 @@ function ExtensionSignIn(
       setWaiting(false);
       if (outcome.status === "captured") {
         onSubmit({ pasted: outcome.url });
-      } else {
+      } else if (outcome.status === "cancelled") {
         onFallback(cancelText(outcome.reason));
       }
     });

@@ -104,6 +104,10 @@ export const connections: Messages["connections"] = {
   extensionWaiting:
     "Im geöffneten Fenster anmelden. Es schließt sich von selbst, wenn du fertig bist.",
   extensionIntro: "Die Erweiterung öffnet die Seite des Paketdienstes; dort wie gewohnt anmelden.",
+  bolBrowserHelp:
+    "Auf der Bol-Seite anmelden. Nach deiner Zustimmung sendet die Erweiterung deine Sitzungscookies an dieses Dashboard und speichert sie verschlüsselt. Diese Cookies gewähren Zugriff auf dein Bol-Konto.",
+  bolExtensionUpdate:
+    "Erweiterung 0.3.0 oder neuer installieren, für dieses Dashboard aktivieren und diese Seite neu laden. Der Cookie-Header kann unten weiterhin manuell eingegeben werden.",
   waitingSignIn: "Warte auf die Anmeldung…",
   signInWithExtension: "Mit der Erweiterung anmelden",
   devtoolsFirefox:

@@ -27,7 +27,7 @@ the REST API with its event stream, the Docker image and the Unraid template.
 - Home Assistant integration: [open-parcels-ha](https://github.com/open-parcels/open-parcels-ha)
 - Home Assistant app (runs the server inside Home Assistant, in the sidebar): [open-parcels-ha-apps](https://github.com/open-parcels/open-parcels-ha-apps)
 - Shared carrier and email rules: [open-parcels-rules](https://github.com/open-parcels/open-parcels-rules)
-- Browser extension for app-only carrier sign-ins: [open-parcels-extension](https://github.com/open-parcels/open-parcels-extension)
+- Browser extension for carrier and Bol sign-ins: [open-parcels-extension](https://github.com/merlinmarijn/open-parcels-extension)
 
 ## Quick start
 
@@ -44,10 +44,11 @@ For PostNL parcels without an account, add a **PostNL** tracking connection unde
 barcode under **Parcels**. A PostNL link ending in `BARCODE-NL-1234AB` uses `BARCODE` as the
 tracking number and `1234AB` as the connection's postcode. No sign-in is needed.
 
-For a personal **bol.com** account, add a bol.com shop connection. Sign in to bol.com in your
-browser and open **Mijn bestellingen**. In the browser's developer tools, open **Network**, reload
-the page, select the order overview request and copy its **Cookie** request header value into
-the connection's sign-in form. It is stored encrypted; replace it when the browser session expires.
+For a personal **bol.com** account, add a bol.com shop connection. Install companion extension
+0.3.0 or newer, enable it on your dashboard, and choose **Sign in with the extension**. Approve
+sharing your Bol session with this dashboard, then sign in on Bol's own page. The extension
+returns the Cookie header automatically; the server stores it encrypted. Sign in again when it
+expires. Manual Cookie header entry remains available in the same form.
 Sync reads the five most recent orders (up to 25 item detail pages), imports purchases and return
 deadlines, and links tracking numbers to their carriers. Older parcels are preserved. Historical
 pagination and automatic session renewal are not available yet.

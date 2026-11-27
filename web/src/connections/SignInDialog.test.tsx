@@ -124,6 +124,66 @@ describe("static sign-in form", () => {
   });
 });
 
+describe("Bol browser session", () => {
+  it("saves extension-captured cookies through the existing secret API without typing into the form", async () => {
+    const calls = mockApi({
+      [`GET ${BASE}/flows`]: () => ({
+        body: [
+          {
+            id: "credentials",
+            label: "Browser session",
+            type: "credentials",
+            kinds: ["shop"],
+            secret_schema: {
+              type: "object",
+              properties: { cookie: { type: "string", title: "Cookie header" } },
+              required: ["cookie"],
+            },
+          },
+        ],
+      }),
+      "GET /api/v1/carriers": () => ({ body: [] }),
+      [`PUT /api/v1/connections/${CONNECTION.id}/secret`]: () => ({ status: 204 }),
+    });
+    const post = vi.spyOn(window, "postMessage").mockImplementation((message) => {
+      const request = message as { type: string; requestId: string };
+      const reply =
+        request.type === "hello"
+          ? { type: "hello", version: "0.3.0", cookieCapture: true }
+          : {
+              type: "cookies_captured",
+              requestId: request.requestId,
+              cookie: "JSESSIONID=test-session",
+            };
+      window.dispatchEvent(
+        new MessageEvent("message", {
+          source: window,
+          origin: window.location.origin,
+          data: { source: "open-parcels-extension", ...reply },
+        }),
+      );
+    });
+    const onClose = vi.fn();
+    render(
+      <QueryClientProvider client={createQueryClient()}>
+        <SignInDialog
+          connection={{ ...CONNECTION, provider: "bol", kind: "shop" }}
+          onClose={onClose}
+        />
+      </QueryClientProvider>,
+    );
+    const user = userEvent.setup();
+    await user.click(await screen.findByRole("button", { name: "Sign in with the extension" }));
+    await waitFor(() => {
+      expect(onClose).toHaveBeenCalled();
+    });
+    expect(calls.find((call) => call.method === "PUT")?.body).toEqual({
+      secret: { cookie: "JSESSIONID=test-session" },
+    });
+    post.mockRestore();
+  });
+});
+
 describe("interactive sign-in dialog", () => {
   it("keeps the code step after a mistyped code instead of starting over", async () => {
     const calls = routes([

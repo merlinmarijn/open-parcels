@@ -96,6 +96,10 @@ export const connections = {
   cancelOther: "The extension stopped.",
   extensionWaiting: "Sign in in the window that opened. It closes by itself when you are done.",
   extensionIntro: "The extension opens the carrier's page; you sign in there as usual.",
+  bolBrowserHelp:
+    "Sign in on Bol's own page. After your approval, the extension sends your session cookies to this dashboard and saves them encrypted. These cookies grant access to your Bol account.",
+  bolExtensionUpdate:
+    "Install or update the extension to 0.3.0 or newer, enable it on this dashboard, and reload this page. Manual Cookie header entry below remains available.",
   waitingSignIn: "Waiting for sign-in…",
   signInWithExtension: "Sign in with the extension",
   devtoolsFirefox: "In that window, press F12, open Network and tick “Persist Logs”.",

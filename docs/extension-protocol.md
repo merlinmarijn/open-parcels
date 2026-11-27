@@ -6,6 +6,19 @@ The companion extension catches that address in the sign-in tab and hands it to 
 web UI, which submits it like a pasted address. The server checks `state`, so a stray code is
 refused. The extension never sees or sends passwords; the user signs in on the carrier's own page.
 
+Extension 0.3.0 also supports Bol browser sessions. Its `hello` includes `cookieCapture: true`.
+An optional `cookieUrl` on `capture` selects this mode; old extensions must not be offered for it.
+Only the exact Bol login URL and `https://www.bol.com/nl/nl/account/bestellingen/overzicht/`
+target are accepted. The extension asks for session disclosure on every capture, even for an
+origin with a saved redirect approval. Refusing Bol site access stops the flow.
+
+After approval it reads the Cookie header of that exact main-frame request in its own sign-in
+tab, including HttpOnly cookies, and waits for HTTP 200. Redirects, failed requests, other tabs,
+other URLs, and cancelled captures cannot return cookies. The result is `cookies_captured` with
+`requestId` and `cookie`, sent only to the requesting dashboard document and origin. Headers live
+only in background memory until completion or cancellation and are never written to extension
+storage or logs. The dashboard submits the header directly to its existing encrypted secret API.
+
 ## Discovery
 
 The web UI's `index.html` carries `<meta name="open-parcels" content="web-ui">`. The extension's
