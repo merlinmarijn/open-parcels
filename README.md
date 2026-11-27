@@ -39,6 +39,11 @@ Then open <http://localhost:3000> and finish the setup with the code from `docke
 you add real accounts, add the **Demo shop** and **Demo courier** connections: three made-up parcels
 in two orders, with a live courier on the map.
 
+For PostNL parcels without an account, add a **PostNL** tracking connection under
+**Connections**, set the delivery postcode and country (NL by default), then add the parcel's
+barcode under **Parcels**. A PostNL link ending in `BARCODE-NL-1234AB` uses `BARCODE` as the
+tracking number and `1234AB` as the connection's postcode. No sign-in is needed.
+
 ## Access
 
 Two passwords, both optional settings (environment, or **Settings → Security**):

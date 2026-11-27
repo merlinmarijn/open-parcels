@@ -4,7 +4,7 @@
   "name": "PostNL",
   "countries": ["NL", "BE"],
   "provides": {
-    "connections": ["account"],
+    "connections": ["account", "tracking"],
     "live": false,
     "fallback": false
   },

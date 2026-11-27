@@ -4,6 +4,7 @@ import {
   defineCarrier,
   pastedRedirect,
   isObject,
+  InvalidConfigError,
   objects,
   readObject,
   SignInRejectedError,
@@ -34,7 +35,15 @@ fragment shipment on TrackedShipmentResultType {
   deliveryWindowTo deliveryWindowType detailsUrl shipmentType receiverTitle deliveryAddressType
 }`;
 
-const configSchema = z.object({});
+const configSchema = z.object({
+  country: z.enum(["NL", "BE"]).optional().meta({ title: "Country" }),
+  postalCode: z
+    .string()
+    .trim()
+    .regex(/^[A-Za-z0-9 ]{3,10}$/)
+    .optional()
+    .meta({ title: "Postcode" }),
+});
 const secretSchema = z
   .object({ refreshToken: z.string().min(1).meta({ title: "Refresh token" }) })
   .nullable();
@@ -145,16 +154,68 @@ async function fetchAccount(context: ProviderContext<Config, Secret>) {
   return { snapshots, complete: true };
 }
 
-/** PostNL: the account's tracked shipments, signed in through PostNL's own login page. */
+async function track(context: ProviderContext<Config, Secret>, barcodes: readonly string[]) {
+  const postcode = context.config.postalCode?.replace(/\s+/g, "").toUpperCase();
+  if (!postcode) {
+    throw new InvalidConfigError("Set the delivery postcode to track PostNL parcels.");
+  }
+  const snapshots: ParcelSnapshot[] = [];
+  for (const barcode of barcodes) {
+    if (!/^[A-Z0-9]{8,40}$/.test(barcode)) {
+      continue;
+    }
+    const key = `${barcode}-${context.config.country ?? "NL"}-${postcode}`;
+    const url = new URL(
+      `https://${API_HOST}/track-and-trace/api/trackAndTrace/${encodeURIComponent(key)}`,
+    );
+    url.searchParams.set("language", "nl");
+    const response = await context.http.request(url, { headers: { accept: "application/json" } });
+    if (response.status === 404) {
+      continue;
+    }
+    if (response.status !== 200) {
+      throw new TransientError(`PostNL track & trace answered HTTP ${response.status}.`);
+    }
+    const collis = readObject(response, "PostNL track & trace")["colli"];
+    if (!isObject(collis)) {
+      throw new UnexpectedResponseError("PostNL answered without its parcel list.");
+    }
+    const found = collis[barcode];
+    if (!isObject(found)) {
+      continue;
+    }
+    const shipment: Json = {
+      barcode,
+      key,
+      detailsUrl: `https://${API_HOST}/track-and-trace/${encodeURIComponent(key)}?language=nl`,
+      delivered: found["isDelivered"],
+      deliveredTimeStamp: found["deliveryDate"],
+      deliveryAddressType: found["deliveryAddressType"],
+      title: asObject(asObject(found["sender"])["names"])["companyName"],
+    };
+    snapshots.push(
+      shipmentSnapshot({ shipment, direction: "receiving", colli: found }, (kind, key) => {
+        context.reportUnknown(kind, key);
+      }),
+    );
+  }
+  return { snapshots, complete: true };
+}
+
+/** PostNL: signed-in account sync and public barcode/postcode tracking. */
 export const postnl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   configSchema,
   secretSchema,
   emailRules: POSTNL_EMAIL_RULES,
-  signIn: pastedRedirect<Config, Secret>({
-    start: () => Promise.resolve(startSignIn()),
-    finish: (context, state, pasted) => finishSignIn(context.http, state, pasted),
-  }),
+  signIn: [
+    pastedRedirect<Config, Secret>({
+      kinds: ["account"],
+      start: () => Promise.resolve(startSignIn()),
+      finish: (context, state, pasted) => finishSignIn(context.http, state, pasted),
+    }),
+    { type: "none", kinds: ["tracking"] },
+  ],
   http: {
     limits: {
       [API_HOST]: { intervalMs: 4_000, burst: 2 },
@@ -163,4 +224,5 @@ export const postnl = defineCarrier<Config, Secret>({
     },
   },
   fetchAccount,
+  track,
 });

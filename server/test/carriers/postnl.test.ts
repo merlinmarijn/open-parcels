@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { postnl } from "../../src/carriers/postnl/index.js";
+import { InvalidConnectionConfigError } from "../../src/engine/registry.js";
 import {
   SignInRejectedError,
   TransientError,
@@ -168,4 +169,92 @@ describe("PostNL account", () => {
     await expect(world.fetchAccount({}, secret)).rejects.toBeInstanceOf(TransientError);
     expect(world.requests().filter((p) => p === TOKEN)).toHaveLength(1);
   });
+});
+
+describe("PostNL public tracking", () => {
+  const config = { postalCode: "1234 ab" };
+
+  it("tracks without sign-in using the delivery postcode and default country", async () => {
+    const world = new World(postnl, [
+      onPrefix(
+        TNT,
+        tnt(CODE, [
+          ["J01", "2026-11-18T07:00:00Z"],
+          ["J05", "2026-11-18T08:00:00Z"],
+        ]),
+      ),
+    ]);
+    const result = await world.track([CODE], config);
+    expect(result.complete).toBe(true);
+    expect(result.snapshots[0]).toMatchObject({
+      trackingNumber: CODE,
+      status: "out_for_delivery",
+      weightKg: 1.5,
+      expectedFrom: "2026-11-18T12:40:00.000Z",
+      url: `https://jouw.postnl.nl/track-and-trace/${CODE}-NL-1234AB?language=nl`,
+    });
+    expect(result.snapshots[0]?.history).toHaveLength(2);
+    expect(world.calls).toHaveLength(1);
+    expect(world.calls[0]?.url.pathname).toBe(
+      `/track-and-trace/api/trackAndTrace/${CODE}-NL-1234AB`,
+    );
+    expect(world.calls[0]?.url.searchParams.get("language")).toBe("nl");
+    expect(world.calls[0]?.headers.has("authorization")).toBe(false);
+    expect(world.provider.signInFlows("tracking", config).map((flow) => flow.type)).toEqual([
+      "none",
+    ]);
+  });
+
+  it("maps delivered public parcels, sender, recipient and ETA", async () => {
+    const world = new World(postnl, [
+      onPrefix(
+        TNT,
+        json({
+          colli: {
+            [CODE]: {
+              isDelivered: true,
+              deliveryDate: "2026-11-18T12:00:00Z",
+              eta: { start: "2026-11-18T10:00:00Z", end: "2026-11-18T14:00:00Z" },
+              sender: { names: { companyName: "Testwinkel" } },
+              recipient: { names: { personName: "T. Persoon" } },
+            },
+          },
+        }),
+      ),
+    ]);
+    const [parcel] = (await world.track([CODE], { country: "BE", postalCode: "1000" })).snapshots;
+    expect(parcel).toMatchObject({
+      delivered: true,
+      status: "delivered",
+      deliveredAt: "2026-11-18T12:00:00.000Z",
+      expectedFrom: null,
+      expectedTo: null,
+      sender: "Testwinkel",
+      receiver: "T. Persoon",
+    });
+    expect(world.calls[0]?.url.pathname).toContain(`${CODE}-BE-1000`);
+  });
+
+  it("requires a postcode and skips invalid tracking numbers", async () => {
+    const world = new World(postnl);
+    await expect(world.track([CODE])).rejects.toBeInstanceOf(InvalidConnectionConfigError);
+    expect((await world.track(["invalid/path"], config)).snapshots).toEqual([]);
+    expect(world.calls).toHaveLength(0);
+  });
+
+  it.each([json({}, 404), json({ colli: {} })])(
+    "returns no parcel when not found",
+    async (reply) => {
+      const world = new World(postnl, [onPrefix(TNT, reply)]);
+      expect((await world.track([CODE], config)).snapshots).toEqual([]);
+    },
+  );
+
+  it.each([json({}, 503), json({ error: "changed response" })])(
+    "fails on server errors and malformed responses",
+    async (reply) => {
+      const world = new World(postnl, [onPrefix(TNT, reply)]);
+      await expect(world.track([CODE], config)).rejects.toBeInstanceOf(TransientError);
+    },
+  );
 });
