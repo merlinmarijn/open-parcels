@@ -19,5 +19,8 @@
     "secrets": ["token"],
     "session": true,
     "user_agent": false
+  },
+  "email": {
+    "from_domains": [".edm.postnl.nl"]
   }
 }

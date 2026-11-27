@@ -2,6 +2,7 @@ import { z } from "zod";
 import { defineCarrier, type ParcelSnapshot, type ProviderContext } from "../../provider/api.js";
 import { CARRIER_ID, TRACKING_HOST } from "./shared.js";
 import { isPlausibleBarcode, lookUp, trackingSnapshot } from "./tracking.js";
+import { PDN_EXPRESS_EMAIL_RULES } from "./email-rules.js";
 
 const configSchema = z.looseObject({});
 type Config = z.infer<typeof configSchema>;
@@ -32,6 +33,7 @@ export const pdnExpress = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   configSchema,
   secretSchema,
+  emailRules: PDN_EXPRESS_EMAIL_RULES,
   signIn: { type: "none" },
   http: {
     limits: {

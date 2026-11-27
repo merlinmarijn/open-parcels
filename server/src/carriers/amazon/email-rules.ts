@@ -168,17 +168,19 @@ export const AMAZON_EMAIL_RULES: readonly EmailRuleDefinition[] = [
     ],
   },
   {
-    // Amazon.nl sends from its own addresses, with English or Dutch subjects and the order number
-    // only in its links.
+    // Amazon.nl sends from its own addresses, with English or Dutch subjects; newer emails carry the
+    // order number only in their links. Older ones read "Your Amazon.nl order of …".
     id: "order-amazon-nl",
     name: "Amazon.nl order, shipping, delivery and cancellation updates",
     kind: "order",
     senders: {
       domains: ["amazon.nl"],
-      local_parts: ["auto-bevestiging", "verzending-volgen", "update-bestelling"],
+      local_parts: ["auto-bevestiging", "verzending-volgen", "update-bestelling", "order-update"],
     },
     subject: [
-      "^(?:ordered|besteld|dispatched|shipped|verzonden|out for delivery|wordt vandaag bezorgd|delivered|bezorgd|item cancell?ed|geannuleerd)",
+      "^(?:ordered|besteld|dispatched|shipped|verzonden|out for delivery|onderweg voor bezorging|arriving today|wordt vandaag bezorgd|delivered|bezorgd|item cancell?ed|geannuleerd)",
+      "^your amazon\\.nl order of ",
+      "^your order has been cancell?ed|^je bestelling is geannuleerd",
     ],
     extract: {
       order_number: [
@@ -191,7 +193,7 @@ export const AMAZON_EMAIL_RULES: readonly EmailRuleDefinition[] = [
     event_keywords: [
       {
         event: "order_cancelled",
-        patterns: ["^(?:item cancell?ed|geannuleerd)"],
+        patterns: ["^(?:item cancell?ed|geannuleerd)|has been cancell?ed|is geannuleerd"],
         in: ["subject"],
       },
       {
@@ -201,12 +203,14 @@ export const AMAZON_EMAIL_RULES: readonly EmailRuleDefinition[] = [
       },
       {
         event: "order_shipped",
-        patterns: ["^(?:dispatched|shipped|verzonden|out for delivery|wordt vandaag bezorgd)"],
+        patterns: [
+          "^(?:dispatched|shipped|verzonden|out for delivery|onderweg voor bezorging|arriving today|wordt vandaag bezorgd)|has been dispatched",
+        ],
         in: ["subject"],
       },
       {
         event: "order_confirmed",
-        patterns: ["^(?:ordered|besteld)"],
+        patterns: ["^(?:ordered|besteld)|^your amazon\\.nl order of "],
         in: ["subject"],
       },
     ],
@@ -254,8 +258,115 @@ export const AMAZON_EMAIL_RULES: readonly EmailRuleDefinition[] = [
         ],
       },
       {
+        fixture: "amazon-nl-onderweg.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_shipped",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-legacy-ordered.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_confirmed",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-legacy-cancelled.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_cancelled",
+            orderNumbers: ["407-7654321-7654321"],
+          },
+          // `order-update` is also a shipping sender; with no number it gives no parcel.
+          { ruleId: "parcel-amazon", trackingNumbers: [] },
+        ],
+      },
+      {
         fixture: "amazon-nl-newsletter.eml",
         expect: [],
+      },
+    ],
+  },
+  {
+    // Older Amazon.nl dispatch emails name the courier and its tracking number in one sentence.
+    id: "parcel-amazon-nl",
+    name: "Amazon.nl dispatch emails with a tracking number",
+    kind: "parcel",
+    senders: {
+      domains: ["amazon.nl"],
+      local_parts: ["verzending-volgen"],
+    },
+    carrier_from: "carrier",
+    extract: {
+      tracking_number: [
+        {
+          pattern:
+            "(?:tracking number is|trackingnummer is):?\\s*(?<tracking_number>[A-Z0-9]{8,30})\\b",
+          in: ["text"],
+        },
+      ],
+      carrier: [
+        {
+          pattern:
+            "(?:being sent by|wordt verzonden met|wordt bezorgd door)\\s+(?<carrier>[A-Za-z][A-Za-z .-]{1,30}?)\\s*(?:\\.|,|\\n)",
+          in: ["text"],
+        },
+      ],
+      order_number: [
+        {
+          pattern: "(?<order_number>\\b\\d{3}-\\d{7}-\\d{7}\\b)",
+        },
+      ],
+    },
+    status_keywords: [
+      {
+        status: "out_for_delivery",
+        patterns: ["^(?:out for delivery|onderweg voor bezorging|arriving today)"],
+        in: ["subject"],
+      },
+    ],
+    default_status: "in_transit",
+    require: ["tracking_number"],
+    tests: [
+      {
+        fixture: "amazon-nl-legacy-dispatched-postnl.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_shipped",
+            orderNumbers: ["402-1234567-1234567"],
+          },
+          {
+            ruleId: "parcel-amazon-nl",
+            kind: "parcel",
+            carrier: "postnl",
+            trackingNumbers: ["3SXXXX001234567"],
+            orderNumbers: ["402-1234567-1234567"],
+            status: "in_transit",
+          },
+        ],
+      },
+      {
+        fixture: "amazon-nl-legacy-dispatched-amzl.eml",
+        expect: [
+          {
+            ruleId: "order-amazon-nl",
+            event: "order_shipped",
+          },
+          {
+            ruleId: "parcel-amazon-nl",
+            carrier: "amazon",
+            trackingNumbers: ["NL2012345678"],
+          },
+        ],
       },
     ],
   },

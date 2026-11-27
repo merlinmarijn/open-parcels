@@ -111,13 +111,13 @@ export function parseClock(text: string): { hour: number; minute: number } | nul
   return hour > 23 || minute > 59 ? null : { hour, minute };
 }
 
-/** Month names as the order pages spell them (English and German), by their first letters. */
+/** Month names as the order pages spell them (English, German and Dutch), by their first letters. */
 const MONTH_PREFIXES = [
   ["jan"],
   ["feb"],
-  ["mar", "mär"],
+  ["mar", "mär", "maa", "mrt"],
   ["apr"],
-  ["may", "mai"],
+  ["may", "mai", "mei"],
   ["jun"],
   ["jul"],
   ["aug"],

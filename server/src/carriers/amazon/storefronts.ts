@@ -1,6 +1,6 @@
 /**
- * The storefronts this provider reads. Only storefronts whose order pages are in English or German
- * are listed, because the status and date wording comes from the en/de locale tables of
+ * The storefronts this provider reads. Only storefronts whose order pages are in English, German or
+ * Dutch are listed, because the status and date wording comes from the en/de/nl locale tables of
  * open-parcels-rules; other languages are added once their tables exist there.
  */
 export interface Storefront {
@@ -14,6 +14,7 @@ export interface Storefront {
 
 export const STOREFRONTS = {
   "amazon.de": { domain: "amazon.de", signInLanguage: "de_DE", timeZone: "Europe/Berlin" },
+  "amazon.nl": { domain: "amazon.nl", signInLanguage: "nl_NL", timeZone: "Europe/Amsterdam" },
   "amazon.co.uk": { domain: "amazon.co.uk", signInLanguage: "en_GB", timeZone: "Europe/London" },
   "amazon.com": { domain: "amazon.com", signInLanguage: "en_US", timeZone: "America/New_York" },
   "amazon.ie": { domain: "amazon.ie", signInLanguage: "en_GB", timeZone: "Europe/Dublin" },

@@ -16,6 +16,7 @@ import {
 } from "../../provider/api.js";
 import { finishSignIn, LOGIN_HOST, PostnlSession, startSignIn } from "./auth.js";
 import { CARRIER_ID, shipmentSnapshot } from "./parcel.js";
+import { POSTNL_EMAIL_RULES } from "./email-rules.js";
 
 const API_HOST = "jouw.postnl.nl";
 const STRINGS = { numbers: false } as const;
@@ -149,6 +150,7 @@ export const postnl = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   configSchema,
   secretSchema,
+  emailRules: POSTNL_EMAIL_RULES,
   signIn: pastedRedirect<Config, Secret>({
     start: () => Promise.resolve(startSignIn()),
     finish: (context, state, pasted) => finishSignIn(context.http, state, pasted),

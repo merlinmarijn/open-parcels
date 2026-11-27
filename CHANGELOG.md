@@ -2,6 +2,20 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Added: Amazon.nl accounts and more Dutch emails (rules 2.0.0-dev.15.2)
+
+The Amazon provider signs in to `amazon.nl` (storefront `amazon.nl`): order pages are read with
+the new Dutch locale table and Dutch status lines of the vendored rules `2.0.0-dev.15.2`. Amazon.nl
+emails: `order-amazon-nl` also reads "Onderweg voor bezorging", "Arriving today", the older
+"Your Amazon.nl order of …" emails and cancellations from `order-update@`; the new
+`parcel-amazon-nl` reads the courier and tracking number older dispatch emails name. New provider
+email rules: PostNL (`edm.postnl.nl`, `parcel-postnl`), DPD Netherlands (`dpd.nl`,
+`parcel-dpd-nl`), GOFO Netherlands (`parcel-gofo-nl`) and PDN Express (`parcel-pdn-express-nl`);
+DHL eCommerce Netherlands also reads 3S numbers. The rules add bol order updates without
+"Bestelnummer:" and Temu's Dutch relay of PostNL notices. A custom rule with one of these ids
+(`parcel-dpd-nl`, say) no longer loads: delete it. Read missed emails again with the email lab's
+re-read.
+
 ### Added: Dutch shop and carrier emails (rules 2.0.0-dev.15.1)
 
 DHL reads DHL eCommerce Netherlands emails (`dhlecommerce.nl`, `dhlparcel.nl`; JJD and JVGL

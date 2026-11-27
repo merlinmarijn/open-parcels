@@ -37,6 +37,10 @@
       {
         "host": ".amazon.in",
         "reason": "Account data."
+      },
+      {
+        "host": ".amazon.nl",
+        "reason": "Account data."
       }
     ],
     "image_hosts": ["m.media-amazon.com", ".ssl-images-amazon.com", ".images-amazon.com"],

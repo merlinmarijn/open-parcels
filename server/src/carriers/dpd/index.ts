@@ -2,6 +2,7 @@ import { z } from "zod";
 import { carrierKey, defineCarrier } from "../../provider/api.js";
 import { fetchDeAccount } from "./account.js";
 import { TRACKING_HOST, trackDe } from "./tracking.js";
+import { DPD_EMAIL_RULES } from "./email-rules.js";
 
 const configSchema = z.object({
   /**
@@ -29,6 +30,7 @@ export const dpd = defineCarrier({
   id: "dpd",
   configSchema,
   secretSchema,
+  emailRules: DPD_EMAIL_RULES,
   signIn: [
     { type: "credentials", kinds: ["account"] },
     // Public tracking needs no sign-in.

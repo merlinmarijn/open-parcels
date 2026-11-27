@@ -15,6 +15,7 @@ import {
   type ProviderHttp,
 } from "../../provider/api.js";
 import { CARRIER_ID, toSnapshot, WALL_CLOCK_ZONE } from "./parse.js";
+import { GOFO_EMAIL_RULES } from "./email-rules.js";
 
 const API_HOST = "www.gofo.com";
 /** Two keyless transports, chosen by the country letters after the `GF` prefix. */
@@ -110,6 +111,7 @@ export const gofo = defineCarrier<Config, Secret>({
   id: CARRIER_ID,
   configSchema,
   secretSchema,
+  emailRules: GOFO_EMAIL_RULES,
   signIn: { type: "none" },
   http: {
     limits: {

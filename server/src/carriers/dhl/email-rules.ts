@@ -175,14 +175,15 @@ export const DHL_EMAIL_RULES: readonly EmailRuleDefinition[] = [
     },
     carrier: "dhl",
     extract: {
-      // JJD and JVGL piece ids, in the subject's brackets or after "pakket"/"Zendingsnummer".
+      // JJD, JVGL and 3S piece ids, in the subject's brackets or after "pakket"/"Zendingsnummer".
       tracking_number: [
         {
-          pattern: "\\((?<tracking_number>J[A-Z]{2,3}\\d{14,24})\\)",
+          pattern: "\\((?<tracking_number>J[A-Z]{2,3}\\d{14,24}|3S[A-Z0-9]{8,15})\\)",
           in: ["subject"],
         },
         {
-          pattern: "(?:pakket|zendingsnummer)\\s+(?<tracking_number>J[A-Z]{2,3}\\d{14,24})\\b",
+          pattern:
+            "(?:pakket|zendingsnummer)\\s+(?<tracking_number>J[A-Z]{2,3}\\d{14,24}|3S[A-Z0-9]{8,15})\\b",
           in: ["text"],
         },
       ],
@@ -250,6 +251,17 @@ export const DHL_EMAIL_RULES: readonly EmailRuleDefinition[] = [
             trackingNumbers: ["JJD000012345678901234"],
             status: "delivered",
             trackingUrl: "https://my.dhlecommerce.nl/go-track-trace?tc=JJD000012345678901234",
+          },
+        ],
+      },
+      {
+        fixture: "dhl-nl-3s-delivered.eml",
+        expect: [
+          {
+            ruleId: "parcel-dhl-nl",
+            carrier: "dhl",
+            trackingNumbers: ["3SXXXX012345601"],
+            status: "delivered",
           },
         ],
       },

@@ -69,23 +69,24 @@ const TILE_IMAGE_RE = /class="product-image[^"]*">\s*(<img\b[^>]*>)/;
 const IMAGE_SRC_RE = /\b(data-a-hires|src)="(https:\/\/[^"]+)"/g;
 /** The return window an order line names, read from its stretch of page as text. */
 const RETURN_WINDOW_RE =
-  /\b(?:Return window (?:closed|closes|ends) on|Eligible (?:for return )?(?:through|until)|Rückgabe(?:zeitraum)? (?:endete am|endet am|möglich bis|bis zum|bis)|Rücksendung möglich bis)\s+[^<>|]{3,30}/i;
+  /\b(?:Return window (?:closed|closes|ends) on|Eligible (?:for return )?(?:through|until)|Rückgabe(?:zeitraum)? (?:endete am|endet am|möglich bis|bis zum|bis)|Rücksendung möglich bis|Retourtermijn (?:verlopen op|eindigt op|sluit op)|Retourneren mogelijk tot)\s+[^<>|]{3,30}/i;
 /** Characters after the last line searched for its image; a real line is about half this. */
 const TILE_SPAN = 4000;
 /** The placed date may carry a comma before its year, as US-style dates do ("November 10, 2026"). */
 const PLACED_RE =
-  /,\s*(?:Order placed|Bestellt am|Bestellung aufgegeben(?: am)?)\s+([^,]+(?:,\s*\d{4})?)(?:,\s*(.*))?$/s;
+  /,\s*(?:Order placed|Bestellt am|Bestellung aufgegeben(?: am)?|Bestelling geplaatst(?: op)?|Besteld op)\s+([^,]+(?:,\s*\d{4})?)(?:,\s*(.*))?$/s;
 const ORDER_ID_RE = /\d{3}-\d{7}-\d{7}/;
 const TRACK_LINK_RE = /href="([^"]*\/(?:ship-track|progress-tracker\/package\/?)\?[^"]*)"/;
 const TRACK_PAGE_PATH_RE =
   /\/(?:progress-tracker\/package|gp\/your-account\/ship-track)(?:\/ref=[^/]*)?\/?$/;
 const CARRIER_RE =
-  /(?:Delivery By|Delivered by|Shipped with|Versendet mit|Versand durch|Zustellung durch|Lieferung durch)\s+([A-Za-z0-9_]+)/i;
+  /(?:Delivery By|Delivered by|Shipped with|Versendet mit|Versand durch|Zustellung durch|Lieferung durch|Bezorgd door|Bezorging door|Verzonden met)\s+([A-Za-z0-9_]+)/i;
 /** The block that names the courier and the tracking id on the package page. */
 const CARRIER_INFO_RE = /id="carrierRelatedInfo-container"[^>]*>(.*?)<\/div>/s;
 const CARRIER_HEADER_RE =
   /(?:pt-delivery-card-wrapper"><div><h3|tracking-event-carrier-header">\s*<h2)[^>]*>\s*([^<]*?)\s*<\/h[23]>/;
-const TRACKING_ID_RE = /(?:Tracking[\s-]?ID|Sendungsnummer|Trackingnummer)\s*:\s*([A-Za-z0-9-]+)/i;
+const TRACKING_ID_RE =
+  /(?:Tracking[\s-]?ID|Sendungsnummer|Trackingnummer|Zendingsnummer)\s*:\s*([A-Za-z0-9-]+)/i;
 const STATE_RE = /<script[^>]*page-state[^>]*>\s*(\{.*?\})\s*<\/script>/s;
 const EVENT_PART_RE =
   /<span class="tracking-event-(date|time|message|description|location)\b[^"]*"[^>]*>([^<]*)<\/span>/g;

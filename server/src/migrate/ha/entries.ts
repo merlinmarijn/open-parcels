@@ -139,6 +139,7 @@ function needsSignIn(detail: string): Pick<ConnectionPlan, "state" | "signInNote
 /** Storefronts the `amazon` provider reads; kept here so the importer needs no provider import. */
 const AMAZON_STOREFRONTS: ReadonlySet<string> = new Set([
   "amazon.de",
+  "amazon.nl",
   "amazon.co.uk",
   "amazon.com",
   "amazon.ie",

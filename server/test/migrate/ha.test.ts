@@ -313,7 +313,7 @@ describe("Home Assistant suite import", () => {
       entry("d", "dhl", "Germany (none)", { country: "DE" }),
       entry("a", "amazon_orders", "Amazon (amazon.de)", { country: "amazon.de" }),
       entry("p", "dhl", "Poland", { country: "PL", pl_device_id: "x", pl_cookies: {} }),
-      entry("n", "amazon_orders", "Amazon (amazon.nl)", { country: "amazon.nl" }),
+      entry("n", "amazon_orders", "Amazon (amazon.fr)", { country: "amazon.fr" }),
       entry("k", "dhl", "API (abcdef)", { source: "api", api_key: fake("key") }),
     ]);
     expect(report.connections.map((s) => [s.label, s.state, s.signedIn])).toEqual([

@@ -19,5 +19,8 @@
     "secrets": [],
     "session": false,
     "user_agent": false
+  },
+  "email": {
+    "from_domains": [".pdn.express"]
   }
 }
