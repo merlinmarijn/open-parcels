@@ -182,7 +182,8 @@ export function parseOrderTiles(page: string, isStatus: (text: string) => boolea
     const parts = splitLabel(label, isStatus);
     tiles.push({
       orderId,
-      lineItemId: query.get("lineitemid") ?? "",
+      // amazon.nl's progress tracker names the line `itemId`.
+      lineItemId: query.get("lineitemid") ?? query.get("itemid") ?? "",
       shipmentId: query.get("shipmentid") ?? "",
       packageId: query.get("packageid") ?? "1",
       path,

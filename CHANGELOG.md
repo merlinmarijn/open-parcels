@@ -2,6 +2,14 @@
 
 ## Unreleased (2.0.0-dev)
 
+### Fixed: one parcel per shop shipment while the shop renames it
+
+A shop renames a shipment as it moves (Amazon: an order line, then its shipment id, then the
+carrier's code), and every name stored a parcel of its own. After each shop run, a parcel the shop
+listed before but not now is folded into the one parcel it now lists for the same order with the
+same items. Stored duplicates fold on the next Amazon run. Amazon.nl order lines also keep their
+line id (`itemId`) instead of a position that shifts with the page.
+
 ### Added: Amazon.nl accounts and more Dutch emails (rules 2.0.0-dev.15.2)
 
 The Amazon provider signs in to `amazon.nl` (storefront `amazon.nl`): order pages are read with

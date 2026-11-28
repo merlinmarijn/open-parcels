@@ -28,6 +28,7 @@ import {
   type TwinEnv,
 } from "./twins.js";
 import { scrubRaw } from "./raw-scrub.js";
+import { foldSuperseded } from "./superseded.js";
 import { withSafeLinks } from "./links.js";
 import { sameRows, writeOrderItems } from "./order-items.js";
 import { createOrder, findOrder } from "./order-rows.js";
@@ -271,6 +272,9 @@ export class Reconciler {
         }
         summary[outcome.created ? "created" : "updated"] += 1;
         summary.events += outcome.events;
+      }
+      if (connection.kind === "shop") {
+        await foldSuperseded(trx, this.#twinEnv(), connection.id, seen);
       }
       // A tracking connection only answers for the codes it was asked about. Whether such a code is
       // gone is the not-found lookup state's call (archived after 30 days, ADR §2.5), never
